@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ソコナラ 管理画面</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@400;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal:#42AD9F; --teal-d:#2e8c7f; --teal-bg:rgba(66,173,159,0.08);
+  --navy:#1C2A54; --gray:#716C6B; --light:#E4E3E3;
+  --white:#ffffff; --bg:#F5F5F5; --text:#1a1a1a;
+  --text2:#716C6B; --text3:#aaa8a7; --border:#E4E3E3;
+  --hot:#c0341a; --hot-bg:rgba(192,52,26,0.07);
+  --warm:#b07818; --warm-bg:rgba(176,120,24,0.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:13px;line-height:1.6;-webkit-font-smoothing:antialiased;}
+
+#gate{position:fixed;inset:0;background:var(--navy);display:flex;align-items:center;justify-content:center;z-index:9999;}
+#gate-box{text-align:center;}
+#gate-title{font-family:'Noto Serif JP',serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:24px;}
+#gate-title span{color:var(--teal);}
+#gate-input{display:block;width:260px;padding:12px 16px;font-size:14px;font-family:'Noto Sans JP',sans-serif;border:1px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.1);color:#fff;outline:none;border-radius:2px;margin:0 auto 12px;}
+#gate-input::placeholder{color:rgba(255,255,255,0.4);}
+#gate-btn{width:260px;padding:12px;background:var(--teal);color:#fff;border:none;font-size:14px;font-weight:700;font-family:'Noto Sans JP',sans-serif;cursor:pointer;border-radius:2px;}
+#gate-btn:hover{background:var(--teal-d);}
+#gate-err{color:rgba(255,120,120,0.9);font-size:12px;margin-top:10px;display:none;}
+
+#topbar{position:fixed;top:0;left:0;right:0;height:48px;background:var(--navy);display:none;align-items:center;padding:0 20px;gap:16px;z-index:100;}
+#topbar-brand{font-family:'Noto Serif JP',serif;font-size:16px;font-weight:700;color:#fff;}
+#topbar-brand span{color:var(--teal);}
+#topbar-sub{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);}
+#logout-btn{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;padding:4px 10px;color:rgba(255,255,255,0.3);background:none;border:1px solid rgba(255,255,255,0.1);cursor:pointer;border-radius:2px;}
+#logout-btn:hover{color:rgba(255,255,255,0.7);}
+
+#shell{display:none;padding-top:48px;min-height:100vh;}
+.admin-shell{display:grid;grid-template-columns:200px 1fr;min-height:calc(100vh - 48px);}
+
+.admin-sidebar{background:var(--navy);display:flex;flex-direction:column;}
+.admin-sidebar-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.admin-brand-title{font-family:'Noto Serif JP',serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;}
+.admin-brand-sub{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;color:rgba(255,255,255,0.25);text-transform:uppercase;}
+.admin-nav{padding:12px 0;}
+.admin-nav-label{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);padding:0 16px 6px;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:12px;color:rgba(255,255,255,0.4);cursor:pointer;border-left:2px solid transparent;transition:all 0.15s;}
+.nav-item:hover{color:rgba(255,255,255,0.75);background:rgba(255,255,255,0.04);}
+.nav-item.active{color:#fff;border-left-color:var(--teal);background:rgba(66,173,159,0.1);}
+.nav-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.co-items{padding:12px 0;border-top:1px solid rgba(255,255,255,0.07);}
+.co-item{display:flex;align-items:center;gap:8px;padding:7px 16px;}
+.co-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;}
+.co-nm{font-size:11px;color:rgba(255,255,255,0.4);flex:1;}
+.co-bd{font-family:'JetBrains Mono',monospace;font-size:8px;padding:1px 5px;background:var(--hot);color:#fff;border-radius:2px;}
+.sidebar-foot{margin-top:auto;padding:14px 16px;border-top:1px solid rgba(255,255,255,0.07);font-size:10px;color:rgba(255,255,255,0.2);font-family:'JetBrains Mono',monospace;}
+
+.admin-main{display:flex;flex-direction:column;}
+.admin-tpbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;height:48px;display:flex;align-items:center;justify-content:space-between;}
+.admin-tpbar-title{font-family:'Noto Serif JP',serif;font-size:15px;font-weight:700;color:var(--navy);}
+.admin-tpbar-right{display:flex;gap:8px;}
+.abtn{font-family:'Noto Sans JP',sans-serif;font-size:11px;font-weight:700;padding:5px 14px;cursor:pointer;border-radius:2px;transition:all 0.15s;}
+.abtn-teal{background:var(--teal);color:#fff;border:none;}
+.abtn-teal:hover{background:var(--teal-d);}
+.abtn-ghost{background:none;color:var(--text2);border:1px solid var(--border);}
+.abtn-ghost:hover{border-color:var(--teal);color:var(--teal);}
+#adminContent{padding:24px;flex:1;}
+
+.panel{background:var(--white);border:1px solid var(--border);border-radius:2px;overflow:hidden;margin-bottom:16px;}
+.phdr{padding:11px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;color:var(--navy);}
+.pbody{padding:16px;}
+.pflush{padding:0;}
+
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;}
+.kpi{background:var(--white);border:1px solid var(--border);padding:14px 16px;border-radius:2px;position:relative;overflow:hidden;}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kpi.kt::after{background:var(--teal);}
+.kpi.kn::after{background:var(--navy);}
+.kpi.kh::after{background:var(--hot);}
+.kpi.kw::after{background:var(--warm);}
+.kpi.kg::after{background:var(--gray);}
+.kpi-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:7px;}
+.kpi-v{font-family:'Noto Serif JP',serif;font-size:26px;font-weight:900;line-height:1;margin-bottom:4px;}
+.kpi-d{font-size:10px;color:var(--teal);}
+.kpi-d.neu{color:var(--text3);}
+
+.funnel{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid var(--border);margin-bottom:20px;border-radius:2px;overflow:hidden;}
+.fs{padding:12px 14px;border-right:1px solid var(--border);background:var(--white);position:relative;overflow:hidden;}
+.fs:last-child{border-right:none;}
+.fsv{font-family:'Noto Serif JP',serif;font-size:20px;font-weight:700;color:var(--navy);margin-bottom:2px;}
+.fsn{font-size:11px;font-weight:500;margin-bottom:2px;}
+.fsr{font-size:10px;color:var(--teal);font-family:'JetBrains Mono',monospace;}
+.fsb{position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--teal);}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+.rtable{width:100%;border-collapse:collapse;}
+.rtable th{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);text-align:left;padding:7px 12px;background:var(--bg);border-bottom:1px solid var(--border);}
+.rtable td{padding:9px 12px;border-bottom:1px solid rgba(228,227,227,0.5);font-size:12px;vertical-align:middle;}
+.rtable tr:last-child td{border-bottom:none;}
+.rtable tr:hover td{background:var(--bg);}
+.tc{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;padding:2px 7px;display:inline-block;border-radius:2px;}
+.tch{background:var(--hot-bg);color:var(--hot);border:1px solid rgba(192,52,26,0.2);}
+.tcw{background:var(--warm-bg);color:var(--warm);border:1px solid rgba(176,120,24,0.2);}
+.tcc{background:rgba(28,42,84,0.06);color:var(--navy);border:1px solid rgba(28,42,84,0.15);}
+.sc{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 7px;border-radius:2px;}
+.scp{background:rgba(192,52,26,0.08);color:var(--hot);}
+.scc{background:rgba(176,120,24,0.08);color:var(--warm);}
+.scd{background:var(--teal-bg);color:var(--teal-d);}
+.actbtn{font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border:1px solid var(--border);background:none;cursor:pointer;color:var(--text2);border-radius:2px;transition:all 0.15s;}
+.actbtn:hover{border-color:var(--teal);color:var(--teal);}
+.actbtn.pr{background:var(--teal);color:#fff;border-color:var(--teal);}
+
+.barchart{display:flex;flex-direction:column;gap:7px;}
+.barrow{display:flex;align-items:center;gap:8px;}
+.barlbl{font-size:11px;color:var(--text2);width:160px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bartrack{flex:1;height:12px;background:var(--bg);position:relative;overflow:hidden;border-radius:1px;}
+.barfill{height:100%;background:var(--teal);position:absolute;left:0;top:0;transition:width 1s;border-radius:1px;}
+.barcnt{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);width:24px;text-align:right;}
+
+.ai-blk{background:var(--navy);color:rgba(255,255,255,0.8);padding:18px;margin-bottom:16px;border-radius:2px;}
+.ai-hdr{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.ai-tg{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;padding:3px 8px;background:var(--teal);color:#fff;border-radius:2px;}
+.ai-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.3);}
+.ai-txt{font-size:13px;line-height:1.8;margin-bottom:10px;}
+.ai-btn{font-family:'JetBrains Mono',monospace;font-size:8px;padding:4px 11px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.4);cursor:pointer;border-radius:2px;transition:all 0.15s;}
+.ai-btn:hover{background:rgba(66,173,159,0.2);border-color:var(--teal);color:#fff;}
+.ai-load{opacity:0.4;animation:shim 1.4s infinite;height:52px;border-radius:2px;background-size:200% 100%;background-image:linear-gradient(90deg,rgba(255,255,255,0.05) 25%,rgba(255,255,255,0.12) 50%,rgba(255,255,255,0.05) 75%);}
+@keyframes shim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.tl{display:flex;flex-direction:column;}
+.tlrow{display:grid;grid-template-columns:60px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid rgba(228,227,227,0.4);align-items:start;}
+.tlrow:last-child{border-bottom:none;}
+.tltime{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);padding-top:2px;}
+.tlname{font-size:12px;font-weight:500;color:var(--navy);margin-bottom:1px;}
+.tldtl{font-size:11px;color:var(--text2);}
+.tldot{width:5px;height:5px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle;}
+
+.ms{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(228,227,227,0.4);}
+.ms:last-child{border-bottom:none;}
+.mslbl{font-size:12px;color:var(--text2);flex:1;}
+.msbar{width:72px;height:4px;background:var(--bg);position:relative;overflow:hidden;border-radius:2px;}
+.msfill{position:absolute;left:0;top:0;height:100%;border-radius:2px;transition:width 1s;}
+.msval{font-family:'Noto Serif JP',serif;font-size:13px;font-weight:700;color:var(--navy);}
+
+.cogrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.cocard{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--border);cursor:pointer;background:var(--white);transition:all 0.15s;border-radius:2px;}
+.cocard:hover{border-color:var(--teal);}
+.coav{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+.conm{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:2px;}
+.comt{font-size:11px;color:var(--text2);}
+.coarr{margin-left:auto;font-size:14px;color:var(--teal);}
+
+.rpt-out{background:var(--navy);color:rgba(255,255,255,0.8);padding:20px;margin-top:16px;border-radius:2px;}
+.rpt-body{font-size:13px;line-height:1.9;}
+.rpt-acts{display:flex;gap:8px;margin-top:14px;}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--navy);color:#fff;padding:10px 20px;font-size:12px;z-index:999;border-radius:2px;transition:transform 0.3s;box-shadow:0 4px 16px rgba(28,42,84,0.3);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.uini{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;}
+
+@media(max-width:768px){
+  .admin-shell{grid-template-columns:1fr;}
+  .admin-sidebar{display:none;}
+  .kpi-row{grid-template-columns:repeat(2,1fr);}
+  .two-col{grid-template-columns:1fr;}
+  .funnel{grid-template-columns:1fr;}
+  .cogrid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div id="gate-box">
+    <div id="gate-title">ソコナラ<span>.</span> 管理画面</div>
+    <input id="gate-input" type="password" placeholder="パスワードを入力" onkeydown="if(event.key==='Enter')checkPass()">
+    <button id="gate-btn" onclick="checkPass()">ログイン</button>
+    <div id="gate-err">パスワードが違います</div>
+  </div>
+</div>
+
+<div id="topbar">
+  <div id="topbar-brand">ソコナラ<span>.</span></div>
+  <div id="topbar-sub">ADMIN</div>
+  <button id="logout-btn" onclick="logout()">ログアウト</button>
+</div>
+
+<div id="shell">
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-brand">
+        <div class="admin-brand-title">ソコナラ</div>
+        <div class="admin-brand-sub">Admin Dashboard</div>
+      </div>
+      <div class="admin-nav">
+        <div class="admin-nav-label">メニュー</div>
+        <div class="nav-item active" id="ni-dash" onclick="switchTab('dash')"><div class="nav-dot" style="background:var(--teal)"></div>ダッシュボード</div>
+        <div class="nav-item" id="ni-reactions" onclick="switchTab('reactions')"><div class="nav-dot" style="background:var(--hot)"></div>反応一覧</div>
+        <div class="nav-item" id="ni-contacts" onclick="switchTab('contacts')"><div class="nav-dot" style="background:var(--warm)"></div>接点候補</div>
+        <div class="nav-item" id="ni-report" onclick="switchTab('report')"><div class="nav-dot" style="background:var(--navy)"></div>AIレポート</div>
+      </div>
+      <div class="co-items">
+        <div class="admin-nav-label" style="padding:0 16px 6px">掲載企業</div>
+        <div class="co-item"><div class="co-av" style="background:#555">全</div><div class="co-nm">全社まとめ</div></div>
+        <div class="co-item"><div class="co-av" style="background:var(--navy)">田</div><div class="co-nm">タナカ精工</div><div class="co-bd">3</div></div>
+        <div class="co-item"><div class="co-av" style="background:var(--teal-d)">中</div><div class="co-nm">ナカムラフーズ</div><div class="co-bd">1</div></div>
+        <div class="co-item"><div class="co-av" style="background:var(--gray)">吉</div><div class="co-nm">吉田建設</div></div>
+        <div class="co-item"><div class="co-av" style="background:#8a6020">林</div><div class="co-nm">ハヤシテック</div></div>
+      </div>
+      <div class="sidebar-foot">2026年4月<br>次の配信：4月17日</div>
+    </aside>
+    <div class="admin-main">
+      <div class="admin-tpbar">
+        <div class="admin-tpbar-title" id="tabTitle">ダッシュボード</div>
+        <div class="admin-tpbar-right">
+          <button class="abtn abtn-ghost" onclick="toast('CSVを出力しました')">↓ CSV</button>
+          <button class="abtn abtn-teal" onclick="switchTab('report')">✦ AIレポート</button>
+        </div>
+      </div>
+      <div id="adminContent"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+const COMPANIES=[
+  {id:'tanaka',name:'タナカ精工',ceo:'田中 誠一郎',color:'#1C2A54',reactions:42,cta:8,hot:3,warm:3,cool:2},
+  {id:'nakamura',name:'ナカムラフーズ',ceo:'中村 真理子',color:'#2e8c7f',reactions:29,cta:5,hot:1,warm:2,cool:2},
+  {id:'yoshida',name:'吉田建設',ceo:'吉田 健次',color:'#716C6B',reactions:35,cta:6,hot:2,warm:3,cool:1},
+  {id:'hayashi',name:'ハヤシテック',ceo:'林 奈緒子',color:'#8a6020',reactions:18,cta:3,hot:1,warm:1,cool:1},
+];
+const REACTIONS=[
+  {id:'R1',user:'A.T',ini:'A',col:'#1C2A54',co:'タナカ精工',q1:'変えたいものがある…',q2:['挑戦できる環境'],q3:'副業・参画',free:'製造業の変革に興味あり',temp:'hot',status:'pending',date:'04/15'},
+  {id:'R2',user:'K.S',ini:'K',col:'#2e8c7f',co:'タナカ精工',q1:'求人票に書けない…',q2:['まず話を聞きたい'],q3:'壁打ち・相談',free:'',temp:'warm',status:'contacted',date:'04/14'},
+  {id:'R3',user:'M.Y',ini:'M',col:'#716C6B',co:'ナカムラフーズ',q1:'地方の中小企業こそ…',q2:['地域で試したい'],q3:'転職',free:'福岡移住検討中',temp:'hot',status:'pending',date:'04/15'},
+  {id:'R4',user:'R.I',ini:'R',col:'#8a6020',co:'吉田建設',q1:'社員が自分で…',q2:['挑戦できる環境'],q3:'わからない',free:'',temp:'cool',status:'pending',date:'04/13'},
+  {id:'R5',user:'N.H',ini:'N',col:'#3a6e5a',co:'タナカ精工',q1:'変えたいものがある…',q2:['挑戦できる環境','共鳴できる仲間'],q3:'転職',free:'事業承継に関わりたかった',temp:'hot',status:'connected',date:'04/12'},
+  {id:'R6',user:'T.O',ini:'T',col:'#6b4a8a',co:'吉田建設',q1:'変えたいものがある…',q2:['挑戦できる環境'],q3:'副業・参画',free:'建設×DXで話したい',temp:'warm',status:'contacted',date:'04/11'},
+];
+const EMPATHY=[
+  {label:'変えたいものがある人間に、古い会社ほど面白い',count:18,pct:43},
+  {label:'求人票に書けるスキル要件はない',count:12,pct:29},
+  {label:'社員が自分で考えるようになった',count:7,pct:17},
+  {label:'地方の中小企業こそ賭けられるフィールド',count:5,pct:12},
+];
+let curTab='dash';
+
+function checkPass(){
+  const v=document.getElementById('gate-input').value;
+  if(v==='soconara2024'){
+    document.getElementById('gate').style.display='none';
+    document.getElementById('topbar').style.display='flex';
+    document.getElementById('shell').style.display='block';
+    localStorage.setItem('snAdmin','ok');
+    renderDash();
+  } else {
+    document.getElementById('gate-err').style.display='block';
+    document.getElementById('gate-input').value='';
+  }
+}
+function logout(){localStorage.removeItem('snAdmin');location.reload();}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  if(localStorage.getItem('snAdmin')==='ok'){
+    document.getElementById('gate').style.display='none';
+    document.getElementById('topbar').style.display='flex';
+    document.getElementById('shell').style.display='block';
+    renderDash();
+  }
+});
+
+function switchTab(tab){
+  curTab=tab;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const ni=document.getElementById('ni-'+tab);
+  if(ni) ni.classList.add('active');
+  const titles={dash:'ダッシュボード',reactions:'反応一覧',contacts:'接点候補リスト',report:'AIレポート生成'};
+  document.getElementById('tabTitle').textContent=titles[tab]||tab;
+  const fns={dash:renderDash,reactions:renderReactions,contacts:renderContacts,report:renderReport};
+  fns[tab]?.();
+}
+
+function renderDash(){
+  document.getElementById('adminContent').innerHTML=`
+    <div style="padding:24px">
+      <div class="kpi-row">
+        <div class="kpi kg"><div class="kpi-lbl">総反応数</div><div class="kpi-v">124</div><div class="kpi-d">↑ +18 先週比</div></div>
+        <div class="kpi kh"><div class="kpi-lbl">🔥 HOT</div><div class="kpi-v" style="color:var(--hot)">7</div><div class="kpi-d neu">要対応</div></div>
+        <div class="kpi kw"><div class="kpi-lbl">🌤 WARM</div><div class="kpi-v" style="color:var(--warm)">9</div><div class="kpi-d neu">フォロー中</div></div>
+        <div class="kpi kn"><div class="kpi-lbl">❄ COOL</div><div class="kpi-v" style="color:var(--navy)">6</div><div class="kpi-d neu">MEET枠へ</div></div>
+        <div class="kpi kt"><div class="kpi-lbl">完了率</div><div class="kpi-v" style="color:var(--teal)">53%</div><div class="kpi-d">↑ +6pt</div></div>
+      </div>
+      <div class="funnel" style="margin-bottom:20px">
+        <div class="fs"><div class="fsv">412</div><div class="fsn">LINE配信</div><div class="fsr">—</div><div class="fsb" style="width:100%"></div></div>
+        <div class="fs"><div class="fsv">234</div><div class="fsn">クリック</div><div class="fsr">56.8%</div><div class="fsb" style="width:56%"></div></div>
+        <div class="fs"><div class="fsv">124</div><div class="fsn">完了</div><div class="fsr">53.0%</div><div class="fsb" style="width:30%"></div></div>
+        <div class="fs"><div class="fsv">22</div><div class="fsn">会いたい</div><div class="fsr">17.7%</div><div class="fsb" style="width:5%"></div></div>
+        <div class="fs"><div class="fsv">5</div><div class="fsn">実接続</div><div class="fsr">22.7%</div><div class="fsb" style="width:1%"></div></div>
+      </div>
+      <div class="ai-blk">
+        <div class="ai-hdr"><span class="ai-tg">AI INSIGHT</span><span class="ai-lbl">今週の傾向 — Claude生成</span></div>
+        <div class="ai-txt" id="dashInsight">「インサイトを生成」を押してください。</div>
+        <button class="ai-btn" onclick="genInsight()">✦ インサイトを生成</button>
+      </div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="phdr">刺さり言葉の分布</div>
+          <div class="pbody"><div class="barchart" id="empChart"></div></div>
+        </div>
+        <div class="panel">
+          <div class="phdr">企業別パフォーマンス</div>
+          <div class="pbody">
+            ${COMPANIES.map(c=>`
+              <div class="ms">
+                <div style="width:7px;height:7px;border-radius:50%;background:${c.color};flex-shrink:0"></div>
+                <div class="mslbl">${c.name}</div>
+                <div class="msbar"><div class="msfill" style="width:${Math.round(c.cta/c.reactions*100)}%;background:var(--teal)"></div></div>
+                <div class="msval">${c.cta}<span style="font-size:10px;color:var(--text3);font-weight:400">CTA</span></div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="phdr">🔥 要対応 HOT</div>
+          <div class="pflush">
+            ${REACTIONS.filter(r=>r.temp==='hot').slice(0,3).map(r=>`
+              <div style="display:grid;grid-template-columns:auto 1fr auto;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(228,227,227,0.4);align-items:center">
+                <div class="uini" style="background:${r.col}">${r.ini}</div>
+                <div><div style="font-size:12px;font-weight:500;color:var(--navy)">${r.q3} — ${r.co}</div><div style="font-size:10px;color:var(--text3)">${r.date}</div></div>
+                <button class="actbtn pr" onclick="contactUser('${r.id}')">連絡</button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="panel">
+          <div class="phdr">今週の接点履歴</div>
+          <div class="pbody">
+            <div class="tl">
+              <div class="tlrow"><div class="tltime">04/15</div><div><div class="tlname"><span class="tldot" style="background:var(--hot)"></span>N.H — 面談完了</div><div class="tldtl">タナカ精工 / 転職検討へ</div></div></div>
+              <div class="tlrow"><div class="tltime">04/14</div><div><div class="tlname"><span class="tldot" style="background:var(--warm)"></span>K.S — LINE連絡済</div><div class="tldtl">タナカ精工 / 壁打ち調整中</div></div></div>
+              <div class="tlrow"><div class="tltime">04/13</div><div><div class="tlname"><span class="tldot" style="background:var(--warm)"></span>T.O — 日程調整中</div><div class="tldtl">吉田建設 / 副業参画希望</div></div></div>
+              <div class="tlrow"><div class="tltime">04/12</div><div><div class="tlname"><span class="tldot" style="background:var(--teal)"></span>A.T — 接続完了</div><div class="tldtl">タナカ精工 / HOT → 完了</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  setTimeout(()=>{
+    const el=document.getElementById('empChart');
+    if(!el) return;
+    el.innerHTML=EMPATHY.map(d=>`
+      <div class="barrow">
+        <div class="barlbl">${d.label}</div>
+        <div class="bartrack"><div class="barfill" data-pct="${d.pct}" style="width:0%"></div></div>
+        <div class="barcnt">${d.count}</div>
+      </div>`).join('');
+    setTimeout(()=>el.querySelectorAll('.barfill').forEach(b=>b.style.width=b.dataset.pct+'%'),80);
+  },50);
+}
+
+async function genInsight(){
+  const el=document.getElementById('dashInsight');
+  if(!el) return;
+  el.innerHTML='<div class="ai-load"></div>';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:350,
+        messages:[{role:'user',content:'ソコナラ今週データ：反応124件(+18)、完了率53%(+6pt)、会いたい率17.7%、HOT7件。運営チームへの実用的なインサイトを180字以内で。'}]})});
+    const d=await res.json();
+    el.textContent=d.content[0].text;
+  }catch{
+    el.textContent='完了率53%は目標を超えており改善効果が出ています。HOT7件は48時間以内の対応が接続率に直結します。次週は挑戦環境ニーズに刺さる配信コピーを推奨します。';
+  }
+}
+
+function renderReactions(){
+  document.getElementById('adminContent').innerHTML=`
+    <div style="padding:24px">
+      <div class="panel">
+        <div class="phdr">反応一覧 <span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:6px">${REACTIONS.length}件</span>
+          <select style="margin-left:auto;font-size:10px;padding:3px 8px;border:1px solid var(--border);border-radius:2px;outline:none;background:var(--white);font-family:'Noto Sans JP',sans-serif" onchange="filterTemp(this.value)">
+            <option value="all">すべて</option><option value="hot">🔥 HOT</option><option value="warm">🌤 WARM</option><option value="cool">❄ COOL</option>
+          </select>
+        </div>
+        <div class="pflush">
+          <table class="rtable">
+            <thead><tr><th>温度</th><th>ユーザー</th><th>企業</th><th>刺さった言葉</th><th>希望接点</th><th>自由記述</th><th>ステータス</th><th></th></tr></thead>
+            <tbody id="rtbody">
+              ${REACTIONS.map(r=>{
+                const tmap={hot:'tch',warm:'tcw',cool:'tcc'};
+                const tlabel={hot:'🔥 HOT',warm:'🌤 WARM',cool:'❄ COOL'};
+                const smap={pending:'scp',contacted:'scc',connected:'scd'};
+                const slabel={pending:'未対応',contacted:'連絡済',connected:'接続完了'};
+                return `<tr>
+                  <td><span class="tc ${tmap[r.temp]}">${tlabel[r.temp]}</span></td>
+                  <td><div style="display:flex;align-items:center;gap:6px"><div class="uini" style="background:${r.col}">${r.ini}</div>${r.user}</div></td>
+                  <td style="color:var(--text2)">${r.co}</td>
+                  <td style="max-width:180px;color:var(--text2)">"${r.q1.slice(0,22)}…"</td>
+                  <td style="color:var(--text2);font-size:11px">${r.q3}</td>
+                  <td style="color:var(--text3);font-size:11px">${r.free||'—'}</td>
+                  <td><span class="sc ${smap[r.status]}">${slabel[r.status]}</span></td>
+                  <td>${r.status==='pending'?`<button class="actbtn pr" onclick="contactUser('${r.id}')">対応</button>`:`<button class="actbtn">詳細</button>`}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+}
+
+function filterTemp(v){
+  document.querySelectorAll('#rtbody tr').forEach(row=>{
+    if(v==='all'){row.style.display='';return;}
+    const chip=row.querySelector('.tc');
+    if(!chip) return;
+    const map={hot:'tch',warm:'tcw',cool:'tcc'};
+    row.style.display=chip.classList.contains(map[v])?'':'none';
+  });
+}
+
+function renderContacts(){
+  const hot=REACTIONS.filter(r=>r.temp==='hot');
+  const warm=REACTIONS.filter(r=>r.temp==='warm');
+  const cool=REACTIONS.filter(r=>r.temp==='cool');
+  document.getElementById('adminContent').innerHTML=`<div style="padding:24px">`+
+  [['hot','🔥 HOT','var(--hot)','24時間以内に連絡',hot],
+   ['warm','🌤 WARM','var(--warm)','3日以内にフォロー',warm],
+   ['cool','❄ COOL','var(--navy)','次のMEET枠に案内',cool]
+  ].map(([k,label,col,note,list])=>`
+    <div style="margin-bottom:6px"><span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:${col}">${label} — ${list.length}件（${note}）</span></div>
+    <div class="panel" style="margin-bottom:18px">
+      ${list.length===0?'<div style="padding:14px;font-size:12px;color:var(--text3)">該当なし</div>':
+        list.map(r=>`
+          <div style="display:grid;grid-template-columns:28px 1fr 100px 80px;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(228,227,227,0.4);align-items:center;font-size:12px">
+            <div class="uini" style="background:${r.col}">${r.ini}</div>
+            <div><div style="font-weight:600;color:var(--navy)">${r.user} — ${r.co}</div><div style="font-size:10px;color:var(--text3)">${r.q3}</div></div>
+            <div style="color:var(--text3);font-size:11px">${r.free||'—'}</div>
+            <div>${r.status==='pending'?`<button class="actbtn pr" onclick="contactUser('${r.id}')">LINE連絡</button>`:`<button class="actbtn" style="color:var(--teal);border-color:var(--teal)">${r.status==='connected'?'接続済':'連絡済'}</button>`}</div>
+          </div>
+        `).join('')}
+    </div>
+  `).join('')+`</div>`;
+}
+
+function renderReport(){
+  document.getElementById('adminContent').innerHTML=`
+    <div style="padding:24px">
+      <div class="panel" style="margin-bottom:20px">
+        <div class="phdr">企業を選択してレポートを生成</div>
+        <div class="pbody">
+          <div class="cogrid">
+            ${COMPANIES.map(c=>`
+              <div class="cocard" onclick="genReport('${c.id}')">
+                <div class="coav" style="background:${c.color}">${c.name[0]}</div>
+                <div><div class="conm">${c.name}</div><div class="comt">${c.reactions}反応 / ${c.cta}CTA / HOT ${c.hot}件</div></div>
+                <div class="coarr">→</div>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div id="reportOut" style="display:none">
+        <div class="rpt-out">
+          <div class="ai-hdr"><span class="ai-tg">AI MONTHLY REPORT</span><span class="ai-lbl" id="reportLabel"></span></div>
+          <div class="rpt-body" id="reportBody"></div>
+          <div class="rpt-acts">
+            <button class="ai-btn" onclick="toast('PDF出力は実装予定です')">↓ PDF出力</button>
+            <button class="ai-btn" onclick="toast('Notion連携は実装予定です')">→ Notionに送る</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function genReport(id){
+  const c=COMPANIES.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById('reportOut').style.display='block';
+  document.getElementById('reportLabel').textContent=`${c.name} — 2026年4月`;
+  const body=document.getElementById('reportBody');
+  body.innerHTML='<div class="ai-load" style="height:80px"></div>';
+  document.getElementById('reportOut').scrollIntoView({behavior:'smooth'});
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:700,
+        messages:[{role:'user',content:`ソコナラ月次レポートを生成してください。企業：${c.name}（${c.ceo}）、2026年4月。反応${c.reactions}件、CTA${c.cta}件、HOT${c.hot}件、WARM${c.warm}件。【今月のサマリ】【どんな人が反応したか】【印象的なコメント2件】【来月への示唆】の4構成で。`}]})});
+    const d=await res.json();
+    body.innerHTML=d.content[0].text.replace(/\n/g,'<br>').replace(/【(.*?)】/g,'<strong style="color:var(--teal)">【$1】</strong>');
+    toast(`${c.name}のレポートを生成しました`);
+  }catch{
+    body.innerHTML=`<strong style="color:var(--teal)">【今月のサマリ】</strong><br>反応${c.reactions}件、CTA${c.cta}件。HOT${c.hot}件が接続待ちです。<br><br><strong style="color:var(--teal)">【どんな人が反応したか】</strong><br>変革への意志と地域への関心を持つ30〜40代が中心です。<br><br><strong style="color:var(--teal)">【印象的なコメント】</strong><br>「事業承継に関わりたかった」「福岡移住を検討中」<br><br><strong style="color:var(--teal)">【来月への示唆】</strong><br>次回は「今一番困っていること」を前面に出した構成を推奨します。`;
+  }
+}
+
+function contactUser(id){
+  const r=REACTIONS.find(x=>x.id===id);
+  if(r){r.status='contacted';toast(`${r.user} にLINEで連絡しました`);switchTab(curTab);}
+}
+function toast(msg){
+  const t=document.getElementById('toastEl');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2600);
+}
+</script>
+</body>
+</html>
