@@ -1381,25 +1381,26 @@ function resetAll(){
   document.querySelector('.mode-btn').click();
 }
 
-// init admin
-renderAdminTab("dash");
-
 function checkPass() {
   const pass = document.getElementById('passInput').value;
   if(pass === 'soconara2024') {
     document.getElementById('passGate').style.display='none';
     localStorage.setItem('soconara_admin','ok');
+    renderAdminTab('dash');
   } else {
     document.getElementById('passErr').style.display='block';
     document.getElementById('passInput').value='';
   }
 }
+
 // Auto-check if already logged in
-if(localStorage.getItem('soconara_admin')==='ok'){
-  document.addEventListener('DOMContentLoaded',()=>{
-    const g=document.getElementById('passGate');if(g)g.style.display='none';
-  });
-}
+document.addEventListener('DOMContentLoaded', () => {
+  if(localStorage.getItem('soconara_admin') === 'ok') {
+    const g = document.getElementById('passGate');
+    if(g) g.style.display = 'none';
+    renderAdminTab('dash');
+  }
+});
 
 </script>
 </body>
