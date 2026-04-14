@@ -50,12 +50,14 @@ body {
   box-shadow: 0 1px 0 rgba(255,255,255,0.06);
 }
 .mode-brand {
-  font-family: 'Noto Serif JP', serif;
-  font-size: 16px; font-weight: 700;
-  color: #fff; letter-spacing: 0.06em;
   margin-right: 24px; flex-shrink: 0;
+  display: flex; align-items: center;
 }
-.mode-brand span { color: var(--teal); }
+.mode-brand img {
+  height: 24px;
+  width: auto;
+  display: block;
+}
 .mode-btn {
   padding: 0 16px; height: 48px;
   font-family: 'Noto Sans JP', sans-serif;
@@ -194,6 +196,29 @@ body {
   line-height: 1.5; margin-bottom: 24px;
   color: var(--navy); letter-spacing: 0.02em;
 }
+.article-mode-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.article-mode-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--text2);
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.15s;
+}
+.article-mode-btn.active {
+  background: var(--teal-bg);
+  border-color: var(--teal);
+  color: var(--teal-d);
+  font-weight: 700;
+}
 
 .article-body p {
   color: #3a3a3a; margin-bottom: 18px;
@@ -225,15 +250,16 @@ body {
   border-top: 1px solid var(--border);
   padding: 14px 20px;
   display: flex; align-items: center;
-  justify-content: flex-start; gap: 20px;
+  justify-content: center; gap: 20px;
   box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
 }
-.cta-sticky .btn-primary { margin-left: auto; }
+.cta-sticky .btn-primary { margin-left: 0; }
 .cta-sticky-text strong {
   font-size: 13px; font-weight: 700;
   color: var(--navy); display: block; margin-bottom: 2px;
 }
 .cta-sticky-text span { font-size: 11px; color: var(--text2); }
+.cta-sticky-text { text-align: center; }
 
 /* =============================================
    P2: EMPATHY INPUT
@@ -366,6 +392,7 @@ body {
   font-family: 'Noto Serif JP', serif;
   font-size: 15px; line-height: 1.9;
   color: rgba(255,255,255,0.9);
+  white-space: pre-line;
 }
 
 /* Bridge */
@@ -573,9 +600,12 @@ body {
   border-bottom: 1px solid rgba(255,255,255,0.07);
 }
 .admin-brand-title {
-  font-family: 'Noto Serif JP', serif;
-  font-size: 14px; font-weight: 700;
-  color: #fff; margin-bottom: 2px;
+  margin-bottom: 4px;
+}
+.admin-brand-title img {
+  height: 22px;
+  width: auto;
+  display: block;
 }
 .admin-brand-sub {
   font-family: 'JetBrains Mono', monospace;
@@ -876,7 +906,7 @@ body {
 
 <!-- ===== MODE BAR ===== -->
 <div class="mode-bar">
-  <div class="mode-brand">ソコナラ<span>.</span></div>
+  <div class="mode-brand"><img src="https://drive.google.com/uc?export=view&id=1l2gvCBN_X8uHjfFEldElIc2qYvwBvT-D" alt="ソコナラ"></div>
   <button class="mode-btn active" id="mb-company" onclick="switchMode('user',this,'company')">経営者一覧</button>
   <button class="mode-btn" id="mb-project" onclick="switchMode('user',this,'project')">プロジェクト</button>
   <button class="mode-btn" onclick="switchMode('admin',this,'')">管理画面</button>
@@ -918,6 +948,10 @@ body {
         <span class="article-tag navy">福岡・博多</span>
         <span class="article-tag navy">製造業 × DX</span>
       </div>
+      <div class="article-mode-toggle">
+        <button class="article-mode-btn active" id="articleModeSimple" onclick="setArticleMode('simple')">簡易版 400-800字</button>
+        <button class="article-mode-btn" id="articleModeFull" onclick="setArticleMode('full')">上位版 最大3000字</button>
+      </div>
       <h1 class="article-title" id="p1ArticleTitle">「継ぐ」ではなく「変える」ために<br>この会社に残った</h1>
       <div class="article-body" id="p1ArticleBody">
         <p>父から会社を継ぐ話が出たのは、僕が37歳のときだった。当時は東京の商社で働いていて、正直、地元に帰ることへの抵抗があった。「地方の中小企業に戻って何ができるのか」という漠然とした不安と、「自分の人生はここで終わっていいのか」という焦りが混在していた。</p>
@@ -930,8 +964,7 @@ body {
 
     <div class="cta-sticky">
       <div class="cta-sticky-text">
-        <strong>刺さった言葉はありましたか？</strong>
-        <span>30秒で入力すると、あなたの価値観を返します</span>
+        <strong>刺さった言葉を選ぶだけ。あなたの価値観が見えてきます</strong>
       </div>
       <button class="btn-primary" onclick="goScreen('p2')">入力する →</button>
     </div>
@@ -1146,7 +1179,7 @@ body {
     <!-- Sidebar -->
     <aside class="admin-sidebar">
       <div class="admin-sidebar-brand">
-        <div class="admin-brand-title">ソコナラ</div>
+        <div class="admin-brand-title"><img src="https://drive.google.com/uc?export=view&id=1l2gvCBN_X8uHjfFEldElIc2qYvwBvT-D" alt="ソコナラ"></div>
         <div class="admin-brand-sub">Admin Dashboard</div>
       </div>
       <div class="admin-nav">
@@ -1237,7 +1270,7 @@ const SAMPLE_P1 = {
 };
 
 // ===== STATE =====
-const S = { q1:'', q2:[], q3:'', free:'', fb:null, screen:'p1', mode:'user', adminTab:'dash' };
+const S = { q1:'', q2:[], q3:'', free:'', fb:null, screen:'p1', mode:'user', adminTab:'dash', articleMode:'simple' };
 const SCREENS = ['p1','p2','p3','p4','p5'];
 const PROG = {p1:20,p2:40,p3:60,p4:80,p5:100};
 
@@ -1307,6 +1340,29 @@ function renderMarkdownArticle(md){
   return out.join('');
 }
 
+function trimArticleByChars(text, maxChars){
+  const src = String(text || '').trim();
+  if(!src || src.length <= maxChars) return src;
+  let cut = src.slice(0, maxChars);
+  const lastBreak = Math.max(cut.lastIndexOf('。'), cut.lastIndexOf('\n'));
+  if(lastBreak > Math.floor(maxChars * 0.7)) cut = cut.slice(0, lastBreak + 1);
+  return `${cut}…`;
+}
+
+function getBodyByMode(body){
+  const full = trimArticleByChars(body, 3000);
+  if(S.articleMode === 'full') return full;
+  const simple = trimArticleByChars(full, 800);
+  return simple.length < 400 ? trimArticleByChars(full, 400) : simple;
+}
+
+function setArticleMode(mode){
+  S.articleMode = mode === 'full' ? 'full' : 'simple';
+  document.getElementById('articleModeSimple')?.classList.toggle('active', S.articleMode === 'simple');
+  document.getElementById('articleModeFull')?.classList.toggle('active', S.articleMode === 'full');
+  renderP1FromCompany();
+}
+
 function renderCeoAvatar(el, ceoName, color, photoUrl){
   if(!el) return;
   const ini = (ceoName || '').trim().charAt(0) || '人';
@@ -1356,7 +1412,7 @@ function renderP1FromCompany(){
   }
   if(bd){
     const quoteHtml = quote ? `<div class="article-quote"><p>「${escapeHtml(quote)}」</p></div>` : '';
-    bd.innerHTML = `${quoteHtml}${renderMarkdownArticle(body)}`;
+    bd.innerHTML = `${quoteHtml}${renderMarkdownArticle(getBodyByMode(body))}`;
   }
   renderCeoAvatar(av, ceo, color, photoUrl);
 }
@@ -1426,7 +1482,11 @@ async function genFeedback() {
 
   const sys = `あなたは地域キャリアカウンセラーです。ユーザーの共感入力をもとに価値観と次の一歩を言語化してください。
 以下のJSON形式のみで返答してください（前置き・コードブロック不要）:
-{"values":["価値観1","価値観2","価値観3"],"message":"2〜3文の語りかけメッセージ。","bridge":"この経営者との接点理由1文（40字以内）"}`;
+{"values":["価値観1","価値観2","価値観3"],"messageLines":["1行目","2行目","3行目","4行目","5行目","6行目","7行目","8行目","9行目","10行目以上"],"bridge":"この経営者との接点理由1文（40字以内）"}
+条件:
+- messageLinesは10〜12行
+- 各行は20〜45字
+- 押し付けず、共感と提案のバランスを保つ`;
 
   const usr = `経営者：田中 誠一郎（株式会社タナカ精工 / アトツギ・製造業DX）
 刺さった言葉：「${S.q1}」
@@ -1446,7 +1506,22 @@ ${S.free ? '自由記述：'+S.free : ''}`;
     S.fb = fb;
     showFeedback(fb);
   } catch {
-    const fb = {values:['変革への意志','共鳴力','地に足をつけた挑戦'],message:'あなたは、スキルや条件よりも「なぜやるのか」という本質に共鳴できる人です。今いる場所の外に答えを探しているのかもしれません。あなたが本当に求めているのは「変えていく仲間」ではないでしょうか。',bridge:'あなたの「変革への共鳴」が、田中さんの求める仲間像と重なります'};
+    const fb = {
+      values:['変革への意志','共鳴力','地に足をつけた挑戦'],
+      messageLines:[
+        'あなたの反応からは、変化に向き合う覚悟が見えます。',
+        '条件よりも「なぜやるか」を重視する姿勢が明確です。',
+        '挑戦できる環境を、受け身ではなく選びにいく人です。',
+        '同時に、独りよがりではなく共鳴できる関係を求めています。',
+        'だからこそ、言葉に熱のある経営者に強く惹かれます。',
+        '今は、正解より対話を通じて輪郭を掴む時期かもしれません。',
+        '小さく関わって確かめる進め方が、あなたには合っています。',
+        '壁打ちや副業のような中間的な接点も有効な選択です。',
+        '違和感が少しでもあれば、遠慮なく軌道修正して大丈夫です。',
+        '納得感を大切にしながら、次の一歩を選んでいきましょう。'
+      ],
+      bridge:'あなたの「変革への共鳴」が、田中さんの求める仲間像と重なります'
+    };
     S.fb = fb;
     showFeedback(fb);
   }
@@ -1464,7 +1539,16 @@ function showFeedback(fb) {
     tags.appendChild(t);
     setTimeout(()=>t.classList.add('show'), i*200);
   });
-  document.getElementById('msgText').textContent = fb.message;
+  const lines = Array.isArray(fb.messageLines) ? fb.messageLines.filter(Boolean) : [];
+  const normalized = lines.length >= 10
+    ? lines.slice(0, 12)
+    : String(fb.message || '')
+        .split(/[。！？]\s*/)
+        .map(s=>s.trim())
+        .filter(Boolean)
+        .flatMap(s=>s.length > 45 ? [s.slice(0,45), s.slice(45)] : [s])
+        .slice(0,10);
+  document.getElementById('msgText').textContent = normalized.join('\n');
   setTimeout(()=>document.getElementById('msgBlock').classList.add('show'), 550);
   document.getElementById('bridgeText').textContent = fb.bridge;
   setTimeout(()=>document.getElementById('bridgeBlock').classList.add('show'), 850);
