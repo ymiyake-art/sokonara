@@ -164,6 +164,9 @@ body {
   font-family: 'Noto Serif JP', serif;
   font-size: 14px; font-weight: 700; color: #fff;
   flex-shrink: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 .ceo-nav-name { font-size: 13px; font-weight: 700; }
 .ceo-nav-co   { font-size: 11px; color: var(--text2); }
@@ -193,8 +196,14 @@ body {
 }
 
 .article-body p {
-  color: var(--text2); margin-bottom: 18px;
+  color: #3a3a3a; margin-bottom: 18px;
   font-size: 14px; line-height: 1.9; font-weight: 300;
+}
+.article-body img {
+  width: 100%;
+  border-radius: 4px;
+  margin: 16px 0;
+  display: block;
 }
 .article-quote {
   border-left: 3px solid var(--teal);
@@ -887,23 +896,23 @@ body {
   <!-- P1 -->
   <div id="p1" class="screen active">
     <div class="content-nav">
-      <div class="ceo-avatar-sm">田</div>
+      <div class="ceo-avatar-sm" id="p1Avatar">田</div>
       <div>
-        <div class="ceo-nav-name">田中 誠一郎</div>
-        <div class="ceo-nav-co">株式会社タナカ精工</div>
+        <div class="ceo-nav-name" id="p1CeoName">田中 誠一郎</div>
+        <div class="ceo-nav-co" id="p1CompanyName">株式会社タナカ精工</div>
       </div>
       <div class="read-progress" id="readPct">0%</div>
     </div>
 
     <div class="article-wrap" id="articleBody" onscroll="updateRead()">
-      <div class="article-tags">
+      <div class="article-tags" id="p1Tags">
         <span class="article-tag">壁打ち歓迎</span>
         <span class="article-tag">副業OK</span>
         <span class="article-tag navy">福岡・博多</span>
         <span class="article-tag navy">製造業 × DX</span>
       </div>
-      <h1 class="article-title">「継ぐ」ではなく「変える」ために<br>この会社に残った</h1>
-      <div class="article-body">
+      <h1 class="article-title" id="p1ArticleTitle">「継ぐ」ではなく「変える」ために<br>この会社に残った</h1>
+      <div class="article-body" id="p1ArticleBody">
         <p>父から会社を継ぐ話が出たのは、僕が37歳のときだった。当時は東京の商社で働いていて、正直、地元に帰ることへの抵抗があった。「地方の中小企業に戻って何ができるのか」という漠然とした不安と、「自分の人生はここで終わっていいのか」という焦りが混在していた。</p>
         <div class="article-quote"><p>「変えたいものがある人間にとって、"古い会社"ほど面白いフィールドはない」</p></div>
         <p>承継から5年。今うちの会社では、製造ラインの7割がデータで可視化され、受注から出荷まで半自動化された。でもそれより大きな変化は「社員が自分で考えるようになったこと」だと思っている。</p>
@@ -1204,6 +1213,16 @@ const Q2_DIST = [
   {label:'自己理解を深めたい',count:12,pct:29},
 ];
 
+const SAMPLE_P1 = {
+  company: '株式会社タナカ精工',
+  ceo: '田中 誠一郎',
+  title: '「継ぐ」ではなく「変える」ために\nこの会社に残った',
+  quote: '変えたいものがある人間にとって、"古い会社"ほど面白いフィールドはない',
+  body: '父から会社を継ぐ話が出たのは、僕が37歳のときだった。当時は東京の商社で働いていて、正直、地元に帰ることへの抵抗があった。「地方の中小企業に戻って何ができるのか」という漠然とした不安と、「自分の人生はここで終わっていいのか」という焦りが混在していた。\n\n承継から5年。今うちの会社では、製造ラインの7割がデータで可視化され、受注から出荷まで半自動化された。でもそれより大きな変化は「社員が自分で考えるようになったこと」だと思っている。\n\n正直に言えば、一緒に変えてくれる人間が圧倒的に足りない。求人票に書けるスキル要件なんてない。必要なのは、「なぜ変えるのか」に共鳴できる人間だと思っている。\n\n壁打ち相手も、副業で関わってくれる人も、本気で転職を考えている人も、全部歓迎したい。まず話しましょう。',
+  tags: ['壁打ち歓迎', '副業OK', '福岡・博多', '製造業 × DX'],
+  photoUrl: '',
+};
+
 // ===== STATE =====
 const S = { q1:'', q2:[], q3:'', free:'', fb:null, screen:'p1', mode:'user', adminTab:'dash' };
 const SCREENS = ['p1','p2','p3','p4','p5'];
@@ -1235,7 +1254,7 @@ const PJ_SAMPLES=[
 ];
 const PJ_TYPE={wall:{label:'壁打ち 60分',badgeClass:'tb-wall',accentClass:'wall'},short:{label:'短期PJ',badgeClass:'tb-short',accentClass:'short'},hire:{label:'採用含み',badgeClass:'tb-hire',accentClass:'hire'}};
 let pjFilter='all'; let curPj=null;
-function getAllPj(){try{const stored=JSON.parse(localStorage.getItem('sn_projects')||'[]');const cos=JSON.parse(localStorage.getItem('sn_companies')||'[]');const tmap={walluchi:'wall',short_pj:'short',hire:'hire'};const fromAdmin=stored.map(p=>{const co=cos.find(c=>c.id===p.companyId);return{id:p.id,title:p.title,type:tmap[p.type]||p.type,coType:p.coType||'successor',company:co?co.name:null,ceo:co?co.ceo:null,anonymous:!p.companyId,duration:p.duration||'',created:p.created,desc:p.desc,q1:p.q1||[]};});return fromAdmin.length>0?[...fromAdmin,...PJ_SAMPLES]:PJ_SAMPLES;}catch{return PJ_SAMPLES;}}
+function getAllPj(){try{const stored=JSON.parse(localStorage.getItem('sn_projects')||'[]');const cos=JSON.parse(localStorage.getItem('sn_companies')||'[]');const tmap={walluchi:'wall',short_pj:'short',hire:'hire'};const cmap={new_biz_lead:'new_biz',new_biz:'new_biz',successor:'successor'};const fromAdmin=stored.map(p=>{const co=cos.find(c=>c.id===p.companyId);return{id:p.id,title:p.title,type:tmap[p.type]||p.type,coType:cmap[p.coType]||p.coType||'successor',company:co?co.name:null,ceo:co?co.ceo:null,anonymous:!p.companyId,duration:p.duration||'',created:p.created,desc:p.desc,q1:p.q1||[]};});return fromAdmin.length>0?[...fromAdmin,...PJ_SAMPLES]:PJ_SAMPLES;}catch{return PJ_SAMPLES;}}
 function setPjFilter(f,btn){pjFilter=f;document.querySelectorAll('.pj-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderPjList();}
 function renderPjList(){const all=getAllPj();const filtered=pjFilter==='all'?all:pjFilter==='wall'?all.filter(p=>p.type==='wall'):pjFilter==='short'?all.filter(p=>p.type==='short'):pjFilter==='hire'?all.filter(p=>p.type==='hire'):pjFilter==='successor'?all.filter(p=>p.coType==='successor'):all.filter(p=>p.coType==='new_biz');const el=document.getElementById('pjListBody');if(!el)return;if(filtered.length===0){el.innerHTML='<div style="text-align:center;padding:48px;background:var(--white);border:1px solid var(--border);border-radius:2px;font-size:13px;color:var(--text2);">該当するプロジェクトがありません</div>';return;}const suc=pjFilter==='all'?filtered.filter(p=>p.coType==='successor'):filtered;const nbiz=pjFilter==='all'?filtered.filter(p=>p.coType==='new_biz'):[];let html='';if(pjFilter==='all'){if(suc.length>0)html+=`<div class="pj-section-lbl">後継者・アトツギ（${suc.length}件）</div>${suc.map(pjCard).join('')}`;if(nbiz.length>0)html+=`<div class="pj-section-lbl" style="margin-top:24px">新規事業責任者（${nbiz.length}件）</div>${nbiz.map(pjCard).join('')}`;}else{html=filtered.map(pjCard).join('');}el.innerHTML=html;}
 function pjCard(p){const tc=PJ_TYPE[p.type]||PJ_TYPE.wall;const coLabel=p.anonymous?'企業名非公開':p.company||'';return `<div class="pj-card" onclick="openPj('${p.id}')"><div class="pj-accent ${tc.accentClass}"></div><div class="pj-card-inner"><span class="pj-type-badge ${tc.badgeClass}">${tc.label}</span><div class="pj-title">${p.title}</div><div class="pj-meta">${[coLabel,p.ceo&&!p.anonymous?p.ceo:'',p.duration,p.created].filter(Boolean).join(' · ')}</div><div class="pj-desc-preview">${p.desc.slice(0,70)}…</div></div></div>`;}
@@ -1244,6 +1263,90 @@ function showPjScreen(id){['pj-list','pj-detail','pj-apply','pj-complete'].forEa
 function openPjApply(){if(!curPj)return;document.getElementById('pjApplyTitle').textContent=curPj.title;document.getElementById('pjApplyChips').innerHTML=(curPj.q1||[]).map(q=>`<div class="pj-chip" onclick="pickPjChip(this)"><div class="pj-chip-check">✓</div><span>${q}</span></div>`).join('');document.getElementById('pjSubmitBtn').disabled=true;showPjScreen('pj-apply');document.getElementById('pjCtaBar').style.display='none';window.scrollTo(0,0);}
 function pickPjChip(el){document.querySelectorAll('.pj-chip').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');document.getElementById('pjSubmitBtn').disabled=false;}
 function submitPjApply(){showPjScreen('pj-complete');window.scrollTo(0,0);}
+
+// ===== COMPANY ARTICLE (P1) =====
+function escapeHtml(s){
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function renderMarkdownArticle(md){
+  const src = String(md || '').trim();
+  if(!src) return '';
+  const out = [];
+  const imgRe = /!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g;
+  let last = 0;
+  let m;
+  const pushText = (txt)=>{
+    const t = txt.trim();
+    if(!t) return;
+    t.split(/\n{2,}/).forEach(block=>{
+      const b = block.trim();
+      if(!b) return;
+      out.push(`<p>${escapeHtml(b).replace(/\n/g,'<br>')}</p>`);
+    });
+  };
+  while((m = imgRe.exec(src)) !== null){
+    pushText(src.slice(last, m.index));
+    out.push(`<img src="${escapeHtml(m[2])}" alt="${escapeHtml(m[1])}">`);
+    last = m.index + m[0].length;
+  }
+  pushText(src.slice(last));
+  return out.join('');
+}
+
+function renderCeoAvatar(el, ceoName, color, photoUrl){
+  if(!el) return;
+  const ini = (ceoName || '').trim().charAt(0) || '人';
+  if(photoUrl){
+    el.style.backgroundImage = `url("${photoUrl}")`;
+    el.style.backgroundColor = color || 'var(--navy)';
+    el.textContent = '';
+  }else{
+    el.style.backgroundImage = 'none';
+    el.style.backgroundColor = color || 'var(--navy)';
+    el.textContent = ini;
+  }
+}
+
+function loadPrimaryCompany(){
+  try{
+    const stored = JSON.parse(localStorage.getItem('sn_companies') || '[]');
+    if(Array.isArray(stored) && stored.length > 0){
+      return stored[stored.length - 1];
+    }
+  }catch{}
+  return SAMPLE_P1;
+}
+
+function renderP1FromCompany(){
+  const co = loadPrimaryCompany();
+  const ceo = co.ceo || SAMPLE_P1.ceo;
+  const company = co.name || co.company || SAMPLE_P1.company;
+  const title = co.title || SAMPLE_P1.title;
+  const quote = co.quote || '';
+  const body = co.body || SAMPLE_P1.body;
+  const tags = (Array.isArray(co.tags) && co.tags.length > 0) ? co.tags : SAMPLE_P1.tags;
+  const photoUrl = co.photoUrl || '';
+  const color = co.color || 'var(--navy)';
+
+  const nm = document.getElementById('p1CeoName');
+  const cn = document.getElementById('p1CompanyName');
+  const tt = document.getElementById('p1ArticleTitle');
+  const tg = document.getElementById('p1Tags');
+  const bd = document.getElementById('p1ArticleBody');
+  const av = document.getElementById('p1Avatar');
+  if(nm) nm.textContent = ceo;
+  if(cn) cn.textContent = company;
+  if(tt) tt.innerHTML = escapeHtml(title).replace(/\n/g,'<br>');
+  if(tg){
+    tg.innerHTML = tags.map((t,i)=>`<span class="article-tag${i >= 2 ? ' navy' : ''}">${escapeHtml(t)}</span>`).join('');
+  }
+  if(bd){
+    const quoteHtml = quote ? `<div class="article-quote"><p>「${escapeHtml(quote)}」</p></div>` : '';
+    bd.innerHTML = `${quoteHtml}${renderMarkdownArticle(body)}`;
+  }
+  renderCeoAvatar(av, ceo, color, photoUrl);
+}
 
 // ===== SCREEN NAV =====
 function goScreen(id) {
@@ -1677,6 +1780,7 @@ function resetAll(){
 
 // init admin
 renderDash();
+renderP1FromCompany();
 </script>
 </body>
 </html>

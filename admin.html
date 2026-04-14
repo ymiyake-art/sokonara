@@ -199,6 +199,12 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
         <div class="nav-item" id="ni-contacts" onclick="switchTab('contacts')"><div class="nav-dot" style="background:var(--warm)"></div>接点候補</div>
         <div class="nav-item" id="ni-report" onclick="switchTab('report')"><div class="nav-dot" style="background:var(--navy)"></div>AIレポート</div>
       </div>
+      <div class="admin-nav" style="border-top:1px solid rgba(255,255,255,0.07);padding-top:12px;">
+        <div class="admin-nav-label">登録・管理</div>
+        <div class="nav-item" id="ni-addco" onclick="switchTab('addco')"><div class="nav-dot" style="background:#9b59b6"></div>企業登録</div>
+        <div class="nav-item" id="ni-addpj" onclick="switchTab('addpj')"><div class="nav-dot" style="background:#27ae60"></div>プロジェクト登録</div>
+        <div class="nav-item" id="ni-colist" onclick="switchTab('colist')"><div class="nav-dot" style="background:var(--teal)"></div>掲載企業一覧</div>
+      </div>
       <div class="co-items">
         <div class="admin-nav-label" style="padding:0 16px 6px">掲載企業</div>
         <div class="co-item"><div class="co-av" style="background:#555">全</div><div class="co-nm">全社まとめ</div></div>
@@ -249,7 +255,7 @@ let curTab='dash';
 
 function checkPass(){
   const v=document.getElementById('gate-input').value;
-  if(v==='Mycore123'){
+  if(v==='soconara2024'){
     document.getElementById('gate').style.display='none';
     document.getElementById('topbar').style.display='flex';
     document.getElementById('shell').style.display='block';
@@ -276,9 +282,9 @@ function switchTab(tab){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const ni=document.getElementById('ni-'+tab);
   if(ni) ni.classList.add('active');
-  const titles={dash:'ダッシュボード',reactions:'反応一覧',contacts:'接点候補リスト',report:'AIレポート生成'};
+  const titles={dash:'ダッシュボード',reactions:'反応一覧',contacts:'接点候補リスト',report:'AIレポート生成',addco:'企業登録',addpj:'プロジェクト登録',colist:'掲載企業一覧'};
   document.getElementById('tabTitle').textContent=titles[tab]||tab;
-  const fns={dash:renderDash,reactions:renderReactions,contacts:renderContacts,report:renderReport};
+  const fns={dash:renderDash,reactions:renderReactions,contacts:renderContacts,report:renderReport,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList};
   fns[tab]?.();
 }
 
@@ -504,6 +510,342 @@ function toast(msg){
   const t=document.getElementById('toastEl');
   t.textContent=msg;t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+// ===== STORAGE HELPERS =====
+function loadCompanies(){
+  try{ return JSON.parse(localStorage.getItem('sn_companies')||'[]'); }catch{ return []; }
+}
+function saveCompanies(arr){ localStorage.setItem('sn_companies',JSON.stringify(arr)); }
+function loadProjects(){
+  try{ return JSON.parse(localStorage.getItem('sn_projects')||'[]'); }catch{ return []; }
+}
+function saveProjects(arr){ localStorage.setItem('sn_projects',JSON.stringify(arr)); }
+
+// ===== 企業登録 =====
+function renderAddCo(){
+  document.getElementById('adminContent').innerHTML=`
+    <div style="padding:24px;max-width:700px">
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;overflow:hidden;margin-bottom:20px">
+        <div style="padding:14px 18px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px">
+          <span style="background:#9b59b6;color:#fff;font-size:9px;padding:2px 8px;border-radius:2px;font-family:'JetBrains Mono',monospace">NEW</span>
+          企業・経営者を登録する
+        </div>
+        <div style="padding:20px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+            <div>
+              <div style="font-size:11px;color:var(--text2);margin-bottom:5px">会社名 <span style="color:var(--hot)">*</span></div>
+              <input id="co-name" type="text" placeholder="例：株式会社タナカ精工" style="${inp()}">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--text2);margin-bottom:5px">経営者名 <span style="color:var(--hot)">*</span></div>
+              <input id="co-ceo" type="text" placeholder="例：田中 誠一郎" style="${inp()}">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+            <div>
+              <div style="font-size:11px;color:var(--text2);margin-bottom:5px">企業タイプ <span style="color:var(--hot)">*</span></div>
+              <select id="co-type" style="${inp()}">
+                <option value="successor">後継者・アトツギ</option>
+                <option value="second_founding">第二創業・変革期</option>
+                <option value="new_biz">新規事業責任者</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--text2);margin-bottom:5px">契約プラン</div>
+              <select id="co-plan" style="${inp()}">
+                <option value="light">Light（5万・アプリのみ）</option>
+                <option value="standard">Standard（10万・Studio含む）</option>
+                <option value="referral">紹介のみ</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-bottom:14px">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">経営者写真URL（任意）</div>
+            <input id="co-photo-url" type="url" placeholder="例：https://example.com/ceo.jpg" style="${inp()}">
+          </div>
+          <div style="margin-bottom:14px">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">タグ（カンマ区切り）</div>
+            <input id="co-tags" type="text" placeholder="例：壁打ち歓迎, 副業OK, 福岡, 製造業DX" style="${inp()}">
+          </div>
+          <div style="margin-bottom:14px">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">記事タイトル <span style="color:var(--hot)">*</span></div>
+            <input id="co-title" type="text" placeholder="例：「継ぐ」ではなく「変える」ためにこの会社に残った" style="${inp()}">
+          </div>
+          <div style="margin-bottom:14px">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">引用フレーズ（一番刺さる一言）<span style="color:var(--hot)">*</span></div>
+            <input id="co-quote" type="text" placeholder="例：変えたいものがある人間に、古い会社ほど面白いフィールドはない" style="${inp()}">
+          </div>
+          <div style="margin-bottom:14px">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">記事本文（400〜800字）<span style="color:var(--hot)">*</span></div>
+            <textarea id="co-body" rows="12" placeholder="Markdownで入力できます。段落ごとに改行を空け、画像は ![説明](URL) 形式で差し込めます。" style="${inp()}resize:vertical;"></textarea>
+          </div>
+          <div style="margin-bottom:6px">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:8px">Q1 選択肢（刺さった言葉 4択）<span style="color:var(--hot)">*</span></div>
+            ${[1,2,3,4].map(i=>`
+              <div style="margin-bottom:6px">
+                <input id="co-q${i}" type="text" placeholder="選択肢${i}" style="${inp()}">
+              </div>
+            `).join('')}
+          </div>
+          <div style="margin-bottom:20px">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">成果報酬フィー（%）</div>
+            <input id="co-fee" type="number" placeholder="例：25" style="${inp()}width:120px;">
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <button onclick="saveCo()" style="padding:11px 24px;background:var(--teal);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">登録する</button>
+            <button onclick="genCoArticle()" style="padding:11px 20px;background:var(--navy);color:#fff;border:none;font-size:12px;font-weight:500;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">✦ AIで記事を生成</button>
+            <span style="font-size:11px;color:var(--text2)">記事タイトル・引用・本文をAIが自動生成します</span>
+          </div>
+          <div id="co-ai-result" style="display:none;margin-top:16px;background:var(--navy);color:rgba(255,255,255,0.85);padding:16px;border-radius:2px;font-size:12px;line-height:1.8"></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function inp(){return `width:100%;padding:9px 12px;font-size:12px;font-family:'Noto Sans JP',sans-serif;border:1px solid var(--border);border-radius:2px;outline:none;background:var(--white);color:var(--text);`;}
+
+function saveCo(){
+  const name=document.getElementById('co-name').value.trim();
+  const ceo=document.getElementById('co-ceo').value.trim();
+  const title=document.getElementById('co-title').value.trim();
+  const quote=document.getElementById('co-quote').value.trim();
+  const body=document.getElementById('co-body').value.trim();
+  if(!name||!ceo||!title||!body){ toast('必須項目を入力してください'); return; }
+  const q1=[1,2,3,4].map(i=>document.getElementById('co-q'+i).value.trim()).filter(Boolean);
+  const co={
+    id:'co_'+Date.now(),
+    name,ceo,
+    photoUrl:document.getElementById('co-photo-url').value.trim(),
+    type:document.getElementById('co-type').value,
+    plan:document.getElementById('co-plan').value,
+    tags:document.getElementById('co-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    title,quote,body,q1,
+    fee:document.getElementById('co-fee').value||'',
+    status:'active',
+    created:new Date().toLocaleDateString('ja-JP'),
+    reactions:0,cta:0
+  };
+  const arr=loadCompanies();
+  arr.push(co);
+  saveCompanies(arr);
+  toast(`「${name}」を登録しました`);
+  setTimeout(()=>switchTab('colist'),800);
+}
+
+async function genCoArticle(){
+  const name=document.getElementById('co-name').value.trim();
+  const ceo=document.getElementById('co-ceo').value.trim();
+  const type=document.getElementById('co-type').value;
+  const hint=document.getElementById('co-body').value.trim();
+  if(!name||!ceo){ toast('会社名と経営者名を入力してからAI生成してください'); return; }
+  const btn=document.querySelector('button[onclick="genCoArticle()"]');
+  btn.textContent='生成中...'; btn.disabled=true;
+  const result=document.getElementById('co-ai-result');
+  result.style.display='block';
+  result.innerHTML='<div class="ai-load" style="height:40px"></div>';
+  const typeLabel={successor:'後継者・アトツギ',second_founding:'第二創業',new_biz:'新規事業責任者'}[type]||type;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,
+        messages:[{role:'user',content:`ソコナラ（地域キャリア共創プラットフォーム）のMVPアプリ用経営者記事を生成してください。
+
+会社名：${name}
+経営者名：${ceo}
+タイプ：${typeLabel}
+ヒント・背景情報：${hint||'特になし'}
+
+以下のJSON形式のみで返答してください（前置き・コードブロック不要）：
+{"title":"記事タイトル（20〜30字）","quote":"一番刺さるフレーズ（30〜50字）","body":"記事本文（400〜600字）","q1":["選択肢1","選択肢2","選択肢3","選択肢4"]}`}]})});
+    const d=await res.json();
+    const m=d.content[0].text.match(/\{[\s\S]*\}/);
+    if(m){
+      const p=JSON.parse(m[0]);
+      document.getElementById('co-title').value=p.title||'';
+      document.getElementById('co-quote').value=p.quote||'';
+      document.getElementById('co-body').value=p.body||'';
+      [1,2,3,4].forEach((i,idx)=>{ const el=document.getElementById('co-q'+i); if(el) el.value=p.q1?.[idx]||''; });
+      result.innerHTML='<span style="color:var(--teal);font-size:11px">✓ AI生成完了。内容を確認して「登録する」を押してください。</span>';
+    }
+  }catch{
+    result.innerHTML='<span style="color:rgba(255,100,100,0.8);font-size:11px">生成に失敗しました。手動で入力してください。</span>';
+  }
+  btn.textContent='✦ AIで記事を生成'; btn.disabled=false;
+}
+
+// ===== プロジェクト登録 =====
+function renderAddPj(){
+  const cos=loadCompanies();
+  document.getElementById('adminContent').innerHTML=`
+    <div style="padding:24px;max-width:700px">
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;overflow:hidden">
+        <div style="padding:14px 18px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px">
+          <span style="background:#27ae60;color:#fff;font-size:9px;padding:2px 8px;border-radius:2px;font-family:'JetBrains Mono',monospace">NEW</span>
+          プロジェクトを登録する
+        </div>
+        <div style="padding:20px">
+          <div style="margin-bottom:14px">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">プロジェクトタイトル <span style="color:var(--hot)">*</span></div>
+            <input id="pj-title" type="text" placeholder="例：製造業DX推進の壁打ち相手を探しています" style="${inp()}">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+            <div>
+              <div style="font-size:11px;color:var(--text2);margin-bottom:5px">プロジェクト種別 <span style="color:var(--hot)">*</span></div>
+              <select id="pj-type" style="${inp()}">
+                <option value="walluchi">壁打ち（60分）</option>
+                <option value="short_pj">短期PJ（1〜4週）</option>
+                <option value="hire">採用含み</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--text2);margin-bottom:5px">企業タイプ</div>
+              <select id="pj-cotype" style="${inp()}">
+                <option value="successor">後継者・アトツギ</option>
+                <option value="new_biz">新規事業責任者</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+            <div>
+              <div style="font-size:11px;color:var(--text2);margin-bottom:5px">紐づく企業（任意）</div>
+              <select id="pj-co" style="${inp()}">
+                <option value="">匿名・社名非公開</option>
+                ${cos.map(c=>`<option value="${c.id}">${c.name}（${c.ceo}）</option>`).join('')}
+              </select>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--text2);margin-bottom:5px">期間・頻度</div>
+              <input id="pj-duration" type="text" placeholder="例：月2回・60分 / 3週間" style="${inp()}">
+            </div>
+          </div>
+          <div style="margin-bottom:14px">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">プロジェクト概要 <span style="color:var(--hot)">*</span></div>
+            <textarea id="pj-desc" rows="5" placeholder="どんな課題があり、どんな人と話したいか・何をしてほしいかを書いてください" style="${inp()}resize:vertical;"></textarea>
+          </div>
+          <div style="margin-bottom:14px">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:8px">刺さりポイント選択肢（3〜4択）</div>
+            ${[1,2,3,4].map(i=>`
+              <div style="margin-bottom:6px">
+                <input id="pj-q${i}" type="text" placeholder="刺さりポイント${i}（任意）" style="${inp()}">
+              </div>
+            `).join('')}
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <button onclick="savePj()" style="padding:11px 24px;background:#27ae60;color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">登録する</button>
+            <span style="font-size:11px;color:var(--text2)">登録後すぐにindex.htmlの一覧に反映されます</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function savePj(){
+  const title=document.getElementById('pj-title').value.trim();
+  const desc=document.getElementById('pj-desc').value.trim();
+  if(!title||!desc){ toast('必須項目を入力してください'); return; }
+  const q1=[1,2,3,4].map(i=>document.getElementById('pj-q'+i).value.trim()).filter(Boolean);
+  const pj={
+    id:'pj_'+Date.now(),
+    title,
+    type:document.getElementById('pj-type').value,
+    coType:document.getElementById('pj-cotype').value,
+    companyId:document.getElementById('pj-co').value||null,
+    duration:document.getElementById('pj-duration').value.trim(),
+    desc,q1,
+    status:'active',
+    created:new Date().toLocaleDateString('ja-JP'),
+    reactions:0
+  };
+  const arr=loadProjects();
+  arr.push(pj);
+  saveProjects(arr);
+  toast(`プロジェクト「${title}」を登録しました`);
+  setTimeout(()=>switchTab('colist'),800);
+}
+
+// ===== 掲載企業一覧 =====
+function renderCoList(){
+  const cos=loadCompanies();
+  const pjs=loadProjects();
+  const typeLabel={successor:'後継者',second_founding:'第二創業',new_biz:'新規事業',light:'Light 5万',standard:'Standard 10万',referral:'紹介のみ'};
+  const pjLabel={walluchi:'壁打ち',short_pj:'短期PJ',hire:'採用含み'};
+
+  document.getElementById('adminContent').innerHTML=`
+    <div style="padding:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-size:13px;color:var(--text2)">${cos.length}社登録済み / プロジェクト${pjs.length}件</div>
+        <div style="display:flex;gap:8px">
+          <button onclick="switchTab('addco')" style="padding:8px 16px;background:var(--teal);color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">＋ 企業を追加</button>
+          <button onclick="switchTab('addpj')" style="padding:8px 16px;background:#27ae60;color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">＋ PJを追加</button>
+        </div>
+      </div>
+
+      ${cos.length===0?`
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;padding:40px;text-align:center">
+          <div style="font-size:13px;color:var(--text2);margin-bottom:12px">まだ企業が登録されていません</div>
+          <button onclick="switchTab('addco')" style="padding:10px 20px;background:var(--teal);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">最初の企業を登録する</button>
+        </div>
+      `:`
+        <div style="margin-bottom:24px">
+          <div style="font-size:11px;color:var(--text2);font-family:'JetBrains Mono',monospace;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:0.5px solid var(--border)">掲載企業</div>
+          ${cos.map(c=>`
+            <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;padding:14px 16px;margin-bottom:8px;display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center">
+              <div style="width:36px;height:36px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0">${c.name[0]}</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:2px">${c.name} <span style="font-size:11px;font-weight:400;color:var(--text2)">/ ${c.ceo}</span></div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+                  <span style="font-size:9px;padding:2px 7px;background:rgba(155,89,182,0.1);color:#9b59b6;border-radius:2px;font-family:'JetBrains Mono',monospace">${typeLabel[c.type]||c.type}</span>
+                  <span style="font-size:9px;padding:2px 7px;background:var(--teal-bg);color:var(--teal-d);border-radius:2px;font-family:'JetBrains Mono',monospace">${typeLabel[c.plan]||c.plan}</span>
+                  ${c.fee?`<span style="font-size:9px;padding:2px 7px;background:rgba(192,52,26,0.07);color:var(--hot);border-radius:2px;font-family:'JetBrains Mono',monospace">成果報酬${c.fee}%</span>`:''}
+                  ${(c.tags||[]).slice(0,3).map(t=>`<span style="font-size:9px;padding:2px 7px;border:1px solid var(--border);color:var(--text2);border-radius:2px">${t}</span>`).join('')}
+                </div>
+              </div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">${c.created}</div>
+              <button onclick="deleteCo('${c.id}')" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border:1px solid var(--border);background:none;cursor:pointer;color:var(--text2);border-radius:2px">削除</button>
+            </div>
+          `).join('')}
+        </div>
+      `}
+
+      ${pjs.length>0?`
+        <div>
+          <div style="font-size:11px;color:var(--text2);font-family:'JetBrains Mono',monospace;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:0.5px solid var(--border)">プロジェクト</div>
+          ${pjs.map(p=>{
+            const coName=p.companyId?cos.find(c=>c.id===p.companyId)?.name||'（不明）':'匿名';
+            return `
+              <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;padding:14px 16px;margin-bottom:8px;display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center">
+                <div style="width:36px;height:36px;border-radius:50%;background:#27ae60;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">${pjLabel[p.type]||'PJ'}</div>
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:2px">${p.title}</div>
+                  <div style="display:flex;gap:6px;margin-top:4px">
+                    <span style="font-size:9px;padding:2px 7px;background:rgba(39,174,96,0.1);color:#27ae60;border-radius:2px;font-family:'JetBrains Mono',monospace">${pjLabel[p.type]||p.type}</span>
+                    <span style="font-size:9px;padding:2px 7px;border:1px solid var(--border);color:var(--text2);border-radius:2px">${coName}</span>
+                    ${p.duration?`<span style="font-size:9px;padding:2px 7px;border:1px solid var(--border);color:var(--text2);border-radius:2px">${p.duration}</span>`:''}
+                  </div>
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">${p.created}</div>
+                <button onclick="deletePj('${p.id}')" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border:1px solid var(--border);background:none;cursor:pointer;color:var(--text2);border-radius:2px">削除</button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `:''}
+    </div>`;
+}
+
+function deleteCo(id){
+  if(!confirm('この企業を削除しますか？')) return;
+  const arr=loadCompanies().filter(c=>c.id!==id);
+  saveCompanies(arr);
+  toast('削除しました');
+  renderCoList();
+}
+function deletePj(id){
+  if(!confirm('このプロジェクトを削除しますか？')) return;
+  const arr=loadProjects().filter(p=>p.id!==id);
+  saveProjects(arr);
+  toast('削除しました');
+  renderCoList();
 }
 </script>
 </body>
