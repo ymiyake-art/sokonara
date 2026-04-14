@@ -1156,13 +1156,19 @@ body {
         <div class="admin-nav-item" onclick="adminTab('contacts',this)"><div class="admin-nav-dot" style="background:var(--warm)"></div>接点候補</div>
         <div class="admin-nav-item" onclick="adminTab('report',this)"><div class="admin-nav-dot" style="background:var(--navy)"></div>AIレポート</div>
       </div>
+      <div class="admin-nav" style="border-top:1px solid rgba(255,255,255,0.07);padding-top:12px;">
+        <div class="admin-nav-label">登録・管理</div>
+        <div class="admin-nav-item" onclick="openAdminPage('addco')"><div class="admin-nav-dot" style="background:#9b59b6"></div>企業登録</div>
+        <div class="admin-nav-item" onclick="openAdminPage('addpj')"><div class="admin-nav-dot" style="background:#27ae60"></div>プロジェクト登録</div>
+        <div class="admin-nav-item" onclick="openAdminPage('colist')"><div class="admin-nav-dot" style="background:var(--teal)"></div>掲載企業一覧</div>
+      </div>
       <div class="admin-companies">
         <div class="admin-nav-label" style="padding:0 16px 6px">掲載企業</div>
-        <div class="admin-co-item"><div class="admin-co-av" style="background:#555">全</div><div class="admin-co-name">全社まとめ</div></div>
-        <div class="admin-co-item"><div class="admin-co-av" style="background:var(--navy)">田</div><div class="admin-co-name">タナカ精工</div><div class="admin-co-badge">3</div></div>
-        <div class="admin-co-item"><div class="admin-co-av" style="background:var(--teal-d)">中</div><div class="admin-co-name">ナカムラフーズ</div><div class="admin-co-badge">1</div></div>
-        <div class="admin-co-item"><div class="admin-co-av" style="background:var(--gray)">吉</div><div class="admin-co-name">吉田建設</div></div>
-        <div class="admin-co-item"><div class="admin-co-av" style="background:#8a6020">林</div><div class="admin-co-name">ハヤシテック</div></div>
+        <div class="admin-co-item" onclick="openAdminPage('colist')"><div class="admin-co-av" style="background:#555">全</div><div class="admin-co-name">全社まとめ</div></div>
+        <div class="admin-co-item" onclick="openAdminPage('colist')"><div class="admin-co-av" style="background:var(--navy)">田</div><div class="admin-co-name">タナカ精工</div><div class="admin-co-badge">3</div></div>
+        <div class="admin-co-item" onclick="openAdminPage('colist')"><div class="admin-co-av" style="background:var(--teal-d)">中</div><div class="admin-co-name">ナカムラフーズ</div><div class="admin-co-badge">1</div></div>
+        <div class="admin-co-item" onclick="openAdminPage('colist')"><div class="admin-co-av" style="background:var(--gray)">吉</div><div class="admin-co-name">吉田建設</div></div>
+        <div class="admin-co-item" onclick="openAdminPage('colist')"><div class="admin-co-av" style="background:#8a6020">林</div><div class="admin-co-name">ハヤシテック</div></div>
       </div>
       <div class="admin-sidebar-foot">2025年7月 第3週<br>次の配信：7月18日</div>
     </aside>
@@ -1528,6 +1534,10 @@ function renderAdminTab(tab) {
   document.getElementById('adminTitle').textContent = titles[tab]||tab;
   const fns = {dash:renderDash, reactions:renderReactions, contacts:renderContacts, report:renderReport};
   fns[tab]?.();
+}
+
+function openAdminPage(tab){
+  window.location.href = `admin.html?tab=${encodeURIComponent(tab || 'dash')}`;
 }
 
 // ===== DASH =====

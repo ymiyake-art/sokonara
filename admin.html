@@ -252,6 +252,15 @@ const EMPATHY=[
   {label:'地方の中小企業こそ賭けられるフィールド',count:5,pct:12},
 ];
 let curTab='dash';
+function getInitialTab(){
+  try{
+    const tab = new URLSearchParams(window.location.search).get('tab');
+    const valid = ['dash','reactions','contacts','report','addco','addpj','colist'];
+    return valid.includes(tab) ? tab : 'dash';
+  }catch{
+    return 'dash';
+  }
+}
 
 function checkPass(){
   const v=document.getElementById('gate-input').value;
@@ -260,7 +269,7 @@ function checkPass(){
     document.getElementById('topbar').style.display='flex';
     document.getElementById('shell').style.display='block';
     localStorage.setItem('snAdmin','ok');
-    renderDash();
+    switchTab(getInitialTab());
   } else {
     document.getElementById('gate-err').style.display='block';
     document.getElementById('gate-input').value='';
@@ -273,7 +282,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('gate').style.display='none';
     document.getElementById('topbar').style.display='flex';
     document.getElementById('shell').style.display='block';
-    renderDash();
+    switchTab(getInitialTab());
   }
 });
 
