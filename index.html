@@ -196,29 +196,28 @@ body {
   line-height: 1.5; margin-bottom: 24px;
   color: var(--navy); letter-spacing: 0.02em;
 }
-.article-mode-toggle {
-  display: flex;
-  gap: 8px;
+.company-intro {
+  border: 1px solid rgba(66,173,159,0.25);
+  background: linear-gradient(180deg, rgba(66,173,159,0.10), rgba(28,42,84,0.03));
+  border-radius: 4px;
+  padding: 14px 16px;
   margin-bottom: 18px;
 }
-.article-mode-btn {
-  font-family: 'JetBrains Mono', monospace;
+.company-intro-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.company-intro-tag {
   font-size: 10px;
-  letter-spacing: 1px;
-  padding: 5px 10px;
-  border: 1px solid var(--border);
-  background: var(--white);
-  color: var(--text2);
-  cursor: pointer;
-  border-radius: 2px;
-  transition: all 0.15s;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(28,42,84,0.18);
+  color: var(--navy);
+  background: rgba(255,255,255,0.7);
 }
-.article-mode-btn.active {
-  background: var(--teal-bg);
-  border-color: var(--teal);
+.company-intro-tag.teal {
+  border-color: rgba(66,173,159,0.35);
   color: var(--teal-d);
-  font-weight: 700;
+  background: rgba(66,173,159,0.12);
 }
+.company-intro-text { font-size: 12px; line-height: 1.8; color: rgba(28,42,84,0.78); white-space: pre-line; }
 
 .article-body p {
   color: #3a3a3a; margin-bottom: 18px;
@@ -906,7 +905,7 @@ body {
 
 <!-- ===== MODE BAR ===== -->
 <div class="mode-bar">
-  <div class="mode-brand"><img src="https://drive.google.com/uc?export=view&id=1l2gvCBN_X8uHjfFEldElIc2qYvwBvT-D" alt="ソコナラ"></div>
+  <div class="mode-brand"><img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ"></div>
   <button class="mode-btn active" id="mb-company" onclick="switchMode('user',this,'company')">経営者一覧</button>
   <button class="mode-btn" id="mb-project" onclick="switchMode('user',this,'project')">プロジェクト</button>
   <button class="mode-btn" onclick="switchMode('admin',this,'')">管理画面</button>
@@ -948,9 +947,9 @@ body {
         <span class="article-tag navy">福岡・博多</span>
         <span class="article-tag navy">製造業 × DX</span>
       </div>
-      <div class="article-mode-toggle">
-        <button class="article-mode-btn active" id="articleModeSimple" onclick="setArticleMode('simple')">簡易版 400-800字</button>
-        <button class="article-mode-btn" id="articleModeFull" onclick="setArticleMode('full')">上位版 最大3000字</button>
+      <div id="companyIntro" class="company-intro" style="display:none">
+        <div class="company-intro-tags" id="companyIntroTags"></div>
+        <div class="company-intro-text" id="companyIntroText"></div>
       </div>
       <h1 class="article-title" id="p1ArticleTitle">「継ぐ」ではなく「変える」ために<br>この会社に残った</h1>
       <div class="article-body" id="p1ArticleBody">
@@ -1179,7 +1178,7 @@ body {
     <!-- Sidebar -->
     <aside class="admin-sidebar">
       <div class="admin-sidebar-brand">
-        <div class="admin-brand-title"><img src="https://drive.google.com/uc?export=view&id=1l2gvCBN_X8uHjfFEldElIc2qYvwBvT-D" alt="ソコナラ"></div>
+        <div class="admin-brand-title"><img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ"></div>
         <div class="admin-brand-sub">Admin Dashboard</div>
       </div>
       <div class="admin-nav">
@@ -1270,7 +1269,7 @@ const SAMPLE_P1 = {
 };
 
 // ===== STATE =====
-const S = { q1:'', q2:[], q3:'', free:'', fb:null, screen:'p1', mode:'user', adminTab:'dash', articleMode:'simple' };
+const S = { q1:'', q2:[], q3:'', free:'', fb:null, screen:'p1', mode:'user', adminTab:'dash' };
 const SCREENS = ['p1','p2','p3','p4','p5'];
 const PROG = {p1:20,p2:40,p3:60,p4:80,p5:100};
 
@@ -1315,9 +1314,18 @@ function escapeHtml(s){
   return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-function renderMarkdownArticle(md){
-  const src = String(md || '').trim();
-  if(!src) return '';
+function stripImageMarkdown(src){
+  return String(src ?? '')
+    .replace(/!\[[^\]]*]\((https?:\/\/[^\s)]+)\)/g,'')
+    .replace(/\n{3,}/g,'\n\n')
+    .trim();
+}
+
+function renderMarkdownArticle(md, opts){
+  const src0 = String(md || '').trim();
+  if(!src0) return '';
+  const allowImages = opts?.allowImages !== false;
+  const src = allowImages ? src0 : stripImageMarkdown(src0);
   const out = [];
   const imgRe = /!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g;
   let last = 0;
@@ -1331,12 +1339,16 @@ function renderMarkdownArticle(md){
       out.push(`<p>${escapeHtml(b).replace(/\n/g,'<br>')}</p>`);
     });
   };
-  while((m = imgRe.exec(src)) !== null){
-    pushText(src.slice(last, m.index));
-    out.push(`<img src="${escapeHtml(m[2])}" alt="${escapeHtml(m[1])}">`);
-    last = m.index + m[0].length;
+  if(allowImages){
+    while((m = imgRe.exec(src)) !== null){
+      pushText(src.slice(last, m.index));
+      out.push(`<img src="${escapeHtml(m[2])}" alt="${escapeHtml(m[1])}">`);
+      last = m.index + m[0].length;
+    }
+    pushText(src.slice(last));
+  }else{
+    pushText(src);
   }
-  pushText(src.slice(last));
   return out.join('');
 }
 
@@ -1349,23 +1361,18 @@ function trimArticleByChars(text, maxChars){
   return `${cut}…`;
 }
 
-function getBodyByMode(body){
-  const full = trimArticleByChars(body, 3000);
-  if(S.articleMode === 'full') return full;
-  const simple = trimArticleByChars(full, 800);
-  return simple.length < 400 ? trimArticleByChars(full, 400) : simple;
+function getBodyByArticleType(body, articleType){
+  const type = (articleType || 'light').toLowerCase();
+  if(type === 'standard'){
+    return trimArticleByChars(body, 3000);
+  }
+  const base = trimArticleByChars(body, 800);
+  return base.length < 400 ? trimArticleByChars(body, 400) : base;
 }
 
-function setArticleMode(mode){
-  S.articleMode = mode === 'full' ? 'full' : 'simple';
-  document.getElementById('articleModeSimple')?.classList.toggle('active', S.articleMode === 'simple');
-  document.getElementById('articleModeFull')?.classList.toggle('active', S.articleMode === 'full');
-  renderP1FromCompany();
-}
-
-function renderCeoAvatar(el, ceoName, color, photoUrl){
+function renderCeoAvatar(el, companyName, color, photoUrl){
   if(!el) return;
-  const ini = (ceoName || '').trim().charAt(0) || '人';
+  const ini = (companyName || '').trim().charAt(0) || '社';
   if(photoUrl){
     el.style.backgroundImage = `url("${photoUrl}")`;
     el.style.backgroundColor = color || 'var(--navy)';
@@ -1397,6 +1404,11 @@ function renderP1FromCompany(){
   const tags = (Array.isArray(co.tags) && co.tags.length > 0) ? co.tags : SAMPLE_P1.tags;
   const photoUrl = co.photoUrl || '';
   const color = co.color || 'var(--navy)';
+  const articleType = co.articleType || 'light';
+  const allowImages = String(articleType).toLowerCase() === 'standard';
+  const industry = (co.industry || '').trim();
+  const size = (co.size || '').trim();
+  const intro = (co.intro || '').trim();
 
   const nm = document.getElementById('p1CeoName');
   const cn = document.getElementById('p1CompanyName');
@@ -1404,6 +1416,9 @@ function renderP1FromCompany(){
   const tg = document.getElementById('p1Tags');
   const bd = document.getElementById('p1ArticleBody');
   const av = document.getElementById('p1Avatar');
+  const ci = document.getElementById('companyIntro');
+  const ciTags = document.getElementById('companyIntroTags');
+  const ciText = document.getElementById('companyIntroText');
   if(nm) nm.textContent = ceo;
   if(cn) cn.textContent = company;
   if(tt) tt.innerHTML = escapeHtml(title).replace(/\n/g,'<br>');
@@ -1412,9 +1427,25 @@ function renderP1FromCompany(){
   }
   if(bd){
     const quoteHtml = quote ? `<div class="article-quote"><p>「${escapeHtml(quote)}」</p></div>` : '';
-    bd.innerHTML = `${quoteHtml}${renderMarkdownArticle(getBodyByMode(body))}`;
+    const shapedBody = getBodyByArticleType(body, articleType);
+    bd.innerHTML = `${quoteHtml}${renderMarkdownArticle(shapedBody, {allowImages})}`;
   }
-  renderCeoAvatar(av, ceo, color, photoUrl);
+  renderCeoAvatar(av, company, color, photoUrl);
+
+  if(ci && ciTags && ciText){
+    const hasAny = Boolean(industry || size || intro);
+    ci.style.display = hasAny ? 'block' : 'none';
+    if(hasAny){
+      const tagItems = [
+        {text: company, cls: 'teal'},
+        ...(industry ? [{text: industry}] : []),
+        ...(size ? [{text: size}] : []),
+      ];
+      ciTags.innerHTML = tagItems.map(t=>`<span class="company-intro-tag ${t.cls||''}">${escapeHtml(t.text)}</span>`).join('');
+      ciText.textContent = intro || '';
+      ciText.style.display = intro ? 'block' : 'none';
+    }
+  }
 }
 
 // ===== SCREEN NAV =====
@@ -1480,13 +1511,26 @@ async function genFeedback() {
   document.getElementById('fbSkel').style.display = 'block';
   document.getElementById('fbContent').style.display = 'none';
 
-  const sys = `あなたは地域キャリアカウンセラーです。ユーザーの共感入力をもとに価値観と次の一歩を言語化してください。
-以下のJSON形式のみで返答してください（前置き・コードブロック不要）:
-{"values":["価値観1","価値観2","価値観3"],"messageLines":["1行目","2行目","3行目","4行目","5行目","6行目","7行目","8行目","9行目","10行目以上"],"bridge":"この経営者との接点理由1文（40字以内）"}
-条件:
-- messageLinesは10〜12行
-- 各行は20〜45字
-- 押し付けず、共感と提案のバランスを保つ`;
+  const sys = `あなたはソコナラ（地域キャリア共創プラットフォーム）のキャリアカウンセラーです。
+ユーザーが経営者の記事を読んで選んだ言葉・求めているもの・希望する接点をもとに、
+その人固有の価値観を言語化してください。
+
+価値観3語は抽象的な概念語（変革・挑戦など）を避け、
+その人の回答から滲み出る具体的な姿勢や信念を表す言葉にしてください。
+例：「腹を括れる人」「問いを持ち続ける人」「場をつくる側の人」
+
+メッセージは以下の構成で10行程度の充実した内容にしてください：
+1. その人が今どんな状態にいるかの言語化（2〜3行）
+   「あなたは今〜」という語りかけで始める
+2. その人が持っている強みや可能性（2〜3行）
+   本人も気づいていないかもしれない資質を言語化して背中を押す
+3. この経営者との接点がなぜ意味を持つか（2〜3行）
+   転職・副業・壁打ちなど希望する関わり方に合わせて具体的に
+4. 次の一歩への背中押し（1〜2行）
+   転職を急かさず「まず会ってみる」レベルの温度感で
+
+JSON形式のみで返答してください（前置き・コードブロック不要）：
+{values:[価値観3語], message:メッセージ（改行は\\nで表現）, bridge:接点理由1文}`;
 
   const usr = `経営者：田中 誠一郎（株式会社タナカ精工 / アトツギ・製造業DX）
 刺さった言葉：「${S.q1}」
@@ -1497,7 +1541,7 @@ ${S.free ? '自由記述：'+S.free : ''}`;
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,system:sys,messages:[{role:'user',content:usr}]})
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,messages:[{role:'user',content:usr}]})
     });
     const d = await res.json();
     const m = d.content[0].text.match(/\{[\s\S]*\}/);
@@ -1507,20 +1551,9 @@ ${S.free ? '自由記述：'+S.free : ''}`;
     showFeedback(fb);
   } catch {
     const fb = {
-      values:['変革への意志','共鳴力','地に足をつけた挑戦'],
-      messageLines:[
-        'あなたの反応からは、変化に向き合う覚悟が見えます。',
-        '条件よりも「なぜやるか」を重視する姿勢が明確です。',
-        '挑戦できる環境を、受け身ではなく選びにいく人です。',
-        '同時に、独りよがりではなく共鳴できる関係を求めています。',
-        'だからこそ、言葉に熱のある経営者に強く惹かれます。',
-        '今は、正解より対話を通じて輪郭を掴む時期かもしれません。',
-        '小さく関わって確かめる進め方が、あなたには合っています。',
-        '壁打ちや副業のような中間的な接点も有効な選択です。',
-        '違和感が少しでもあれば、遠慮なく軌道修正して大丈夫です。',
-        '納得感を大切にしながら、次の一歩を選んでいきましょう。'
-      ],
-      bridge:'あなたの「変革への共鳴」が、田中さんの求める仲間像と重なります'
+      values:['問いから始める人','熱量に共鳴できる人','まず小さく試す人'],
+      message:'あなたは今、「次を決める」より「確かめたい」に近い状態にいます。\\nあなたは今、条件ではなく“納得できる理由”を探している最中です。\\nあなたは今、ひとりで抱え込まず、対話で輪郭を掴もうとしています。\\n\\n言葉の熱を見抜けるのは、あなたの強みです。\\n相手の「本音」に反応できるから、表面的な情報に流されにくい。\\nそして、関わり方を自分で選び直せる柔らかさも持っています。\\n\\n田中さんとの接点は、あなたの“問い”を現場で確かめる場になります。\\n壁打ちなら、答え探しではなく「何が大事か」を一緒に言語化できます。\\n副業や参画なら、距離感を保ちながら相性を検証できます。\\n\\n転職を急がなくて大丈夫です。まず一度、会ってみるところから始めましょう。',
+      bridge:'「なぜ変えるのか」に反応したあなたの視点が、対話の価値を高めます'
     };
     S.fb = fb;
     showFeedback(fb);
@@ -1539,16 +1572,7 @@ function showFeedback(fb) {
     tags.appendChild(t);
     setTimeout(()=>t.classList.add('show'), i*200);
   });
-  const lines = Array.isArray(fb.messageLines) ? fb.messageLines.filter(Boolean) : [];
-  const normalized = lines.length >= 10
-    ? lines.slice(0, 12)
-    : String(fb.message || '')
-        .split(/[。！？]\s*/)
-        .map(s=>s.trim())
-        .filter(Boolean)
-        .flatMap(s=>s.length > 45 ? [s.slice(0,45), s.slice(45)] : [s])
-        .slice(0,10);
-  document.getElementById('msgText').textContent = normalized.join('\n');
+  document.getElementById('msgText').textContent = String(fb.message || '').replace(/\\n/g,'\n');
   setTimeout(()=>document.getElementById('msgBlock').classList.add('show'), 550);
   document.getElementById('bridgeText').textContent = fb.bridge;
   setTimeout(()=>document.getElementById('bridgeBlock').classList.add('show'), 850);

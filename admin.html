@@ -28,8 +28,8 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
 #gate-err{color:rgba(255,120,120,0.9);font-size:12px;margin-top:10px;display:none;}
 
 #topbar{position:fixed;top:0;left:0;right:0;height:48px;background:var(--navy);display:none;align-items:center;padding:0 20px;gap:16px;z-index:100;}
-#topbar-brand{font-family:'Noto Serif JP',serif;font-size:16px;font-weight:700;color:#fff;}
-#topbar-brand span{color:var(--teal);}
+#topbar-brand{display:flex;align-items:center;}
+#topbar-brand img{height:32px;width:auto;display:block;}
 #topbar-sub{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);}
 #logout-btn{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;padding:4px 10px;color:rgba(255,255,255,0.3);background:none;border:1px solid rgba(255,255,255,0.1);cursor:pointer;border-radius:2px;}
 #logout-btn:hover{color:rgba(255,255,255,0.7);}
@@ -39,7 +39,8 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
 
 .admin-sidebar{background:var(--navy);display:flex;flex-direction:column;}
 .admin-sidebar-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,0.07);}
-.admin-brand-title{font-family:'Noto Serif JP',serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;}
+.admin-brand-title{margin-bottom:4px;display:flex;align-items:center;}
+.admin-brand-title img{height:24px;width:auto;display:block;}
 .admin-brand-sub{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;color:rgba(255,255,255,0.25);text-transform:uppercase;}
 .admin-nav{padding:12px 0;}
 .admin-nav-label{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);padding:0 16px 6px;}
@@ -172,7 +173,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
 
 <div id="gate">
   <div id="gate-box">
-    <div id="gate-title">ソコナラ<span>.</span> 管理画面</div>
+    <div id="gate-title"><span style="display:inline-flex;align-items:center;gap:10px"><img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ" style="height:32px;width:auto;display:block">管理画面</span></div>
     <input id="gate-input" type="password" placeholder="パスワードを入力" onkeydown="if(event.key==='Enter')checkPass()">
     <button id="gate-btn" onclick="checkPass()">ログイン</button>
     <div id="gate-err">パスワードが違います</div>
@@ -180,7 +181,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
 </div>
 
 <div id="topbar">
-  <div id="topbar-brand">ソコナラ<span>.</span></div>
+  <div id="topbar-brand"><img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ"></div>
   <div id="topbar-sub">ADMIN</div>
   <button id="logout-btn" onclick="logout()">ログアウト</button>
 </div>
@@ -189,7 +190,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
   <div class="admin-shell">
     <aside class="admin-sidebar">
       <div class="admin-sidebar-brand">
-        <div class="admin-brand-title">ソコナラ</div>
+        <div class="admin-brand-title"><img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ"></div>
         <div class="admin-brand-sub">Admin Dashboard</div>
       </div>
       <div class="admin-nav">
@@ -570,8 +571,29 @@ function renderAddCo(){
             </div>
           </div>
           <div style="margin-bottom:14px">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">記事タイプ <span style="color:var(--hot)">*</span></div>
+            <select id="co-article-type" style="${inp()}">
+              <option value="light">標準（Light）</option>
+              <option value="standard">上位（Standard）</option>
+            </select>
+          </div>
+          <div style="margin-bottom:14px">
             <div style="font-size:11px;color:var(--text2);margin-bottom:5px">経営者写真URL（任意）</div>
             <input id="co-photo-url" type="url" placeholder="例：https://example.com/ceo.jpg" style="${inp()}">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+            <div>
+              <div style="font-size:11px;color:var(--text2);margin-bottom:5px">業種（任意）</div>
+              <input id="co-industry" type="text" placeholder="例：製造業・食品・IT" style="${inp()}">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--text2);margin-bottom:5px">従業員規模（任意）</div>
+              <input id="co-size" type="text" placeholder="例：20名・100名規模" style="${inp()}">
+            </div>
+          </div>
+          <div style="margin-bottom:14px">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">会社一言紹介（任意・3行程度）</div>
+            <textarea id="co-intro" rows="3" placeholder="例：地域の製造業を次の世代につなぐために、現場の変革に挑戦しています。" style="${inp()}resize:vertical;"></textarea>
           </div>
           <div style="margin-bottom:14px">
             <div style="font-size:11px;color:var(--text2);margin-bottom:5px">タグ（カンマ区切り）</div>
@@ -628,6 +650,10 @@ function saveCo(){
     photoUrl:document.getElementById('co-photo-url').value.trim(),
     type:document.getElementById('co-type').value,
     plan:document.getElementById('co-plan').value,
+    articleType:document.getElementById('co-article-type').value,
+    industry:document.getElementById('co-industry').value.trim(),
+    size:document.getElementById('co-size').value.trim(),
+    intro:document.getElementById('co-intro').value.trim(),
     tags:document.getElementById('co-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
     title,quote,body,q1,
     fee:document.getElementById('co-fee').value||'',
