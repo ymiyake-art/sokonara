@@ -54,7 +54,7 @@ body {
   display: flex; align-items: center;
 }
 .mode-brand img {
-  height: 24px;
+  height: 32px;
   width: auto;
   display: block;
 }
@@ -141,6 +141,21 @@ body {
   transition: all 0.18s; border-radius: 2px;
 }
 .btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+.btn-line-login{
+  width:100%;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:#06C755;
+  color:#fff;
+  border:none;
+  border-radius:2px;
+  font-weight:700;
+  padding:12px;
+  cursor:pointer;
+  transition:all 0.15s;
+}
+.btn-line-login:hover{ filter: brightness(0.95); }
 
 .badge {
   font-family: 'JetBrains Mono', monospace;
@@ -965,6 +980,7 @@ body {
       <div class="cta-sticky-text">
         <strong>刺さった言葉を選ぶだけ。あなたの価値観が見えてきます</strong>
       </div>
+      <button class="btn-outline" id="p1ProjectBtn" onclick="openCompanyProjectsFromP1()" style="display:none">この経営者のプロジェクトを見る →</button>
       <button class="btn-primary" onclick="goScreen('p2')">入力する →</button>
     </div>
   </div>
@@ -1082,12 +1098,16 @@ body {
         <div class="reco-sub" id="recoSub">共感した言葉をもとに、3人を選びました</div>
       </div>
 
-      <div class="orig-card" onclick="goScreen('p5')">
+      <div class="orig-card">
         <div class="ceo-avatar-sm" style="width:38px;height:38px;font-size:14px">田</div>
         <div class="orig-card-body">
           <div class="orig-card-label">読んでいた記事</div>
           <div class="orig-card-name">田中 誠一郎 — 株式会社タナカ精工</div>
-          <div class="orig-card-action">この方にも「会いたい」を伝える →</div>
+          <div class="orig-card-action">この方にも興味を伝えられます</div>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn-line-login" style="width:auto;padding:9px 14px;font-size:12px" onclick="beginLineLogin('会いたい')">LINEでログインして興味を伝える</button>
+            <button class="btn-outline" style="font-size:11px;padding:8px 14px" onclick="beginLineLogin('まず壁打ちしたい')">まず壁打ちしたい</button>
+          </div>
         </div>
       </div>
 
@@ -1108,6 +1128,7 @@ body {
         <div class="complete-step"><div class="complete-step-n">03</div><div>断っても全く問題ありません。まず話しましょう。</div></div>
       </div>
       <button class="btn-outline" onclick="goScreen('p4')">他の経営者も見る</button>
+      <button class="btn-line-login" id="lineCopyBtn" onclick="copyLineMessage()" style="margin-top:12px">LINEで送る文章をコピー</button>
     </div>
   </div>
 
@@ -1298,10 +1319,10 @@ const PJ_SAMPLES=[
   {id:'pj4',title:'Schooの九州展開を一緒に動かしてくれる人を探しています',type:'hire',coType:'new_biz',company:'株式会社Schoo',ceo:'園田 圭輔',anonymous:false,duration:'まずカジュアルに',created:'04/03',desc:'九州でのSchoo for Business展開を担う2人目のメンバーを探している。フルリモートも可だが九州に根ざして動ける方を想定。CSやSaaS営業経験があると心強い。',q1:['学びを通じた社会変革という文脈に共感した','九州で本気の仕事ができるという言葉が刺さった','地域に根ざしながらスタートアップ水準の仕事ができる','49対51で動きながら考えるスタンスが自分に合う']},
 ];
 const PJ_TYPE={wall:{label:'壁打ち 60分',badgeClass:'tb-wall',accentClass:'wall'},short:{label:'短期PJ',badgeClass:'tb-short',accentClass:'short'},hire:{label:'採用含み',badgeClass:'tb-hire',accentClass:'hire'}};
-let pjFilter='all'; let curPj=null;
-function getAllPj(){try{const stored=JSON.parse(localStorage.getItem('sn_projects')||'[]');const cos=JSON.parse(localStorage.getItem('sn_companies')||'[]');const tmap={walluchi:'wall',short_pj:'short',hire:'hire'};const cmap={new_biz_lead:'new_biz',new_biz:'new_biz',successor:'successor'};const fromAdmin=stored.map(p=>{const co=cos.find(c=>c.id===p.companyId);return{id:p.id,title:p.title,type:tmap[p.type]||p.type,coType:cmap[p.coType]||p.coType||'successor',company:co?co.name:null,ceo:co?co.ceo:null,anonymous:!p.companyId,duration:p.duration||'',created:p.created,desc:p.desc,q1:p.q1||[]};});return fromAdmin.length>0?[...fromAdmin,...PJ_SAMPLES]:PJ_SAMPLES;}catch{return PJ_SAMPLES;}}
+let pjFilter='all'; let curPj=null; let pjCompanyFilterId=null;
+function getAllPj(){try{const stored=JSON.parse(localStorage.getItem('sn_projects')||'[]');const cos=JSON.parse(localStorage.getItem('sn_companies')||'[]');const tmap={walluchi:'wall',short_pj:'short',hire:'hire'};const cmap={new_biz_lead:'new_biz',new_biz:'new_biz',successor:'successor'};const fromAdmin=stored.map(p=>{const co=cos.find(c=>c.id===p.companyId);return{id:p.id,title:p.title,type:tmap[p.type]||p.type,coType:cmap[p.coType]||p.coType||'successor',company:co?co.name:null,companyId:p.companyId||null,ceo:co?co.ceo:null,anonymous:!p.companyId,duration:p.duration||'',created:p.created,desc:p.desc,q1:p.q1||[]};});return fromAdmin.length>0?[...fromAdmin,...PJ_SAMPLES]:PJ_SAMPLES;}catch{return PJ_SAMPLES;}}
 function setPjFilter(f,btn){pjFilter=f;document.querySelectorAll('.pj-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderPjList();}
-function renderPjList(){const all=getAllPj();const filtered=pjFilter==='all'?all:pjFilter==='wall'?all.filter(p=>p.type==='wall'):pjFilter==='short'?all.filter(p=>p.type==='short'):pjFilter==='hire'?all.filter(p=>p.type==='hire'):pjFilter==='successor'?all.filter(p=>p.coType==='successor'):all.filter(p=>p.coType==='new_biz');const el=document.getElementById('pjListBody');if(!el)return;if(filtered.length===0){el.innerHTML='<div style="text-align:center;padding:48px;background:var(--white);border:1px solid var(--border);border-radius:2px;font-size:13px;color:var(--text2);">該当するプロジェクトがありません</div>';return;}const suc=pjFilter==='all'?filtered.filter(p=>p.coType==='successor'):filtered;const nbiz=pjFilter==='all'?filtered.filter(p=>p.coType==='new_biz'):[];let html='';if(pjFilter==='all'){if(suc.length>0)html+=`<div class="pj-section-lbl">後継者・アトツギ（${suc.length}件）</div>${suc.map(pjCard).join('')}`;if(nbiz.length>0)html+=`<div class="pj-section-lbl" style="margin-top:24px">新規事業責任者（${nbiz.length}件）</div>${nbiz.map(pjCard).join('')}`;}else{html=filtered.map(pjCard).join('');}el.innerHTML=html;}
+function renderPjList(){const all=getAllPj();let filtered=pjFilter==='all'?all:pjFilter==='wall'?all.filter(p=>p.type==='wall'):pjFilter==='short'?all.filter(p=>p.type==='short'):pjFilter==='hire'?all.filter(p=>p.type==='hire'):pjFilter==='successor'?all.filter(p=>p.coType==='successor'):all.filter(p=>p.coType==='new_biz');if(pjCompanyFilterId){filtered=filtered.filter(p=>p.companyId===pjCompanyFilterId);}const el=document.getElementById('pjListBody');if(!el)return;if(filtered.length===0){el.innerHTML='<div style="text-align:center;padding:48px;background:var(--white);border:1px solid var(--border);border-radius:2px;font-size:13px;color:var(--text2);">該当するプロジェクトがありません</div>';return;}const suc=pjFilter==='all'?filtered.filter(p=>p.coType==='successor'):filtered;const nbiz=pjFilter==='all'?filtered.filter(p=>p.coType==='new_biz'):[];let html='';if(pjFilter==='all'&&!pjCompanyFilterId){if(suc.length>0)html+=`<div class="pj-section-lbl">後継者・アトツギ（${suc.length}件）</div>${suc.map(pjCard).join('')}`;if(nbiz.length>0)html+=`<div class="pj-section-lbl" style="margin-top:24px">新規事業責任者（${nbiz.length}件）</div>${nbiz.map(pjCard).join('')}`;}else{html=filtered.map(pjCard).join('');}el.innerHTML=html;}
 function pjCard(p){const tc=PJ_TYPE[p.type]||PJ_TYPE.wall;const coLabel=p.anonymous?'企業名非公開':p.company||'';return `<div class="pj-card" onclick="openPj('${p.id}')"><div class="pj-accent ${tc.accentClass}"></div><div class="pj-card-inner"><span class="pj-type-badge ${tc.badgeClass}">${tc.label}</span><div class="pj-title">${p.title}</div><div class="pj-meta">${[coLabel,p.ceo&&!p.anonymous?p.ceo:'',p.duration,p.created].filter(Boolean).join(' · ')}</div><div class="pj-desc-preview">${p.desc.slice(0,70)}…</div></div></div>`;}
 function openPj(id){const p=getAllPj().find(x=>x.id===id);if(!p)return;curPj=p;const tc=PJ_TYPE[p.type]||PJ_TYPE.wall;const coLabel=p.anonymous?'企業名非公開':p.company||'';document.getElementById('pjDetailBody').innerHTML=`<span class="pj-type-badge ${tc.badgeClass}" style="margin-bottom:14px;display:inline-block">${tc.label}</span><div style="font-family:'Noto Serif JP',serif;font-size:20px;font-weight:700;color:var(--navy);line-height:1.5;margin-bottom:12px">${p.title}</div><div style="font-size:12px;color:var(--text2);margin-bottom:20px">${[coLabel,p.ceo&&!p.anonymous?p.ceo:'',p.duration,p.created].filter(Boolean).join(' · ')}</div><div style="font-size:14px;color:var(--text2);line-height:1.9;">${p.desc}</div>`;document.getElementById('pjCtaTitle').textContent=p.title.slice(0,30)+'…';document.getElementById('pjCtaBar').style.display='flex';showPjScreen('pj-detail');window.scrollTo(0,0);}
 function showPjScreen(id){['pj-list','pj-detail','pj-apply','pj-complete'].forEach(s=>{const el=document.getElementById(s);if(el)el.style.display='none';});const t=document.getElementById(id);if(t){t.style.display=id==='pj-complete'?'flex':'block';if(id==='pj-list')document.getElementById('pjCtaBar').style.display='none';}}
@@ -1364,7 +1385,7 @@ function trimArticleByChars(text, maxChars){
 function getBodyByArticleType(body, articleType){
   const type = (articleType || 'light').toLowerCase();
   if(type === 'standard'){
-    return trimArticleByChars(body, 3000);
+    return trimArticleByChars(body, 2000);
   }
   const base = trimArticleByChars(body, 800);
   return base.length < 400 ? trimArticleByChars(body, 400) : base;
@@ -1407,8 +1428,8 @@ function renderP1FromCompany(){
   const articleType = co.articleType || 'light';
   const allowImages = String(articleType).toLowerCase() === 'standard';
   const industry = (co.industry || '').trim();
-  const size = (co.size || '').trim();
-  const intro = (co.intro || '').trim();
+  const size = (co.employeeSize || co.size || '').trim();
+  const intro = (co.companyIntro || co.intro || '').trim();
 
   const nm = document.getElementById('p1CeoName');
   const cn = document.getElementById('p1CompanyName');
@@ -1433,9 +1454,9 @@ function renderP1FromCompany(){
   renderCeoAvatar(av, company, color, photoUrl);
 
   if(ci && ciTags && ciText){
-    const hasAny = Boolean(industry || size || intro);
-    ci.style.display = hasAny ? 'block' : 'none';
-    if(hasAny){
+    const hasIntro = Boolean(intro);
+    ci.style.display = hasIntro ? 'block' : 'none';
+    if(hasIntro){
       const tagItems = [
         {text: company, cls: 'teal'},
         ...(industry ? [{text: industry}] : []),
@@ -1445,6 +1466,31 @@ function renderP1FromCompany(){
       ciText.textContent = intro || '';
       ciText.style.display = intro ? 'block' : 'none';
     }
+  }
+  updateCompanyProjectCta(co);
+}
+
+function updateCompanyProjectCta(co){
+  const btn = document.getElementById('p1ProjectBtn');
+  if(!btn) return;
+  try{
+    const all = JSON.parse(localStorage.getItem('sn_projects') || '[]');
+    const count = all.filter(p=>p.companyId === co.id).length;
+    btn.style.display = count > 0 ? 'inline-flex' : 'none';
+  }catch{
+    btn.style.display = 'none';
+  }
+}
+
+function openCompanyProjectsFromP1(){
+  const co = loadPrimaryCompany();
+  if(!co?.id) return;
+  pjCompanyFilterId = co.id;
+  const projectBtn = document.getElementById('mb-project');
+  if(projectBtn){
+    switchMode('user', projectBtn, 'project');
+    renderPjList();
+    window.scrollTo(0,0);
   }
 }
 
@@ -1606,8 +1652,8 @@ async function genReco(fb) {
         <div class="reco-reason-text loading" id="rr${i}">　</div>
       </div>
       <div class="reco-actions">
-        <button class="btn-primary" style="font-size:12px;padding:9px 16px" onclick="goScreen('p5')">会ってみたい</button>
-        <button class="btn-outline" style="font-size:11px;padding:8px 14px">記事を読む</button>
+        <button class="btn-line-login" style="font-size:12px;padding:9px 16px" onclick="beginLineLogin('会いたい')">LINEでログインして興味を伝える</button>
+        <button class="btn-outline" style="font-size:11px;padding:8px 14px" onclick="beginLineLogin('まず壁打ちしたい')">まず壁打ちしたい</button>
       </div>
     </div>
   `).join('');
@@ -1886,6 +1932,88 @@ function toast(msg){
   t.textContent=msg; t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2600);
 }
+
+function getCurrentCompany(){
+  return loadPrimaryCompany() || SAMPLE_P1;
+}
+
+function randomState(len=8){
+  const chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let out='';
+  for(let i=0;i<len;i++) out += chars[Math.floor(Math.random()*chars.length)];
+  return out;
+}
+
+function beginLineLogin(intent){
+  const state = randomState(8);
+  const co = getCurrentCompany();
+  const ctx = {
+    intent: intent || '会いたい',
+    company: co?.name || '',
+    ceo: co?.ceo || '',
+    q3: S.q3 || '',
+    values: Array.isArray(S.fb?.values) ? S.fb.values : [],
+  };
+  sessionStorage.setItem('sn_line_state', state);
+  sessionStorage.setItem('sn_line_ctx', JSON.stringify(ctx));
+  const redirectUri = encodeURIComponent('https://soconara.vercel.app/');
+  const url = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=2009807359&redirect_uri=${redirectUri}&state=${encodeURIComponent(state)}&scope=profile`;
+  window.open(url, 'lineLogin', 'width=500,height=600');
+}
+
+function handleLineCallback(){
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  const state = params.get('state');
+  if(!code) return;
+  const savedState = sessionStorage.getItem('sn_line_state');
+  if(!savedState || !state || savedState !== state){
+    toast('LINEログインの検証に失敗しました');
+    return;
+  }
+  const ctx = JSON.parse(sessionStorage.getItem('sn_line_ctx') || '{}');
+  const ceoName = ctx.ceo || getCurrentCompany()?.ceo || '';
+  const workStyle = ctx.q3 || S.q3 || '';
+  const formUrl = `https://docs.google.com/forms/d/e/1FAIpQLSeikECy9joeKdDFe-5O0nGgF2Q8ch3CMkYPbKEzzk6yrKV5NQ/viewform?usp=pp_url&entry.797581892=${encodeURIComponent(ceoName)}&entry.1217575437=${encodeURIComponent(workStyle)}`;
+  history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+  window.location.href = formUrl;
+}
+
+async function copyLineMessage(){
+  const fallback = ['あなたらしさ','誠実さ','行動力'];
+  const vals = (Array.isArray(S.fb?.values) && S.fb.values.length >= 3) ? S.fb.values : fallback;
+  const co = getCurrentCompany();
+  const companyName = co?.name || 'ソコナラ掲載企業';
+  const ceoName = co?.ceo || '経営者';
+  const txt = `「${ceoName}さん、記事を読んでいただきありがとうございます。
+
+あなたが選んだ言葉から
+「${vals[0]}」「${vals[1]}」「${vals[2]}」
+という印象を受けました。
+
+${companyName}の${ceoName}との接点、
+一緒に考えさせてください。
+
+少しだけ教えていただけますか？
+
+① 今どんなお仕事をされていますか？
+  （ざっくりでOK）
+② これまでのご経験領域は？
+  （例：営業／開発／企画など）
+③ 週にどのくらい動けそうですか？
+  （例：週1〜2時間／月数回など）」`;
+  try{
+    await navigator.clipboard.writeText(txt);
+    const btn = document.getElementById('lineCopyBtn');
+    if(btn){
+      const old = btn.textContent;
+      btn.textContent = 'コピーしました ✓';
+      setTimeout(()=>{ btn.textContent = old; }, 2000);
+    }
+  }catch{
+    toast('コピーに失敗しました');
+  }
+}
 function resetAll(){
   S.q1='';S.q2=[];S.q3='';S.free='';S.fb=null;
   document.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
@@ -1906,6 +2034,7 @@ function resetAll(){
 // init admin
 renderDash();
 renderP1FromCompany();
+handleLineCallback();
 </script>
 </body>
 </html>

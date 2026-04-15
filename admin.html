@@ -563,7 +563,7 @@ function renderAddCo(){
             </div>
             <div>
               <div style="font-size:11px;color:var(--text2);margin-bottom:5px">契約プラン</div>
-              <select id="co-plan" style="${inp()}">
+              <select id="co-plan" style="${inp()}" onchange="syncArticleTypeFromPlan()">
                 <option value="light">Light（5万・アプリのみ）</option>
                 <option value="standard">Standard（10万・Studio含む）</option>
                 <option value="referral">紹介のみ</option>
@@ -572,14 +572,14 @@ function renderAddCo(){
           </div>
           <div style="margin-bottom:14px">
             <div style="font-size:11px;color:var(--text2);margin-bottom:5px">記事タイプ <span style="color:var(--hot)">*</span></div>
-            <select id="co-article-type" style="${inp()}">
-              <option value="light">標準（Light）</option>
-              <option value="standard">上位（Standard）</option>
+            <select id="co-article-type" style="${inp()}" onchange="markArticleTypeManual()">
+              <option value="light">標準（〜800字・写真は上部に1枚のみ）</option>
+              <option value="standard">上位（〜2000字・写真差し込み対応）</option>
             </select>
           </div>
           <div style="margin-bottom:14px">
             <div style="font-size:11px;color:var(--text2);margin-bottom:5px">経営者写真URL（任意）</div>
-            <input id="co-photo-url" type="url" placeholder="例：https://example.com/ceo.jpg" style="${inp()}">
+            <input id="co-photo-url" type="url" placeholder="https://raw.githubusercontent.com/... または任意の画像URL" style="${inp()}">
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
             <div>
@@ -593,7 +593,7 @@ function renderAddCo(){
           </div>
           <div style="margin-bottom:14px">
             <div style="font-size:11px;color:var(--text2);margin-bottom:5px">会社一言紹介（任意・3行程度）</div>
-            <textarea id="co-intro" rows="3" placeholder="例：地域の製造業を次の世代につなぐために、現場の変革に挑戦しています。" style="${inp()}resize:vertical;"></textarea>
+            <textarea id="co-intro" rows="3" placeholder="会社の特徴を3行以内で（記事冒頭に表示されます）" style="${inp()}resize:vertical;"></textarea>
           </div>
           <div style="margin-bottom:14px">
             <div style="font-size:11px;color:var(--text2);margin-bottom:5px">タグ（カンマ区切り）</div>
@@ -607,9 +607,10 @@ function renderAddCo(){
             <div style="font-size:11px;color:var(--text2);margin-bottom:5px">引用フレーズ（一番刺さる一言）<span style="color:var(--hot)">*</span></div>
             <input id="co-quote" type="text" placeholder="例：変えたいものがある人間に、古い会社ほど面白いフィールドはない" style="${inp()}">
           </div>
-          <div style="margin-bottom:14px">
-            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">記事本文（400〜800字）<span style="color:var(--hot)">*</span></div>
-            <textarea id="co-body" rows="12" placeholder="Markdownで入力できます。段落ごとに改行を空け、画像は ![説明](URL) 形式で差し込めます。" style="${inp()}resize:vertical;"></textarea>
+          <div style="margin-bottom:14px;position:relative">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">記事本文<span style="color:var(--hot)">*</span></div>
+            <textarea id="co-body" rows="12" placeholder="〜800字推奨" style="${inp()}resize:vertical;padding-bottom:24px;" oninput="updateBodyCounter()"></textarea>
+            <div id="co-body-counter" style="position:absolute;right:8px;bottom:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);">0 / 800</div>
           </div>
           <div style="margin-bottom:6px">
             <div style="font-size:11px;color:var(--text2);margin-bottom:8px">Q1 選択肢（刺さった言葉 4択）<span style="color:var(--hot)">*</span></div>
@@ -632,6 +633,7 @@ function renderAddCo(){
         </div>
       </div>
     </div>`;
+  initArticleTypeControls();
 }
 
 function inp(){return `width:100%;padding:9px 12px;font-size:12px;font-family:'Noto Sans JP',sans-serif;border:1px solid var(--border);border-radius:2px;outline:none;background:var(--white);color:var(--text);`;}
@@ -652,6 +654,9 @@ function saveCo(){
     plan:document.getElementById('co-plan').value,
     articleType:document.getElementById('co-article-type').value,
     industry:document.getElementById('co-industry').value.trim(),
+    employeeSize:document.getElementById('co-size').value.trim(),
+    companyIntro:document.getElementById('co-intro').value.trim(),
+    // backward compatibility
     size:document.getElementById('co-size').value.trim(),
     intro:document.getElementById('co-intro').value.trim(),
     tags:document.getElementById('co-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
@@ -666,6 +671,44 @@ function saveCo(){
   saveCompanies(arr);
   toast(`「${name}」を登録しました`);
   setTimeout(()=>switchTab('colist'),800);
+}
+
+function markArticleTypeManual(){
+  const at = document.getElementById('co-article-type');
+  if(at) at.dataset.manual = '1';
+  updateBodyCounter();
+}
+
+function syncArticleTypeFromPlan(force = false){
+  const plan = document.getElementById('co-plan');
+  const at = document.getElementById('co-article-type');
+  if(!plan || !at) return;
+  const next = plan.value === 'standard' ? 'standard' : 'light';
+  if(force || at.dataset.manual !== '1'){
+    at.value = next;
+  }
+  updateBodyCounter();
+}
+
+function updateBodyCounter(){
+  const body = document.getElementById('co-body');
+  const at = document.getElementById('co-article-type');
+  const counter = document.getElementById('co-body-counter');
+  if(!body || !at || !counter) return;
+  const limit = at.value === 'standard' ? 2000 : 800;
+  const len = body.value.trim().length;
+  counter.textContent = `${len} / ${limit}`;
+  counter.style.color = len > limit ? 'var(--hot)' : 'var(--text3)';
+  body.placeholder = at.value === 'standard'
+    ? '1500〜2000字推奨。写真は ![説明](URL) 形式で差し込み可'
+    : '〜800字推奨';
+}
+
+function initArticleTypeControls(){
+  const at = document.getElementById('co-article-type');
+  if(at) at.dataset.manual = '0';
+  syncArticleTypeFromPlan(true);
+  updateBodyCounter();
 }
 
 async function genCoArticle(){
