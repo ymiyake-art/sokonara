@@ -232,26 +232,9 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
 <div class="toast" id="toastEl"></div>
 
 <script>
-const COMPANIES=[
-  {id:'tanaka',name:'タナカ精工',ceo:'田中 誠一郎',color:'#1C2A54',reactions:42,cta:8,hot:3,warm:3,cool:2},
-  {id:'nakamura',name:'ナカムラフーズ',ceo:'中村 真理子',color:'#2e8c7f',reactions:29,cta:5,hot:1,warm:2,cool:2},
-  {id:'yoshida',name:'吉田建設',ceo:'吉田 健次',color:'#716C6B',reactions:35,cta:6,hot:2,warm:3,cool:1},
-  {id:'hayashi',name:'ハヤシテック',ceo:'林 奈緒子',color:'#8a6020',reactions:18,cta:3,hot:1,warm:1,cool:1},
-];
-const REACTIONS=[
-  {id:'R1',user:'A.T',ini:'A',col:'#1C2A54',co:'タナカ精工',q1:'変えたいものがある…',q2:['挑戦できる環境'],q3:'副業・参画',free:'製造業の変革に興味あり',temp:'hot',status:'pending',date:'04/15'},
-  {id:'R2',user:'K.S',ini:'K',col:'#2e8c7f',co:'タナカ精工',q1:'求人票に書けない…',q2:['まず話を聞きたい'],q3:'壁打ち・相談',free:'',temp:'warm',status:'contacted',date:'04/14'},
-  {id:'R3',user:'M.Y',ini:'M',col:'#716C6B',co:'ナカムラフーズ',q1:'地方の中小企業こそ…',q2:['地域で試したい'],q3:'転職',free:'福岡移住検討中',temp:'hot',status:'pending',date:'04/15'},
-  {id:'R4',user:'R.I',ini:'R',col:'#8a6020',co:'吉田建設',q1:'社員が自分で…',q2:['挑戦できる環境'],q3:'わからない',free:'',temp:'cool',status:'pending',date:'04/13'},
-  {id:'R5',user:'N.H',ini:'N',col:'#3a6e5a',co:'タナカ精工',q1:'変えたいものがある…',q2:['挑戦できる環境','共鳴できる仲間'],q3:'転職',free:'事業承継に関わりたかった',temp:'hot',status:'connected',date:'04/12'},
-  {id:'R6',user:'T.O',ini:'T',col:'#6b4a8a',co:'吉田建設',q1:'変えたいものがある…',q2:['挑戦できる環境'],q3:'副業・参画',free:'建設×DXで話したい',temp:'warm',status:'contacted',date:'04/11'},
-];
-const EMPATHY=[
-  {label:'変えたいものがある人間に、古い会社ほど面白い',count:18,pct:43},
-  {label:'求人票に書けるスキル要件はない',count:12,pct:29},
-  {label:'社員が自分で考えるようになった',count:7,pct:17},
-  {label:'地方の中小企業こそ賭けられるフィールド',count:5,pct:12},
-];
+const COMPANIES=[];
+const REACTIONS=[];
+const EMPATHY=[];
 let curTab='dash';
 function getInitialTab(){
   try{
