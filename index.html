@@ -917,12 +917,21 @@ body {
 </style>
 </head>
 <body>
+<div id="topPage" style="display:none;min-height:100vh;background:#1C2A54;align-items:center;justify-content:center;padding:40px;">
+  <div style="max-width:420px;width:100%;text-align:center;">
+    <img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ" style="height:48px;width:auto;display:block;margin:0 auto 24px;">
+    <div style="font-family:'Noto Serif JP',serif;font-weight:700;font-size:32px;line-height:1.5;color:#fff;margin-bottom:10px;">出会いは検索から生まれない</div>
+    <div style="font-size:14px;line-height:1.9;color:rgba(255,255,255,0.86);margin-bottom:22px;">地域の経営者と、まず話してみませんか</div>
+    <button class="btn-primary" style="width:100%;justify-content:center;background:#42AD9F;margin-bottom:10px;" onclick="enterFromTop('company')">経営者一覧を見る →</button>
+    <button class="btn-primary" style="width:100%;justify-content:center;background:#1C2A54;border:1px solid rgba(255,255,255,0.45);" onclick="enterFromTop('project')">共創テーマを見る →</button>
+  </div>
+</div>
 
 <!-- ===== MODE BAR ===== -->
 <div class="mode-bar">
   <div class="mode-brand"><img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ"></div>
   <button class="mode-btn active" id="mb-company" onclick="switchMode('user',this,'company')">経営者一覧</button>
-  <button class="mode-btn" id="mb-project" onclick="switchMode('user',this,'project')">プロジェクト</button>
+  <button class="mode-btn" id="mb-project" onclick="switchMode('user',this,'project')">共創テーマ</button>
   <button class="mode-btn" onclick="switchMode('admin',this,'')">管理画面</button>
   <button class="mode-reset" onclick="resetAll()">↺ リセット</button>
 </div>
@@ -980,8 +989,9 @@ body {
       <div class="cta-sticky-text">
         <strong>刺さった言葉を選ぶだけ。あなたの価値観が見えてきます</strong>
       </div>
-      <button class="btn-outline" id="p1ProjectBtn" onclick="openCompanyProjectsFromP1()" style="display:none">この経営者のプロジェクトを見る →</button>
+      <button class="btn-outline" id="p1ProjectBtn" onclick="openCompanyProjectsFromP1()" style="display:none">この経営者の共創テーマを見る →</button>
       <button class="btn-primary" onclick="goScreen('p2')">入力する →</button>
+      <div style="font-size:11px;color:var(--text2);margin-top:8px;">申込みではありません。まず話しましょう。</div>
     </div>
   </div>
 
@@ -1038,7 +1048,7 @@ body {
         <div class="q-text">田中さんとの接点として、興味があるのは？</div>
         <div class="chip-list" id="q3chips">
           <div class="chip" onclick="pickQ3(this,'壁打ち・相談')"><div class="chip-check">✓</div><span>壁打ち・相談（まず話したい）</span></div>
-          <div class="chip" onclick="pickQ3(this,'副業・プロジェクト参画')"><div class="chip-check">✓</div><span>副業・プロジェクト参画</span></div>
+          <div class="chip" onclick="pickQ3(this,'副業・共創テーマ参画')"><div class="chip-check">✓</div><span>副業・共創テーマ参画</span></div>
           <div class="chip" onclick="pickQ3(this,'転職・フルコミット')"><div class="chip-check">✓</div><span>転職・フルコミット</span></div>
           <div class="chip" onclick="pickQ3(this,'まだわからない')"><div class="chip-check">✓</div><span>まだわからない</span></div>
         </div>
@@ -1046,7 +1056,7 @@ body {
         <textarea id="freeText" class="free-input" rows="3" placeholder="気になったこと、感じたことなど"></textarea>
         <div class="q-nav" style="margin-top:18px">
           <button class="btn-outline" onclick="show('q2b'),hide('q3b')">← 戻る</button>
-          <button class="btn-primary" id="submitBtn" onclick="submitEmpathy()" disabled>価値観を返してもらう →</button>
+          <button class="btn-primary" id="submitBtn" onclick="submitEmpathy()" disabled>自分の価値観を見る →</button>
         </div>
       </div>
     </div>
@@ -1142,9 +1152,9 @@ body {
   <!-- PJ LIST -->
   <div id="pj-list" class="screen active" style="min-height:calc(100vh - 48px);display:block;">
     <div style="background:var(--navy);padding:28px 20px 24px;text-align:center;">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:8px;">Projects</div>
-      <div style="font-family:'Noto Serif JP',serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:6px;line-height:1.4;">話したい・動きたい人を探している</div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.7;">壁打ち60分から、短期PJ、採用含みまで。<br>まず「刺さった」を押してみてください。</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:8px;">Co-Creation Themes</div>
+      <div style="font-family:'Noto Serif JP',serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:6px;line-height:1.4;">共創テーマ</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.62);line-height:1.9;">経営者が本業の外に持つ、もうひとつのテーマ。<br>地域のため、社会のため、あるいは自分自身のために<br>成し遂げたいことを、ここに公開しています。<br>共鳴したら、まず話しましょう。</div>
     </div>
     <div style="background:var(--white);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;gap:6px;flex-wrap:wrap;position:sticky;top:48px;z-index:90;">
       <button class="pj-filter-btn active" onclick="setPjFilter('all',this)">すべて</button>
@@ -1160,7 +1170,7 @@ body {
 
   <!-- PJ DETAIL -->
   <div id="pj-detail" class="screen" style="min-height:calc(100vh - 48px);display:none;background:var(--white);">
-    <div style="padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg);font-size:12px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px;" onclick="showPjScreen('pj-list')">← プロジェクト一覧に戻る</div>
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg);font-size:12px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px;" onclick="showPjScreen('pj-list')">← 共創テーマ一覧に戻る</div>
     <div id="pjDetailBody" style="max-width:680px;margin:0 auto;padding:24px 16px 100px;"></div>
     <div style="position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 -4px 16px rgba(0,0,0,0.05);" id="pjCtaBar">
       <div><strong style="font-size:13px;font-weight:700;color:var(--navy);display:block;margin-bottom:1px;" id="pjCtaTitle"></strong><span style="font-size:11px;color:var(--text2);">興味を伝えるだけ。申込みではありません。</span></div>
@@ -1170,7 +1180,7 @@ body {
 
   <!-- PJ APPLY -->
   <div id="pj-apply" class="screen" style="min-height:calc(100vh - 48px);display:none;background:var(--bg);">
-    <div style="padding:12px 16px;border-bottom:1px solid var(--border);background:var(--white);font-size:12px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px;" onclick="showPjScreen('pj-detail')">← プロジェクト詳細に戻る</div>
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);background:var(--white);font-size:12px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px;" onclick="showPjScreen('pj-detail')">← 共創テーマ詳細に戻る</div>
     <div style="max-width:600px;margin:0 auto;padding:28px 16px 100px;">
       <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:8px;">刺さりポイントを選ぶ</div>
       <div style="font-family:'Noto Serif JP',serif;font-size:18px;font-weight:700;color:var(--navy);margin-bottom:6px;" id="pjApplyTitle"></div>
@@ -1188,7 +1198,7 @@ body {
       <div class="complete-icon">✓</div>
       <div class="complete-title">興味を伝えました</div>
       <div class="complete-sub">担当者から数日以内にLINEでご連絡します。<br>転職の申込みではありません。まず話しましょう。</div>
-      <button class="btn-outline" style="color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.2);" onclick="showPjScreen('pj-list')">← 他のプロジェクトを見る</button>
+      <button class="btn-outline" style="color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.2);" onclick="showPjScreen('pj-list')">← 他の共創テーマを見る</button>
     </div>
   </div>
 
@@ -1212,7 +1222,7 @@ body {
       <div class="admin-nav" style="border-top:1px solid rgba(255,255,255,0.07);padding-top:12px;">
         <div class="admin-nav-label">登録・管理</div>
         <div class="admin-nav-item" onclick="openAdminPage('addco')"><div class="admin-nav-dot" style="background:#9b59b6"></div>企業登録</div>
-        <div class="admin-nav-item" onclick="openAdminPage('addpj')"><div class="admin-nav-dot" style="background:#27ae60"></div>プロジェクト登録</div>
+        <div class="admin-nav-item" onclick="openAdminPage('addpj')"><div class="admin-nav-dot" style="background:#27ae60"></div>共創テーマ登録</div>
         <div class="admin-nav-item" onclick="openAdminPage('colist')"><div class="admin-nav-dot" style="background:var(--teal)"></div>掲載企業一覧</div>
       </div>
       <div class="admin-companies">
@@ -1260,20 +1270,25 @@ const Q2_DIST = [
   {label:'自己理解を深めたい',count:12,pct:29},
 ];
 
-const SAMPLE_P1 = {
-  company: '株式会社タナカ精工',
-  ceo: '田中 誠一郎',
-  title: '「継ぐ」ではなく「変える」ために\nこの会社に残った',
-  quote: '変えたいものがある人間にとって、"古い会社"ほど面白いフィールドはない',
-  body: '父から会社を継ぐ話が出たのは、僕が37歳のときだった。当時は東京の商社で働いていて、正直、地元に帰ることへの抵抗があった。「地方の中小企業に戻って何ができるのか」という漠然とした不安と、「自分の人生はここで終わっていいのか」という焦りが混在していた。\n\n承継から5年。今うちの会社では、製造ラインの7割がデータで可視化され、受注から出荷まで半自動化された。でもそれより大きな変化は「社員が自分で考えるようになったこと」だと思っている。\n\n正直に言えば、一緒に変えてくれる人間が圧倒的に足りない。求人票に書けるスキル要件なんてない。必要なのは、「なぜ変えるのか」に共鳴できる人間だと思っている。\n\n壁打ち相手も、副業で関わってくれる人も、本気で転職を考えている人も、全部歓迎したい。まず話しましょう。',
-  tags: ['壁打ち歓迎', '副業OK', '福岡・博多', '製造業 × DX'],
-  photoUrl: '',
-};
-
 // ===== STATE =====
 const S = { q1:'', q2:[], q3:'', free:'', fb:null, screen:'p1', mode:'user', adminTab:'dash' };
 const SCREENS = ['p1','p2','p3','p4','p5'];
 const PROG = {p1:20,p2:40,p3:60,p4:80,p5:100};
+function hasCompanyParam(){ try{ return Boolean(new URLSearchParams(window.location.search).get('company')); }catch{return false;} }
+function toggleTopPage(show){
+  const top=document.getElementById('topPage');
+  const mode=document.querySelector('.mode-bar');
+  if(!top||!mode) return;
+  top.style.display=show?'flex':'none';
+  mode.style.display=show?'none':'flex';
+  document.getElementById('progressRail').style.display=show?'none':(S.mode==='user'?'block':'none');
+  document.getElementById('stepDots').style.display=show?'none':(S.mode==='user'?'flex':'none');
+}
+function enterFromTop(target){
+  toggleTopPage(false);
+  const btn=document.getElementById(target==='project'?'mb-project':'mb-company');
+  if(btn){ switchMode('user', btn, target==='project'?'project':'company'); }
+}
 
 // ===== MODE SWITCH =====
 function switchMode(m, btn, sub) {
@@ -1293,17 +1308,12 @@ function switchMode(m, btn, sub) {
 }
 
 // ===== PROJECT JS =====
-const PJ_SAMPLES=[
-  {id:'pj1',title:'製造業×DXの壁打ち相手を探しています。正解より対話が欲しい',type:'wall',coType:'successor',company:'タナカ精工',ceo:'田中 誠一郎',anonymous:false,duration:'月2回・各60分',created:'04/10',desc:'社内のDX推進がうまく進んでいない。技術的な答えが欲しいというより「なぜ変わらないのか」を一緒に考えてくれる人が欲しい。製造業経験がなくても構わない。変化に向き合った経験のある人と話したい。',q1:['正解より対話が欲しいという言葉が刺さった','変化に向き合う仲間を外に求めているのが面白い','製造業×変革という文脈に共感した','業界外の視点こそ価値があるという考えに共鳴した']},
-  {id:'pj2',title:'新規事業の最初の3週間を一緒に走ってくれるアドバイザーを探す',type:'short',coType:'new_biz',company:null,ceo:null,anonymous:true,duration:'3週間・週2〜3回',created:'04/08',desc:'売上100億超の食品メーカーの新規事業チーム。0→1フェーズの最初の3週間だけ伴走してくれる人を探している。社名は非公開だが真剣度は高い。スタートアップ経験者・事業開発経験者歓迎。',q1:['3週間という限定感が逆に本気度を感じる','大企業の新規事業に外から関われる機会は珍しい','匿名でも真剣度が伝わってくる','0→1フェーズの伴走という役割が面白い']},
-  {id:'pj3',title:'九州で地域創生に本気で向き合う仲間を探しています',type:'hire',coType:'successor',company:'株式会社ゼロテン',ceo:'代表者',anonymous:false,duration:'まずは壁打ちから',created:'04/05',desc:'イベント・アート・飲食・不動産と多分野で「まちを面白くする」ことに取り組んでいる。副業・プロジェクト単位での関わりも歓迎。まず話してみたい。',q1:['ひとつの分野に収まらない仕事観に共感した','まちごと動かすスケールが面白い','福岡から世界に通じる何かを作りたいという言葉が刺さった','事業を横断できるポジションが魅力的']},
-  {id:'pj4',title:'Schooの九州展開を一緒に動かしてくれる人を探しています',type:'hire',coType:'new_biz',company:'株式会社Schoo',ceo:'園田 圭輔',anonymous:false,duration:'まずカジュアルに',created:'04/03',desc:'九州でのSchoo for Business展開を担う2人目のメンバーを探している。フルリモートも可だが九州に根ざして動ける方を想定。CSやSaaS営業経験があると心強い。',q1:['学びを通じた社会変革という文脈に共感した','九州で本気の仕事ができるという言葉が刺さった','地域に根ざしながらスタートアップ水準の仕事ができる','49対51で動きながら考えるスタンスが自分に合う']},
-];
+const PJ_SAMPLES=[];
 const PJ_TYPE={wall:{label:'壁打ち 60分',badgeClass:'tb-wall',accentClass:'wall'},short:{label:'短期PJ',badgeClass:'tb-short',accentClass:'short'},hire:{label:'採用含み',badgeClass:'tb-hire',accentClass:'hire'}};
 let pjFilter='all'; let curPj=null; let pjCompanyFilterId=null;
-function getAllPj(){try{const stored=JSON.parse(localStorage.getItem('sn_projects')||'[]');const cos=JSON.parse(localStorage.getItem('sn_companies')||'[]');const tmap={walluchi:'wall',short_pj:'short',hire:'hire'};const cmap={new_biz_lead:'new_biz',new_biz:'new_biz',successor:'successor'};const fromAdmin=stored.map(p=>{const co=cos.find(c=>c.id===p.companyId);return{id:p.id,title:p.title,type:tmap[p.type]||p.type,coType:cmap[p.coType]||p.coType||'successor',company:co?co.name:null,companyId:p.companyId||null,ceo:co?co.ceo:null,anonymous:!p.companyId,duration:p.duration||'',created:p.created,desc:p.desc,q1:p.q1||[]};});return fromAdmin.length>0?[...fromAdmin,...PJ_SAMPLES]:PJ_SAMPLES;}catch{return PJ_SAMPLES;}}
+function getAllPj(){try{const stored=JSON.parse(localStorage.getItem('sn_projects')||'[]');const cos=JSON.parse(localStorage.getItem('sn_companies')||'[]');const tmap={walluchi:'wall',short_pj:'short',hire:'hire'};const cmap={new_biz_lead:'new_biz',new_biz:'new_biz',successor:'successor'};return stored.map(p=>{const co=cos.find(c=>c.id===p.companyId);return{id:p.id,title:p.title,type:tmap[p.type]||p.type,coType:cmap[p.coType]||p.coType||'successor',company:co?co.name:null,companyId:p.companyId||null,ceo:co?co.ceo:null,anonymous:!p.companyId,duration:p.duration||'',created:p.created,desc:p.desc,q1:p.q1||[]};});}catch{return [];}}
 function setPjFilter(f,btn){pjFilter=f;document.querySelectorAll('.pj-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderPjList();}
-function renderPjList(){const all=getAllPj();let filtered=pjFilter==='all'?all:pjFilter==='wall'?all.filter(p=>p.type==='wall'):pjFilter==='short'?all.filter(p=>p.type==='short'):pjFilter==='hire'?all.filter(p=>p.type==='hire'):pjFilter==='successor'?all.filter(p=>p.coType==='successor'):all.filter(p=>p.coType==='new_biz');if(pjCompanyFilterId){filtered=filtered.filter(p=>p.companyId===pjCompanyFilterId);}const el=document.getElementById('pjListBody');if(!el)return;if(filtered.length===0){el.innerHTML='<div style="text-align:center;padding:48px;background:var(--white);border:1px solid var(--border);border-radius:2px;font-size:13px;color:var(--text2);">該当するプロジェクトがありません</div>';return;}const suc=pjFilter==='all'?filtered.filter(p=>p.coType==='successor'):filtered;const nbiz=pjFilter==='all'?filtered.filter(p=>p.coType==='new_biz'):[];let html='';if(pjFilter==='all'&&!pjCompanyFilterId){if(suc.length>0)html+=`<div class="pj-section-lbl">後継者・アトツギ（${suc.length}件）</div>${suc.map(pjCard).join('')}`;if(nbiz.length>0)html+=`<div class="pj-section-lbl" style="margin-top:24px">新規事業責任者（${nbiz.length}件）</div>${nbiz.map(pjCard).join('')}`;}else{html=filtered.map(pjCard).join('');}el.innerHTML=html;}
+function renderPjList(){const all=getAllPj();let filtered=pjFilter==='all'?all:pjFilter==='wall'?all.filter(p=>p.type==='wall'):pjFilter==='short'?all.filter(p=>p.type==='short'):pjFilter==='hire'?all.filter(p=>p.type==='hire'):pjFilter==='successor'?all.filter(p=>p.coType==='successor'):all.filter(p=>p.coType==='new_biz');if(pjCompanyFilterId){filtered=filtered.filter(p=>p.companyId===pjCompanyFilterId);}const el=document.getElementById('pjListBody');if(!el)return;if(filtered.length===0){el.innerHTML='<div style="text-align:center;padding:48px;background:var(--white);border:1px solid var(--border);border-radius:2px;font-size:13px;color:var(--text2);">共創テーマを準備中です。しばらくお待ちください。</div>';return;}const suc=pjFilter==='all'?filtered.filter(p=>p.coType==='successor'):filtered;const nbiz=pjFilter==='all'?filtered.filter(p=>p.coType==='new_biz'):[];let html='';if(pjFilter==='all'&&!pjCompanyFilterId){if(suc.length>0)html+=`<div class="pj-section-lbl">後継者・アトツギ（${suc.length}件）</div>${suc.map(pjCard).join('')}`;if(nbiz.length>0)html+=`<div class="pj-section-lbl" style="margin-top:24px">新規事業責任者（${nbiz.length}件）</div>${nbiz.map(pjCard).join('')}`;}else{html=filtered.map(pjCard).join('');}el.innerHTML=html;}
 function pjCard(p){const tc=PJ_TYPE[p.type]||PJ_TYPE.wall;const coLabel=p.anonymous?'企業名非公開':p.company||'';return `<div class="pj-card" onclick="openPj('${p.id}')"><div class="pj-accent ${tc.accentClass}"></div><div class="pj-card-inner"><span class="pj-type-badge ${tc.badgeClass}">${tc.label}</span><div class="pj-title">${p.title}</div><div class="pj-meta">${[coLabel,p.ceo&&!p.anonymous?p.ceo:'',p.duration,p.created].filter(Boolean).join(' · ')}</div><div class="pj-desc-preview">${p.desc.slice(0,70)}…</div></div></div>`;}
 function openPj(id){const p=getAllPj().find(x=>x.id===id);if(!p)return;curPj=p;const tc=PJ_TYPE[p.type]||PJ_TYPE.wall;const coLabel=p.anonymous?'企業名非公開':p.company||'';document.getElementById('pjDetailBody').innerHTML=`<span class="pj-type-badge ${tc.badgeClass}" style="margin-bottom:14px;display:inline-block">${tc.label}</span><div style="font-family:'Noto Serif JP',serif;font-size:20px;font-weight:700;color:var(--navy);line-height:1.5;margin-bottom:12px">${p.title}</div><div style="font-size:12px;color:var(--text2);margin-bottom:20px">${[coLabel,p.ceo&&!p.anonymous?p.ceo:'',p.duration,p.created].filter(Boolean).join(' · ')}</div><div style="font-size:14px;color:var(--text2);line-height:1.9;">${p.desc}</div>`;document.getElementById('pjCtaTitle').textContent=p.title.slice(0,30)+'…';document.getElementById('pjCtaBar').style.display='flex';showPjScreen('pj-detail');window.scrollTo(0,0);}
 function showPjScreen(id){['pj-list','pj-detail','pj-apply','pj-complete'].forEach(s=>{const el=document.getElementById(s);if(el)el.style.display='none';});const t=document.getElementById(id);if(t){t.style.display=id==='pj-complete'?'flex':'block';if(id==='pj-list')document.getElementById('pjCtaBar').style.display='none';}}
@@ -1390,27 +1400,36 @@ function loadPrimaryCompany(){
   try{
     const stored = JSON.parse(localStorage.getItem('sn_companies') || '[]');
     if(Array.isArray(stored) && stored.length > 0){
-      return stored[stored.length - 1];
+      const q = new URLSearchParams(window.location.search);
+      const companyParam = (q.get('company') || '').trim().toLowerCase();
+      if(companyParam){
+        const hit = stored.find(c=>{
+          const values=[c.id,c.name,c.company,c.ceo].filter(Boolean).map(v=>String(v).toLowerCase());
+          return values.some(v=>v.includes(companyParam));
+        });
+        if(hit) return hit;
+      }
+      return stored[0];
     }
   }catch{}
-  return SAMPLE_P1;
+  return null;
 }
 
 function renderP1FromCompany(){
   const co = loadPrimaryCompany();
-  const ceo = co.ceo || SAMPLE_P1.ceo;
-  const company = co.name || co.company || SAMPLE_P1.company;
-  const title = co.title || SAMPLE_P1.title;
-  const quote = co.quote || '';
-  const body = co.body || SAMPLE_P1.body;
-  const tags = (Array.isArray(co.tags) && co.tags.length > 0) ? co.tags : SAMPLE_P1.tags;
-  const photoUrl = co.photoUrl || '';
-  const color = co.color || 'var(--navy)';
-  const articleType = co.articleType || 'light';
+  const ceo = co?.ceo || '';
+  const company = co?.name || co?.company || '';
+  const title = co?.title || '';
+  const quote = co?.quote || '';
+  const body = co?.body || '';
+  const tags = (Array.isArray(co?.tags) && co.tags.length > 0) ? co.tags : [];
+  const photoUrl = co?.photoUrl || '';
+  const color = co?.color || 'var(--navy)';
+  const articleType = co?.articleType || 'light';
   const allowImages = String(articleType).toLowerCase() === 'standard';
-  const industry = (co.industry || '').trim();
-  const size = (co.employeeSize || co.size || '').trim();
-  const intro = (co.companyIntro || co.intro || '').trim();
+  const industry = (co?.industry || '').trim();
+  const size = (co?.employeeSize || co?.size || '').trim();
+  const intro = (co?.companyIntro || co?.intro || '').trim();
 
   const nm = document.getElementById('p1CeoName');
   const cn = document.getElementById('p1CompanyName');
@@ -1421,6 +1440,17 @@ function renderP1FromCompany(){
   const ci = document.getElementById('companyIntro');
   const ciTags = document.getElementById('companyIntroTags');
   const ciText = document.getElementById('companyIntroText');
+  if(!co){
+    if(nm) nm.textContent = '経営者データを準備中です';
+    if(cn) cn.textContent = 'しばらくお待ちください';
+    if(tt) tt.textContent = '経営者データを準備中です。しばらくお待ちください。';
+    if(tg) tg.innerHTML = '';
+    if(bd) bd.innerHTML = '<p>経営者データを準備中です。しばらくお待ちください。</p>';
+    if(ci) ci.style.display = 'none';
+    if(av){ av.textContent='待'; av.style.backgroundImage='none'; }
+    updateCompanyProjectCta(null);
+    return;
+  }
   if(nm) nm.textContent = ceo;
   if(cn) cn.textContent = company;
   if(tt) tt.innerHTML = escapeHtml(title).replace(/\n/g,'<br>');
@@ -1454,6 +1484,7 @@ function renderP1FromCompany(){
 function updateCompanyProjectCta(co){
   const btn = document.getElementById('p1ProjectBtn');
   if(!btn) return;
+  if(!co?.id){ btn.style.display='none'; return; }
   try{
     const all = JSON.parse(localStorage.getItem('sn_projects') || '[]');
     const count = all.filter(p=>p.companyId === co.id).length;
@@ -1899,7 +1930,7 @@ async function genReport(id) {
     body.innerHTML=d.content[0].text.replace(/\n/g,'<br>').replace(/【(.*?)】/g,'<strong style="color:var(--teal)">【$1】</strong>');
     toast(`${c.name}のレポートを生成しました`);
   } catch {
-    body.innerHTML=`<strong style="color:var(--teal)">【今月のサマリ】</strong><br>反応${c.reactions}件、CTA${c.cta}件。会いたい率${Math.round(c.cta/c.reactions*100)}%。HOT${c.hot}件が接続待ちです。<br><br><strong style="color:var(--teal)">【どんな人が反応したか】</strong><br>「変革への意志」と「地域への関心」を持つ30〜40代のミドルキャリア層が中心。副業・プロジェクト参画を希望する層が最多でした。<br><br><strong style="color:var(--teal)">【印象的なコメント】</strong><br>「事業承継に関わりたいとずっと思っていました」— 転職意向高<br>「福岡への移住も検討しています」— U/Iターン層<br><br><strong style="color:var(--teal)">【来月への示唆】</strong><br>次回インタビューでは「今一番困っていること」を前面に出す構成を推奨します。`;
+    body.innerHTML=`<strong style="color:var(--teal)">【今月のサマリ】</strong><br>反応${c.reactions}件、CTA${c.cta}件。会いたい率${Math.round(c.cta/c.reactions*100)}%。HOT${c.hot}件が接続待ちです。<br><br><strong style="color:var(--teal)">【どんな人が反応したか】</strong><br>「変革への意志」と「地域への関心」を持つ30〜40代のミドルキャリア層が中心。副業・共創テーマ参画を希望する層が最多でした。<br><br><strong style="color:var(--teal)">【印象的なコメント】</strong><br>「事業承継に関わりたいとずっと思っていました」— 転職意向高<br>「福岡への移住も検討しています」— U/Iターン層<br><br><strong style="color:var(--teal)">【来月への示唆】</strong><br>次回インタビューでは「今一番困っていること」を前面に出す構成を推奨します。`;
   }
 }
 
@@ -1915,7 +1946,7 @@ function toast(msg){
 }
 
 function getCurrentCompany(){
-  return loadPrimaryCompany() || SAMPLE_P1;
+  return loadPrimaryCompany();
 }
 
 function randomState(len=8){
@@ -2016,6 +2047,9 @@ function resetAll(){
 renderDash();
 renderP1FromCompany();
 handleLineCallback();
+if(!hasCompanyParam()){
+  toggleTopPage(true);
+}
 </script>
 </body>
 </html>

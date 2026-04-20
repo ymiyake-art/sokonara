@@ -203,17 +203,10 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
       <div class="admin-nav" style="border-top:1px solid rgba(255,255,255,0.07);padding-top:12px;">
         <div class="admin-nav-label">登録・管理</div>
         <div class="nav-item" id="ni-addco" onclick="switchTab('addco')"><div class="nav-dot" style="background:#9b59b6"></div>企業登録</div>
-        <div class="nav-item" id="ni-addpj" onclick="switchTab('addpj')"><div class="nav-dot" style="background:#27ae60"></div>プロジェクト登録</div>
+        <div class="nav-item" id="ni-addpj" onclick="switchTab('addpj')"><div class="nav-dot" style="background:#27ae60"></div>共創テーマ登録</div>
         <div class="nav-item" id="ni-colist" onclick="switchTab('colist')"><div class="nav-dot" style="background:var(--teal)"></div>掲載企業一覧</div>
       </div>
-      <div class="co-items">
-        <div class="admin-nav-label" style="padding:0 16px 6px">掲載企業</div>
-        <div class="co-item"><div class="co-av" style="background:#555">全</div><div class="co-nm">全社まとめ</div></div>
-        <div class="co-item"><div class="co-av" style="background:var(--navy)">田</div><div class="co-nm">タナカ精工</div><div class="co-bd">3</div></div>
-        <div class="co-item"><div class="co-av" style="background:var(--teal-d)">中</div><div class="co-nm">ナカムラフーズ</div><div class="co-bd">1</div></div>
-        <div class="co-item"><div class="co-av" style="background:var(--gray)">吉</div><div class="co-nm">吉田建設</div></div>
-        <div class="co-item"><div class="co-av" style="background:#8a6020">林</div><div class="co-nm">ハヤシテック</div></div>
-      </div>
+      <div class="co-items" id="sidebarCompanies"></div>
       <div class="sidebar-foot">2026年4月<br>次の配信：4月17日</div>
     </aside>
     <div class="admin-main">
@@ -253,6 +246,7 @@ function checkPass(){
     document.getElementById('topbar').style.display='flex';
     document.getElementById('shell').style.display='block';
     localStorage.setItem('snAdmin','ok');
+    renderSidebarCompanies();
     switchTab(getInitialTab());
   } else {
     document.getElementById('gate-err').style.display='block';
@@ -266,6 +260,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('gate').style.display='none';
     document.getElementById('topbar').style.display='flex';
     document.getElementById('shell').style.display='block';
+    renderSidebarCompanies();
     switchTab(getInitialTab());
   }
 });
@@ -275,7 +270,7 @@ function switchTab(tab){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const ni=document.getElementById('ni-'+tab);
   if(ni) ni.classList.add('active');
-  const titles={dash:'ダッシュボード',reactions:'反応一覧',contacts:'接点候補リスト',report:'AIレポート生成',addco:'企業登録',addpj:'プロジェクト登録',colist:'掲載企業一覧'};
+  const titles={dash:'ダッシュボード',reactions:'反応一覧',contacts:'接点候補リスト',report:'AIレポート生成',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧'};
   document.getElementById('tabTitle').textContent=titles[tab]||tab;
   const fns={dash:renderDash,reactions:renderReactions,contacts:renderContacts,report:renderReport,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList};
   fns[tab]?.();
@@ -514,6 +509,19 @@ function loadProjects(){
   try{ return JSON.parse(localStorage.getItem('sn_projects')||'[]'); }catch{ return []; }
 }
 function saveProjects(arr){ localStorage.setItem('sn_projects',JSON.stringify(arr)); }
+function renderSidebarCompanies(){
+  const el=document.getElementById('sidebarCompanies');
+  if(!el) return;
+  const companies=loadCompanies();
+  let html=`<div class="admin-nav-label" style="padding:0 16px 6px">掲載企業</div>`;
+  html+=`<div class="co-item"><div class="co-av" style="background:#555">全</div><div class="co-nm">全社まとめ</div><div class="co-bd">${companies.length}</div></div>`;
+  html+=companies.map(c=>{
+    const name=c.name||'企業名未設定';
+    const ini=name.trim().charAt(0)||'社';
+    return `<div class="co-item"><div class="co-av" style="background:var(--navy)">${ini}</div><div class="co-nm">${name}</div></div>`;
+  }).join('');
+  el.innerHTML=html;
+}
 
 // ===== 企業登録 =====
 function renderAddCo(){
@@ -652,6 +660,7 @@ function saveCo(){
   const arr=loadCompanies();
   arr.push(co);
   saveCompanies(arr);
+  renderSidebarCompanies();
   toast(`「${name}」を登録しました`);
   setTimeout(()=>switchTab('colist'),800);
 }
@@ -734,7 +743,7 @@ async function genCoArticle(){
   btn.textContent='✦ AIで記事を生成'; btn.disabled=false;
 }
 
-// ===== プロジェクト登録 =====
+// ===== 共創テーマ登録 =====
 function renderAddPj(){
   const cos=loadCompanies();
   document.getElementById('adminContent').innerHTML=`
@@ -742,16 +751,16 @@ function renderAddPj(){
       <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;overflow:hidden">
         <div style="padding:14px 18px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px">
           <span style="background:#27ae60;color:#fff;font-size:9px;padding:2px 8px;border-radius:2px;font-family:'JetBrains Mono',monospace">NEW</span>
-          プロジェクトを登録する
+          共創テーマを登録する
         </div>
         <div style="padding:20px">
           <div style="margin-bottom:14px">
-            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">プロジェクトタイトル <span style="color:var(--hot)">*</span></div>
+            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">共創テーマタイトル <span style="color:var(--hot)">*</span></div>
             <input id="pj-title" type="text" placeholder="例：製造業DX推進の壁打ち相手を探しています" style="${inp()}">
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
             <div>
-              <div style="font-size:11px;color:var(--text2);margin-bottom:5px">プロジェクト種別 <span style="color:var(--hot)">*</span></div>
+              <div style="font-size:11px;color:var(--text2);margin-bottom:5px">共創テーマ種別 <span style="color:var(--hot)">*</span></div>
               <select id="pj-type" style="${inp()}">
                 <option value="walluchi">壁打ち（60分）</option>
                 <option value="short_pj">短期PJ（1〜4週）</option>
@@ -780,7 +789,7 @@ function renderAddPj(){
             </div>
           </div>
           <div style="margin-bottom:14px">
-            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">プロジェクト概要 <span style="color:var(--hot)">*</span></div>
+            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">共創テーマ概要 <span style="color:var(--hot)">*</span></div>
             <textarea id="pj-desc" rows="5" placeholder="どんな課題があり、どんな人と話したいか・何をしてほしいかを書いてください" style="${inp()}resize:vertical;"></textarea>
           </div>
           <div style="margin-bottom:14px">
@@ -820,7 +829,7 @@ function savePj(){
   const arr=loadProjects();
   arr.push(pj);
   saveProjects(arr);
-  toast(`プロジェクト「${title}」を登録しました`);
+  toast(`共創テーマ「${title}」を登録しました`);
   setTimeout(()=>switchTab('colist'),800);
 }
 
@@ -834,7 +843,7 @@ function renderCoList(){
   document.getElementById('adminContent').innerHTML=`
     <div style="padding:24px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div style="font-size:13px;color:var(--text2)">${cos.length}社登録済み / プロジェクト${pjs.length}件</div>
+        <div style="font-size:13px;color:var(--text2)">${cos.length}社登録済み / 共創テーマ${pjs.length}件</div>
         <div style="display:flex;gap:8px">
           <button onclick="switchTab('addco')" style="padding:8px 16px;background:var(--teal);color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">＋ 企業を追加</button>
           <button onclick="switchTab('addpj')" style="padding:8px 16px;background:#27ae60;color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">＋ PJを追加</button>
@@ -870,7 +879,7 @@ function renderCoList(){
 
       ${pjs.length>0?`
         <div>
-          <div style="font-size:11px;color:var(--text2);font-family:'JetBrains Mono',monospace;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:0.5px solid var(--border)">プロジェクト</div>
+          <div style="font-size:11px;color:var(--text2);font-family:'JetBrains Mono',monospace;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:0.5px solid var(--border)">共創テーマ</div>
           ${pjs.map(p=>{
             const coName=p.companyId?cos.find(c=>c.id===p.companyId)?.name||'（不明）':'匿名';
             return `
@@ -898,11 +907,12 @@ function deleteCo(id){
   if(!confirm('この企業を削除しますか？')) return;
   const arr=loadCompanies().filter(c=>c.id!==id);
   saveCompanies(arr);
+  renderSidebarCompanies();
   toast('削除しました');
   renderCoList();
 }
 function deletePj(id){
-  if(!confirm('このプロジェクトを削除しますか？')) return;
+  if(!confirm('この共創テーマを削除しますか？')) return;
   const arr=loadProjects().filter(p=>p.id!==id);
   saveProjects(arr);
   toast('削除しました');
