@@ -1288,7 +1288,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabaseClient = (SUPABASE_URL && SUPABASE_KEY && window.supabase)
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
   : null;
-let companiesCache = [];
+let cachedCompanies = [];
 let projectsCache = [];
 
 const Q2_DIST = [
@@ -1322,14 +1322,14 @@ function enterFromTop(target){
 }
 
 function loadCompanies(){
-  if(companiesCache.length) return companiesCache;
+  if(cachedCompanies.length) return cachedCompanies;
   try{
     const local = JSON.parse(localStorage.getItem('sn_companies')||'[]');
-    companiesCache = Array.isArray(local) ? local : [];
+    cachedCompanies = Array.isArray(local) ? local : [];
   }catch{
-    companiesCache = [];
+    cachedCompanies = [];
   }
-  return companiesCache;
+  return cachedCompanies;
 }
 function loadProjects(){
   if(projectsCache.length) return projectsCache;
@@ -1345,9 +1345,9 @@ async function loadCompaniesAsync(){
   if(!supabaseClient) return loadCompanies();
   const {data,error}=await supabaseClient.from('companies').select('*').order('created_at',{ascending:true});
   if(error){ console.warn('companies load fallback:', error.message); return loadCompanies(); }
-  companiesCache = data||[];
-  localStorage.setItem('sn_companies', JSON.stringify(companiesCache));
-  return companiesCache;
+  cachedCompanies = Array.isArray(data) ? data : [];
+  localStorage.setItem('sn_companies', JSON.stringify(cachedCompanies));
+  return cachedCompanies;
 }
 async function loadProjectsAsync(){
   if(!supabaseClient) return loadProjects();
@@ -2173,19 +2173,22 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
   renderCompanyList();
   renderTopLeaders();
   const params = new URLSearchParams(window.location.search);
+  const noParams = [...params.keys()].length === 0;
+  const hasDirectParam = Boolean(params.get('cid') || params.get('company'));
   const matched = loadPrimaryCompany();
-  if(matched && (params.get('cid') || params.get('company'))){
+  if(matched && hasDirectParam){
     selectedCompanyId = matched.id || null;
+    toggleTopPage(false);
     goScreen('p1');
     renderP1FromCompany();
   }else{
+    toggleTopPage(noParams);
     goScreen('p-list');
   }
   if(S.mode==='user' && document.getElementById('project')?.classList.contains('active')){
     renderPjList();
   }
 });
-toggleTopPage(false);
 </script>
 </body>
 </html>
