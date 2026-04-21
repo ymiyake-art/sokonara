@@ -1256,11 +1256,23 @@ body {
 
 <div class="toast" id="toastEl"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ===== DATA =====
 const COMPANIES = [];
 const REACTIONS = [];
 const EMPATHY = [];
+const SUPABASE_URL = 'https://ypwwuylcvjwcyazvpibd.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd3d1eWxjdmp3Y3lhenZwaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTY1MTMsImV4cCI6MjA5MjI3MjUxM30.7YseXt8libEzFsSAv4bI46l36kZ2lFz_jnh1JphVpvA';
+// Vercel設定手順:
+// 1) Project Settings -> Environment Variables
+// 2) SUPABASE_URL と SUPABASE_KEY を追加
+// 3) デプロイ時に window.SUPABASE_URL / window.SUPABASE_KEY から参照
+const supabaseClient = (SUPABASE_URL && SUPABASE_KEY && window.supabase)
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+  : null;
+let companiesCache = [];
+let projectsCache = [];
 
 const Q2_DIST = [
   {label:'挑戦できる環境',count:28,pct:67},
@@ -1290,6 +1302,43 @@ function enterFromTop(target){
   if(btn){ switchMode('user', btn, target==='project'?'project':'company'); }
 }
 
+function loadCompanies(){
+  if(companiesCache.length) return companiesCache;
+  try{
+    const local = JSON.parse(localStorage.getItem('sn_companies')||'[]');
+    companiesCache = Array.isArray(local) ? local : [];
+  }catch{
+    companiesCache = [];
+  }
+  return companiesCache;
+}
+function loadProjects(){
+  if(projectsCache.length) return projectsCache;
+  try{
+    const local = JSON.parse(localStorage.getItem('sn_projects')||'[]');
+    projectsCache = Array.isArray(local) ? local : [];
+  }catch{
+    projectsCache = [];
+  }
+  return projectsCache;
+}
+async function loadCompaniesAsync(){
+  if(!supabaseClient) return loadCompanies();
+  const {data,error}=await supabaseClient.from('companies').select('*').order('created_at',{ascending:true});
+  if(error){ console.warn('companies load fallback:', error.message); return loadCompanies(); }
+  companiesCache = data||[];
+  localStorage.setItem('sn_companies', JSON.stringify(companiesCache));
+  return companiesCache;
+}
+async function loadProjectsAsync(){
+  if(!supabaseClient) return loadProjects();
+  const {data,error}=await supabaseClient.from('projects').select('*').order('created_at',{ascending:true});
+  if(error){ console.warn('projects load fallback:', error.message); return loadProjects(); }
+  projectsCache = (data||[]).map(p=>({ ...p, desc:p.description||p.desc||'' }));
+  localStorage.setItem('sn_projects', JSON.stringify(projectsCache));
+  return projectsCache;
+}
+
 // ===== MODE SWITCH =====
 function switchMode(m, btn, sub) {
   S.mode = m;
@@ -1311,7 +1360,7 @@ function switchMode(m, btn, sub) {
 const PJ_SAMPLES=[];
 const PJ_TYPE={wall:{label:'壁打ち 60分',badgeClass:'tb-wall',accentClass:'wall'},short:{label:'短期PJ',badgeClass:'tb-short',accentClass:'short'},hire:{label:'採用含み',badgeClass:'tb-hire',accentClass:'hire'}};
 let pjFilter='all'; let curPj=null; let pjCompanyFilterId=null;
-function getAllPj(){try{const stored=JSON.parse(localStorage.getItem('sn_projects')||'[]');const cos=JSON.parse(localStorage.getItem('sn_companies')||'[]');const tmap={walluchi:'wall',short_pj:'short',hire:'hire'};const cmap={new_biz_lead:'new_biz',new_biz:'new_biz',successor:'successor'};return stored.map(p=>{const co=cos.find(c=>c.id===p.companyId);return{id:p.id,title:p.title,type:tmap[p.type]||p.type,coType:cmap[p.coType]||p.coType||'successor',company:co?co.name:null,companyId:p.companyId||null,ceo:co?co.ceo:null,anonymous:!p.companyId,duration:p.duration||'',created:p.created,desc:p.desc,q1:p.q1||[]};});}catch{return [];}}
+function getAllPj(){const stored=loadProjects();const cos=loadCompanies();const tmap={walluchi:'wall',short_pj:'short',hire:'hire'};const cmap={new_biz_lead:'new_biz',new_biz:'new_biz',successor:'successor'};return stored.map(p=>{const co=cos.find(c=>c.id===p.companyId);return{id:p.id,title:p.title,type:tmap[p.type]||p.type,coType:cmap[p.coType]||p.coType||'successor',company:co?co.name:null,companyId:p.companyId||null,ceo:co?co.ceo:null,anonymous:!p.companyId,duration:p.duration||'',created:p.created,desc:p.desc,q1:p.q1||[]};});}
 function setPjFilter(f,btn){pjFilter=f;document.querySelectorAll('.pj-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderPjList();}
 function renderPjList(){const all=getAllPj();let filtered=pjFilter==='all'?all:pjFilter==='wall'?all.filter(p=>p.type==='wall'):pjFilter==='short'?all.filter(p=>p.type==='short'):pjFilter==='hire'?all.filter(p=>p.type==='hire'):pjFilter==='successor'?all.filter(p=>p.coType==='successor'):all.filter(p=>p.coType==='new_biz');if(pjCompanyFilterId){filtered=filtered.filter(p=>p.companyId===pjCompanyFilterId);}const el=document.getElementById('pjListBody');if(!el)return;if(filtered.length===0){el.innerHTML='<div style="text-align:center;padding:48px;background:var(--white);border:1px solid var(--border);border-radius:2px;font-size:13px;color:var(--text2);">共創テーマを準備中です。しばらくお待ちください。</div>';return;}const suc=pjFilter==='all'?filtered.filter(p=>p.coType==='successor'):filtered;const nbiz=pjFilter==='all'?filtered.filter(p=>p.coType==='new_biz'):[];let html='';if(pjFilter==='all'&&!pjCompanyFilterId){if(suc.length>0)html+=`<div class="pj-section-lbl">後継者・アトツギ（${suc.length}件）</div>${suc.map(pjCard).join('')}`;if(nbiz.length>0)html+=`<div class="pj-section-lbl" style="margin-top:24px">新規事業責任者（${nbiz.length}件）</div>${nbiz.map(pjCard).join('')}`;}else{html=filtered.map(pjCard).join('');}el.innerHTML=html;}
 function pjCard(p){const tc=PJ_TYPE[p.type]||PJ_TYPE.wall;const coLabel=p.anonymous?'企業名非公開':p.company||'';return `<div class="pj-card" onclick="openPj('${p.id}')"><div class="pj-accent ${tc.accentClass}"></div><div class="pj-card-inner"><span class="pj-type-badge ${tc.badgeClass}">${tc.label}</span><div class="pj-title">${p.title}</div><div class="pj-meta">${[coLabel,p.ceo&&!p.anonymous?p.ceo:'',p.duration,p.created].filter(Boolean).join(' · ')}</div><div class="pj-desc-preview">${p.desc.slice(0,70)}…</div></div></div>`;}
@@ -1398,7 +1447,7 @@ function renderCeoAvatar(el, companyName, color, photoUrl){
 
 function loadPrimaryCompany(){
   try{
-    const stored = JSON.parse(localStorage.getItem('sn_companies') || '[]');
+    const stored = loadCompanies();
     if(Array.isArray(stored) && stored.length > 0){
       const q = new URLSearchParams(window.location.search);
       const companyParam = (q.get('company') || '').trim().toLowerCase();
@@ -1486,7 +1535,7 @@ function updateCompanyProjectCta(co){
   if(!btn) return;
   if(!co?.id){ btn.style.display='none'; return; }
   try{
-    const all = JSON.parse(localStorage.getItem('sn_projects') || '[]');
+    const all = loadProjects();
     const count = all.filter(p=>p.companyId === co.id).length;
     btn.style.display = count > 0 ? 'inline-flex' : 'none';
   }catch{
@@ -2047,6 +2096,12 @@ function resetAll(){
 renderDash();
 renderP1FromCompany();
 handleLineCallback();
+Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
+  renderP1FromCompany();
+  if(S.mode==='user' && document.getElementById('project')?.classList.contains('active')){
+    renderPjList();
+  }
+});
 if(!hasCompanyParam()){
   toggleTopPage(true);
 }

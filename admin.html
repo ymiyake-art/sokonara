@@ -224,10 +224,22 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
 
 <div class="toast" id="toastEl"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const COMPANIES=[];
 const REACTIONS=[];
 const EMPATHY=[];
+const SUPABASE_URL = 'https://ypwwuylcvjwcyazvpibd.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd3d1eWxjdmp3Y3lhenZwaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTY1MTMsImV4cCI6MjA5MjI3MjUxM30.7YseXt8libEzFsSAv4bI46l36kZ2lFz_jnh1JphVpvA';
+// Vercel設定手順:
+// 1) Project Settings -> Environment Variables
+// 2) SUPABASE_URL と SUPABASE_KEY を追加（Production/Preview/Development）
+// 3) デプロイ後、window.SUPABASE_URL / window.SUPABASE_KEY に注入するスクリプトで参照
+const supabaseClient = (SUPABASE_URL && SUPABASE_KEY && window.supabase)
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+  : null;
+let companiesCache = [];
+let projectsCache = [];
 let curTab='dash';
 function getInitialTab(){
   try{
@@ -246,7 +258,8 @@ function checkPass(){
     document.getElementById('topbar').style.display='flex';
     document.getElementById('shell').style.display='block';
     localStorage.setItem('snAdmin','ok');
-    renderSidebarCompanies();
+    loadCompaniesAsync().finally(renderSidebarCompanies);
+    loadProjectsAsync();
     switchTab(getInitialTab());
   } else {
     document.getElementById('gate-err').style.display='block';
@@ -260,7 +273,8 @@ window.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('gate').style.display='none';
     document.getElementById('topbar').style.display='flex';
     document.getElementById('shell').style.display='block';
-    renderSidebarCompanies();
+    loadCompaniesAsync().finally(renderSidebarCompanies);
+    loadProjectsAsync();
     switchTab(getInitialTab());
   }
 });
@@ -502,13 +516,84 @@ function toast(msg){
 
 // ===== STORAGE HELPERS =====
 function loadCompanies(){
-  try{ return JSON.parse(localStorage.getItem('sn_companies')||'[]'); }catch{ return []; }
+  if(Array.isArray(companiesCache) && companiesCache.length) return companiesCache;
+  try{
+    const local = JSON.parse(localStorage.getItem('sn_companies')||'[]');
+    companiesCache = Array.isArray(local) ? local : [];
+  }catch{
+    companiesCache = [];
+  }
+  return companiesCache;
 }
-function saveCompanies(arr){ localStorage.setItem('sn_companies',JSON.stringify(arr)); }
+function toCompanyRow(c){
+  return {
+    id:c.id,name:c.name,ceo:c.ceo,type:c.type,plan:c.plan,articleType:c.articleType,
+    photoUrl:c.photoUrl||'',industry:c.industry||'',employeeSize:c.employeeSize||'',companyIntro:c.companyIntro||'',
+    tags:c.tags||[],title:c.title||'',quote:c.quote||'',body:c.body||'',q1:c.q1||[],fee:c.fee||'',
+    status:c.status||'active',created_at:c.created_at||new Date().toISOString(),reactions:c.reactions||0,cta:c.cta||0
+  };
+}
+function fromCompanyRow(r){
+  return {...r, created:r.created||new Date(r.created_at||Date.now()).toLocaleDateString('ja-JP')};
+}
+async function loadCompaniesAsync(){
+  if(!supabaseClient) return loadCompanies();
+  const {data,error}=await supabaseClient.from('companies').select('*').order('created_at',{ascending:true});
+  if(error){ console.warn('companies load fallback:', error.message); return loadCompanies(); }
+  companiesCache = (data||[]).map(fromCompanyRow);
+  localStorage.setItem('sn_companies', JSON.stringify(companiesCache));
+  return companiesCache;
+}
+function saveCompanies(arr){
+  companiesCache = Array.isArray(arr)?arr:[];
+  localStorage.setItem('sn_companies',JSON.stringify(companiesCache));
+  if(!supabaseClient) return;
+  const rows = companiesCache.map(toCompanyRow);
+  supabaseClient.from('companies').upsert(rows,{onConflict:'id'}).then(({error})=>{
+    if(error) console.warn('companies save fallback:', error.message);
+  });
+}
 function loadProjects(){
-  try{ return JSON.parse(localStorage.getItem('sn_projects')||'[]'); }catch{ return []; }
+  if(Array.isArray(projectsCache) && projectsCache.length) return projectsCache;
+  try{
+    const local = JSON.parse(localStorage.getItem('sn_projects')||'[]');
+    projectsCache = Array.isArray(local) ? local : [];
+  }catch{
+    projectsCache = [];
+  }
+  return projectsCache;
 }
-function saveProjects(arr){ localStorage.setItem('sn_projects',JSON.stringify(arr)); }
+function toProjectRow(p){
+  return {
+    id:p.id,title:p.title,type:p.type,coType:p.coType,companyId:p.companyId||null,anonymous:!p.companyId,
+    duration:p.duration||'',description:p.desc||'',q1:p.q1||[],themes:p.themes||[],involvement:p.involvement||[],
+    status:p.status||'active',created_at:p.created_at||new Date().toISOString()
+  };
+}
+function fromProjectRow(r){
+  return {
+    ...r,
+    desc:r.description||r.desc||'',
+    created:r.created||new Date(r.created_at||Date.now()).toLocaleDateString('ja-JP')
+  };
+}
+async function loadProjectsAsync(){
+  if(!supabaseClient) return loadProjects();
+  const {data,error}=await supabaseClient.from('projects').select('*').order('created_at',{ascending:true});
+  if(error){ console.warn('projects load fallback:', error.message); return loadProjects(); }
+  projectsCache = (data||[]).map(fromProjectRow);
+  localStorage.setItem('sn_projects', JSON.stringify(projectsCache));
+  return projectsCache;
+}
+function saveProjects(arr){
+  projectsCache = Array.isArray(arr)?arr:[];
+  localStorage.setItem('sn_projects',JSON.stringify(projectsCache));
+  if(!supabaseClient) return;
+  const rows = projectsCache.map(toProjectRow);
+  supabaseClient.from('projects').upsert(rows,{onConflict:'id'}).then(({error})=>{
+    if(error) console.warn('projects save fallback:', error.message);
+  });
+}
 function renderSidebarCompanies(){
   const el=document.getElementById('sidebarCompanies');
   if(!el) return;
