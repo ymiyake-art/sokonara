@@ -922,7 +922,7 @@ body {
     <img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ" style="height:48px;width:auto;display:block;margin:0 auto 24px;">
     <div style="font-family:'Noto Serif JP',serif;font-weight:700;font-size:32px;line-height:1.5;color:#fff;margin-bottom:10px;">出会いは検索から生まれない</div>
     <div style="font-size:14px;line-height:1.9;color:rgba(255,255,255,0.86);margin-bottom:22px;">地域の経営者と、まず話してみませんか</div>
-    <button class="btn-primary" style="width:100%;justify-content:center;background:#42AD9F;margin-bottom:10px;" onclick="enterFromTop('company')">経営者一覧を見る →</button>
+    <button class="btn-primary" style="width:100%;justify-content:center;background:#42AD9F;margin-bottom:10px;" onclick="enterFromTop('company')">経営層一覧を見る →</button>
     <button class="btn-primary" style="width:100%;justify-content:center;background:#1C2A54;border:1px solid rgba(255,255,255,0.45);" onclick="enterFromTop('project')">共創テーマを見る →</button>
   </div>
 </div>
@@ -930,7 +930,7 @@ body {
 <!-- ===== MODE BAR ===== -->
 <div class="mode-bar">
   <div class="mode-brand"><img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ"></div>
-  <button class="mode-btn active" id="mb-company" onclick="switchMode('user',this,'company')">経営者一覧</button>
+  <button class="mode-btn active" id="mb-company" onclick="switchMode('user',this,'company')">経営層一覧</button>
   <button class="mode-btn" id="mb-project" onclick="switchMode('user',this,'project')">共創テーマ</button>
   <button class="mode-btn" onclick="switchMode('admin',this,'')">管理画面</button>
   <button class="mode-reset" onclick="resetAll()">↺ リセット</button>
@@ -952,9 +952,16 @@ body {
      USER VIEW
      =========================== -->
 <div id="user" class="view active">
+  <div id="p-list" class="screen active">
+    <div style="padding:20px 16px 28px;max-width:820px;margin:0 auto;">
+      <div style="font-family:'Noto Serif JP',serif;font-size:24px;color:var(--navy);font-weight:700;margin-bottom:4px;">経営層一覧</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">気になる経営層のカードをタップして記事を読む</div>
+      <div id="companyListBody"></div>
+    </div>
+  </div>
 
   <!-- P1 -->
-  <div id="p1" class="screen active">
+  <div id="p1" class="screen">
     <div class="content-nav">
       <div class="ceo-avatar-sm" id="p1Avatar">田</div>
       <div>
@@ -1158,12 +1165,11 @@ body {
     </div>
     <div style="background:var(--white);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;gap:6px;flex-wrap:wrap;position:sticky;top:48px;z-index:90;">
       <button class="pj-filter-btn active" onclick="setPjFilter('all',this)">すべて</button>
-      <button class="pj-filter-btn" onclick="setPjFilter('wall',this)">壁打ち 60分</button>
-      <button class="pj-filter-btn" onclick="setPjFilter('short',this)">短期PJ</button>
-      <button class="pj-filter-btn" onclick="setPjFilter('hire',this)">採用含み</button>
-      <div style="width:1px;background:var(--border);margin:0 2px;"></div>
-      <button class="pj-filter-btn" onclick="setPjFilter('successor',this)">後継者・アトツギ</button>
-      <button class="pj-filter-btn" onclick="setPjFilter('new_biz',this)">新規事業</button>
+      <button class="pj-filter-btn" onclick="setPjFilter('WEB雑談',this)">WEB雑談</button>
+      <button class="pj-filter-btn" onclick="setPjFilter('副業',this)">副業</button>
+      <button class="pj-filter-btn" onclick="setPjFilter('ボランティア',this)">ボランティア</button>
+      <button class="pj-filter-btn" onclick="setPjFilter('短期プロジェクト',this)">短期プロジェクト</button>
+      <button class="pj-filter-btn" onclick="setPjFilter('転職含み',this)">転職含み</button>
     </div>
     <div style="max-width:720px;margin:0 auto;padding:20px 16px 80px;" id="pjListBody"></div>
   </div>
@@ -1283,10 +1289,11 @@ const Q2_DIST = [
 ];
 
 // ===== STATE =====
-const S = { q1:'', q2:[], q3:'', free:'', fb:null, screen:'p1', mode:'user', adminTab:'dash' };
-const SCREENS = ['p1','p2','p3','p4','p5'];
+const S = { q1:'', q2:[], q3:'', free:'', fb:null, screen:'p-list', mode:'user', adminTab:'dash' };
+const SCREENS = ['p-list','p1','p2','p3','p4','p5'];
 const PROG = {p1:20,p2:40,p3:60,p4:80,p5:100};
-function hasCompanyParam(){ try{ return Boolean(new URLSearchParams(window.location.search).get('company')); }catch{return false;} }
+let selectedCompanyId = null;
+function hasAnyParams(){ try{ return [...new URLSearchParams(window.location.search).keys()].length>0; }catch{return false;} }
 function toggleTopPage(show){
   const top=document.getElementById('topPage');
   const mode=document.querySelector('.mode-bar');
@@ -1300,6 +1307,7 @@ function enterFromTop(target){
   toggleTopPage(false);
   const btn=document.getElementById(target==='project'?'mb-project':'mb-company');
   if(btn){ switchMode('user', btn, target==='project'?'project':'company'); }
+  if(target==='company'){ renderCompanyList(); goScreen('p-list'); }
 }
 
 function loadCompanies(){
@@ -1354,6 +1362,7 @@ function switchMode(m, btn, sub) {
   document.getElementById('stepDots').style.display = isUser ? 'flex' : 'none';
   if (isAdmin) renderAdminTab(S.adminTab);
   if (isProject) renderPjList();
+  if (isUser) { renderCompanyList(); goScreen('p-list'); }
 }
 
 // ===== PROJECT JS =====
@@ -1362,7 +1371,7 @@ const PJ_TYPE={wall:{label:'壁打ち 60分',badgeClass:'tb-wall',accentClass:'w
 let pjFilter='all'; let curPj=null; let pjCompanyFilterId=null;
 function getAllPj(){const stored=loadProjects();const cos=loadCompanies();const tmap={walluchi:'wall',short_pj:'short',hire:'hire'};const cmap={new_biz_lead:'new_biz',new_biz:'new_biz',successor:'successor'};return stored.map(p=>{const co=cos.find(c=>c.id===p.companyId);return{id:p.id,title:p.title,type:tmap[p.type]||p.type,coType:cmap[p.coType]||p.coType||'successor',company:co?co.name:null,companyId:p.companyId||null,ceo:co?co.ceo:null,anonymous:!p.companyId,duration:p.duration||'',created:p.created,desc:p.desc,q1:p.q1||[]};});}
 function setPjFilter(f,btn){pjFilter=f;document.querySelectorAll('.pj-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderPjList();}
-function renderPjList(){const all=getAllPj();let filtered=pjFilter==='all'?all:pjFilter==='wall'?all.filter(p=>p.type==='wall'):pjFilter==='short'?all.filter(p=>p.type==='short'):pjFilter==='hire'?all.filter(p=>p.type==='hire'):pjFilter==='successor'?all.filter(p=>p.coType==='successor'):all.filter(p=>p.coType==='new_biz');if(pjCompanyFilterId){filtered=filtered.filter(p=>p.companyId===pjCompanyFilterId);}const el=document.getElementById('pjListBody');if(!el)return;if(filtered.length===0){el.innerHTML='<div style="text-align:center;padding:48px;background:var(--white);border:1px solid var(--border);border-radius:2px;font-size:13px;color:var(--text2);">共創テーマを準備中です。しばらくお待ちください。</div>';return;}const suc=pjFilter==='all'?filtered.filter(p=>p.coType==='successor'):filtered;const nbiz=pjFilter==='all'?filtered.filter(p=>p.coType==='new_biz'):[];let html='';if(pjFilter==='all'&&!pjCompanyFilterId){if(suc.length>0)html+=`<div class="pj-section-lbl">後継者・アトツギ（${suc.length}件）</div>${suc.map(pjCard).join('')}`;if(nbiz.length>0)html+=`<div class="pj-section-lbl" style="margin-top:24px">新規事業責任者（${nbiz.length}件）</div>${nbiz.map(pjCard).join('')}`;}else{html=filtered.map(pjCard).join('');}el.innerHTML=html;}
+function renderPjList(){const all=getAllPj();let filtered=all;if(pjFilter!=='all'){filtered=all.filter(p=>{const inv=Array.isArray(p.involvement)?p.involvement:[];if(inv.includes(pjFilter)) return true;const map={WEB雑談:'wall',副業:'short',ボランティア:'short',短期プロジェクト:'short',転職含み:'hire'};return p.type===map[pjFilter];});}if(pjCompanyFilterId){filtered=filtered.filter(p=>p.companyId===pjCompanyFilterId);}const el=document.getElementById('pjListBody');if(!el)return;if(filtered.length===0){el.innerHTML='<div style="text-align:center;padding:48px;background:var(--white);border:1px solid var(--border);border-radius:2px;font-size:13px;color:var(--text2);">共創テーマを準備中です。しばらくお待ちください。</div>';return;}el.innerHTML=filtered.map(pjCard).join('');}
 function pjCard(p){const tc=PJ_TYPE[p.type]||PJ_TYPE.wall;const coLabel=p.anonymous?'企業名非公開':p.company||'';return `<div class="pj-card" onclick="openPj('${p.id}')"><div class="pj-accent ${tc.accentClass}"></div><div class="pj-card-inner"><span class="pj-type-badge ${tc.badgeClass}">${tc.label}</span><div class="pj-title">${p.title}</div><div class="pj-meta">${[coLabel,p.ceo&&!p.anonymous?p.ceo:'',p.duration,p.created].filter(Boolean).join(' · ')}</div><div class="pj-desc-preview">${p.desc.slice(0,70)}…</div></div></div>`;}
 function openPj(id){const p=getAllPj().find(x=>x.id===id);if(!p)return;curPj=p;const tc=PJ_TYPE[p.type]||PJ_TYPE.wall;const coLabel=p.anonymous?'企業名非公開':p.company||'';document.getElementById('pjDetailBody').innerHTML=`<span class="pj-type-badge ${tc.badgeClass}" style="margin-bottom:14px;display:inline-block">${tc.label}</span><div style="font-family:'Noto Serif JP',serif;font-size:20px;font-weight:700;color:var(--navy);line-height:1.5;margin-bottom:12px">${p.title}</div><div style="font-size:12px;color:var(--text2);margin-bottom:20px">${[coLabel,p.ceo&&!p.anonymous?p.ceo:'',p.duration,p.created].filter(Boolean).join(' · ')}</div><div style="font-size:14px;color:var(--text2);line-height:1.9;">${p.desc}</div>`;document.getElementById('pjCtaTitle').textContent=p.title.slice(0,30)+'…';document.getElementById('pjCtaBar').style.display='flex';showPjScreen('pj-detail');window.scrollTo(0,0);}
 function showPjScreen(id){['pj-list','pj-detail','pj-apply','pj-complete'].forEach(s=>{const el=document.getElementById(s);if(el)el.style.display='none';});const t=document.getElementById(id);if(t){t.style.display=id==='pj-complete'?'flex':'block';if(id==='pj-list')document.getElementById('pjCtaBar').style.display='none';}}
@@ -1450,6 +1459,11 @@ function loadPrimaryCompany(){
     const stored = loadCompanies();
     if(Array.isArray(stored) && stored.length > 0){
       const q = new URLSearchParams(window.location.search);
+      const cid = (q.get('cid') || '').trim();
+      if(cid){
+        const byId = stored.find(c=>String(c.id||'')===cid);
+        if(byId) return byId;
+      }
       const companyParam = (q.get('company') || '').trim().toLowerCase();
       if(companyParam){
         const hit = stored.find(c=>{
@@ -1458,10 +1472,41 @@ function loadPrimaryCompany(){
         });
         if(hit) return hit;
       }
+      if(selectedCompanyId){
+        const selected = stored.find(c=>String(c.id||'')===String(selectedCompanyId));
+        if(selected) return selected;
+      }
       return stored[0];
     }
   }catch{}
   return null;
+}
+
+function openCompanyArticle(id){
+  selectedCompanyId = id;
+  goScreen('p1');
+  renderP1FromCompany();
+}
+
+function renderCompanyList(){
+  const list = loadCompanies();
+  const el = document.getElementById('companyListBody');
+  if(!el) return;
+  if(!Array.isArray(list) || list.length===0){
+    el.innerHTML = '<div style="background:var(--white);border:1px solid var(--border);padding:26px;border-radius:2px;color:var(--text2);font-size:13px;">経営者データを準備中です。しばらくお待ちください。</div>';
+    return;
+  }
+  el.innerHTML = list.map(c=>{
+    const name=c.ceo||'経営者名未設定';
+    const company=c.name||c.company||'会社名未設定';
+    const tags=(Array.isArray(c.tags)?c.tags:[]).slice(0,3);
+    const intro=(c.body||'').replace(/\s+/g,' ').slice(0,50);
+    const photo=c.photoUrl||'';
+    const av = photo
+      ? `<div class="ceo-avatar-sm" style="width:56px;height:56px;background-image:url('${escapeHtml(photo)}');background-size:cover;background-position:center;"></div>`
+      : `<div class="ceo-avatar-sm" style="width:56px;height:56px;">${escapeHtml((company||'社').charAt(0))}</div>`;
+    return `<div class="pj-card" onclick="openCompanyArticle('${escapeHtml(c.id||'')}')"><div class="pj-accent wall"></div><div class="pj-card-inner"><div style="display:flex;gap:10px;align-items:center;">${av}<div><div style="font-size:14px;font-weight:700;color:var(--navy)">${escapeHtml(name)}</div><div class="pj-meta">${escapeHtml(company)}</div></div></div><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${tags.map(t=>`<span class='reco-tag'>${escapeHtml(t)}</span>`).join('')}</div><div class="pj-desc-preview" style="margin-top:8px;">${escapeHtml(intro)}${intro?'…':''}</div></div></div>`;
+  }).join('');
 }
 
 function renderP1FromCompany(){
@@ -1561,7 +1606,7 @@ function goScreen(id) {
   document.getElementById(id).classList.add('active');
   S.screen = id;
   // progress
-  document.getElementById('progressFill').style.width = PROG[id]+'%';
+  document.getElementById('progressFill').style.width = (PROG[id]||0)+'%';
   SCREENS.forEach((s,i)=>{
     const d = document.getElementById('d'+i);
     d.className = 'sdot';
@@ -2088,21 +2133,29 @@ function resetAll(){
   const fs=document.getElementById('fbSkel');if(fs)fs.style.display='block';
   const fc=document.getElementById('fbContent');if(fc)fc.style.display='none';
   const rc=document.getElementById('recoCards');if(rc)rc.innerHTML='';
-  goScreen('p1');
+  goScreen('p-list');
   document.querySelector('.mode-btn').click();
 }
 
 // init admin
 renderDash();
-renderP1FromCompany();
 handleLineCallback();
 Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
-  renderP1FromCompany();
+  renderCompanyList();
+  const matched = loadPrimaryCompany();
+  const params = new URLSearchParams(window.location.search);
+  if(matched && (params.get('cid') || params.get('company'))){
+    selectedCompanyId = matched.id;
+    goScreen('p1');
+    renderP1FromCompany();
+  }else{
+    goScreen('p-list');
+  }
   if(S.mode==='user' && document.getElementById('project')?.classList.contains('active')){
     renderPjList();
   }
 });
-if(!hasCompanyParam()){
+if(!hasAnyParams()){
   toggleTopPage(true);
 }
 </script>
