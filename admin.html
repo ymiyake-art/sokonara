@@ -240,6 +240,7 @@ const supabaseClient = (SUPABASE_URL && SUPABASE_KEY && window.supabase)
   : null;
 let companiesCache = [];
 let projectsCache = [];
+let editingCompanyId = null;
 let curTab='dash';
 function getInitialTab(){
   try{
@@ -701,7 +702,7 @@ function renderAddCo(){
             <input id="co-fee" type="number" placeholder="例：25" style="${inp()}width:120px;">
           </div>
           <div style="display:flex;gap:10px;align-items:center">
-            <button onclick="saveCo()" style="padding:11px 24px;background:var(--teal);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">登録する</button>
+            <button id="co-save-btn" onclick="saveCo()" style="padding:11px 24px;background:var(--teal);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">登録する</button>
             <button onclick="genCoArticle()" style="padding:11px 20px;background:var(--navy);color:#fff;border:none;font-size:12px;font-weight:500;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">✦ AIで記事を生成</button>
             <span style="font-size:11px;color:var(--text2)">記事タイトル・引用・本文をAIが自動生成します</span>
           </div>
@@ -722,8 +723,9 @@ function saveCo(){
   const body=document.getElementById('co-body').value.trim();
   if(!name||!ceo||!title||!body){ toast('必須項目を入力してください'); return; }
   const q1=[1,2,3,4].map(i=>document.getElementById('co-q'+i).value.trim()).filter(Boolean);
+  const isEdit = Boolean(editingCompanyId);
   const co={
-    id:'co_'+Date.now(),
+    id: editingCompanyId || ('co_'+Date.now()),
     name,ceo,
     photoUrl:document.getElementById('co-photo-url').value.trim(),
     type:document.getElementById('co-type').value,
@@ -743,11 +745,36 @@ function saveCo(){
     reactions:0,cta:0
   };
   const arr=loadCompanies();
-  arr.push(co);
+  if(isEdit){
+    const idx = arr.findIndex(x=>x.id===editingCompanyId);
+    if(idx>=0) arr[idx]=co; else arr.push(co);
+  }else{
+    arr.push(co);
+  }
   saveCompanies(arr);
   renderSidebarCompanies();
-  toast(`「${name}」を登録しました`);
+  toast(isEdit ? `「${name}」を更新しました` : `「${name}」を登録しました`);
+  editingCompanyId = null;
   setTimeout(()=>switchTab('colist'),800);
+}
+
+function editCo(id){
+  const co = loadCompanies().find(c=>c.id===id);
+  if(!co){ toast('企業データが見つかりません'); return; }
+  editingCompanyId = id;
+  switchTab('addco');
+  setTimeout(()=>{
+    const set=(k,v)=>{ const el=document.getElementById(k); if(el) el.value=v||''; };
+    set('co-name',co.name); set('co-ceo',co.ceo); set('co-photo-url',co.photoUrl);
+    set('co-type',co.type); set('co-plan',co.plan); set('co-article-type',co.articleType);
+    set('co-industry',co.industry); set('co-size',co.employeeSize||co.size);
+    set('co-intro',co.companyIntro||co.intro); set('co-tags',(co.tags||[]).join(', '));
+    set('co-title',co.title); set('co-quote',co.quote); set('co-body',co.body); set('co-fee',co.fee);
+    [1,2,3,4].forEach((i,idx)=>set('co-q'+i,(co.q1||[])[idx]||''));
+    const btn=document.getElementById('co-save-btn');
+    if(btn) btn.textContent='更新する';
+    updateBodyCounter();
+  },0);
 }
 
 function markArticleTypeManual(){
@@ -956,7 +983,10 @@ function renderCoList(){
                 </div>
               </div>
               <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">${c.created}</div>
-              <button onclick="deleteCo('${c.id}')" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border:1px solid var(--border);background:none;cursor:pointer;color:var(--text2);border-radius:2px">削除</button>
+              <div style="display:flex;gap:6px">
+                <button onclick="editCo('${c.id}')" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border:1px solid var(--teal);background:var(--teal-bg);cursor:pointer;color:var(--teal-d);border-radius:2px">編集</button>
+                <button onclick="deleteCo('${c.id}')" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border:1px solid var(--border);background:none;cursor:pointer;color:var(--text2);border-radius:2px">削除</button>
+              </div>
             </div>
           `).join('')}
         </div>

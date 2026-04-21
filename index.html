@@ -185,8 +185,8 @@ body {
   background-position: center;
   background-repeat: no-repeat;
 }
-.ceo-nav-name { font-size: 13px; font-weight: 700; }
-.ceo-nav-co   { font-size: 11px; color: var(--text2); }
+.ceo-nav-name { font-size: 24px; font-family: 'Noto Serif JP', serif; font-weight: 700; }
+.ceo-nav-co   { font-size: 14px; color: #555; }
 .read-progress {
   margin-left: auto;
   font-family: 'JetBrains Mono', monospace;
@@ -235,8 +235,8 @@ body {
 .company-intro-text { font-size: 12px; line-height: 1.8; color: rgba(28,42,84,0.78); white-space: pre-line; }
 
 .article-body p {
-  color: #3a3a3a; margin-bottom: 18px;
-  font-size: 14px; line-height: 1.9; font-weight: 300;
+  color: #2a2a2a; margin-bottom: 18px;
+  font-size: 15px; line-height: 2; font-weight: 300;
 }
 .article-body img {
   width: 100%;
@@ -251,7 +251,7 @@ body {
 }
 .article-quote p {
   font-family: 'Noto Serif JP', serif;
-  font-size: 16px !important; font-weight: 700 !important;
+  font-size: 18px !important; font-weight: 700 !important;
   color: var(--navy) !important; line-height: 1.7 !important;
   margin: 0 !important;
 }
@@ -914,6 +914,15 @@ body {
 .pj-chip.selected{border-color:var(--teal);background:var(--teal-bg);color:var(--navy);font-weight:500;}
 .pj-chip-check{width:18px;height:18px;border-radius:2px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;flex-shrink:0;transition:all 0.18s;}
 .pj-chip.selected .pj-chip-check{background:var(--teal);border-color:var(--teal);color:#fff;}
+.leaders-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.leader-card{background:var(--white);border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;transition:all .15s;}
+.leader-card:hover{border-color:var(--teal);transform:translateY(-1px);}
+.leader-photo{width:100%;height:180px;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff;background-size:cover;background-position:center;}
+.leader-meta{padding:10px 12px;}
+.leader-name{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:2px;}
+.leader-company{font-size:12px;color:#777;margin-bottom:6px;}
+.leader-quote{font-size:12px;color:var(--teal);font-style:italic;line-height:1.7;margin-bottom:6px;}
+@media(min-width:980px){.leaders-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
 </style>
 </head>
 <body>
@@ -922,6 +931,8 @@ body {
     <img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ" style="height:48px;width:auto;display:block;margin:0 auto 24px;">
     <div style="font-family:'Noto Serif JP',serif;font-weight:700;font-size:32px;line-height:1.5;color:#fff;margin-bottom:10px;">出会いは検索から生まれない</div>
     <div style="font-size:14px;line-height:1.9;color:rgba(255,255,255,0.86);margin-bottom:22px;">地域の経営者と、まず話してみませんか</div>
+    <div id="topLeaders" style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-bottom:18px;"></div>
+    <div id="topLeadersCount" style="font-size:11px;color:rgba(255,255,255,0.72);margin-bottom:22px;"></div>
     <button class="btn-primary" style="width:100%;justify-content:center;background:#42AD9F;margin-bottom:10px;" onclick="enterFromTop('company')">経営層一覧を見る →</button>
     <button class="btn-primary" style="width:100%;justify-content:center;background:#1C2A54;border:1px solid rgba(255,255,255,0.45);" onclick="enterFromTop('project')">共創テーマを見る →</button>
   </div>
@@ -1055,7 +1066,7 @@ body {
         <div class="q-text">田中さんとの接点として、興味があるのは？</div>
         <div class="chip-list" id="q3chips">
           <div class="chip" onclick="pickQ3(this,'壁打ち・相談')"><div class="chip-check">✓</div><span>壁打ち・相談（まず話したい）</span></div>
-          <div class="chip" onclick="pickQ3(this,'副業・共創テーマ参画')"><div class="chip-check">✓</div><span>副業・共創テーマ参画</span></div>
+          <div class="chip" onclick="pickQ3(this,'副業・プロジェクト参画')"><div class="chip-check">✓</div><span>副業・プロジェクト参画</span></div>
           <div class="chip" onclick="pickQ3(this,'転職・フルコミット')"><div class="chip-check">✓</div><span>転職・フルコミット</span></div>
           <div class="chip" onclick="pickQ3(this,'まだわからない')"><div class="chip-check">✓</div><span>まだわからない</span></div>
         </div>
@@ -1496,17 +1507,36 @@ function renderCompanyList(){
     el.innerHTML = '<div style="background:var(--white);border:1px solid var(--border);padding:26px;border-radius:2px;color:var(--text2);font-size:13px;">経営者データを準備中です。しばらくお待ちください。</div>';
     return;
   }
+  el.className = 'leaders-grid';
   el.innerHTML = list.map(c=>{
     const name=c.ceo||'経営者名未設定';
     const company=c.name||c.company||'会社名未設定';
     const tags=(Array.isArray(c.tags)?c.tags:[]).slice(0,3);
-    const intro=(c.body||'').replace(/\s+/g,' ').slice(0,50);
+    const quote=(c.quote||'').replace(/\s+/g,' ').slice(0,40);
     const photo=c.photoUrl||'';
     const av = photo
-      ? `<div class="ceo-avatar-sm" style="width:56px;height:56px;background-image:url('${escapeHtml(photo)}');background-size:cover;background-position:center;"></div>`
-      : `<div class="ceo-avatar-sm" style="width:56px;height:56px;">${escapeHtml((company||'社').charAt(0))}</div>`;
-    return `<div class="pj-card" onclick="openCompanyArticle('${escapeHtml(c.id||'')}')"><div class="pj-accent wall"></div><div class="pj-card-inner"><div style="display:flex;gap:10px;align-items:center;">${av}<div><div style="font-size:14px;font-weight:700;color:var(--navy)">${escapeHtml(name)}</div><div class="pj-meta">${escapeHtml(company)}</div></div></div><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${tags.map(t=>`<span class='reco-tag'>${escapeHtml(t)}</span>`).join('')}</div><div class="pj-desc-preview" style="margin-top:8px;">${escapeHtml(intro)}${intro?'…':''}</div></div></div>`;
+      ? `<div class="leader-photo" style="background-image:url('${escapeHtml(photo)}');"></div>`
+      : `<div class="leader-photo">${escapeHtml((company||'社').charAt(0))}</div>`;
+    return `<div class="leader-card" onclick="openCompanyArticle('${escapeHtml(c.id||'')}')">${av}<div class="leader-meta"><div class="leader-name">${escapeHtml(name)}</div><div class="leader-company">${escapeHtml(company)}</div><div class="leader-quote">${quote ? `「${escapeHtml(quote)}…」` : ''}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${tags.slice(0,2).map(t=>`<span class='reco-tag'>${escapeHtml(t)}</span>`).join('')}</div></div></div>`;
   }).join('');
+}
+
+function renderTopLeaders(){
+  const list = loadCompanies();
+  const el = document.getElementById('topLeaders');
+  const ct = document.getElementById('topLeadersCount');
+  if(!el || !ct) return;
+  const latest = [...list].slice(-3).reverse();
+  el.innerHTML = latest.map(c=>{
+    const name = c.ceo || '経営層';
+    const ini = (c.name||'社').charAt(0);
+    if(c.photoUrl){
+      return `<div style="text-align:center"><div style="width:56px;height:56px;border-radius:50%;background:url('${escapeHtml(c.photoUrl)}') center/cover no-repeat;border:1px solid rgba(255,255,255,0.22);margin:0 auto 4px;"></div><div style="font-size:10px;color:#fff;">${escapeHtml(name)}</div></div>`;
+    }
+    return `<div style="text-align:center"><div style="width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#102040;color:#fff;font-weight:700;border:1px solid rgba(255,255,255,0.22);margin:0 auto 4px;">${escapeHtml(ini)}</div><div style="font-size:10px;color:#fff;">${escapeHtml(name)}</div></div>`;
+  }).join('');
+  const more = Math.max(0, list.length - latest.length);
+  ct.textContent = `他${more}人が登録中`;
 }
 
 function renderP1FromCompany(){
@@ -2142,6 +2172,7 @@ renderDash();
 handleLineCallback();
 Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
   renderCompanyList();
+  renderTopLeaders();
   const matched = loadPrimaryCompany();
   const params = new URLSearchParams(window.location.search);
   if(matched && (params.get('cid') || params.get('company'))){
