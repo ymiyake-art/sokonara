@@ -1468,26 +1468,24 @@ function renderCeoAvatar(el, companyName, color, photoUrl){
 function loadPrimaryCompany(){
   try{
     const stored = loadCompanies();
-    if(Array.isArray(stored) && stored.length > 0){
-      const q = new URLSearchParams(window.location.search);
-      const cid = (q.get('cid') || '').trim();
-      if(cid){
-        const byId = stored.find(c=>String(c.id||'')===cid);
-        if(byId) return byId;
-      }
-      const companyParam = (q.get('company') || '').trim().toLowerCase();
-      if(companyParam){
-        const hit = stored.find(c=>{
-          const values=[c.id,c.name,c.company,c.ceo].filter(Boolean).map(v=>String(v).toLowerCase());
-          return values.some(v=>v.includes(companyParam));
-        });
-        if(hit) return hit;
-      }
-      if(selectedCompanyId){
-        const selected = stored.find(c=>String(c.id||'')===String(selectedCompanyId));
-        if(selected) return selected;
-      }
-      return stored[0];
+    if(!Array.isArray(stored) || stored.length===0) return null;
+    if(selectedCompanyId){
+      const selected = stored.find(c=>String(c.id||'')===String(selectedCompanyId));
+      return selected || null;
+    }
+    const q = new URLSearchParams(window.location.search);
+    const cid = (q.get('cid') || '').trim();
+    if(cid){
+      const byId = stored.find(c=>String(c.id||'')===cid);
+      return byId || null;
+    }
+    const companyParam = (q.get('company') || '').trim().toLowerCase();
+    if(companyParam){
+      const hit = stored.find(c=>{
+        const values=[c.id,c.name,c.company,c.ceo].filter(Boolean).map(v=>String(v).toLowerCase());
+        return values.some(v=>v.includes(companyParam));
+      });
+      return hit || null;
     }
   }catch{}
   return null;
@@ -2170,13 +2168,14 @@ function resetAll(){
 // init admin
 renderDash();
 handleLineCallback();
+selectedCompanyId = null;
 Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
   renderCompanyList();
   renderTopLeaders();
-  const matched = loadPrimaryCompany();
   const params = new URLSearchParams(window.location.search);
+  const matched = loadPrimaryCompany();
   if(matched && (params.get('cid') || params.get('company'))){
-    selectedCompanyId = matched.id;
+    selectedCompanyId = matched.id || null;
     goScreen('p1');
     renderP1FromCompany();
   }else{
@@ -2186,9 +2185,7 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
     renderPjList();
   }
 });
-if(!hasAnyParams()){
-  toggleTopPage(true);
-}
+toggleTopPage(false);
 </script>
 </body>
 </html>
