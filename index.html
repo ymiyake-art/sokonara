@@ -939,7 +939,7 @@ body {
 </div>
 
 <!-- ===== MODE BAR ===== -->
-<div class="mode-bar">
+<div class="mode-bar" style="display:none;">
   <div class="mode-brand"><img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ"></div>
   <button class="mode-btn active" id="mb-company" onclick="switchMode('user',this,'company')">経営層一覧</button>
   <button class="mode-btn" id="mb-project" onclick="switchMode('user',this,'project')">共創テーマ</button>
@@ -974,10 +974,10 @@ body {
   <!-- P1 -->
   <div id="p1" class="screen">
     <div class="content-nav">
-      <div class="ceo-avatar-sm" id="p1Avatar">田</div>
+      <div class="ceo-avatar-sm" id="p1Avatar"></div>
       <div>
-        <div class="ceo-nav-name" id="p1CeoName">田中 誠一郎</div>
-        <div class="ceo-nav-co" id="p1CompanyName">株式会社タナカ精工</div>
+        <div class="ceo-nav-name" id="p1CeoName"></div>
+        <div class="ceo-nav-co" id="p1CompanyName"></div>
       </div>
       <div class="read-progress" id="readPct">0%</div>
     </div>
@@ -1063,7 +1063,7 @@ body {
           <div class="q-prog-step active"></div>
         </div>
         <div class="q-num">Q 3 / 3</div>
-        <div class="q-text">田中さんとの接点として、興味があるのは？</div>
+        <div class="q-text" id="q3Text">この経営者との接点として、興味があるのは？</div>
         <div class="chip-list" id="q3chips">
           <div class="chip" onclick="pickQ3(this,'壁打ち・相談')"><div class="chip-check">✓</div><span>壁打ち・相談（まず話したい）</span></div>
           <div class="chip" onclick="pickQ3(this,'副業・プロジェクト参画')"><div class="chip-check">✓</div><span>副業・プロジェクト参画</span></div>
@@ -1106,12 +1106,12 @@ body {
         </div>
         <div class="msg-block" id="msgBlock"><div class="msg-text" id="msgText"></div></div>
         <div class="bridge-block" id="bridgeBlock">
-          <div class="bridge-label">田中さんとの接点理由</div>
+          <div class="bridge-label" id="bridgeLabel">この経営者との接点理由</div>
           <div class="bridge-text" id="bridgeText"></div>
         </div>
         <div class="fb-cta" id="fbCta">
           <button class="btn-primary" style="width:100%;justify-content:center;margin-bottom:10px" onclick="goScreen('p4')">あなたに合う経営者を見る →</button>
-          <div class="fb-cta-note">田中さんへの「会いたい」はこの後でも送れます</div>
+          <div class="fb-cta-note" id="fbCtaNote">この経営者への「会ってみたい」はこの後でも送れます</div>
         </div>
       </div>
     </div>
@@ -1127,10 +1127,10 @@ body {
       </div>
 
       <div class="orig-card">
-        <div class="ceo-avatar-sm" style="width:38px;height:38px;font-size:14px">田</div>
+        <div class="ceo-avatar-sm" id="p4Avatar" style="width:38px;height:38px;font-size:14px"></div>
         <div class="orig-card-body">
           <div class="orig-card-label">読んでいた記事</div>
-          <div class="orig-card-name">田中 誠一郎 — 株式会社タナカ精工</div>
+          <div class="orig-card-name" id="p4CardName"></div>
           <div class="orig-card-action">この方にも興味を伝えられます</div>
           <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
             <button class="btn-line-login" style="width:auto;padding:9px 14px;font-size:12px" onclick="beginLineLogin('会いたい')">LINEでログインして興味を伝える</button>
@@ -1245,10 +1245,7 @@ body {
       <div class="admin-companies">
         <div class="admin-nav-label" style="padding:0 16px 6px">掲載企業</div>
         <div class="admin-co-item" onclick="openAdminPage('colist')"><div class="admin-co-av" style="background:#555">全</div><div class="admin-co-name">全社まとめ</div></div>
-        <div class="admin-co-item" onclick="openAdminPage('colist')"><div class="admin-co-av" style="background:var(--navy)">田</div><div class="admin-co-name">タナカ精工</div><div class="admin-co-badge">3</div></div>
-        <div class="admin-co-item" onclick="openAdminPage('colist')"><div class="admin-co-av" style="background:var(--teal-d)">中</div><div class="admin-co-name">ナカムラフーズ</div><div class="admin-co-badge">1</div></div>
-        <div class="admin-co-item" onclick="openAdminPage('colist')"><div class="admin-co-av" style="background:var(--gray)">吉</div><div class="admin-co-name">吉田建設</div></div>
-        <div class="admin-co-item" onclick="openAdminPage('colist')"><div class="admin-co-av" style="background:#8a6020">林</div><div class="admin-co-name">ハヤシテック</div></div>
+        <div id="adminSidebarCompanies"></div>
       </div>
       <div class="admin-sidebar-foot">2025年7月 第3週<br>次の配信：7月18日</div>
     </aside>
@@ -1285,9 +1282,18 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 // 1) Project Settings -> Environment Variables
 // 2) SUPABASE_URL と SUPABASE_KEY を追加
 // 3) デプロイ時に window.SUPABASE_URL / window.SUPABASE_KEY から参照
-const supabaseClient = (SUPABASE_URL && SUPABASE_KEY && window.supabase)
-  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
-  : null;
+const SUPABASE_URL = 'https://ypwwuylcvjwcyazvpibd.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd3d1eWxjdmp3Y3lhenZwaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTY1MTMsImV4cCI6MjA5MjI3MjUxM30.7YseXt8libEzFsSAv4bI46l36kZ2lFz_jnh1JphVpvA';
+
+function getSupabaseClient(){
+  if(window._supabaseClient) return window._supabaseClient;
+  if(window.supabase && SUPABASE_URL && SUPABASE_KEY){
+    window._supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    return window._supabaseClient;
+  }
+  return null;
+}
+const supabaseClient = null; // will use getSupabaseClient() instead
 let cachedCompanies = [];
 let projectsCache = [];
 
@@ -1308,11 +1314,13 @@ function hasAnyParams(){ try{ return [...new URLSearchParams(window.location.sea
 function toggleTopPage(show){
   const top=document.getElementById('topPage');
   const mode=document.querySelector('.mode-bar');
-  if(!top||!mode) return;
+  if(!top) return;
   top.style.display=show?'flex':'none';
-  mode.style.display=show?'none':'flex';
-  document.getElementById('progressRail').style.display=show?'none':(S.mode==='user'?'block':'none');
-  document.getElementById('stepDots').style.display=show?'none':(S.mode==='user'?'flex':'none');
+  if(mode) mode.style.display=show?'none':'flex';
+  const pr=document.getElementById('progressRail');
+  const sd=document.getElementById('stepDots');
+  if(pr) pr.style.display=show?'none':(S.mode==='user'?'block':'none');
+  if(sd) sd.style.display=show?'none':(S.mode==='user'?'flex':'none');
 }
 function enterFromTop(target){
   toggleTopPage(false);
@@ -1322,13 +1330,6 @@ function enterFromTop(target){
 }
 
 function loadCompanies(){
-  if(cachedCompanies.length) return cachedCompanies;
-  try{
-    const local = JSON.parse(localStorage.getItem('sn_companies')||'[]');
-    cachedCompanies = Array.isArray(local) ? local : [];
-  }catch{
-    cachedCompanies = [];
-  }
   return cachedCompanies;
 }
 function loadProjects(){
@@ -1342,17 +1343,22 @@ function loadProjects(){
   return projectsCache;
 }
 async function loadCompaniesAsync(){
-  if(!supabaseClient) return loadCompanies();
-  const {data,error}=await supabaseClient.from('companies').select('*').order('created_at',{ascending:true});
-  if(error){ console.warn('companies load fallback:', error.message); return loadCompanies(); }
+  const client = getSupabaseClient();
+  if(!client){ console.warn('Supabase not available'); return []; }
+  const {data,error}=await client.from('companies').select('*').order('created_at',{ascending:true});
+  if(error){ console.warn('companies load error:', error.message); return []; }
   cachedCompanies = Array.isArray(data) ? data : [];
-  localStorage.setItem('sn_companies', JSON.stringify(cachedCompanies));
+  console.log('Loaded companies:', cachedCompanies.length);
   return cachedCompanies;
 }
 async function loadProjectsAsync(){
-  if(!supabaseClient) return loadProjects();
-  const {data,error}=await supabaseClient.from('projects').select('*').order('created_at',{ascending:true});
-  if(error){ console.warn('projects load fallback:', error.message); return loadProjects(); }
+  const client = getSupabaseClient();
+  if(!client){ return []; }
+  const {data,error}=await client.from('projects').select('*').order('created_at',{ascending:true});
+  if(error){ console.warn('projects load error:', error.message); return []; }
+  projectsCache = Array.isArray(data) ? data : [];
+  return projectsCache;
+}
   projectsCache = (data||[]).map(p=>({ ...p, desc:p.description||p.desc||'' }));
   localStorage.setItem('sn_projects', JSON.stringify(projectsCache));
   return projectsCache;
@@ -1604,6 +1610,34 @@ function renderP1FromCompany(){
     }
   }
   updateCompanyProjectCta(co);
+
+  // Q3テキストを動的に更新
+  const q3t = document.getElementById('q3Text');
+  if(q3t) q3t.textContent = `${ceo || 'この経営者'}との接点として、興味があるのは？`;
+
+  // P3のfb-cta-noteを動的に更新
+  const fcn = document.getElementById('fbCtaNote');
+  if(fcn) fcn.textContent = `${ceo || 'この経営者'}への「会ってみたい」はこの後でも送れます`;
+
+  // P4のorig-cardを動的に更新
+  const p4av = document.getElementById('p4Avatar');
+  if(p4av) renderCeoAvatar(p4av, company, color, photoUrl);
+  const p4cn = document.getElementById('p4CardName');
+  if(p4cn) p4cn.textContent = `${ceo} — ${company}`;
+
+  // 管理画面サイドバーを動的に更新
+  const sb = document.getElementById('adminSidebarCompanies');
+  if(sb){
+    const cos = loadCompanies();
+    if(Array.isArray(cos) && cos.length > 0){
+      const colors = ['var(--navy)','var(--teal-d)','var(--gray)','#8a6020','#2e6b9e','#7a3e8a'];
+      sb.innerHTML = cos.map((c,i)=>{
+        const ini = (c.name||c.ceo||'社').trim().charAt(0);
+        const bg = colors[i % colors.length];
+        return `<div class="admin-co-item" onclick="openAdminPage('colist')"><div class="admin-co-av" style="background:${bg}">${ini}</div><div class="admin-co-name">${c.name||c.ceo||''}</div></div>`;
+      }).join('');
+    }
+  }
 }
 
 function updateCompanyProjectCta(co){
@@ -1715,7 +1749,11 @@ async function genFeedback() {
 JSON形式のみで返答してください（前置き・コードブロック不要）：
 {values:[価値観3語], message:メッセージ（改行は\\nで表現）, bridge:接点理由1文}`;
 
-  const usr = `経営者：田中 誠一郎（株式会社タナカ精工 / アトツギ・製造業DX）
+  const curCo = loadPrimaryCompany();
+  const curCeoName = curCo?.ceo || '経営者';
+  const curCoName = curCo?.name || '企業';
+  const curType = curCo?.type || 'アトツギ';
+  const usr = `経営者：${curCeoName}（${curCoName} / ${curType}）
 刺さった言葉：「${S.q1}」
 今求めているもの：${S.q2.join('、')}
 希望する接点：${S.q3}
@@ -1735,7 +1773,7 @@ ${S.free ? '自由記述：'+S.free : ''}`;
   } catch {
     const fb = {
       values:['問いから始める人','熱量に共鳴できる人','まず小さく試す人'],
-      message:'あなたは今、「次を決める」より「確かめたい」に近い状態にいます。\\nあなたは今、条件ではなく“納得できる理由”を探している最中です。\\nあなたは今、ひとりで抱え込まず、対話で輪郭を掴もうとしています。\\n\\n言葉の熱を見抜けるのは、あなたの強みです。\\n相手の「本音」に反応できるから、表面的な情報に流されにくい。\\nそして、関わり方を自分で選び直せる柔らかさも持っています。\\n\\n田中さんとの接点は、あなたの“問い”を現場で確かめる場になります。\\n壁打ちなら、答え探しではなく「何が大事か」を一緒に言語化できます。\\n副業や参画なら、距離感を保ちながら相性を検証できます。\\n\\n転職を急がなくて大丈夫です。まず一度、会ってみるところから始めましょう。',
+      message:'あなたは今、「次を決める」より「確かめたい」に近い状態にいます。\\nあなたは今、条件ではなく“納得できる理由”を探している最中です。\\nあなたは今、ひとりで抱え込まず、対話で輪郭を掴もうとしています。\\n\\n言葉の熱を見抜けるのは、あなたの強みです。\\n相手の「本音」に反応できるから、表面的な情報に流されにくい。\\nそして、関わり方を自分で選び直せる柔らかさも持っています。\\n\\nこの経営者との接点は、あなたの“問い”を現場で確かめる場になります。\\n壁打ちなら、答え探しではなく「何が大事か」を一緒に言語化できます。\\n副業や参画なら、距離感を保ちながら相性を検証できます。\\n\\n転職を急がなくて大丈夫です。まず一度、会ってみるところから始めましょう。',
       bridge:'「なぜ変えるのか」に反応したあなたの視点が、対話の価値を高めます'
     };
     S.fb = fb;
@@ -2168,10 +2206,10 @@ function resetAll(){
   document.querySelector('.mode-btn').click();
 }
 
-// init admin
-renderDash();
+// init
 handleLineCallback();
 selectedCompanyId = null;
+
 Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
   renderCompanyList();
   renderTopLeaders();
@@ -2186,11 +2224,10 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
     renderP1FromCompany();
   }else{
     toggleTopPage(noParams);
-    goScreen('p-list');
+    if(!noParams) goScreen('p-list');
   }
-  if(S.mode==='user' && document.getElementById('project')?.classList.contains('active')){
-    renderPjList();
-  }
+  if(_modeBar) _modeBar.style.display = 'flex';
+  renderDash();
 });
 </script>
 </body>
