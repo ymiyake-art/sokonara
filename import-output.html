@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>output.json → Supabase companies インポート</title>
+<style>
+  body{font-family:system-ui,sans-serif;max-width:520px;margin:48px auto;padding:0 20px;color:#1a1a1a;}
+  h1{font-size:18px;margin-bottom:8px;}
+  p{font-size:13px;color:#555;line-height:1.6;margin:0 0 16px;}
+  button{
+    width:100%;padding:14px 18px;font-size:15px;font-weight:700;
+    background:#42AD9F;color:#fff;border:none;border-radius:4px;cursor:pointer;
+  }
+  button:hover{filter:brightness(0.95);}
+  button:disabled{opacity:0.55;cursor:not-allowed;}
+  #msg{margin-top:16px;font-size:14px;font-weight:600;}
+  #msg.ok{color:#2e8c7f;}
+  #msg.err{color:#c0341a;}
+  .note{font-size:12px;color:#888;margin-top:12px;}
+</style>
+</head>
+<body>
+<h1>output.json の Supabase インポート</h1>
+<p><code>output.json</code> を読み込み、Supabase の <code>companies</code> テーブルへ<strong>一括インポート</strong>します（upsert）。</p>
+<p class="note">同一フォルダをローカルサーバーで開いてください（例: <code>py -m http.server 8765</code>）。<code>file://</code> では <code>output.json</code> を読み込めない場合があります。</p>
+<button type="button" id="btn">output.json を Supabase にインポート</button>
+<p id="msg" role="status"></p>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+  const SUPABASE_URL = 'https://ypwwuylcvjwcyazvpibd.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd3d1eWxjdmp3Y3lhenZwaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTY1MTMsImV4cCI6MjA5MjI3MjUxM30.7YseXt8libEzFsSAv4bI46l36kZ2lFz_jnh1JphVpvA';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  function pickPhoto(photos) {
+    const bad = /facebook|line\.me|bing\.com|smartnews-ads|doubleclick|googletagmanager|googleadservices|tag\.gif/i;
+    for (const u of photos || []) {
+      if (typeof u === 'string' && u.startsWith('http') && !bad.test(u)) return u;
+    }
+    return '';
+  }
+
+  function parseCeoCompany(it) {
+    let company = (it.company || '').trim();
+    let ceo = (it.name || '').trim();
+    if (!ceo && company.includes('｜')) {
+      const parts = company.split('｜');
+      ceo = parts[0].trim();
+      company = parts.slice(1).join('｜')
+        .replace(/\s*経営層インタビュー.*$/i, '')
+        .replace(/\s*[｜|]\s*ソコナラ.*$/i, '')
+        .trim() || company;
+    }
+    if (!ceo) ceo = '（要確認）';
+    if (!company) company = '会社名未取得';
+    return { ceo, company };
+  }
+
+  function defaultTitle(company) {
+    const t = company.replace(/\s+/g, ' ').trim();
+    if (t.length <= 60) return t;
+    return t.slice(0, 58) + '…';
+  }
+
+  function defaultQuote(body, quote) {
+    const q = (quote || '').trim();
+    if (q) return q;
+    const b = (body || '').replace(/\s+/g, ' ').trim();
+    if (b.length <= 80) return b || '（引用は後で編集）';
+    return b.slice(0, 78) + '…';
+  }
+
+  function mapItem(it, idx, now) {
+    const pc = parseCeoCompany(it);
+    const body = it.body || '';
+    const title = defaultTitle(pc.company);
+    const quote = defaultQuote(body, it.quote);
+    const position = (it['役職'] || it.position || '').trim();
+    const defaultQ1 = ['共感できる', 'まず話を聞きたい', '転職・参画を検討', 'まだわからない'];
+    return {
+      id: 'co_import_' + (now + idx),
+      name: pc.company,
+      ceo: pc.ceo,
+      type: 'successor',
+      plan: 'standard',
+      articleType: 'standard',
+      tags: [],
+      title: title,
+      quote: quote,
+      body: body,
+      q1: defaultQ1.slice(),
+      photoUrl: pickPhoto(it.photos),
+      industry: '',
+      employeeSize: '',
+      companyIntro: position ? ('役職：' + position) : '',
+      fee: '',
+      status: 'active',
+      created_at: new Date().toISOString(),
+      reactions: 0,
+      cta: 0
+    };
+  }
+
+  document.getElementById('btn').addEventListener('click', function () {
+    const btn = this;
+    const msg = document.getElementById('msg');
+    msg.textContent = '';
+    msg.className = '';
+    btn.disabled = true;
+
+    fetch('output.json', { cache: 'no-store' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('output.json を取得できません（HTTP ' + r.status + '）');
+        return r.json();
+      })
+      .then(function (list) {
+        if (!Array.isArray(list)) throw new Error('output.json は配列である必要があります');
+        const now = Date.now();
+        const n = list.length;
+        const rows = list.map(function (it, idx) { return mapItem(it, idx, now); });
+        return supabase
+          .from('companies')
+          .upsert(rows, { onConflict: 'id' })
+          .then(function (res) {
+            if (res.error) throw res.error;
+            msg.textContent = n + '件インポートしました';
+            msg.className = 'ok';
+          });
+      })
+      .catch(function (e) {
+        msg.textContent = '失敗: ' + (e && e.message ? e.message : String(e));
+        msg.className = 'err';
+      })
+      .finally(function () {
+        btn.disabled = false;
+      });
+  });
+})();
+</script>
+</body>
+</html>
