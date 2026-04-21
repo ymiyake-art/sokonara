@@ -1322,6 +1322,13 @@ function enterFromTop(target){
 }
 
 function loadCompanies(){
+  if(cachedCompanies.length) return cachedCompanies;
+  try{
+    const local = JSON.parse(localStorage.getItem('sn_companies')||'[]');
+    cachedCompanies = Array.isArray(local) ? local : [];
+  }catch{
+    cachedCompanies = [];
+  }
   return cachedCompanies;
 }
 function loadProjects(){
@@ -1490,6 +1497,12 @@ function openCompanyArticle(id){
   renderP1FromCompany();
 }
 
+function openCompanyArticleFromCard(el){
+  if(!el) return;
+  const id = el.getAttribute('data-company-id') || '';
+  openCompanyArticle(id);
+}
+
 function renderCompanyList(){
   const list = loadCompanies();
   const el = document.getElementById('companyListBody');
@@ -1508,7 +1521,7 @@ function renderCompanyList(){
     const av = photo
       ? `<div class="leader-photo" style="background-image:url('${escapeHtml(photo)}');"></div>`
       : `<div class="leader-photo">${escapeHtml((company||'社').charAt(0))}</div>`;
-    return `<div class="leader-card" onclick="openCompanyArticle(decodeURIComponent('${encodeURIComponent(String(c.id||''))}'))">${av}<div class="leader-meta"><div class="leader-name">${escapeHtml(name)}</div><div class="leader-company">${escapeHtml(company)}</div><div class="leader-quote">${quote ? `「${escapeHtml(quote)}…」` : ''}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${tags.slice(0,2).map(t=>`<span class='reco-tag'>${escapeHtml(t)}</span>`).join('')}</div></div></div>`;
+    return `<div class="leader-card" data-company-id="${escapeHtml(String(c.id||''))}" onclick="openCompanyArticleFromCard(this)">${av}<div class="leader-meta"><div class="leader-name">${escapeHtml(name)}</div><div class="leader-company">${escapeHtml(company)}</div><div class="leader-quote">${quote ? `「${escapeHtml(quote)}…」` : ''}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${tags.slice(0,2).map(t=>`<span class='reco-tag'>${escapeHtml(t)}</span>`).join('')}</div></div></div>`;
   }).join('');
 }
 
