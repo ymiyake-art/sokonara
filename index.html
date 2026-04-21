@@ -1492,7 +1492,7 @@ function loadPrimaryCompany(){
 }
 
 function openCompanyArticle(id){
-  selectedCompanyId = id;
+  selectedCompanyId = String(id || '');
   goScreen('p1');
   renderP1FromCompany();
 }
@@ -1515,7 +1515,7 @@ function renderCompanyList(){
     const av = photo
       ? `<div class="leader-photo" style="background-image:url('${escapeHtml(photo)}');"></div>`
       : `<div class="leader-photo">${escapeHtml((company||'社').charAt(0))}</div>`;
-    return `<div class="leader-card" onclick="openCompanyArticle('${escapeHtml(c.id||'')}')">${av}<div class="leader-meta"><div class="leader-name">${escapeHtml(name)}</div><div class="leader-company">${escapeHtml(company)}</div><div class="leader-quote">${quote ? `「${escapeHtml(quote)}…」` : ''}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${tags.slice(0,2).map(t=>`<span class='reco-tag'>${escapeHtml(t)}</span>`).join('')}</div></div></div>`;
+    return `<div class="leader-card" onclick="openCompanyArticle(decodeURIComponent('${encodeURIComponent(String(c.id||''))}'))">${av}<div class="leader-meta"><div class="leader-name">${escapeHtml(name)}</div><div class="leader-company">${escapeHtml(company)}</div><div class="leader-quote">${quote ? `「${escapeHtml(quote)}…」` : ''}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${tags.slice(0,2).map(t=>`<span class='reco-tag'>${escapeHtml(t)}</span>`).join('')}</div></div></div>`;
   }).join('');
 }
 
@@ -1538,7 +1538,10 @@ function renderTopLeaders(){
 }
 
 function renderP1FromCompany(){
-  const co = loadPrimaryCompany();
+  const list = loadCompanies();
+  const co = selectedCompanyId
+    ? list.find(c=>String(c.id||'')===String(selectedCompanyId)) || null
+    : loadPrimaryCompany();
   const ceo = co?.ceo || '';
   const company = co?.name || co?.company || '';
   const title = co?.title || '';
