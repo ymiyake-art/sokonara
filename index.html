@@ -923,6 +923,33 @@ body {
 .leader-company{font-size:12px;color:#777;margin-bottom:6px;}
 .leader-quote{font-size:12px;color:var(--teal);font-style:italic;line-height:1.7;margin-bottom:6px;}
 @media(min-width:980px){.leaders-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+
+/* ===== INTERVIEW FORMAT ===== */
+.interview-intro {
+  font-size: 15px; color: var(--navy); font-weight: 500;
+  line-height: 1.9; margin-bottom: 24px;
+  border-left: 3px solid var(--teal); padding-left: 14px;
+}
+.interview-q {
+  font-weight: 700; color: var(--navy); margin: 22px 0 8px;
+  font-size: 14px; display: flex; align-items: flex-start; gap: 8px;
+}
+.q-badge {
+  background: var(--teal); color: white; border-radius: 2px;
+  padding: 1px 7px; font-size: 11px; flex-shrink: 0; margin-top: 3px;
+  font-family: 'JetBrains Mono', monospace; font-weight: 500;
+}
+.interview-a {
+  color: var(--text); line-height: 1.9; margin-bottom: 4px;
+  font-size: 14px;
+}
+.no-article-msg {
+  padding: 32px 20px; text-align: center;
+  color: var(--text2); font-size: 13px; line-height: 1.9;
+  background: var(--bg); border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
 </style>
 </head>
 <body>
@@ -1428,6 +1455,37 @@ function getBodyByArticleType(body, articleType){
   return base.length < 400 ? trimArticleByChars(body, 400) : base;
 }
 
+
+function renderInterviewBody(body) {
+  let text = String(body || '').replace(/^INTERVIEW\n?/, '').trim();
+  if (!text) return '';
+  // Split on Q markers: "Q\n", "\nQ\n", or "Q " at line start
+  const parts = text.split(/\nQ\n|^Q\n/m);
+  const intro = parts[0].trim();
+  const qas = parts.slice(1);
+  let out = '';
+  if (intro) {
+    // Show first ~2 lines as intro, rest as answer-style
+    const lines = intro.split('\n').filter(l => l.trim());
+    const introLines = lines.slice(0, 3).join('\n');
+    const rest = lines.slice(3).join('\n');
+    if (introLines) out += `<p class="interview-intro">${escapeHtml(introLines).replace(/\n/g,'<br>')}</p>`;
+    if (rest) out += `<div class="interview-a">${escapeHtml(rest).replace(/\n/g,'<br>')}</div>`;
+  }
+  qas.forEach(qa => {
+    const nl = qa.indexOf('\n');
+    const question = nl >= 0 ? qa.slice(0, nl).trim() : qa.trim();
+    const answer = nl >= 0 ? qa.slice(nl + 1).trim() : '';
+    if (question) {
+      out += `<div class="interview-q"><span class="q-badge">Q</span>${escapeHtml(question)}</div>`;
+    }
+    if (answer) {
+      out += `<div class="interview-a">${escapeHtml(answer).replace(/\n/g,'<br>')}</div>`;
+    }
+  });
+  return out;
+}
+
 function renderCeoAvatar(el, companyName, color, photoUrl){
   if(!el) return;
   const ini = (companyName || '').trim().charAt(0) || '社';
@@ -1561,14 +1619,24 @@ function renderP1FromCompany(){
   }
   if(nm) nm.textContent = ceo;
   if(cn) cn.textContent = company;
-  if(tt) tt.innerHTML = escapeHtml(title).replace(/\n/g,'<br>');
+  if(tt){
+    // If title is just the company name (auto-imported), show a more descriptive headline
+    const displayTitle = (title && title !== company) ? title : (ceo ? `${ceo}さんの想い` : company);
+    tt.innerHTML = escapeHtml(displayTitle).replace(/\n/g,'<br>');
+  }
   if(tg){
     tg.innerHTML = tags.map((t,i)=>`<span class="article-tag${i >= 2 ? ' navy' : ''}">${escapeHtml(t)}</span>`).join('');
   }
   if(bd){
     const quoteHtml = quote ? `<div class="article-quote"><p>「${escapeHtml(quote)}」</p></div>` : '';
-    const shapedBody = getBodyByArticleType(body, articleType);
-    bd.innerHTML = `${quoteHtml}${renderMarkdownArticle(shapedBody, {allowImages})}`;
+    if (!body && !quote) {
+      bd.innerHTML = '<div class="no-article-msg">記事コンテンツを準備中です。<br>管理画面から本文を登録してください。</div>';
+    } else if (body.trimStart().startsWith('INTERVIEW')) {
+      bd.innerHTML = quoteHtml + renderInterviewBody(body);
+    } else {
+      const shapedBody = getBodyByArticleType(body, articleType);
+      bd.innerHTML = quoteHtml + renderMarkdownArticle(shapedBody, {allowImages});
+    }
   }
   renderCeoAvatar(av, company, color, photoUrl);
 
