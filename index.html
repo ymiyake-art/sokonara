@@ -281,7 +281,7 @@ body {
 #p2 { background: var(--bg); }
 
 .empathy-wrap {
-  padding: 36px 20px 100px;
+  padding: 20px 20px 100px;
   max-width: 600px; margin: 0 auto;
 }
 
@@ -926,7 +926,7 @@ body {
 </style>
 </head>
 <body>
-<div id="topPage" style="display:none;min-height:100vh;background:#1C2A54;align-items:center;justify-content:center;padding:40px;">
+<div id="topPage" style="display:flex;min-height:100vh;background:#1C2A54;align-items:center;justify-content:center;padding:40px;">
   <div style="max-width:420px;width:100%;text-align:center;">
     <img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ" style="height:48px;width:auto;display:block;margin:0 auto 24px;">
     <div style="font-family:'Noto Serif JP',serif;font-weight:700;font-size:32px;line-height:1.5;color:#fff;margin-bottom:10px;">出会いは検索から生まれない</div>
@@ -939,7 +939,7 @@ body {
 </div>
 
 <!-- ===== MODE BAR ===== -->
-<div class="mode-bar">
+<div class="mode-bar" style="display:none">
   <div class="mode-brand"><img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ"></div>
   <button class="mode-btn active" id="mb-company" onclick="switchMode('user',this,'company')">経営層一覧</button>
   <button class="mode-btn" id="mb-project" onclick="switchMode('user',this,'project')">共創テーマ</button>
@@ -948,10 +948,10 @@ body {
 </div>
 
 <!-- ===== PROGRESS (user only) ===== -->
-<div class="progress-rail" id="progressRail">
+<div class="progress-rail" id="progressRail" style="display:none">
   <div class="progress-fill" id="progressFill" style="width:20%"></div>
 </div>
-<div class="step-dots" id="stepDots">
+<div class="step-dots" id="stepDots" style="display:none">
   <div class="sdot active" id="d0"></div>
   <div class="sdot" id="d1"></div>
   <div class="sdot" id="d2"></div>
@@ -1002,7 +1002,7 @@ body {
       </div>
       <button class="btn-outline" id="p1ProjectBtn" onclick="openCompanyProjectsFromP1()" style="display:none">この経営者の共創テーマを見る →</button>
       <button class="btn-primary" onclick="goScreen('p2')">入力する →</button>
-      <div style="font-size:11px;color:var(--text2);margin-top:8px;">申込みではありません。まず話しましょう。</div>
+
     </div>
   </div>
 
@@ -1023,6 +1023,9 @@ body {
           <div class="chip" onclick="pickQ1(this,'求人票に書けるスキル要件はない。必要なのは共鳴できる人間')"><div class="chip-check">✓</div><span>求人票に書けるスキル要件はない。必要なのは共鳴できる人間</span></div>
           <div class="chip" onclick="pickQ1(this,'社員が自分で考えるようになったこと——それが一番大きな変化')"><div class="chip-check">✓</div><span>社員が自分で考えるようになったこと——それが一番大きな変化</span></div>
           <div class="chip" onclick="pickQ1(this,'地方の中小企業こそ、自分の人生を賭けられるフィールドだと気づいた')"><div class="chip-check">✓</div><span>地方の中小企業こそ、自分の人生を賭けられるフィールドだと気づいた</span></div>
+        </div>
+        <div class="q-nav" style="margin-top:18px">
+          <button class="btn-primary" id="q1next" onclick="hide('q1b');show('q2b')" disabled>次へ →</button>
         </div>
       </div>
 
@@ -1345,8 +1348,8 @@ function switchMode(m, btn, sub) {
   document.getElementById('admin').classList.toggle('active', isAdmin);
   document.getElementById('progressRail').style.display = isUser ? 'block' : 'none';
   document.getElementById('stepDots').style.display = isUser ? 'flex' : 'none';
-  if (isAdmin) renderAdminTab(S.adminTab);
-  if (isProject) renderPjList();
+  if (isAdmin) { if(S.screen && S.screen !== 'p-list'){ try{ document.getElementById(S.screen)?.classList.remove('active'); document.getElementById('p-list')?.classList.add('active'); S.screen='p-list'; }catch{} } renderAdminTab(S.adminTab); }
+  if (isProject) { if(S.screen && S.screen !== 'p-list'){ try{ document.getElementById(S.screen)?.classList.remove('active'); document.getElementById('p-list')?.classList.add('active'); S.screen='p-list'; }catch{} } renderPjList(); }
   if (isUser) { renderCompanyList(); goScreen('p-list'); }
 }
 
@@ -1490,12 +1493,12 @@ function renderCompanyList(){
     const name=c.ceo||'経営者名未設定';
     const company=c.name||c.company||'会社名未設定';
     const tags=(Array.isArray(c.tags)?c.tags:[]).slice(0,3);
-    const quote=(c.quote||'').replace(/\s+/g,' ').slice(0,40);
+    const quote=((c.catchphrase||c.quote)||'').replace(/\s+/g,' ').slice(0,40);
     const photo=c.photoUrl||'';
     const av = photo
       ? `<div class="leader-photo" style="background-image:url('${escapeHtml(photo)}');"></div>`
       : `<div class="leader-photo">${escapeHtml((company||'社').charAt(0))}</div>`;
-    return `<div class="leader-card" data-company-id="${escapeHtml(String(c.id||''))}" onclick="openCompanyArticleFromCard(this)">${av}<div class="leader-meta"><div class="leader-name">${escapeHtml(name)}</div><div class="leader-company">${escapeHtml(company)}</div><div class="leader-quote">${quote ? `「${escapeHtml(quote)}…」` : ''}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${tags.slice(0,2).map(t=>`<span class='reco-tag'>${escapeHtml(t)}</span>`).join('')}</div></div></div>`;
+    return `<div class="leader-card" data-company-id="${escapeHtml(String(c.id||''))}" onclick="openCompanyArticleFromCard(this)">${av}<div class="leader-meta"><div class="leader-name">${escapeHtml(name)}</div><div class="leader-company">${escapeHtml(company)}</div><div class="leader-quote">${quote ? escapeHtml(quote) : ''}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${tags.slice(0,2).map(t=>`<span class='reco-tag'>${escapeHtml(t)}</span>`).join('')}</div></div></div>`;
   }).join('');
 }
 
@@ -1656,7 +1659,7 @@ function pickQ1(el, val) {
   document.querySelectorAll('#q1chips .chip').forEach(c=>c.classList.remove('selected'));
   el.classList.add('selected');
   S.q1 = val;
-  setTimeout(()=>{ hide('q1b'); show('q2b'); }, 320);
+  document.getElementById('q1next').disabled = false;
 }
 
 // ===== Q2 =====
@@ -1716,6 +1719,7 @@ JSON形式のみで返答してください（前置き・コードブロック�
 ${S.free ? '自由記述：'+S.free : ''}`;
 
   try {
+    throw new Error('API disabled - using fallback');
     const res = await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,messages:[{role:'user',content:usr}]})
@@ -1796,6 +1800,7 @@ async function genReco(fb) {
   `).join('');
 
   try {
+    throw new Error('API disabled - using fallback');
     const res = await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,

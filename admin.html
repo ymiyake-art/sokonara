@@ -625,25 +625,27 @@ function renderAddCo(){
               <input id="co-name" type="text" placeholder="例：株式会社タナカ精工" style="${inp()}">
             </div>
             <div>
-              <div style="font-size:11px;color:var(--text2);margin-bottom:5px">経営者名 <span style="color:var(--hot)">*</span></div>
+              <div style="font-size:11px;color:var(--text2);margin-bottom:5px">経営層名 <span style="color:var(--hot)">*</span></div>
               <input id="co-ceo" type="text" placeholder="例：田中 誠一郎" style="${inp()}">
             </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
             <div>
-              <div style="font-size:11px;color:var(--text2);margin-bottom:5px">企業タイプ <span style="color:var(--hot)">*</span></div>
+              <div style="font-size:11px;color:var(--text2);margin-bottom:5px">経営層タイプ <span style="color:var(--hot)">*</span></div>
               <select id="co-type" style="${inp()}">
-                <option value="successor">後継者・アトツギ</option>
-                <option value="second_founding">第二創業・変革期</option>
-                <option value="new_biz">新規事業責任者</option>
+                <option value="manager">経営者</option>
+                <option value="successor">後継候補</option>
+                <option value="biz_leader">事業責任者</option>
+                <option value="hire_leader">採用責任者</option>
+                <option value="other">その他</option>
               </select>
             </div>
             <div>
               <div style="font-size:11px;color:var(--text2);margin-bottom:5px">契約プラン</div>
               <select id="co-plan" style="${inp()}" onchange="syncArticleTypeFromPlan()">
-                <option value="light">Light（5万・アプリのみ）</option>
-                <option value="standard">Standard（10万・Studio含む）</option>
-                <option value="referral">紹介のみ</option>
+                <option value="light">Light</option>
+                <option value="standard">Standard</option>
+                <option value="enterprise">Enterprise</option>
               </select>
             </div>
           </div>
@@ -684,6 +686,10 @@ function renderAddCo(){
             <div style="font-size:11px;color:var(--text2);margin-bottom:5px">引用フレーズ（一番刺さる一言）<span style="color:var(--hot)">*</span></div>
             <input id="co-quote" type="text" placeholder="例：変えたいものがある人間に、古い会社ほど面白いフィールドはない" style="${inp()}">
           </div>
+          <div style="margin-bottom:14px">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">キャッチフレーズ <span style="font-size:10px;color:var(--text3)">一覧カードに表示</span></div>
+            <input type="text" class="form-input" id="coCatchphrase" placeholder="例：地域と共に挑戦を続けています" maxlength="50" style="${inp()}">
+          </div>
           <div style="margin-bottom:14px;position:relative">
             <div style="font-size:11px;color:var(--text2);margin-bottom:5px">記事本文<span style="color:var(--hot)">*</span></div>
             <textarea id="co-body" rows="12" placeholder="〜800字推奨" style="${inp()}resize:vertical;padding-bottom:24px;" oninput="updateBodyCounter()"></textarea>
@@ -720,6 +726,7 @@ function saveCo(){
   const ceo=document.getElementById('co-ceo').value.trim();
   const title=document.getElementById('co-title').value.trim();
   const quote=document.getElementById('co-quote').value.trim();
+  const catchphrase=(document.getElementById('coCatchphrase')?.value||'').trim();
   const body=document.getElementById('co-body').value.trim();
   if(!name||!ceo||!title||!body){ toast('必須項目を入力してください'); return; }
   const q1=[1,2,3,4].map(i=>document.getElementById('co-q'+i).value.trim()).filter(Boolean);
@@ -738,7 +745,7 @@ function saveCo(){
     size:document.getElementById('co-size').value.trim(),
     intro:document.getElementById('co-intro').value.trim(),
     tags:document.getElementById('co-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
-    title,quote,body,q1,
+    title,quote,catchphrase,body,q1,
     fee:document.getElementById('co-fee').value||'',
     status:'active',
     created:new Date().toLocaleDateString('ja-JP'),
@@ -770,6 +777,7 @@ function editCo(id){
     set('co-industry',co.industry); set('co-size',co.employeeSize||co.size);
     set('co-intro',co.companyIntro||co.intro); set('co-tags',(co.tags||[]).join(', '));
     set('co-title',co.title); set('co-quote',co.quote); set('co-body',co.body); set('co-fee',co.fee);
+    if(document.getElementById('coCatchphrase')) document.getElementById('coCatchphrase').value=co.catchphrase||'';
     [1,2,3,4].forEach((i,idx)=>set('co-q'+i,(co.q1||[])[idx]||''));
     const btn=document.getElementById('co-save-btn');
     if(btn) btn.textContent='更新する';
@@ -820,7 +828,7 @@ async function genCoArticle(){
   const ceo=document.getElementById('co-ceo').value.trim();
   const type=document.getElementById('co-type').value;
   const hint=document.getElementById('co-body').value.trim();
-  if(!name||!ceo){ toast('会社名と経営者名を入力してからAI生成してください'); return; }
+  if(!name||!ceo){ toast('会社名と経営層名を入力してからAI生成してください'); return; }
   const btn=document.querySelector('button[onclick="genCoArticle()"]');
   btn.textContent='生成中...'; btn.disabled=true;
   const result=document.getElementById('co-ai-result');
@@ -833,7 +841,7 @@ async function genCoArticle(){
         messages:[{role:'user',content:`ソコナラ（地域キャリア共創プラットフォーム）のMVPアプリ用経営者記事を生成してください。
 
 会社名：${name}
-経営者名：${ceo}
+経営層名：${ceo}
 タイプ：${typeLabel}
 ヒント・背景情報：${hint||'特になし'}
 
@@ -845,6 +853,7 @@ async function genCoArticle(){
       const p=JSON.parse(m[0]);
       document.getElementById('co-title').value=p.title||'';
       document.getElementById('co-quote').value=p.quote||'';
+      if(document.getElementById('coCatchphrase')) document.getElementById('coCatchphrase').value=p.catchphrase||'';
       document.getElementById('co-body').value=p.body||'';
       [1,2,3,4].forEach((i,idx)=>{ const el=document.getElementById('co-q'+i); if(el) el.value=p.q1?.[idx]||''; });
       result.innerHTML='<span style="color:var(--teal);font-size:11px">✓ AI生成完了。内容を確認して「登録する」を押してください。</span>';
@@ -880,7 +889,7 @@ function renderAddPj(){
               </select>
             </div>
             <div>
-              <div style="font-size:11px;color:var(--text2);margin-bottom:5px">企業タイプ</div>
+              <div style="font-size:11px;color:var(--text2);margin-bottom:5px">経営層タイプ</div>
               <select id="pj-cotype" style="${inp()}">
                 <option value="successor">後継者・アトツギ</option>
                 <option value="new_biz">新規事業責任者</option>
