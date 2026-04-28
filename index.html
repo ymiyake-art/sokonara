@@ -950,6 +950,48 @@ body {
   border: 1px solid var(--border);
 }
 
+
+/* ===== EMPATHY BUTTON ===== */
+.empathy-section {
+  padding: 20px 20px 4px; text-align: center;
+  border-top: 1px solid var(--border); margin-top: 4px;
+}
+.empathy-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 26px; border-radius: 50px;
+  border: 1.5px solid var(--teal); color: var(--teal);
+  background: transparent; cursor: pointer;
+  font-size: 15px; font-weight: 500;
+  transition: all 0.2s; font-family: 'Noto Sans JP', sans-serif;
+}
+.empathy-btn:hover { background: rgba(66,173,159,0.08); }
+.empathy-btn.done { background: var(--teal); color: #fff; border-color: var(--teal); pointer-events: none; }
+.empathy-btn.pop { transform: scale(1.18); }
+
+/* ===== RELATED CEOS ===== */
+.related-section {
+  padding: 20px 20px 8px; background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+.related-title {
+  font-size: 10px; font-weight: 700; color: var(--text2);
+  letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;
+}
+.related-card {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 12px; border: 1px solid var(--border);
+  border-radius: 4px; cursor: pointer; margin-bottom: 8px;
+  background: #fff; transition: border-color 0.15s;
+}
+.related-card:hover { border-color: var(--teal); }
+.related-card-photo {
+  width: 44px; height: 44px; border-radius: 50%;
+  object-fit: cover; flex-shrink: 0; background: var(--light);
+}
+.related-card-name { font-size: 13px; font-weight: 700; color: var(--navy); }
+.related-card-co { font-size: 11px; color: var(--text2); margin-top: 1px; }
+
 </style>
 </head>
 <body>
@@ -960,7 +1002,7 @@ body {
     <div style="font-size:14px;line-height:1.9;color:rgba(255,255,255,0.86);margin-bottom:22px;">地域の経営層と、まず話してみませんか</div>
     <div id="topLeaders" style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-bottom:18px;"></div>
     <div id="topLeadersCount" style="font-size:11px;color:rgba(255,255,255,0.72);margin-bottom:22px;"></div>
-    <button class="btn-primary" style="width:100%;justify-content:center;background:#42AD9F;margin-bottom:10px;" onclick="enterFromTop('company')">経営層一覧を見る →</button>
+    <button class="btn-primary" style="width:100%;justify-content:center;background:#42AD9F;margin-bottom:10px;" onclick="enterFromTop('company')">まず1人、読んでみる →</button>
     <button class="btn-primary" style="width:100%;justify-content:center;background:#1C2A54;border:1px solid rgba(255,255,255,0.45);" onclick="enterFromTop('project')">共創テーマを見る →</button>
   </div>
 </div>
@@ -1017,18 +1059,32 @@ body {
       </div>
       <h1 class="article-title" id="p1ArticleTitle"></h1>
       <div class="article-body" id="p1ArticleBody"></div>
-        <p>承継から5年。今うちの会社では、製造ラインの7割がデータで可視化され、受注から出荷まで半自動化された。でもそれより大きな変化は「社員が自分で考えるようになったこと」だと思っている。</p>
-        <p>正直に言えば、一緒に変えてくれる人間が圧倒的に足りない。求人票に書けるスキル要件なんてない。必要なのは、「なぜ変えるのか」に共鳴できる人間だと思っている。</p>
-        <p>壁打ち相手も、副業で関わってくれる人も、本気で転職を考えている人も、全部歓迎したい。まず話しましょう。</p>
+    </div>
+
+    <!-- 共感ボタン -->
+    <div class="empathy-section" id="empathySection" style="display:none">
+      <button class="empathy-btn" id="empathyBtnEl" onclick="handleEmpathy()">
+        <span id="empathyIcon">♡</span>
+        <span id="empathyLabel">この記事に共感した</span>
+      </button>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px">共感は経営層に届きます（匿名・1回）</div>
+    </div>
+
+    <!-- 関連経営層 -->
+    <div id="relatedCeosSection" style="display:none">
+      <div class="related-section">
+        <div class="related-title">他の経営層の声</div>
+        <div id="relatedCeosList"></div>
       </div>
     </div>
 
     <div class="cta-sticky">
       <div class="cta-sticky-text">
         <strong>刺さった言葉を選ぶだけ。あなたの価値観が見えてきます</strong>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">3つの質問（約1分）→ あなたに合う経営層が見えます</div>
       </div>
       <button class="btn-outline" id="p1ProjectBtn" onclick="openCompanyProjectsFromP1()" style="display:none">この経営層の共創テーマを見る →</button>
-      <button class="btn-primary" onclick="goScreen('p2')">入力する →</button>
+      <button class="btn-primary" onclick="goScreen('p2')">3つの質問に答える →</button>
 
     </div>
   </div>
@@ -1214,7 +1270,7 @@ body {
     <div id="pjDetailBody" style="max-width:680px;margin:0 auto;padding:24px 16px 100px;"></div>
     <div style="position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 -4px 16px rgba(0,0,0,0.05);" id="pjCtaBar">
       <div><strong style="font-size:13px;font-weight:700;color:var(--navy);display:block;margin-bottom:1px;" id="pjCtaTitle"></strong><span style="font-size:11px;color:var(--text2);">興味を伝えるだけ。申込みではありません。</span></div>
-      <button class="btn-primary" onclick="openPjApply()" style="flex-shrink:0;font-size:13px;padding:11px 20px;">応募する →</button>
+      <button class="btn-primary" onclick="openPjApply()" style="flex-shrink:0;font-size:13px;padding:11px 20px;">関心を伝えてみる →</button>
     </div>
   </div>
 
@@ -1486,6 +1542,46 @@ function renderInterviewBody(body) {
   return out;
 }
 
+
+function handleEmpathy() {
+  const btn = document.getElementById('empathyBtnEl');
+  const icon = document.getElementById('empathyIcon');
+  const label = document.getElementById('empathyLabel');
+  if (!btn || btn.classList.contains('done')) return;
+  btn.classList.add('pop');
+  setTimeout(() => btn.classList.remove('pop'), 220);
+  setTimeout(() => { btn.classList.add('done'); icon.textContent = '♥'; label.textContent = '共感しました！'; }, 100);
+  // Supabase increment (best-effort)
+  if (supabaseClient && selectedCompanyId) {
+    const cos = loadCompanies();
+    const co = cos.find(c => String(c.id) === String(selectedCompanyId));
+    if (co) {
+      const newReactions = (co.reactions || 0) + 1;
+      supabaseClient.from('companies').update({ reactions: newReactions })
+        .eq('id', selectedCompanyId).then(() => {});
+    }
+  }
+}
+
+function renderRelatedCeos(currentId) {
+  const section = document.getElementById('relatedCeosSection');
+  const list = document.getElementById('relatedCeosList');
+  if (!section || !list) return;
+  const all = (cachedCompanies && cachedCompanies.length) ? cachedCompanies : loadCompanies();
+  const others = all.filter(c => String(c.id) !== String(currentId)).slice(0, 3);
+  if (others.length === 0) return;
+  list.innerHTML = others.map(c => `
+    <div class="related-card" onclick="openCompanyArticle('${escapeHtml(String(c.id))}')">
+      <img class="related-card-photo" src="${escapeHtml(c.photoUrl||'')}" onerror="this.src='';this.style.background='var(--light)'" alt="">
+      <div style="flex:1;min-width:0">
+        <div class="related-card-name">${escapeHtml(c.ceo||'')}</div>
+        <div class="related-card-co">${escapeHtml(c.name||'')}</div>
+      </div>
+      <span style="color:var(--teal);font-size:11px;flex-shrink:0">読む →</span>
+    </div>`).join('');
+  section.style.display = '';
+}
+
 function renderCeoAvatar(el, companyName, color, photoUrl){
   if(!el) return;
   const ini = (companyName || '').trim().charAt(0) || '社';
@@ -1575,7 +1671,7 @@ function renderTopLeaders(){
     return `<div style="text-align:center"><div style="width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#102040;color:#fff;font-weight:700;border:1px solid rgba(255,255,255,0.22);margin:0 auto 4px;">${escapeHtml(ini)}</div><div style="font-size:10px;color:#fff;">${escapeHtml(name)}</div></div>`;
   }).join('');
   const more = Math.max(0, list.length - latest.length);
-  ct.textContent = `他${more}人が登録中`;
+  ct.textContent = ''; // 数は非表示
 }
 
 function renderP1FromCompany(){
@@ -1630,7 +1726,7 @@ function renderP1FromCompany(){
   if(bd){
     const quoteHtml = quote ? `<div class="article-quote"><p>「${escapeHtml(quote)}」</p></div>` : '';
     if (!body && !quote) {
-      bd.innerHTML = '<div class="no-article-msg">記事コンテンツを準備中です。<br>管理画面から本文を登録してください。</div>';
+      bd.innerHTML = '<div class="no-article-msg">記事コンテンツを準備中です。<br>もうしばらくお待ちください。<br><br><a href="#" onclick="goScreen(\"p4\");return false;" style="color:var(--teal);font-size:12px">→ 他の経営層を見る</a></div>';
     } else if (body.trimStart().startsWith('INTERVIEW')) {
       bd.innerHTML = quoteHtml + renderInterviewBody(body);
     } else {
@@ -1638,6 +1734,17 @@ function renderP1FromCompany(){
       bd.innerHTML = quoteHtml + renderMarkdownArticle(shapedBody, {allowImages});
     }
   }
+  // 共感ボタンリセット
+  const empSec = document.getElementById('empathySection');
+  const empBtn = document.getElementById('empathyBtnEl');
+  const empIcon = document.getElementById('empathyIcon');
+  const empLabel = document.getElementById('empathyLabel');
+  if(empSec) empSec.style.display = '';
+  if(empBtn){ empBtn.classList.remove('done','pop'); }
+  if(empIcon) empIcon.textContent = '♡';
+  if(empLabel) empLabel.textContent = 'この記事に共感した';
+  // 関連経営層レンダリング
+  if(co) renderRelatedCeos(co.id);
   renderCeoAvatar(av, company, color, photoUrl);
 
   if(ci && ciTags && ciText){
