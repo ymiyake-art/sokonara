@@ -992,6 +992,30 @@ body {
 .related-card-name { font-size: 13px; font-weight: 700; color: var(--navy); }
 .related-card-co { font-size: 11px; color: var(--text2); margin-top: 1px; }
 
+
+/* ===== SCROLL ANIMATIONS ===== */
+@keyframes empathyPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(66,173,159,0.35); }
+  50%       { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(66,173,159,0); }
+}
+.empathy-btn.pulsed:not(.done) {
+  animation: empathyPulse 1.4s ease-in-out 3;
+  border-color: var(--teal);
+}
+.cta-sticky {
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.cta-sticky.cta-hidden {
+  opacity: 0;
+  transform: translateX(-50%) translateY(110%);
+  pointer-events: none;
+}
+@media(max-width:768px){
+  .cta-sticky.cta-hidden {
+    transform: translateY(110%);
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1078,7 +1102,7 @@ body {
       </div>
     </div>
 
-    <div class="cta-sticky">
+    <div class="cta-sticky cta-hidden" id="p1CtaSticky">
       <div class="cta-sticky-text">
         <strong>刺さった言葉を選ぶだけ。あなたの価値観が見えてきます</strong>
         <div style="font-size:11px;color:var(--text3);margin-top:4px">3つの質問（約1分）→ あなたに合う経営層が見えます</div>
@@ -1745,6 +1769,12 @@ function renderP1FromCompany(){
   if(empLabel) empLabel.textContent = 'この記事に共感した';
   // 関連経営層レンダリング
   if(co) renderRelatedCeos(co.id);
+  // sticky CTAフォールバック: 3秒後に強制表示
+  const _sticky = document.getElementById('p1CtaSticky');
+  if (_sticky) {
+    clearTimeout(window._stickyTimer);
+    window._stickyTimer = setTimeout(() => _sticky.classList.remove('cta-hidden'), 3000);
+  }
   renderCeoAvatar(av, company, color, photoUrl);
 
   if(ci && ciTags && ciText){
@@ -1824,8 +1854,27 @@ function hide(id){ document.getElementById(id).style.display='none'; }
 // ===== READ PROGRESS =====
 function updateRead() {
   const el = document.getElementById('articleBody');
-  const pct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight))*100);
-  document.getElementById('readPct').textContent = Math.min(pct,100)+'%';
+  if (!el) return;
+  const pct = el.scrollHeight <= el.clientHeight
+    ? 100
+    : Math.round(el.scrollTop / (el.scrollHeight - el.clientHeight) * 100);
+  const clamped = Math.min(pct, 100);
+  const pctEl = document.getElementById('readPct');
+  if (pctEl) pctEl.textContent = clamped + '%';
+
+  // 15%スクロールでstickyを表示
+  const sticky = document.getElementById('p1CtaSticky');
+  if (sticky && clamped >= 15) {
+    sticky.classList.remove('cta-hidden');
+  }
+
+  // 80%スクロールで共感ボタンをパルス強調
+  if (clamped >= 80) {
+    const empBtn = document.getElementById('empathyBtnEl');
+    if (empBtn && !empBtn.classList.contains('done') && !empBtn.classList.contains('pulsed')) {
+      empBtn.classList.add('pulsed');
+    }
+  }
 }
 window.addEventListener('scroll', updateRead);
 
