@@ -183,6 +183,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
 <div id="topbar">
   <div id="topbar-brand"><img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ"></div>
   <div id="topbar-sub">ADMIN</div>
+  <a href="index.html" style="font-family:'JetBrains Mono',monospace;font-size:9px;padding:4px 10px;color:rgba(255,255,255,0.5);text-decoration:none;border:1px solid rgba(255,255,255,0.15);border-radius:2px;margin-right:4px;" onmouseover="this.style.color='rgba(255,255,255,0.85)'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">&#8592; TOP</a>
   <button id="logout-btn" onclick="logout()">ログアウト</button>
 </div>
 
@@ -531,7 +532,7 @@ function toCompanyRow(c){
     id:c.id,name:c.name,ceo:c.ceo,type:c.type,plan:c.plan,articleType:c.articleType,
     photoUrl:c.photoUrl||'',industry:c.industry||'',employeeSize:c.employeeSize||'',companyIntro:c.companyIntro||'',
     tags:c.tags||[],title:c.title||'',quote:c.quote||'',body:c.body||'',q1:c.q1||[],fee:c.fee||'',
-    status:c.status||'active',created_at:c.created_at||new Date().toISOString(),reactions:c.reactions||0,cta:c.cta||0
+    catchphrase:c.catchphrase||'',status:c.status||'active',created_at:c.created_at||new Date().toISOString(),reactions:c.reactions||0,cta:c.cta||0
   };
 }
 function fromCompanyRow(r){
@@ -616,7 +617,7 @@ function renderAddCo(){
       <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;overflow:hidden;margin-bottom:20px">
         <div style="padding:14px 18px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px">
           <span style="background:#9b59b6;color:#fff;font-size:9px;padding:2px 8px;border-radius:2px;font-family:'JetBrains Mono',monospace">NEW</span>
-          企業・経営者を登録する
+          企業・経営層を登録する
         </div>
         <div style="padding:20px">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
@@ -633,7 +634,7 @@ function renderAddCo(){
             <div>
               <div style="font-size:11px;color:var(--text2);margin-bottom:5px">経営層タイプ <span style="color:var(--hot)">*</span></div>
               <select id="co-type" style="${inp()}">
-                <option value="manager">経営者</option>
+                <option value="manager">経営層</option>
                 <option value="successor">後継候補</option>
                 <option value="biz_leader">事業責任者</option>
                 <option value="hire_leader">採用責任者</option>
@@ -657,7 +658,7 @@ function renderAddCo(){
             </select>
           </div>
           <div style="margin-bottom:14px">
-            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">経営者写真URL（任意）</div>
+            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">経営層写真URL（任意）</div>
             <input id="co-photo-url" type="url" placeholder="https://raw.githubusercontent.com/... または任意の画像URL" style="${inp()}">
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
@@ -731,6 +732,8 @@ function saveCo(){
   if(!name||!ceo||!title||!body){ toast('必須項目を入力してください'); return; }
   const q1=[1,2,3,4].map(i=>document.getElementById('co-q'+i).value.trim()).filter(Boolean);
   const isEdit = Boolean(editingCompanyId);
+  const arr=loadCompanies();
+  const existingCo = isEdit ? (arr.find(x=>x.id===editingCompanyId)||{}) : {};
   const co={
     id: editingCompanyId || ('co_'+Date.now()),
     name,ceo,
@@ -748,10 +751,11 @@ function saveCo(){
     title,quote,catchphrase,body,q1,
     fee:document.getElementById('co-fee').value||'',
     status:'active',
-    created:new Date().toLocaleDateString('ja-JP'),
-    reactions:0,cta:0
+    created:existingCo.created||new Date().toLocaleDateString('ja-JP'),
+    created_at:existingCo.created_at||new Date().toISOString(),
+    reactions:existingCo.reactions||0,
+    cta:existingCo.cta||0
   };
-  const arr=loadCompanies();
   if(isEdit){
     const idx = arr.findIndex(x=>x.id===editingCompanyId);
     if(idx>=0) arr[idx]=co; else arr.push(co);
@@ -838,7 +842,7 @@ async function genCoArticle(){
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,
-        messages:[{role:'user',content:`ソコナラ（地域キャリア共創プラットフォーム）のMVPアプリ用経営者記事を生成してください。
+        messages:[{role:'user',content:`ソコナラ（地域キャリア共創プラットフォーム）のMVPアプリ用経営層記事を生成してください。
 
 会社名：${name}
 経営層名：${ceo}
