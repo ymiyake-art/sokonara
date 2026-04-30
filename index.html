@@ -2049,7 +2049,7 @@ async function genReco(fb) {
   }
   const cont = document.getElementById('recoCards');
   cont.innerHTML = cos.map((c,i)=>`
-    <div class="reco-card">
+    <div class="reco-card" style="cursor:pointer" onclick="openCompanyArticle('${escapeHtml(String(c.id))}')">
       <div class="reco-card-top">
         <div class="reco-av" style="background:${c.color}">${c.name[0]}</div>
         <div class="reco-meta">
@@ -2062,23 +2062,23 @@ async function genReco(fb) {
         <div class="reco-reason-label">あなたに合う理由</div>
         <div class="reco-reason-text loading" id="rr${i}">　</div>
       </div>
-      <div class="reco-actions">
-        <button class="btn-primary" style="font-size:12px;padding:9px 16px" onclick="openInterestModal('会いたい')">興味を伝える</button>
-        <button class="btn-outline" style="font-size:11px;padding:8px 14px" onclick="openInterestModal('壁打ち')">壁打ちしたい</button>
+      <div class="reco-actions" onclick="event.stopPropagation()">
+        <button class="btn-primary" style="font-size:12px;padding:9px 16px" onclick="openInterestModal('会いたい','${escapeHtml(c.co)}','${escapeHtml(c.name)}')">興味を伝える</button>
+        <button class="btn-outline" style="font-size:11px;padding:8px 14px" onclick="openInterestModal('壁打ち','${escapeHtml(c.co)}','${escapeHtml(c.name)}')">壁打ちしたい</button>
       </div>
     </div>
   `).join('');
 
   try {
-    throw new Error('API disabled - using fallback');
-    const res = await fetch('https://api.anthropic.com/v1/messages',{
+    const recoRes = await fetch('/api/feedback', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,
-        system:'各経営層について「なぜこのユーザーに合うか」の理由を各1文（35字以内）で生成。JSONのみ返答：{"reasons":["理由1","理由2","理由3"]}',
-        messages:[{role:'user',content:`ユーザーの価値観：${fb.values.join('、')}\n希望接点：${S.q3}\n${cos.map((c,i)=>`経営層${i+1}：${c.name}（${c.co}）`).join('\n')}`}]})
+      body:JSON.stringify({
+        system:'各経営層について「なぜこのユーザーに合うか」の理由を各1文（35字以内）で生成。JSONのみ返答（コードブロック不要）：{"reasons":["理由1","理由2","理由3"]}',
+        user:`ユーザーの価値観：${fb.values.join('、')}\n希望接点：${S.q3}\n${cos.map((c,i)=>`経営層${i+1}：${c.name}（${c.co}）`).join('\n')}`
+      })
     });
-    const d = await res.json();
-    const m = d.content[0].text.match(/\{[\s\S]*\}/);
+    const rd = await recoRes.json();
+    const m = rd.content[0].text.match(/\{[\s\S]*\}/);
     if(m){ const p=JSON.parse(m[0]); p.reasons.forEach((r,i)=>{ const el=document.getElementById('rr'+i); if(el){el.classList.remove('loading');el.textContent=r;} }); }
   } catch {
     const fbReasons=['あなたの変革志向と地域への思いが共鳴します','価値観が重なり、新たな視点を持ち込めます','あなたのスピード感と挑戦意欲が活かせます'];
@@ -2353,13 +2353,13 @@ function randomState(len=8){
 }
 
 // ===== INTEREST FORM MODAL =====
-function openInterestModal(trigger){
+function openInterestModal(trigger, overrideCoName, overrideCeoName){
   const q3 = S.q3 || trigger || '';
   const isHire      = q3.includes('転職');
   const isCollaborate = q3.includes('副業') || q3.includes('プロジェクト');
   const co = getCurrentCompany();
-  const coName = co?.name || '';
-  const ceoName = co?.ceo || '';
+  const coName = overrideCoName || co?.name || '';
+  const ceoName = overrideCeoName || co?.ceo || '';
   const values = (S.fb?.values||[]).join('・') || '';
 
   // フォームタイプ判定
