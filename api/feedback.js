@@ -17,27 +17,35 @@ export default async function handler(req) {
 
   const { system, user } = await req.json();
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': process.env.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01'
+      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'claude-haiku-4-5',
+      model: 'gpt-4o-mini',
       max_tokens: 1000,
-      system,
-      messages: [{ role: 'user', content: user }]
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: user }
+      ]
     })
   });
 
   const data = await res.json();
-  return new Response(JSON.stringify(data), {
-    status: res.status,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
-    }
+
+  if (!res.ok) {
+    return new Response(JSON.stringify(data), {
+      status: res.status,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+    });
+  }
+
+  // Normalize to Anthropic-compatible shape so client parsing is unchanged
+  const text = data.choices?.[0]?.message?.content ?? '';
+  return new Response(JSON.stringify({ content: [{ text }] }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
   });
 }
