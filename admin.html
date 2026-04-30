@@ -528,11 +528,13 @@ function loadCompanies(){
   return companiesCache;
 }
 function toCompanyRow(c){
+  // catchphrase は Supabase スキーマに存在しないため除外
+  // index.html では c.catchphrase||c.quote でフォールバック済み
   return {
     id:c.id,name:c.name,ceo:c.ceo,type:c.type,plan:c.plan,articleType:c.articleType,
     photoUrl:c.photoUrl||'',industry:c.industry||'',employeeSize:c.employeeSize||'',companyIntro:c.companyIntro||'',
     tags:c.tags||[],title:c.title||'',quote:c.quote||'',body:c.body||'',q1:c.q1||[],fee:c.fee||'',
-    catchphrase:c.catchphrase||'',status:c.status||'active',created_at:c.created_at||new Date().toISOString(),reactions:c.reactions||0,cta:c.cta||0
+    status:c.status||'active',created_at:c.created_at||new Date().toISOString(),reactions:c.reactions||0,cta:c.cta||0
   };
 }
 function fromCompanyRow(r){
@@ -552,7 +554,10 @@ function saveCompanies(arr){
   if(!supabaseClient) return;
   const rows = companiesCache.map(toCompanyRow);
   supabaseClient.from('companies').upsert(rows,{onConflict:'id'}).then(({error})=>{
-    if(error) console.warn('companies save fallback:', error.message);
+    if(error){
+      console.warn('companies save error:', error.message);
+      toast('⚠️ DB保存失敗: ' + error.message.slice(0,60));
+    }
   });
 }
 function loadProjects(){
@@ -601,23 +606,25 @@ function renderSidebarCompanies(){
   if(!el) return;
   const companies=loadCompanies();
   let html=`<div class="admin-nav-label" style="padding:0 16px 6px">掲載企業</div>`;
-  html+=`<div class="co-item"><div class="co-av" style="background:#555">全</div><div class="co-nm">全社まとめ</div><div class="co-bd">${companies.length}</div></div>`;
+  html+=`<div class="co-item" onclick="switchTab('colist')" style="cursor:pointer"><div class="co-av" style="background:#555">全</div><div class="co-nm">全社まとめ</div><div class="co-bd">${companies.length}</div></div>`;
   html+=companies.map(c=>{
     const name=c.name||'企業名未設定';
     const ini=name.trim().charAt(0)||'社';
-    return `<div class="co-item"><div class="co-av" style="background:var(--navy)">${ini}</div><div class="co-nm">${name}</div></div>`;
+    return `<div class="co-item" onclick="editCo('${c.id}')" style="cursor:pointer" title="${name} を編集"><div class="co-av" style="background:var(--navy)">${ini}</div><div class="co-nm">${name}</div></div>`;
   }).join('');
   el.innerHTML=html;
 }
 
 // ===== 企業登録 =====
 function renderAddCo(){
+  const isEditing = Boolean(editingCompanyId);
+  document.getElementById('tabTitle').textContent = isEditing ? '企業編集' : '企業登録';
   document.getElementById('adminContent').innerHTML=`
     <div style="padding:24px;max-width:700px">
       <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;overflow:hidden;margin-bottom:20px">
         <div style="padding:14px 18px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px">
-          <span style="background:#9b59b6;color:#fff;font-size:9px;padding:2px 8px;border-radius:2px;font-family:'JetBrains Mono',monospace">NEW</span>
-          企業・経営層を登録する
+          <span style="background:${isEditing?'var(--teal)':'#9b59b6'};color:#fff;font-size:9px;padding:2px 8px;border-radius:2px;font-family:'JetBrains Mono',monospace">${isEditing?'EDIT':'NEW'}</span>
+          ${isEditing?'企業・経営層を編集する':'企業・経営層を登録する'}
         </div>
         <div style="padding:20px">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
@@ -709,7 +716,7 @@ function renderAddCo(){
             <input id="co-fee" type="number" placeholder="例：25" style="${inp()}width:120px;">
           </div>
           <div style="display:flex;gap:10px;align-items:center">
-            <button id="co-save-btn" onclick="saveCo()" style="padding:11px 24px;background:var(--teal);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">登録する</button>
+            <button id="co-save-btn" onclick="saveCo()" style="padding:11px 24px;background:var(--teal);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">${isEditing?'更新する':'登録する'}</button>
             <button onclick="genCoArticle()" style="padding:11px 20px;background:var(--navy);color:#fff;border:none;font-size:12px;font-weight:500;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">✦ AIで記事を生成</button>
             <span style="font-size:11px;color:var(--text2)">記事タイトル・引用・本文をAIが自動生成します</span>
           </div>
@@ -783,8 +790,6 @@ function editCo(id){
     set('co-title',co.title); set('co-quote',co.quote); set('co-body',co.body); set('co-fee',co.fee);
     if(document.getElementById('coCatchphrase')) document.getElementById('coCatchphrase').value=co.catchphrase||'';
     [1,2,3,4].forEach((i,idx)=>set('co-q'+i,(co.q1||[])[idx]||''));
-    const btn=document.getElementById('co-save-btn');
-    if(btn) btn.textContent='更新する';
     updateBodyCounter();
   },0);
 }
