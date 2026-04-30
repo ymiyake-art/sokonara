@@ -1235,8 +1235,12 @@ body {
           <div class="bridge-text" id="bridgeText"></div>
         </div>
         <div class="fb-cta" id="fbCta">
-          <button class="btn-primary" style="width:100%;justify-content:center;margin-bottom:10px" onclick="goScreen('p4')">あなたに合う経営層を見る →</button>
-          <div class="fb-cta-note" id="ctaNoteEl">経営層への「会いたい」はこの後でも送れます</div>
+          <div id="fbCtaLabel" style="font-size:13px;color:var(--text2);margin-bottom:10px;text-align:center"></div>
+          <button class="btn-primary" style="width:100%;justify-content:center;margin-bottom:10px" onclick="openInterestModal('会いたい')">この方に興味を伝える</button>
+          <button class="btn-outline" style="width:100%;justify-content:center;margin-bottom:16px" onclick="openInterestModal('壁打ち')">まず壁打ちしたい</button>
+          <div style="text-align:center">
+            <button style="background:none;border:none;color:var(--text2);font-size:12px;cursor:pointer;padding:6px 12px;text-decoration:underline" onclick="goScreen('p4')">他の経営層も見てみる</button>
+          </div>
         </div>
       </div>
     </div>
@@ -2028,9 +2032,13 @@ function showFeedback(fb) {
   setTimeout(()=>document.getElementById('bridgeBlock').classList.add('show'), 850);
   setTimeout(()=>{
     document.getElementById('fbCta').classList.add('show');
+    const _co = selectedCompanyId ? loadCompanies().find(c=>String(c.id||'')===String(selectedCompanyId)) : null;
+    const ceoLbl = (_co?.ceo || '') + (_co ? `（${_co.name||_co.company||''}）` : '');
+    const lbl = document.getElementById('fbCtaLabel');
+    if(lbl && ceoLbl) lbl.textContent = ceoLbl + ' に伝えますか？';
     if(fb.values?.[0]) document.getElementById('recoSub').textContent = `「${fb.values[0]}」の価値観をもとに選びました`;
     genReco(fb);
-    saveSession(); // セッションをSupabaseに保存
+    saveSession();
   }, 1100);
 }
 
@@ -2062,10 +2070,7 @@ async function genReco(fb) {
         <div class="reco-reason-label">あなたに合う理由</div>
         <div class="reco-reason-text loading" id="rr${i}">　</div>
       </div>
-      <div class="reco-actions" onclick="event.stopPropagation()">
-        <button class="btn-primary" style="font-size:12px;padding:9px 16px" onclick="openInterestModal('会いたい','${escapeHtml(c.co)}','${escapeHtml(c.name)}')">興味を伝える</button>
-        <button class="btn-outline" style="font-size:11px;padding:8px 14px" onclick="openInterestModal('壁打ち','${escapeHtml(c.co)}','${escapeHtml(c.name)}')">壁打ちしたい</button>
-      </div>
+      <div style="padding:10px 18px 14px;font-size:12px;color:var(--text2)">記事を読む →</div>
     </div>
   `).join('');
 
