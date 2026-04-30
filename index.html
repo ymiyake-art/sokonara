@@ -1037,6 +1037,7 @@ body {
   <div class="sdot" id="d2"></div>
   <div class="sdot" id="d3"></div>
   <div class="sdot" id="d4"></div>
+  <div class="sdot" id="d5"></div>
 </div>
 
 <!-- ===========================
@@ -1822,6 +1823,7 @@ function goScreen(id) {
   document.getElementById('progressFill').style.width = (PROG[id]||0)+'%';
   SCREENS.forEach((s,i)=>{
     const d = document.getElementById('d'+i);
+    if(!d) return;
     d.className = 'sdot';
     const idx = SCREENS.indexOf(id);
     if(i<idx) d.classList.add('done');
