@@ -198,6 +198,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
         <div class="admin-nav-label">メニュー</div>
         <div class="nav-item active" id="ni-dash" onclick="switchTab('dash')"><div class="nav-dot" style="background:var(--teal)"></div>ダッシュボード</div>
         <div class="nav-item" id="ni-reactions" onclick="switchTab('reactions')"><div class="nav-dot" style="background:var(--hot)"></div>反応一覧</div>
+        <div class="nav-item" id="ni-interests" onclick="switchTab('interests')"><div class="nav-dot" style="background:#e67e22"></div>興味通知フォーム</div>
         <div class="nav-item" id="ni-contacts" onclick="switchTab('contacts')"><div class="nav-dot" style="background:var(--warm)"></div>接点候補</div>
         <div class="nav-item" id="ni-report" onclick="switchTab('report')"><div class="nav-dot" style="background:var(--navy)"></div>AIレポート</div>
       </div>
@@ -286,9 +287,9 @@ function switchTab(tab){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const ni=document.getElementById('ni-'+tab);
   if(ni) ni.classList.add('active');
-  const titles={dash:'ダッシュボード',reactions:'反応一覧',contacts:'接点候補リスト',report:'AIレポート生成',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧'};
+  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',contacts:'接点候補リスト',report:'AIレポート生成',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧'};
   document.getElementById('tabTitle').textContent=titles[tab]||tab;
-  const fns={dash:renderDash,reactions:renderReactions,contacts:renderContacts,report:renderReport,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList};
+  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,contacts:renderContacts,report:renderReport,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList};
   fns[tab]?.();
 }
 
@@ -431,6 +432,49 @@ function filterTemp(v){
     const map={hot:'tch',warm:'tcw',cool:'tcc'};
     row.style.display=chip.classList.contains(map[v])?'':'none';
   });
+}
+
+async function renderInterests(){
+  const el = document.getElementById('adminContent');
+  el.innerHTML = `<div style="padding:24px"><div style="font-size:12px;color:var(--text2);margin-bottom:16px">読み込み中...</div></div>`;
+  let rows = [];
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/interest_forms?select=*&order=created_at.desc&limit=100`,{
+      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
+    });
+    rows = await res.json();
+  } catch(e){ rows = []; }
+
+  const typeLabel = {empathy:'共感',collaborate:'参画',hire:'転職'};
+  const typeBg    = {empathy:'rgba(66,173,159,0.1)',collaborate:'rgba(230,126,34,0.1)',hire:'rgba(192,52,26,0.08)'};
+  const typeColor = {empathy:'var(--teal-d)',collaborate:'#e67e22',hire:'var(--hot)'};
+
+  el.innerHTML = `<div style="padding:24px">
+    <div style="font-size:12px;color:var(--text2);margin-bottom:16px">${rows.length}件の興味通知</div>
+    ${rows.length===0?`<div style="background:var(--white);border:1px solid var(--border);padding:40px;text-align:center;border-radius:2px;color:var(--text2);">まだ登録がありません</div>`:''}
+    ${rows.map(r=>{
+      const fd = r.form_data||{};
+      const values = Array.isArray(r.ai_values)&&r.ai_values.length ? r.ai_values.join(' / ') : '—';
+      const dt = r.created_at ? new Date(r.created_at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+      return `<div style="background:var(--white);border:1px solid var(--border);border-radius:2px;padding:14px 16px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
+          <span style="font-size:9px;padding:2px 8px;background:${typeBg[r.intent_type]||'var(--bg)'};color:${typeColor[r.intent_type]||'var(--text2)'};border-radius:2px;font-family:'JetBrains Mono',monospace;font-weight:700">${typeLabel[r.intent_type]||r.intent_type}</span>
+          <span style="font-size:13px;font-weight:700;color:var(--navy)">${fd.name||'—'}</span>
+          <span style="font-size:12px;color:var(--text2)">${fd.email||'—'}</span>
+          <span style="font-size:10px;color:var(--text3);margin-left:auto">${dt}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:4px">対象：<strong>${r.company_name||'—'} / ${r.ceo_name||'—'}</strong>　共感度：${fd.score||'—'}点</div>
+        <div style="font-size:11px;color:var(--teal-d);margin-bottom:4px">価値観：${values}</div>
+        ${fd.comment?`<div style="font-size:11px;color:var(--text2);margin-bottom:4px">コメント：${fd.comment}</div>`:''}
+        ${fd.strength?`<div style="font-size:11px;color:var(--text2);margin-bottom:4px">強み：${fd.strength}</div>`:''}
+        ${fd.current_job?`<div style="font-size:11px;color:var(--text2);">現職：${fd.current_job}${fd.salary?' / '+fd.salary:''}</div>`:''}
+        <div style="margin-top:8px;display:flex;gap:6px">
+          <a href="mailto:${fd.email}" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border:1px solid var(--teal);background:var(--teal-bg);color:var(--teal-d);border-radius:2px;text-decoration:none;">メール</a>
+          ${fd.tel?`<a href="tel:${fd.tel}" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border:1px solid var(--border);background:none;color:var(--text2);border-radius:2px;text-decoration:none;">電話</a>`:''}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 
 function renderContacts(){
