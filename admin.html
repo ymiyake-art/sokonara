@@ -254,31 +254,56 @@ function getInitialTab(){
   }
 }
 
-function checkPass(){
-  const v=document.getElementById('gate-input').value;
-  if(v==='soconara2024'){
-    document.getElementById('gate').style.display='none';
-    document.getElementById('topbar').style.display='flex';
-    document.getElementById('shell').style.display='block';
-    localStorage.setItem('snAdmin','ok');
-    loadCompaniesAsync().finally(renderSidebarCompanies);
-    loadProjectsAsync();
-    switchTab(getInitialTab());
-  } else {
+async function checkPass(){
+  const v = document.getElementById('gate-input').value;
+  if(!v){ return; }
+  const btn = document.getElementById('gate-btn');
+  btn.disabled = true;
+  btn.textContent = '確認中...';
+  try {
+    const res = await fetch('/api/admin-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: v })
+    });
+    const data = await res.json();
+    if(data.ok){
+      document.getElementById('gate').style.display='none';
+      document.getElementById('topbar').style.display='flex';
+      document.getElementById('shell').style.display='block';
+      localStorage.setItem('snAdmin', String(Date.now()));
+      loadCompaniesAsync().finally(renderSidebarCompanies);
+      loadProjectsAsync();
+      switchTab(getInitialTab());
+    } else {
+      document.getElementById('gate-err').style.display='block';
+      document.getElementById('gate-input').value='';
+      document.getElementById('gate-input').focus();
+    }
+  } catch(e) {
+    // ローカル開発時（Edge Function未起動）はフォールバック
+    console.warn('admin-auth fallback:', e.message);
+    document.getElementById('gate-err').textContent = 'サーバーに接続できません。ローカル確認中は直接アクセスしてください。';
     document.getElementById('gate-err').style.display='block';
-    document.getElementById('gate-input').value='';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'ログイン';
   }
 }
 function logout(){localStorage.removeItem('snAdmin');location.reload();}
 
 window.addEventListener('DOMContentLoaded',()=>{
-  if(localStorage.getItem('snAdmin')==='ok'){
+  const ts = parseInt(localStorage.getItem('snAdmin')||'0', 10);
+  const validSession = ts > 0 && (Date.now() - ts) < 24 * 60 * 60 * 1000; // 24時間
+  if(validSession){
     document.getElementById('gate').style.display='none';
     document.getElementById('topbar').style.display='flex';
     document.getElementById('shell').style.display='block';
     loadCompaniesAsync().finally(renderSidebarCompanies);
     loadProjectsAsync();
     switchTab(getInitialTab());
+  } else {
+    localStorage.removeItem('snAdmin');
   }
 });
 
