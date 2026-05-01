@@ -2053,6 +2053,7 @@ function showFeedback(fb) {
 async function genReco(fb) {
   const allCos = loadCompanies().filter(c=>String(c.id||'')!==String(selectedCompanyId||''));
   const cos = allCos.slice(0,3).map(c=>({
+    id: c.id||'',
     name: c.ceo||'経営層',
     co: c.name||c.company||'',
     color: c.color||'var(--navy)',
