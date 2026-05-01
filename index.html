@@ -1502,7 +1502,7 @@ function isLineRegistered() {
 }
 
 function beginLineLogin() {
-  const redirectUri = encodeURIComponent(location.origin + location.pathname + '?line_callback=1');
+  const redirectUri = encodeURIComponent(location.origin + location.pathname);
   const clientId = '2007620158'; // LINE Channel ID - public value
   const state = Math.random().toString(36).slice(2);
   localStorage.setItem('snLineState', state);
@@ -2770,14 +2770,17 @@ function renderAdminSidebar(){
 // init admin
 renderDash();
 
-// LINE OAuth callback
+// LINE OAuth callback（codeとstateの一致で検出）
 const urlParams = new URLSearchParams(location.search);
-if (urlParams.get('line_callback') === '1' && urlParams.get('code')) {
-  const code = urlParams.get('code');
+const _lineCode = urlParams.get('code');
+const _lineState = urlParams.get('state');
+const _savedState = localStorage.getItem('snLineState');
+if (_lineCode && _lineState && _savedState && _lineState === _savedState) {
+  localStorage.removeItem('snLineState');
   fetch('/api/line-token', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({code, redirect_uri: location.origin + location.pathname + '?line_callback=1'})
+    body: JSON.stringify({code: _lineCode, redirect_uri: location.origin + location.pathname})
   }).then(r=>r.json()).then(d=>{
     if(d.line_id){
       localStorage.setItem('snLineId', d.line_id);
