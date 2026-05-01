@@ -1030,7 +1030,7 @@ body {
   <div style="max-width:420px;width:100%;text-align:center;">
     <img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ" style="height:48px;width:auto;display:block;margin:0 auto 24px;">
     <div style="font-family:'Noto Serif JP',serif;font-weight:700;font-size:32px;line-height:1.5;color:#fff;margin-bottom:10px;">出会いは検索から生まれない</div>
-    <div style="font-size:14px;line-height:1.9;color:rgba(255,255,255,0.86);margin-bottom:22px;">地域の経営層と、まず話してみませんか</div>
+    <div style="font-size:14px;line-height:1.9;color:rgba(255,255,255,0.86);margin-bottom:22px;">地域企業の経営層と、まず話してみませんか</div>
     <div id="topLeaders" style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-bottom:18px;"></div>
     <div id="topLeadersCount" style="font-size:11px;color:rgba(255,255,255,0.72);margin-bottom:22px;"></div>
     <button class="btn-primary" style="width:100%;justify-content:center;background:#42AD9F;margin-bottom:10px;" onclick="enterFromTop('company')">まず1人、読んでみる →</button>
@@ -1043,8 +1043,7 @@ body {
   <div class="mode-brand"><img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ"></div>
   <button class="mode-btn active" id="mb-company" onclick="switchMode('user',this,'company')">経営層一覧</button>
   <button class="mode-btn" id="mb-project" onclick="switchMode('user',this,'project')">共創テーマ</button>
-  <button class="mode-btn" onclick="switchMode('admin',this,'')">管理画面</button>
-  <button class="mode-reset" onclick="resetAll()">↺ リセット</button>
+  <!-- 管理画面・リセットは admin.html から直接アクセス（公開ナビからは非表示） -->
 </div>
 
 <!-- ===== PROGRESS (user only) ===== -->
@@ -1069,13 +1068,11 @@ body {
     <div style="background:var(--navy);padding:36px 20px 32px;text-align:center;position:relative;overflow:hidden;">
       <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 60% 0%,rgba(66,173,159,0.18) 0%,transparent 70%);pointer-events:none;"></div>
       <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:10px;">Sokonara — Regional Career Co-Creation</div>
-      <div style="font-family:'Noto Serif JP',serif;font-size:22px;font-weight:700;color:#fff;line-height:1.5;margin-bottom:8px;">地域の経営層と、<br>あなたの価値観が出会う場所</div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.9;margin-bottom:24px;">記事を読んで、言葉に共鳴する。<br>その先に、転職でも副業でも壁打ちでも——<br>あなただけの関わり方が生まれます。</div>
-      <a href="https://lin.ee/sokonara" target="_blank" rel="noopener" id="lineHeroCta" style="display:inline-flex;align-items:center;gap:10px;background:#06C755;color:#fff;font-size:13px;font-weight:700;padding:14px 28px;border-radius:4px;text-decoration:none;font-family:'Noto Sans JP',sans-serif;box-shadow:0 4px 16px rgba(6,199,85,0.35);">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.070 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
-        LINEで記事配信を受け取る
-      </a>
-      <div style="margin-top:14px;font-size:11px;color:rgba(255,255,255,0.38);">↓ まず記事を読む</div>
+      <div style="font-family:'Noto Serif JP',serif;font-size:22px;font-weight:700;color:#fff;line-height:1.5;margin-bottom:8px;">求人票では見えない、<br>経営層の想いから<br>キャリアを考える。</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.75);font-weight:700;margin-bottom:8px;">地域企業の経営層と、まず話してみませんか。</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.9;margin-bottom:24px;">記事を読んで、共鳴した言葉を選ぶだけ。<br>あなたに合うキャリアの方向性が見えてきます。</div>
+      <button class="btn-primary" onclick="document.getElementById('companyListBody').scrollIntoView({behavior:'smooth'})" style="width:100%;max-width:320px;justify-content:center;margin-bottom:10px;">経営層の記事を見る</button>
+      <button class="btn-outline" onclick="switchMode('user',document.getElementById('mb-project'),'project')" style="width:100%;max-width:320px;justify-content:center;background:transparent;color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.3);">共創テーマから探す</button>
     </div>
 
     <!-- ARTICLES -->
@@ -1225,19 +1222,42 @@ body {
       </div>
 
       <div id="fbContent" style="display:none">
-        <div class="values-section">
-          <div class="values-label">価値観キーワード</div>
-          <div class="value-tags" id="valueTags"></div>
+        <!-- 簡易フィードバック（LINE登録前後共通） -->
+        <div id="fbSummary" class="fb-summary-block" style="background:rgba(66,173,159,0.08);border-left:3px solid var(--teal);padding:16px 18px;border-radius:0 4px 4px 0;margin-bottom:20px;">
+          <div style="font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:2px;color:var(--teal);margin-bottom:8px;">YOUR FEEDBACK</div>
+          <div id="fbSummaryText" style="font-size:14px;line-height:1.9;color:var(--navy);white-space:pre-line;"></div>
         </div>
-        <div class="msg-block" id="msgBlock"><div class="msg-text" id="msgText"></div></div>
-        <div class="bridge-block" id="bridgeBlock">
-          <div class="bridge-label" id="bridgeLabelEl">経営層との接点理由</div>
-          <div class="bridge-text" id="bridgeText"></div>
+
+        <!-- LINE未登録時のCTA -->
+        <div id="fbLineCta" style="display:none;background:var(--navy);border-radius:4px;padding:24px 20px;text-align:center;margin-bottom:20px;">
+          <div style="font-family:'Noto Serif JP',serif;font-size:16px;font-weight:700;color:#fff;margin-bottom:8px;">詳細結果をLINEで受け取る</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.65);line-height:1.8;margin-bottom:16px;">
+            LINE登録すると、詳細なAIフィードバック、<br>おすすめの経営層、この記事への共感送信が利用できます。<br><br>
+            <span style="color:rgba(255,255,255,0.45);font-size:11px;">LINE登録だけで、企業に個人情報が送られることはありません。</span>
+          </div>
+          <button class="btn-line-login" onclick="beginLineLogin()" style="width:100%;max-width:280px;justify-content:center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.070 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+            LINEで詳細を受け取る
+          </button>
         </div>
-        <div class="fb-cta" id="fbCta">
+
+        <!-- LINE登録後の詳細フィードバック -->
+        <div id="fbDetail" style="display:none">
+          <div class="values-section">
+            <div class="values-label">価値観キーワード</div>
+            <div class="value-tags" id="valueTags"></div>
+          </div>
+          <div class="msg-block" id="msgBlock"><div class="msg-text" id="msgText"></div></div>
+          <div class="bridge-block" id="bridgeBlock">
+            <div class="bridge-label" id="bridgeLabelEl">経営層との接点理由</div>
+            <div class="bridge-text" id="bridgeText"></div>
+          </div>
+        </div>
+
+        <!-- LINE登録後のCTA（共感送信） -->
+        <div id="fbCta" class="fb-cta" style="display:none">
           <div id="fbCtaLabel" style="font-size:13px;color:var(--text2);margin-bottom:10px;text-align:center"></div>
-          <button class="btn-primary" style="width:100%;justify-content:center;margin-bottom:10px" onclick="openInterestModal('会いたい')">この方に興味を伝える</button>
-          <button class="btn-outline" style="width:100%;justify-content:center;margin-bottom:16px" onclick="openInterestModal('壁打ち')">まず壁打ちしたい</button>
+          <button class="btn-primary" style="width:100%;justify-content:center;margin-bottom:10px" onclick="openEmpathyForm()">共感を送る</button>
           <div style="text-align:center">
             <button style="background:none;border:none;color:var(--text2);font-size:12px;cursor:pointer;padding:6px 12px;text-decoration:underline" onclick="goScreen('p4')">他の経営層も見てみる</button>
           </div>
@@ -1276,8 +1296,8 @@ body {
   <div id="p5" class="screen" style="display:none">
     <div style="margin:auto;padding:40px 20px;text-align:center;max-width:420px">
       <div class="complete-icon">✓</div>
-      <div class="complete-title">興味を伝えました</div>
-      <div class="complete-sub">転職の申込ではありません。<br>「話してみたい」という一歩を踏み出しました。</div>
+      <div class="complete-title">共感を送信しました。</div>
+      <div class="complete-sub">ソコナラ事務局が内容を確認したうえで、必要に応じて企業・経営層へ共有します。内容を見た企業・経営層から、面談や対話の連絡が届く可能性があります。</div>
       <div class="complete-steps">
         <div class="complete-steps-label">次のステップ</div>
         <div class="complete-step"><div class="complete-step-n">01</div><div>担当者から<strong> 数日以内にLINEでご連絡</strong>します</div></div>
@@ -1298,6 +1318,45 @@ body {
   <div class="imodal-sheet" id="imodalSheet">
     <div class="imodal-handle"></div>
     <div id="imodalInner"></div>
+  </div>
+</div>
+
+<!-- ===========================
+     EMPATHY FORM MODAL
+     =========================== -->
+<div id="empathyModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;overflow-y:auto;">
+  <div style="background:#fff;max-width:480px;margin:40px auto;border-radius:4px;padding:32px 24px;position:relative;">
+    <button onclick="document.getElementById('empathyModal').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text2);">×</button>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:8px;">EMPATHY FORM</div>
+    <div style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:6px;" id="empathyModalTitle">共感を送る</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:24px;" id="empathyModalSub"></div>
+
+    <div style="margin-bottom:16px;">
+      <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px;">年齢 <span style="color:var(--hot)">*</span></label>
+      <input id="empAge" type="text" placeholder="例：32歳" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:14px;">
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:4px;">自己紹介 <span style="color:var(--hot)">*</span></label>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">これまでの仕事、経験、関心のあるテーマ、今後やってみたいことなどを自由にご記入ください。</div>
+      <textarea id="empSelf" rows="4" placeholder="例：IT企業で営業を5年経験。地域の課題解決に興味があり、副業や転職も視野に入れています。" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:13px;resize:vertical;line-height:1.7;"></textarea>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:4px;">この記事に共感した理由 <span style="color:var(--hot)">*</span></label>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">記事を読んで印象に残ったこと、共感した言葉、話してみたいと思った理由などをご記入ください。</div>
+      <textarea id="empReason" rows="4" placeholder="例：「なぜそれをやるのか」を大切にする姿勢に共感しました。私も同じ問いを持って働いています。" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:13px;resize:vertical;line-height:1.7;"></textarea>
+    </div>
+
+    <div style="background:var(--light);border-radius:4px;padding:14px 16px;margin-bottom:20px;font-size:11px;color:var(--text2);line-height:1.8;">
+      この送信は正式な応募ではありません。<br>
+      入力いただいた年齢、自己紹介、この記事に共感した理由は、ソコナラ事務局が内容を確認したうえで、必要に応じて企業・経営層へ共有します。<br>
+      LINE登録だけで、企業に個人情報が送られることはありません。<br>
+      自己紹介や共感内容を見た企業・経営層から、面談や対話の連絡が届く可能性があります。
+    </div>
+
+    <button class="btn-primary" style="width:100%;justify-content:center;" onclick="submitEmpathyForm()">共感を送る</button>
+    <div id="empathyError" style="color:var(--hot);font-size:12px;text-align:center;margin-top:8px;display:none;"></div>
   </div>
 </div>
 
@@ -1437,6 +1496,18 @@ const Q2_DIST = [
 
 // ===== STATE =====
 const S = { q1:'', q2:[], q3:'', free:'', fb:null, screen:'p-list', mode:'user', adminTab:'dash' };
+
+function isLineRegistered() {
+  return !!localStorage.getItem('snLineId');
+}
+
+function beginLineLogin() {
+  const redirectUri = encodeURIComponent(location.origin + location.pathname + '?line_callback=1');
+  const clientId = '2007620158'; // LINE Channel ID - public value
+  const state = Math.random().toString(36).slice(2);
+  localStorage.setItem('snLineState', state);
+  location.href = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=profile`;
+}
 const SCREENS = ['p-list','p1','p2','p3','p4','p5'];
 const PROG = {p1:20,p2:40,p3:60,p4:80,p5:100};
 let selectedCompanyId = null;
@@ -1986,7 +2057,7 @@ async function genFeedback() {
    転職を急かさず「まず会ってみる」レベルの温度感で
 
 JSON形式のみで返答してください（前置き・コードブロック不要）：
-{values:[価値観3語], message:メッセージ（改行は\\nで表現）, bridge:接点理由1文}`;
+{summary:"LINE登録前に表示する簡易フィードバック2〜3文", values:[価値観3語], message:メッセージ（改行は\\nで表現）, bridge:接点理由1文}`;
 
   const _co = selectedCompanyId ? loadCompanies().find(c=>String(c.id||'')===String(selectedCompanyId)) : null;
   const ceoLabel = (_co && _co.ceo ? _co.ceo : '経営層') + (_co && (_co.name||_co.company) ? `（${_co.name||_co.company}）` : '');
@@ -2013,6 +2084,7 @@ ${S.free ? '自由記述：'+S.free : ''}`;
     console.error('[feedback error]', e?.message || e);
     toast('AI生成エラー: ' + (e?.message || '不明なエラー'));
     const fb = {
+      summary: 'あなたは、条件面だけでなく、経営層の想いや事業の変化に反応しやすいタイプです。特に、完成された環境よりも、これから変化していく地域企業に関わることに興味を持ちやすい傾向があります。',
       values:['問いから始める人','熱量に共鳴できる人','まず小さく試す人'],
       message:'あなたは今、「次を決める」より「確かめたい」に近い状態にいます。\\nあなたは今、条件ではなく”納得できる理由”を探している最中です。\\nあなたは今、ひとりで抱え込まず、対話で輪郭を掴もうとしています。\\n\\n言葉の熱を見抜けるのは、あなたの強みです。\\n相手の「本音」に反応できるから、表面的な情報に流されにくい。\\nそして、関わり方を自分で選び直せる柔らかさも持っています。\\n\\nこの経営層との接点は、あなたの”問い”を現場で確かめる場になります。\\n壁打ちなら、答え探しではなく「何が大事か」を一緒に言語化できます。\\n副業や参画なら、距離感を保ちながら相性を検証できます。\\n\\n転職を急がなくて大丈夫です。まず一度、会ってみるところから始めましょう。',
       bridge:'「なぜ変えるのか」に反応したあなたの視点が、対話の価値を高めます'
@@ -2025,29 +2097,48 @@ ${S.free ? '自由記述：'+S.free : ''}`;
 function showFeedback(fb) {
   document.getElementById('fbSkel').style.display = 'none';
   document.getElementById('fbContent').style.display = 'block';
-  const tags = document.getElementById('valueTags');
-  tags.innerHTML = '';
-  fb.values.forEach((v,i)=>{
-    const t = document.createElement('div');
-    t.className = 'value-tag';
-    t.textContent = v;
-    tags.appendChild(t);
-    setTimeout(()=>t.classList.add('show'), i*200);
-  });
-  document.getElementById('msgText').textContent = String(fb.message || '').replace(/\\n/g,'\n');
-  setTimeout(()=>document.getElementById('msgBlock').classList.add('show'), 550);
-  document.getElementById('bridgeText').textContent = fb.bridge;
-  setTimeout(()=>document.getElementById('bridgeBlock').classList.add('show'), 850);
-  setTimeout(()=>{
-    document.getElementById('fbCta').classList.add('show');
-    const _co = selectedCompanyId ? loadCompanies().find(c=>String(c.id||'')===String(selectedCompanyId)) : null;
-    const ceoLbl = (_co?.ceo || '') + (_co ? `（${_co.name||_co.company||''}）` : '');
-    const lbl = document.getElementById('fbCtaLabel');
-    if(lbl && ceoLbl) lbl.textContent = ceoLbl + ' に伝えますか？';
-    if(fb.values?.[0]) document.getElementById('recoSub').textContent = `「${fb.values[0]}」の価値観をもとに選びました`;
-    genReco(fb);
-    saveSession();
-  }, 1100);
+
+  // 簡易フィードバック（常に表示）
+  const summaryEl = document.getElementById('fbSummaryText');
+  if(summaryEl) summaryEl.textContent = fb.summary || '';
+
+  if(isLineRegistered()) {
+    // LINE登録済み：詳細表示
+    document.getElementById('fbLineCta').style.display = 'none';
+    document.getElementById('fbDetail').style.display = 'block';
+
+    const tags = document.getElementById('valueTags');
+    tags.innerHTML = '';
+    (fb.values||[]).forEach((v,i)=>{
+      const t = document.createElement('div');
+      t.className = 'value-tag';
+      t.textContent = v;
+      tags.appendChild(t);
+      setTimeout(()=>t.classList.add('show'), i*200);
+    });
+    document.getElementById('msgText').textContent = String(fb.message||'').replace(/\\n/g,'\n');
+    setTimeout(()=>document.getElementById('msgBlock').classList.add('show'), 550);
+    document.getElementById('bridgeText').textContent = fb.bridge||'';
+    setTimeout(()=>document.getElementById('bridgeBlock').classList.add('show'), 850);
+
+    setTimeout(()=>{
+      const cta = document.getElementById('fbCta');
+      if(cta) cta.style.display = 'block';
+      const _co = selectedCompanyId ? loadCompanies().find(c=>String(c.id||'')===String(selectedCompanyId)) : null;
+      const ceoLbl = (_co?.ceo||'') + (_co ? `（${_co.name||_co.company||''}）` : '');
+      const lbl = document.getElementById('fbCtaLabel');
+      if(lbl && ceoLbl) lbl.textContent = ceoLbl + ' に共感を伝えますか？';
+      if(fb.values?.[0]) document.getElementById('recoSub').textContent = `「${fb.values[0]}」の価値観をもとに選びました`;
+      genReco(fb);
+      saveSession();
+    }, 1100);
+  } else {
+    // LINE未登録：簡易表示のみ
+    document.getElementById('fbLineCta').style.display = 'block';
+    document.getElementById('fbDetail').style.display = 'none';
+    const cta = document.getElementById('fbCta');
+    if(cta) cta.style.display = 'none';
+  }
 }
 
 // ===== RECO =====
@@ -2474,6 +2565,55 @@ function closeInterestModal(e){
   document.body.style.overflow = '';
 }
 
+function openEmpathyForm() {
+  const co = getCurrentCompany();
+  const title = document.getElementById('empathyModalTitle');
+  const sub = document.getElementById('empathyModalSub');
+  if(title) title.textContent = (co?.ceo||'経営層') + 'への共感を送る';
+  if(sub) sub.textContent = (co?.name||co?.company||'') + 'の記事を読んで共感した内容を送ります。';
+  document.getElementById('empAge').value = '';
+  document.getElementById('empSelf').value = '';
+  document.getElementById('empReason').value = '';
+  document.getElementById('empathyError').style.display = 'none';
+  document.getElementById('empathyModal').style.display = 'block';
+}
+
+async function submitEmpathyForm() {
+  const age = document.getElementById('empAge').value.trim();
+  const self = document.getElementById('empSelf').value.trim();
+  const reason = document.getElementById('empReason').value.trim();
+  const errEl = document.getElementById('empathyError');
+  if(!age || !self || !reason) {
+    errEl.textContent = '全項目を入力してください';
+    errEl.style.display = 'block';
+    return;
+  }
+  const co = getCurrentCompany();
+  const id = 'emp_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+  const payload = {
+    id,
+    line_id: localStorage.getItem('snLineId') || null,
+    company_id: String(selectedCompanyId||''),
+    company_name: co?.name||co?.company||'',
+    ceo_name: co?.ceo||'',
+    intent_type: 'empathy',
+    q1_answer: S.q1||'',
+    q2_values: S.q2||[],
+    q3_answer: S.q3||'',
+    ai_values: S.fb?.values||[],
+    form_data: { age, self_intro: self, empathy_reason: reason }
+  };
+  try {
+    const { error } = await supabaseClient.from('interest_forms').insert([payload]);
+    if(error) throw error;
+    document.getElementById('empathyModal').style.display = 'none';
+    toast('共感を送信しました。ソコナラ事務局が内容を確認したうえで、必要に応じて企業・経営層へ共有します。');
+  } catch(e) {
+    errEl.textContent = '送信に失敗しました。もう一度お試しください。';
+    errEl.style.display = 'block';
+  }
+}
+
 async function submitInterestForm(formType, coName, ceoName){
   const name  = (document.getElementById('if-name')?.value||'').trim();
   const email = (document.getElementById('if-email')?.value||'').trim();
@@ -2636,10 +2776,14 @@ function resetAll(){
   const q2n=document.getElementById('q2next'); if(q2n) q2n.disabled=true;
   ['q1b'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='block';});
   ['q2b','q3b'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
-  ['msgBlock','bridgeBlock','fbCta'].forEach(id=>{document.getElementById(id)?.classList.remove('show');});
+  ['msgBlock','bridgeBlock'].forEach(id=>{document.getElementById(id)?.classList.remove('show');});
   document.querySelectorAll('.value-tag').forEach(t=>t.classList.remove('show'));
   const fs=document.getElementById('fbSkel');if(fs)fs.style.display='block';
   const fc=document.getElementById('fbContent');if(fc)fc.style.display='none';
+  const fsum=document.getElementById('fbSummary');if(fsum)fsum.style.display='';
+  const flc=document.getElementById('fbLineCta');if(flc)flc.style.display='none';
+  const fdet=document.getElementById('fbDetail');if(fdet)fdet.style.display='none';
+  const fcta=document.getElementById('fbCta');if(fcta)fcta.style.display='none';
   const rc=document.getElementById('recoCards');if(rc)rc.innerHTML='';
   goScreen('p-list');
   document.querySelector('.mode-btn').click();
@@ -2660,6 +2804,25 @@ function renderAdminSidebar(){
 // init admin
 renderDash();
 handleLineCallback();
+
+// LINE OAuth callback
+const urlParams = new URLSearchParams(location.search);
+if (urlParams.get('line_callback') === '1' && urlParams.get('code')) {
+  const code = urlParams.get('code');
+  fetch('/api/line-token', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({code, redirect_uri: location.origin + location.pathname + '?line_callback=1'})
+  }).then(r=>r.json()).then(d=>{
+    if(d.line_id){
+      localStorage.setItem('snLineId', d.line_id);
+      localStorage.setItem('snLineName', d.display_name || '');
+    }
+    history.replaceState({}, '', location.pathname);
+    location.reload();
+  }).catch(()=>{ history.replaceState({}, '', location.pathname); });
+}
+
 selectedCompanyId = null;
 Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
   renderCompanyList();
