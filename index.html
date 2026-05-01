@@ -2837,7 +2837,8 @@ if (_lineCode && _lineState && _savedState && _lineState === _savedState) {
       localStorage.setItem('snLineId', d.line_id);
       localStorage.setItem('snLineName', d.display_name || '');
     }
-    // sn_restoreはそのまま残してreload後のfinallyで確実に復元する
+    // reload後のfinallyで復元するためのフラグ（snLineId設定の成否に関わらずセット）
+    localStorage.setItem('sn_postlogin', '1');
     location.reload();
   }).catch(()=>{ location.reload(); });
 }
@@ -2854,9 +2855,11 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
     return;
   }
 
-  // LINE登録直後のreload時：sn_restoreがあればFBを復元してp3へ
+  // LINE登録直後のreload時：sn_postloginフラグとsn_restoreがあればFBを復元してp3へ
+  const _postLogin = localStorage.getItem('sn_postlogin');
   const _restoreRaw = localStorage.getItem('sn_restore');
-  if(isLineRegistered() && _restoreRaw){
+  if(_postLogin && _restoreRaw){
+    localStorage.removeItem('sn_postlogin');
     localStorage.removeItem('sn_restore');
     try{
       const saved = JSON.parse(_restoreRaw);
