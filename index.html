@@ -1026,7 +1026,7 @@ body {
 </style>
 </head>
 <body>
-<div id="topPage" style="display:flex;min-height:100vh;background:#1C2A54;align-items:center;justify-content:center;padding:40px;">
+<div id="topPage" style="display:none;min-height:100vh;background:#1C2A54;align-items:center;justify-content:center;padding:40px;">
   <div style="max-width:420px;width:100%;text-align:center;">
     <img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ" style="height:48px;width:auto;display:block;margin:0 auto 24px;">
     <div style="font-family:'Noto Serif JP',serif;font-weight:700;font-size:32px;line-height:1.5;color:#fff;margin-bottom:10px;">出会いは検索から生まれない</div>
@@ -1039,7 +1039,7 @@ body {
 </div>
 
 <!-- ===== MODE BAR ===== -->
-<div class="mode-bar" style="display:none">
+<div class="mode-bar" style="display:flex">
   <div class="mode-brand"><img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ"></div>
   <button class="mode-btn active" id="mb-company" onclick="switchMode('user',this,'company')">経営層一覧</button>
   <button class="mode-btn" id="mb-project" onclick="switchMode('user',this,'project')">共創テーマ</button>
@@ -1068,8 +1068,8 @@ body {
     <div style="background:var(--navy);padding:36px 20px 32px;text-align:center;position:relative;overflow:hidden;">
       <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 60% 0%,rgba(66,173,159,0.18) 0%,transparent 70%);pointer-events:none;"></div>
       <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:10px;">Sokonara — Regional Career Co-Creation</div>
-      <div style="font-family:'Noto Serif JP',serif;font-size:22px;font-weight:700;color:#fff;line-height:1.5;margin-bottom:8px;">求人票では見えない、<br>経営層の想いから<br>キャリアを考える。</div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.9;margin-bottom:24px;">記事を読んで、共鳴した言葉を選ぶだけ。<br>あなたに合うキャリアの方向性が見えてきます。</div>
+      <div style="font-family:'Noto Serif JP',serif;font-size:22px;font-weight:700;color:#fff;line-height:1.6;margin-bottom:8px;">地域企業経営層の想いに触れる。<br><span style="font-size:17px;font-weight:400;">共鳴した言葉を選ぶだけで、<br>キャリアの方向性が見えてくる。<br>そして、そのまま経営層との接点が生まれる</span></div>
+      <div style="height:8px;"></div>
       <button class="btn-primary" onclick="document.getElementById('companyListBody').scrollIntoView({behavior:'smooth'})" style="width:100%;max-width:320px;justify-content:center;margin-bottom:10px;">経営層の記事を見る</button>
       <button class="btn-outline" onclick="switchMode('user',document.getElementById('mb-project'),'project')" style="width:100%;max-width:320px;justify-content:center;background:transparent;color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.3);">共創テーマから探す</button>
     </div>
@@ -2865,30 +2865,10 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
   renderTopLeaders();
   renderAdminSidebar();
 
-  // LINE登録後の状態復元（isLineRegisteredに関わらずsn_restoreがあれば復元試みる）
-  const _restore = localStorage.getItem('sn_restore');
-  if(_restore){
-    localStorage.removeItem('sn_restore');
-    try{
-      const saved = JSON.parse(_restore);
-      selectedCompanyId = saved.companyId || null;
-      S.q1 = saved.q1 || '';
-      S.q2 = saved.q2 || [];
-      S.q3 = saved.q3 || '';
-      S.free = saved.free || '';
-      S.fb = saved.fb || null;
-      toggleTopPage(false);
-      goScreen('p3');
-      if(S.fb){ showFeedback(S.fb); }
-      else { genFeedback(); }
-      return;
-    }catch(e){
-      console.warn('restore failed:', e);
-      // 失敗しても経営層一覧を表示（TOPページには戻さない）
-      toggleTopPage(false);
-      goScreen('p-list');
-      return;
-    }
+  // LINEコールバック中はtoken exchangeが復元を担当するのでスキップ
+  if(_lineCode && _savedState !== null){
+    goScreen('p-list'); // 背景として一覧を表示しておく
+    return;
   }
 
   const params = new URLSearchParams(window.location.search);
@@ -2896,12 +2876,9 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
   const matched = loadPrimaryCompany();
   if(matched && hasDirectParam){
     selectedCompanyId = matched.id || null;
-    toggleTopPage(false);
     goScreen('p1');
     renderP1FromCompany();
   }else{
-    // TOPページは廃止 → 常に経営層一覧を表示
-    toggleTopPage(false);
     goScreen('p-list');
   }
   if(S.mode==='user' && document.getElementById('project')?.classList.contains('active')){
