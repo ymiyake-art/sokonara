@@ -1227,23 +1227,18 @@ body {
           <div id="fbSummaryText" style="font-size:14px;line-height:1.9;color:rgba(255,255,255,0.9);white-space:pre-line;"></div>
         </div>
 
-        <!-- LINE未登録時のCTA（3パターン） -->
+        <!-- LINE未登録時のCTA（2パターン） -->
         <div id="fbLineCta" style="display:none;margin-bottom:20px;">
-          <div style="background:rgba(255,255,255,0.06);border-radius:4px;padding:20px;margin-bottom:12px;text-align:center;">
-            <div style="font-family:'Noto Serif JP',serif;font-size:15px;font-weight:700;color:#fff;margin-bottom:6px;">この経営層との接点を持つ</div>
-            <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:16px;">LINE登録だけで、企業に個人情報は送られません</div>
+          <div style="background:rgba(255,255,255,0.06);border-radius:4px;padding:20px;text-align:center;">
+            <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:14px;">LINE登録だけで、企業に個人情報は送られません</div>
             <div style="display:flex;flex-direction:column;gap:10px;max-width:300px;margin:0 auto;">
               <button class="btn-line-login" onclick="beginLineLogin()" style="width:100%;justify-content:center;font-size:13px;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.070 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
-                この経営層に会いたい
+                フィードバックの続きを見る
               </button>
-              <button class="btn-line-login" onclick="beginLineLogin()" style="width:100%;justify-content:center;font-size:13px;background:rgba(66,173,159,0.25);">
+              <button class="btn-line-login" onclick="beginLineLogin()" style="width:100%;justify-content:center;font-size:13px;background:rgba(66,173,159,0.3);">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.070 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
-                まず壁打ち・相談したい
-              </button>
-              <button class="btn-line-login" onclick="beginLineLogin()" style="width:100%;justify-content:center;font-size:13px;background:rgba(28,42,84,0.6);">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.070 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
-                副業・プロジェクトで関わりたい
+                経営層との接点を作っておく
               </button>
             </div>
           </div>
@@ -1265,10 +1260,7 @@ body {
         <!-- LINE登録後のCTA（共感送信） -->
         <div id="fbCta" class="fb-cta" style="display:none">
           <div id="fbCtaLabel" style="font-size:13px;color:var(--text2);margin-bottom:10px;text-align:center"></div>
-          <button class="btn-primary" style="width:100%;justify-content:center;margin-bottom:10px" onclick="openEmpathyForm()">共感を送る</button>
-          <div style="text-align:center">
-            <button style="background:none;border:none;color:var(--text2);font-size:12px;cursor:pointer;padding:6px 12px;text-decoration:underline" onclick="goScreen('p4')">他の経営層も見てみる</button>
-          </div>
+          <button class="btn-primary" style="width:100%;justify-content:center;" onclick="openEmpathyForm()">この経営層との接点を作る</button>
         </div>
       </div>
     </div>
@@ -2856,11 +2848,11 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
   renderTopLeaders();
   renderAdminSidebar();
 
-  // LINE登録後の状態復元
+  // LINE登録後の状態復元（isLineRegisteredに関わらずsn_restoreがあれば復元試みる）
   const _restore = localStorage.getItem('sn_restore');
-  if(_restore && isLineRegistered()){
+  if(_restore){
+    localStorage.removeItem('sn_restore');
     try{
-      localStorage.removeItem('sn_restore');
       const saved = JSON.parse(_restore);
       selectedCompanyId = saved.companyId || null;
       S.q1 = saved.q1 || '';
@@ -2873,11 +2865,16 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
       if(S.fb){ showFeedback(S.fb); }
       else { genFeedback(); }
       return;
-    }catch(e){ localStorage.removeItem('sn_restore'); }
+    }catch(e){
+      console.warn('restore failed:', e);
+      // 失敗しても経営層一覧を表示（TOPページには戻さない）
+      toggleTopPage(false);
+      goScreen('p-list');
+      return;
+    }
   }
 
   const params = new URLSearchParams(window.location.search);
-  const noParams = [...params.keys()].length === 0;
   const hasDirectParam = Boolean(params.get('cid') || params.get('company'));
   const matched = loadPrimaryCompany();
   if(matched && hasDirectParam){
@@ -2886,7 +2883,8 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
     goScreen('p1');
     renderP1FromCompany();
   }else{
-    toggleTopPage(noParams);
+    // TOPページは廃止 → 常に経営層一覧を表示
+    toggleTopPage(false);
     goScreen('p-list');
   }
   if(S.mode==='user' && document.getElementById('project')?.classList.contains('active')){
