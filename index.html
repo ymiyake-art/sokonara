@@ -1069,7 +1069,6 @@ body {
       <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 60% 0%,rgba(66,173,159,0.18) 0%,transparent 70%);pointer-events:none;"></div>
       <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:10px;">Sokonara — Regional Career Co-Creation</div>
       <div style="font-family:'Noto Serif JP',serif;font-size:22px;font-weight:700;color:#fff;line-height:1.5;margin-bottom:8px;">求人票では見えない、<br>経営層の想いから<br>キャリアを考える。</div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.75);font-weight:700;margin-bottom:8px;">地域企業の経営層と、まず話してみませんか。</div>
       <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.9;margin-bottom:24px;">記事を読んで、共鳴した言葉を選ぶだけ。<br>あなたに合うキャリアの方向性が見えてきます。</div>
       <button class="btn-primary" onclick="document.getElementById('companyListBody').scrollIntoView({behavior:'smooth'})" style="width:100%;max-width:320px;justify-content:center;margin-bottom:10px;">経営層の記事を見る</button>
       <button class="btn-outline" onclick="switchMode('user',document.getElementById('mb-project'),'project')" style="width:100%;max-width:320px;justify-content:center;background:transparent;color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.3);">共創テーマから探す</button>
@@ -2828,6 +2827,7 @@ const _lineState = urlParams.get('state');
 const _savedState = localStorage.getItem('snLineState');
 if (_lineCode && _lineState && _savedState && _lineState === _savedState) {
   localStorage.removeItem('snLineState');
+  history.replaceState({}, '', location.pathname); // URLをすぐクリーンに
   fetch('/api/line-token', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
@@ -2837,9 +2837,26 @@ if (_lineCode && _lineState && _savedState && _lineState === _savedState) {
       localStorage.setItem('snLineId', d.line_id);
       localStorage.setItem('snLineName', d.display_name || '');
     }
-    history.replaceState({}, '', location.pathname);
-    location.reload();
-  }).catch(()=>{ history.replaceState({}, '', location.pathname); });
+    // リロードせずインラインで復元
+    const _raw = localStorage.getItem('sn_restore');
+    if(_raw){
+      localStorage.removeItem('sn_restore');
+      try{
+        const saved = JSON.parse(_raw);
+        selectedCompanyId = saved.companyId || null;
+        S.q1 = saved.q1||''; S.q2 = saved.q2||[]; S.q3 = saved.q3||''; S.free = saved.free||''; S.fb = saved.fb||null;
+        // 会社データが揃ってからFBを表示
+        loadCompaniesAsync().then(()=>{
+          toggleTopPage(false);
+          goScreen('p3');
+          if(S.fb){ showFeedback(S.fb); }
+          else { genFeedback(); }
+        });
+        return;
+      }catch(e){ console.warn('inline restore failed:', e); }
+    }
+    location.reload(); // restoreデータがない場合のみreload
+  }).catch(()=>{ location.reload(); });
 }
 
 selectedCompanyId = null;
