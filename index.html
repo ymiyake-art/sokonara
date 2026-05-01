@@ -1506,7 +1506,9 @@ function beginLineLogin() {
   const clientId = '2009807462'; // LINE Channel ID - public value
   const state = Math.random().toString(36).slice(2);
   localStorage.setItem('snLineState', state);
-  location.href = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=profile`;
+  const url = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=profile`;
+  console.log('[LINE Auth URL]', url);
+  location.href = url;
 }
 const SCREENS = ['p-list','p1','p2','p3','p4','p5'];
 const PROG = {p1:20,p2:40,p3:60,p4:80,p5:100};
