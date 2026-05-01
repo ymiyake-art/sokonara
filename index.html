@@ -1503,7 +1503,7 @@ function isLineRegistered() {
 
 function beginLineLogin() {
   const redirectUri = encodeURIComponent(location.origin + location.pathname);
-  const clientId = '2009807462'; // LINE Channel ID - public value
+  const clientId = '2009807359'; // LINE Login channel ID
   const state = Math.random().toString(36).slice(2);
   localStorage.setItem('snLineState', state);
   const url = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=profile`;
