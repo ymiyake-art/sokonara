@@ -1511,12 +1511,16 @@ function isLineRegistered() {
 }
 
 function beginLineLogin() {
+  // LINE遷移前に現在の状態を保存
+  localStorage.setItem('sn_restore', JSON.stringify({
+    companyId: selectedCompanyId,
+    q1: S.q1, q2: S.q2, q3: S.q3, free: S.free, fb: S.fb
+  }));
   const redirectUri = encodeURIComponent(location.origin + location.pathname);
   const clientId = '2009807359'; // LINE Login channel ID
   const state = Math.random().toString(36).slice(2);
   localStorage.setItem('snLineState', state);
   const url = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=profile`;
-  console.log('[LINE Auth URL]', url);
   location.href = url;
 }
 const SCREENS = ['p-list','p1','p2','p3','p4','p5'];
@@ -2811,6 +2815,27 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
   renderCompanyList();
   renderTopLeaders();
   renderAdminSidebar();
+
+  // LINE登録後の状態復元
+  const _restore = localStorage.getItem('sn_restore');
+  if(_restore && isLineRegistered()){
+    try{
+      localStorage.removeItem('sn_restore');
+      const saved = JSON.parse(_restore);
+      selectedCompanyId = saved.companyId || null;
+      S.q1 = saved.q1 || '';
+      S.q2 = saved.q2 || [];
+      S.q3 = saved.q3 || '';
+      S.free = saved.free || '';
+      S.fb = saved.fb || null;
+      toggleTopPage(false);
+      goScreen('p3');
+      if(S.fb){ showFeedback(S.fb); }
+      else { genFeedback(); }
+      return;
+    }catch(e){ localStorage.removeItem('sn_restore'); }
+  }
+
   const params = new URLSearchParams(window.location.search);
   const noParams = [...params.keys()].length === 0;
   const hasDirectParam = Boolean(params.get('cid') || params.get('company'));
