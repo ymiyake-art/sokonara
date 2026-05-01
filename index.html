@@ -1684,6 +1684,13 @@ function loadPrimaryCompany(){
 
 function openCompanyArticle(id){
   selectedCompanyId = String(id || '');
+  // Q1-Q3の表示状態をリセット
+  S.q1=''; S.q2=[]; S.q3=''; S.free='';
+  ['q2b','q3b'].forEach(i=>{ const el=document.getElementById(i); if(el) el.style.display='none'; });
+  const q1b = document.getElementById('q1b'); if(q1b) q1b.style.display='block';
+  document.querySelectorAll('#q1chips .chip, #q2chips .chip, #q3chips .chip').forEach(c=>c.classList.remove('selected'));
+  const q1n = document.getElementById('q1next'); if(q1n) q1n.disabled=true;
+  const sb = document.getElementById('submitBtn'); if(sb) sb.disabled=true;
   goScreen('p1');
   renderP1FromCompany();
 }

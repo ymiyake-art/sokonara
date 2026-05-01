@@ -403,9 +403,8 @@ async function genInsight(){
   if(!el) return;
   el.innerHTML='<div class="ai-load"></div>';
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:350,
-        messages:[{role:'user',content:'ソコナラ今週データ：反応124件(+18)、完了率53%(+6pt)、会いたい率17.7%、HOT7件。運営チームへの実用的なインサイトを180字以内で。'}]})});
+    const res=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({system:'あなたはソコナラの運営分析AIです。データをもとに実用的なインサイトを180字以内で日本語で返してください。',user:'今週データ：反応124件(+18)、完了率53%(+6pt)、会いたい率17.7%、HOT7件。'})});
     const d=await res.json();
     el.textContent=d.content[0].text;
   }catch{
@@ -564,9 +563,8 @@ async function genReport(id){
   body.innerHTML='<div class="ai-load" style="height:80px"></div>';
   document.getElementById('reportOut').scrollIntoView({behavior:'smooth'});
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:700,
-        messages:[{role:'user',content:`ソコナラ月次レポートを生成してください。企業：${c.name}（${c.ceo}）、2026年4月。反応${c.reactions}件、CTA${c.cta}件、HOT${c.hot}件、WARM${c.warm}件。【今月のサマリ】【どんな人が反応したか】【印象的なコメント2件】【来月への示唆】の4構成で。`}]})});
+    const res=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({system:'あなたはソコナラの月次レポートライターです。【今月のサマリ】【どんな人が反応したか】【印象的なコメント2件】【来月への示唆】の4構成で日本語レポートを書いてください。',user:`企業：${c.name}（${c.ceo}）、2026年4月。反応${c.reactions}件、CTA${c.cta}件、HOT${c.hot}件、WARM${c.warm}件。`})});
     const d=await res.json();
     body.innerHTML=d.content[0].text.replace(/\n/g,'<br>').replace(/【(.*?)】/g,'<strong style="color:var(--teal)">【$1】</strong>');
     toast(`${c.name}のレポートを生成しました`);
@@ -969,17 +967,11 @@ async function genCoArticle(){
   result.innerHTML='<div class="ai-load" style="height:40px"></div>';
   const typeLabel={successor:'後継者・アトツギ',second_founding:'第二創業',new_biz:'新規事業責任者'}[type]||type;
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,
-        messages:[{role:'user',content:`ソコナラ（地域キャリア共創プラットフォーム）のMVPアプリ用経営層記事を生成してください。
-
-会社名：${name}
-経営層名：${ceo}
-タイプ：${typeLabel}
-ヒント・背景情報：${hint||'特になし'}
-
-以下のJSON形式のみで返答してください（前置き・コードブロック不要）：
-{"title":"記事タイトル（20〜30字）","quote":"一番刺さるフレーズ（30〜50字）","body":"記事本文（400〜600字）","q1":["選択肢1","選択肢2","選択肢3","選択肢4"]}`}]})});
+    const res=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        system:'あなたはソコナラ（地域キャリア共創プラットフォーム）の記事ライターです。経営層の人物像・ストーリーを伝える記事をJSON形式のみで生成してください（前置き・コードブロック不要）。\n形式：{"title":"記事タイトル（20〜30字）","quote":"一番刺さるフレーズ（30〜50字）","body":"記事本文（400〜600字）","q1":["選択肢1","選択肢2","選択肢3","選択肢4"]}',
+        user:`会社名：${name}\n経営層名：${ceo}\nタイプ：${typeLabel}\nヒント・背景情報：${hint||'特になし'}`
+      })});
     const d=await res.json();
     const m=d.content[0].text.match(/\{[\s\S]*\}/);
     if(m){
