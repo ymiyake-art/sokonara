@@ -2825,10 +2825,9 @@ const urlParams = new URLSearchParams(location.search);
 const _lineCode = urlParams.get('code');
 const _lineState = urlParams.get('state');
 const _savedState = localStorage.getItem('snLineState');
-let _lineRestored = false; // token exchangeが先に完了したかのフラグ
 if (_lineCode && _lineState && _savedState && _lineState === _savedState) {
   localStorage.removeItem('snLineState');
-  history.replaceState({}, '', location.pathname); // URLをすぐクリーンに
+  history.replaceState({}, '', location.pathname);
   fetch('/api/line-token', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
@@ -2838,25 +2837,8 @@ if (_lineCode && _lineState && _savedState && _lineState === _savedState) {
       localStorage.setItem('snLineId', d.line_id);
       localStorage.setItem('snLineName', d.display_name || '');
     }
-    // リロードせずインラインで復元
-    const _raw = localStorage.getItem('sn_restore');
-    if(_raw){
-      localStorage.removeItem('sn_restore');
-      try{
-        const saved = JSON.parse(_raw);
-        selectedCompanyId = saved.companyId || null;
-        S.q1 = saved.q1||''; S.q2 = saved.q2||[]; S.q3 = saved.q3||''; S.free = saved.free||''; S.fb = saved.fb||null;
-        _lineRestored = true; // finallyより先に完了 → finallyのgoScreen上書きを防ぐ
-        // 会社データが揃ってからFBを表示（キャッシュ済みなら即時解決）
-        loadCompaniesAsync().then(()=>{
-          goScreen('p3');
-          if(S.fb){ showFeedback(S.fb); }
-          else { genFeedback(); }
-        });
-        return;
-      }catch(e){ console.warn('inline restore failed:', e); }
-    }
-    location.reload(); // restoreデータがない場合のみreload
+    // sn_restoreはそのまま残してreload後のfinallyで確実に復元する
+    location.reload();
   }).catch(()=>{ location.reload(); });
 }
 
@@ -2866,12 +2848,25 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
   renderTopLeaders();
   renderAdminSidebar();
 
-  // LINEコールバック中はtoken exchangeが復元を担当するのでスキップ
+  // LINEコールバックページ（code付きURL）ではfetchが完了後にreloadするのでここでは何もしない
   if(_lineCode && _savedState !== null){
-    // fetchがfinallyより先に完了して_lineRestoredをtrueにしていたら何もしない
-    // （goScreen('p-list')で上書きするとp3が消えてしまう）
-    if(!_lineRestored) goScreen('p-list');
+    goScreen('p-list');
     return;
+  }
+
+  // LINE登録直後のreload時：sn_restoreがあればFBを復元してp3へ
+  const _restoreRaw = localStorage.getItem('sn_restore');
+  if(isLineRegistered() && _restoreRaw){
+    localStorage.removeItem('sn_restore');
+    try{
+      const saved = JSON.parse(_restoreRaw);
+      selectedCompanyId = saved.companyId || null;
+      S.q1 = saved.q1||''; S.q2 = saved.q2||[]; S.q3 = saved.q3||''; S.free = saved.free||''; S.fb = saved.fb||null;
+      goScreen('p3');
+      if(S.fb){ showFeedback(S.fb); }
+      else { genFeedback(); }
+      return;
+    }catch(e){ console.warn('restore failed:', e); }
   }
 
   const params = new URLSearchParams(window.location.search);
