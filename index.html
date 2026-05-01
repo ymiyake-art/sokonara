@@ -1123,12 +1123,11 @@ body {
 
     <div class="cta-sticky" id="p1CtaSticky">
       <div class="cta-sticky-text">
-        <strong>刺さった言葉を選ぶだけ。あなたの価値観が見えてきます</strong>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px">3つの質問（約1分）→ あなたに合う経営層が見えます</div>
+        <strong>気になる言葉はありましたか？</strong>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">3つ選ぶだけで、あなたの価値観が言語化されます</div>
       </div>
       <button class="btn-outline" id="p1ProjectBtn" onclick="openCompanyProjectsFromP1()" style="display:none">この経営層の共創テーマを見る →</button>
-      <button class="btn-primary" onclick="goScreen('p2')">3つの質問に答える →</button>
-
+      <button class="btn-primary" onclick="goScreen('p2')">やってみる（約1分）→</button>
     </div>
   </div>
 
@@ -2063,13 +2062,13 @@ async function genFeedback() {
 
 メッセージは以下の構成で10行程度の充実した内容にしてください：
 1. その人が今どんな状態にいるかの言語化（2〜3行）
-   「あなたは今〜」という語りかけで始める
+   「あなたは今〜かもしれません」「〜ではないでしょうか」など推測・問いかける語調で始める
 2. その人が持っている強みや可能性（2〜3行）
-   本人も気づいていないかもしれない資質を言語化して背中を押す
+   断定せず「〜と推測されます」「〜のではないでしょうか」など柔らかい表現で資質を言語化する
 3. この経営層との接点がなぜ意味を持つか（2〜3行）
-   転職・副業・壁打ちなど希望する関わり方に合わせて具体的に
+   転職・副業・壁打ちなど希望する関わり方に合わせて「〜かもしれません」調で具体的に
 4. 次の一歩への背中押し（1〜2行）
-   転職を急かさず「まず会ってみる」レベルの温度感で
+   転職を急かさず「まず話してみるだけでも」レベルの温度感で
 
 以下のJSON形式のみで返答してください（マークダウン・コードブロック・前置き一切不要）：
 {"summary":"LINE登録前に表示する簡易フィードバック。必ず3文以上で構成し、ユーザーの回答から読み取れる特徴・傾向・可能性を具体的に記述すること。","values":["価値観語1","価値観語2","価値観語3"],"message":"メッセージ本文（改行は\\nで表現）","bridge":"接点理由1文"}`;
@@ -2117,8 +2116,16 @@ function showFeedback(fb) {
   const summaryEl = document.getElementById('fbSummaryText');
   if(summaryEl) {
     const summaryText = fb.summary || '';
-    const suffix = isLineRegistered() ? '' : '\n\n（続きはLINE登録後に）';
-    summaryEl.textContent = summaryText + suffix;
+    if(isLineRegistered()){
+      summaryEl.textContent = summaryText;
+    } else {
+      // 文末（。）で分割して最初の2文を表示し途中で終える
+      const sentences = summaryText.split(/(?<=。)/);
+      const preview = sentences.slice(0, 2).join('');
+      summaryEl.innerHTML = preview
+        + '<span style="opacity:0.5">・・・</span>'
+        + '<span style="display:block;margin-top:10px;font-size:12px;color:var(--teal);font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">▼ 続きはLINE登録後に</span>';
+    }
   }
 
   if(isLineRegistered()) {
