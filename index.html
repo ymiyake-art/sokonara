@@ -2056,8 +2056,8 @@ async function genFeedback() {
 4. 次の一歩への背中押し（1〜2行）
    転職を急かさず「まず会ってみる」レベルの温度感で
 
-JSON形式のみで返答してください（前置き・コードブロック不要）：
-{summary:"LINE登録前に表示する簡易フィードバック2〜3文", values:[価値観3語], message:メッセージ（改行は\\nで表現）, bridge:接点理由1文}`;
+以下のJSON形式のみで返答してください（マークダウン・コードブロック・前置き一切不要）：
+{"summary":"簡易フィードバック2〜3文","values":["価値観語1","価値観語2","価値観語3"],"message":"メッセージ本文（改行は\\nで表現）","bridge":"接点理由1文"}`;
 
   const _co = selectedCompanyId ? loadCompanies().find(c=>String(c.id||'')===String(selectedCompanyId)) : null;
   const ceoLabel = (_co && _co.ceo ? _co.ceo : '経営層') + (_co && (_co.name||_co.company) ? `（${_co.name||_co.company}）` : '');
@@ -2082,7 +2082,7 @@ ${S.free ? '自由記述：'+S.free : ''}`;
     showFeedback(fb);
   } catch(e) {
     console.error('[feedback error]', e?.message || e);
-    toast('AI生成エラー: ' + (e?.message || '不明なエラー'));
+    toast('AIエラー（詳細はコンソール確認）: ' + (e?.message || '不明'));
     const fb = {
       summary: 'あなたは、条件面だけでなく、経営層の想いや事業の変化に反応しやすいタイプです。特に、完成された環境よりも、これから変化していく地域企業に関わることに興味を持ちやすい傾向があります。',
       values:['問いから始める人','熱量に共鳴できる人','まず小さく試す人'],
