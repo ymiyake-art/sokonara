@@ -1346,21 +1346,40 @@ body {
 
     <div style="margin-bottom:16px;">
       <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:4px;">自己紹介 <span style="color:var(--hot)">*</span></label>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">これまでの仕事、経験、関心のあるテーマ、今後やってみたいことなどを自由にご記入ください。</div>
-      <textarea id="empSelf" rows="4" placeholder="例：IT企業で営業を5年経験。地域の課題解決に興味があり、副業や転職も視野に入れています。" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:13px;resize:vertical;line-height:1.7;"></textarea>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">これまでの仕事・経験・関心テーマなどを自由にご記入ください。</div>
+      <textarea id="empSelf" rows="3" placeholder="例：IT企業で営業を5年経験。地域の課題解決に興味があります。" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:13px;resize:vertical;line-height:1.7;"></textarea>
     </div>
 
     <div style="margin-bottom:16px;">
       <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:4px;">この記事に共感した理由 <span style="color:var(--hot)">*</span></label>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">記事を読んで印象に残ったこと、共感した言葉、話してみたいと思った理由などをご記入ください。</div>
-      <textarea id="empReason" rows="4" placeholder="例：「なぜそれをやるのか」を大切にする姿勢に共感しました。私も同じ問いを持って働いています。" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:13px;resize:vertical;line-height:1.7;"></textarea>
+      <textarea id="empReason" rows="3" placeholder="例：「なぜそれをやるのか」を大切にする姿勢に共感しました。" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:13px;resize:vertical;line-height:1.7;"></textarea>
     </div>
 
-    <div style="background:var(--light);border-radius:4px;padding:14px 16px;margin-bottom:20px;font-size:11px;color:var(--text2);line-height:1.8;">
-      この送信は正式な応募ではありません。<br>
-      入力いただいた年齢、自己紹介、この記事に共感した理由は、ソコナラ事務局が内容を確認したうえで、必要に応じて企業・経営層へ共有します。<br>
-      LINE登録だけで、企業に個人情報が送られることはありません。<br>
-      自己紹介や共感内容を見た企業・経営層から、面談や対話の連絡が届く可能性があります。
+    <div style="margin-bottom:20px;">
+      <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:8px;">関わり方のイメージ <span style="color:var(--text3);font-weight:400;">（任意）</span></label>
+      <div id="empInvolvementChips" style="display:flex;flex-direction:column;gap:8px;">
+        <label style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:13px;line-height:1.5;">
+          <input type="radio" name="empInvolvement" value="転職を視野に入れている" style="margin-top:2px;accent-color:var(--teal);">
+          <span>① 転職を視野に入れている</span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:13px;line-height:1.5;">
+          <input type="radio" name="empInvolvement" value="副業など関わり方を相談したい" style="margin-top:2px;accent-color:var(--teal);">
+          <span>② 副業など関わり方を相談したい</span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:13px;line-height:1.5;">
+          <input type="radio" name="empInvolvement" value="ライトに関わってみたい" style="margin-top:2px;accent-color:var(--teal);">
+          <span>③ 打ち合わせへの参画などライトに関わってみたい</span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:13px;line-height:1.5;">
+          <input type="radio" name="empInvolvement" value="other" style="margin-top:2px;accent-color:var(--teal);">
+          <span>④ その他</span>
+        </label>
+      </div>
+      <textarea id="empInvolvementOther" rows="2" placeholder="その他の場合は自由にご記入ください" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:13px;resize:vertical;line-height:1.7;margin-top:8px;display:none;"></textarea>
+    </div>
+
+    <div style="background:var(--light);border-radius:4px;padding:12px 14px;margin-bottom:20px;font-size:11px;color:var(--text2);line-height:1.8;">
+      正式な応募ではありません。事務局が確認後、必要に応じて経営層へ共有します。
     </div>
 
     <button class="btn-primary" style="width:100%;justify-content:center;" onclick="submitEmpathyForm()">共感を送る</button>
@@ -2071,7 +2090,7 @@ async function genFeedback() {
    転職を急かさず「まず話してみるだけでも」レベルの温度感で
 
 以下のJSON形式のみで返答してください（マークダウン・コードブロック・前置き一切不要）：
-{"summary":"LINE登録前に表示する簡易フィードバック。必ず3文以上で構成し、ユーザーの回答から読み取れる特徴・傾向・可能性を具体的に記述すること。","values":["価値観語1","価値観語2","価値観語3"],"message":"メッセージ本文（改行は\\nで表現）","bridge":"接点理由1文"}`;
+{"summary":"LINE登録前に表示する簡易フィードバック。必ず5文で構成し途中で自然に終わるよう書く。ユーザーの回答から読み取れる特徴・傾向・可能性を具体的に。","values":["価値観語1","価値観語2","価値観語3"],"message":"詳細メッセージ。上記の構成で必ず10行以上書くこと。改行は\\nで表現。","bridge":"接点理由1文"}`;
 
   const _co = selectedCompanyId ? loadCompanies().find(c=>String(c.id||'')===String(selectedCompanyId)) : null;
   const ceoLabel = (_co && _co.ceo ? _co.ceo : '経営層') + (_co && (_co.name||_co.company) ? `（${_co.name||_co.company}）` : '');
@@ -2121,7 +2140,7 @@ function showFeedback(fb) {
     } else {
       // 文末（。）で分割して最初の2文を表示し途中で終える
       const sentences = summaryText.split(/(?<=。)/);
-      const preview = sentences.slice(0, 2).join('');
+      const preview = sentences.slice(0, 3).join('');
       summaryEl.innerHTML = preview
         + '<span style="opacity:0.5">・・・</span>'
         + '<span style="display:block;margin-top:10px;font-size:12px;color:var(--teal);font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">▼ 続きはLINE登録後に</span>';
@@ -2600,7 +2619,16 @@ function openEmpathyForm() {
   document.getElementById('empAge').value = '';
   document.getElementById('empSelf').value = '';
   document.getElementById('empReason').value = '';
+  document.getElementById('empInvolvementOther').value = '';
+  document.getElementById('empInvolvementOther').style.display = 'none';
+  document.querySelectorAll('input[name="empInvolvement"]').forEach(r=>r.checked=false);
   document.getElementById('empathyError').style.display = 'none';
+  // ④その他の表示制御
+  document.querySelectorAll('input[name="empInvolvement"]').forEach(r=>{
+    r.onchange = ()=>{
+      document.getElementById('empInvolvementOther').style.display = r.value==='other'&&r.checked ? 'block' : (document.querySelector('input[name="empInvolvement"][value="other"]:checked') ? 'block' : 'none');
+    };
+  });
   document.getElementById('empathyModal').style.display = 'block';
 }
 
@@ -2610,14 +2638,17 @@ async function submitEmpathyForm() {
   const reason = document.getElementById('empReason').value.trim();
   const errEl = document.getElementById('empathyError');
   if(!age || !self || !reason) {
-    errEl.textContent = '全項目を入力してください';
+    errEl.textContent = '年齢・自己紹介・共感理由は必須です';
     errEl.style.display = 'block';
     return;
   }
+  const involvementRadio = document.querySelector('input[name="empInvolvement"]:checked');
+  let involvement = involvementRadio?.value || '';
+  if(involvement === 'other') {
+    involvement = document.getElementById('empInvolvementOther').value.trim() || 'その他';
+  }
   const co = getCurrentCompany();
-  const id = 'emp_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
   const payload = {
-    id,
     line_id: localStorage.getItem('snLineId') || null,
     company_id: String(selectedCompanyId||''),
     company_name: co?.name||co?.company||'',
@@ -2627,15 +2658,17 @@ async function submitEmpathyForm() {
     q2_values: S.q2||[],
     q3_answer: S.q3||'',
     ai_values: S.fb?.values||[],
-    form_data: { age, self_intro: self, empathy_reason: reason }
+    form_data: { age, self_intro: self, empathy_reason: reason, involvement }
   };
   try {
     const { error } = await supabaseClient.from('interest_forms').insert([payload]);
     if(error) throw error;
     document.getElementById('empathyModal').style.display = 'none';
-    toast('共感を送信しました。ソコナラ事務局が内容を確認したうえで、必要に応じて企業・経営層へ共有します。');
+    toast('共感を送信しました。事務局が確認後、必要に応じて経営層へ共有します。');
+    goScreen('p5');
   } catch(e) {
-    errEl.textContent = '送信に失敗しました。もう一度お試しください。';
+    console.error('empathy submit error:', e);
+    errEl.textContent = '送信に失敗しました: ' + (e?.message||'不明なエラー');
     errEl.style.display = 'block';
   }
 }
