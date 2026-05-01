@@ -2698,40 +2698,6 @@ async function saveSession(){
   } catch(e){ console.warn('session save failed:', e); }
 }
 
-function beginLineLogin(intent){
-  const state = randomState(8);
-  const co = getCurrentCompany();
-  const ctx = {
-    intent: intent || '会いたい',
-    company: co?.name || '',
-    ceo: co?.ceo || '',
-    q3: S.q3 || '',
-    values: Array.isArray(S.fb?.values) ? S.fb.values : [],
-  };
-  sessionStorage.setItem('sn_line_state', state);
-  sessionStorage.setItem('sn_line_ctx', JSON.stringify(ctx));
-  const redirectUri = encodeURIComponent('https://soconara.vercel.app/');
-  const url = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=2009807359&redirect_uri=${redirectUri}&state=${encodeURIComponent(state)}&scope=profile`;
-  window.open(url, 'lineLogin', 'width=500,height=600');
-}
-
-function handleLineCallback(){
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get('code');
-  const state = params.get('state');
-  if(!code) return;
-  const savedState = sessionStorage.getItem('sn_line_state');
-  if(!savedState || !state || savedState !== state){
-    toast('LINEログインの検証に失敗しました');
-    return;
-  }
-  const ctx = JSON.parse(sessionStorage.getItem('sn_line_ctx') || '{}');
-  const ceoName = ctx.ceo || getCurrentCompany()?.ceo || '';
-  const workStyle = ctx.q3 || S.q3 || '';
-  const formUrl = `https://docs.google.com/forms/d/e/1FAIpQLSeikECy9joeKdDFe-5O0nGgF2Q8ch3CMkYPbKEzzk6yrKV5NQ/viewform?usp=pp_url&entry.797581892=${encodeURIComponent(ceoName)}&entry.1217575437=${encodeURIComponent(workStyle)}`;
-  history.replaceState({}, document.title, window.location.pathname + window.location.hash);
-  window.location.href = formUrl;
-}
 
 async function copyLineMessage(){
   const fallback = ['あなたらしさ','誠実さ','行動力'];
@@ -2803,7 +2769,6 @@ function renderAdminSidebar(){
 
 // init admin
 renderDash();
-handleLineCallback();
 
 // LINE OAuth callback
 const urlParams = new URLSearchParams(location.search);
