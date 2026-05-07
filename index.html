@@ -1079,6 +1079,9 @@ body {
       <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:12px;">経営層一覧 — 気になる方の記事を読む</div>
       <div id="companyListBody"></div>
     </div>
+    <div style="text-align:center;padding:16px 0 32px;border-top:1px solid rgba(255,255,255,0.06);">
+      <a href="/privacy.html" target="_blank" style="font-size:11px;color:rgba(255,255,255,0.35);font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-decoration:none;">Privacy Policy</a>
+    </div>
   </div>
 
   <!-- P1 -->
@@ -1229,7 +1232,8 @@ body {
         <!-- LINE未登録時のCTA（2パターン） -->
         <div id="fbLineCta" style="display:none;margin-bottom:20px;">
           <div style="background:rgba(255,255,255,0.06);border-radius:4px;padding:20px;text-align:center;">
-            <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:14px;">LINE登録だけで、企業に個人情報は送られません</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:6px;">LINE登録だけで、企業に個人情報は送られません</div>
+            <div style="font-size:11px;color:var(--teal);margin-bottom:14px;">※ 認証後、このブラウザ画面に戻ってください</div>
             <div style="display:flex;flex-direction:column;gap:10px;max-width:300px;margin:0 auto;">
               <button class="btn-line-login" onclick="beginLineLogin()" style="width:100%;justify-content:center;font-size:13px;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.070 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
@@ -2070,14 +2074,16 @@ async function genFeedback() {
 その人の回答から滲み出る具体的な姿勢や信念を表す言葉にしてください。
 例：「腹を括れる人」「問いを持ち続ける人」「場をつくる側の人」
 
-メッセージは以下の構成で10行程度の充実した内容にしてください：
-1. その人が今どんな状態にいるかの言語化（2〜3行）
+メッセージは以下の構成で20行程度の充実した内容にしてください：
+1. その人が今どんな状態にいるかの言語化（4〜5行）
    「あなたは今〜かもしれません」「〜ではないでしょうか」など推測・問いかける語調で始める
-2. その人が持っている強みや可能性（2〜3行）
+2. その人が持っている強みや可能性（4〜5行）
    断定せず「〜と推測されます」「〜のではないでしょうか」など柔らかい表現で資質を言語化する
-3. この経営層との接点がなぜ意味を持つか（2〜3行）
+3. 選んだキーワードや回答が示す深層的な意味（3〜4行）
+   表面的な言葉の裏にある価値観・動機を「〜という言葉を選んだということは」など具体的に
+4. この経営層との接点がなぜ意味を持つか（4〜5行）
    転職・副業・壁打ちなど希望する関わり方に合わせて「〜かもしれません」調で具体的に
-4. 次の一歩への背中押し（1〜2行）
+5. 次の一歩への背中押し（2〜3行）
    転職を急かさず「まず話してみるだけでも」レベルの温度感で
 
 以下のJSON形式のみで返答してください（マークダウン・コードブロック・前置き一切不要）：
@@ -2139,7 +2145,8 @@ function showFeedback(fb) {
   }
 
   if(isLineRegistered()) {
-    // LINE登録済み：詳細表示
+    // LINE登録済み：要約非表示・詳細表示
+    document.getElementById('fbSummary').style.display = 'none';
     document.getElementById('fbLineCta').style.display = 'none';
     document.getElementById('fbDetail').style.display = 'block';
 
@@ -2837,25 +2844,9 @@ if (_lineCode && _lineState && _savedState && _lineState === _savedState) {
       localStorage.setItem('snLineId', d.line_id);
       localStorage.setItem('snLineName', d.display_name || '');
     }
-    localStorage.setItem('sn_debug', JSON.stringify({
-      step: 'token_done',
-      hasLineId: !!d.line_id,
-      hasRestore: !!localStorage.getItem('sn_restore'),
-      err: d.line_id ? null : JSON.stringify(d).slice(0, 200)
-    }));
     localStorage.setItem('sn_postlogin', '1');
     location.reload();
-  }).catch(e=>{
-    localStorage.setItem('sn_debug', JSON.stringify({ step: 'catch', err: String(e) }));
-    location.reload();
-  });
-} else if (_lineCode) {
-  // stateが一致しない or 存在しない（原因をデバッグ）
-  localStorage.setItem('sn_debug', JSON.stringify({
-    step: 'state_mismatch',
-    hasCode: !!_lineCode, hasLineState: !!_lineState,
-    hasSavedState: !!_savedState, match: _lineState === _savedState
-  }));
+  }).catch(()=>{ location.reload(); });
 }
 
 selectedCompanyId = null;
@@ -2869,10 +2860,6 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
     goScreen('p-list');
     return;
   }
-
-  // デバッグ情報があれば表示
-  const _dbg = localStorage.getItem('sn_debug');
-  if(_dbg){ localStorage.removeItem('sn_debug'); toast('🔍 ' + _dbg, 8000); }
 
   // LINE登録直後のreload時：sn_postloginフラグとsn_restoreがあればFBを復元してp3へ
   const _postLogin = localStorage.getItem('sn_postlogin');
