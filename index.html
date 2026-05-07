@@ -2586,7 +2586,7 @@ function openInterestModal(trigger, overrideCoName, overrideCeoName){
     ${formType === 'collaborate' ? collaborateFields : ''}
     ${formType === 'hire' ? hireFields : ''}
     <hr class="imodal-divider">
-    <div class="imodal-agree">送信することで<a href="#" onclick="return false">プライバシーポリシー</a>および<a href="#" onclick="return false">利用規約</a>に同意したものとみなします。</div>
+    <div class="imodal-agree">送信することで<a href="/privacy.html" target="_blank">プライバシーポリシー</a>に同意したものとみなします。</div>
     <button class="imodal-submit" onclick="submitInterestForm('${formType}','${escapeHtml(coName)}','${escapeHtml(ceoName)}')">送信する</button>
     <span class="imodal-cancel" onclick="closeInterestModal()">キャンセル</span>
   `;
