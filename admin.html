@@ -484,25 +484,23 @@ async function renderInterests(){
       return `<div style="background:var(--white);border:1px solid var(--border);border-radius:2px;padding:14px 16px;margin-bottom:8px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
           <span style="font-size:9px;padding:2px 8px;background:${typeBg[r.intent_type]||'var(--bg)'};color:${typeColor[r.intent_type]||'var(--text2)'};border-radius:2px;font-family:'JetBrains Mono',monospace;font-weight:700">${typeLabel[r.intent_type]||r.intent_type}</span>
-          <span style="font-size:13px;font-weight:700;color:var(--navy)">${isEmpathy ? (fd.age ? fd.age+'代' : '—') : (fd.name||'—')}</span>
-          ${!isEmpathy && fd.email ? `<span style="font-size:12px;color:var(--text2)">${fd.email}</span>` : ''}
+          <span style="font-size:13px;font-weight:700;color:var(--navy)">${fd.name || (fd.age ? fd.age+'代' : '—')}</span>
+          ${fd.email ? `<span style="font-size:12px;color:var(--text2)">${fd.email}</span>` : ''}
           ${r.line_id ? `<span style="font-size:9px;padding:2px 6px;background:rgba(6,199,85,0.1);color:#06c755;border-radius:2px;font-family:'JetBrains Mono',monospace">LINE連携済</span>` : ''}
           <span style="font-size:10px;color:var(--text3);margin-left:auto">${dt}</span>
         </div>
         <div style="font-size:11px;color:var(--text2);margin-bottom:4px">対象：<strong>${r.company_name||'—'} / ${r.ceo_name||'—'}</strong></div>
         <div style="font-size:11px;color:var(--teal-d);margin-bottom:4px">価値観：${values}</div>
         <div style="font-size:11px;color:var(--text2);margin-bottom:4px">刺さった言葉：${r.q1_answer||'—'}　希望接点：${r.q3_answer||'—'}</div>
-        ${isEmpathy ? `
-          ${fd.self_intro?`<div style="font-size:11px;color:var(--text2);margin-bottom:4px">自己紹介：${fd.self_intro}</div>`:''}
-          ${fd.empathy_reason?`<div style="font-size:11px;color:var(--text2);margin-bottom:4px">共感理由：${fd.empathy_reason}</div>`:''}
-          ${fd.involvement?`<div style="font-size:11px;color:var(--text2);">関わり方：${fd.involvement}</div>`:''}
-        ` : `
-          ${fd.comment?`<div style="font-size:11px;color:var(--text2);margin-bottom:4px">コメント：${fd.comment}</div>`:''}
-          ${fd.score?`<div style="font-size:11px;color:var(--text2);">共感度：${fd.score}点</div>`:''}
-          <div style="margin-top:8px;display:flex;gap:6px">
-            <a href="mailto:${fd.email}" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border:1px solid var(--teal);background:var(--teal-bg);color:var(--teal-d);border-radius:2px;text-decoration:none;">メール</a>
-          </div>
-        `}
+        ${fd.job?`<div style="font-size:11px;color:var(--text2);margin-bottom:4px">職場：${fd.job}</div>`:''}
+        ${fd.age?`<div style="font-size:11px;color:var(--text2);margin-bottom:4px">年齢：${fd.age}</div>`:''}
+        ${fd.self_intro?`<div style="font-size:11px;color:var(--text2);margin-bottom:4px">自己紹介：${fd.self_intro}</div>`:''}
+        ${fd.empathy_reason?`<div style="font-size:11px;color:var(--text2);margin-bottom:4px">共感理由：${fd.empathy_reason}</div>`:''}
+        ${fd.involvement?`<div style="font-size:11px;color:var(--text2);margin-bottom:4px">関わり方：${fd.involvement}</div>`:''}
+        ${fd.comment?`<div style="font-size:11px;color:var(--text2);margin-bottom:4px">コメント：${fd.comment}</div>`:''}
+        ${fd.email?`<div style="margin-top:8px;display:flex;gap:6px">
+          <a href="mailto:${fd.email}" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border:1px solid var(--teal);background:var(--teal-bg);color:var(--teal-d);border-radius:2px;text-decoration:none;">メール送信</a>
+        </div>`:''}
       </div>`;
     }).join('')}
   </div>`;
