@@ -2469,10 +2469,10 @@ function contactUser(id){
   const r=REACTIONS.find(x=>x.id===id);
   if(r){r.status='contacted';toast(`${r.user} にLINEで連絡しました`);renderAdminTab(S.adminTab);}
 }
-function toast(msg){
+function toast(msg, ms=2600){
   const t=document.getElementById('toastEl');
   t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2600);
+  setTimeout(()=>t.classList.remove('show'),ms);
 }
 
 function getCurrentCompany(){
@@ -2837,10 +2837,25 @@ if (_lineCode && _lineState && _savedState && _lineState === _savedState) {
       localStorage.setItem('snLineId', d.line_id);
       localStorage.setItem('snLineName', d.display_name || '');
     }
-    // reload後のfinallyで復元するためのフラグ（snLineId設定の成否に関わらずセット）
+    localStorage.setItem('sn_debug', JSON.stringify({
+      step: 'token_done',
+      hasLineId: !!d.line_id,
+      hasRestore: !!localStorage.getItem('sn_restore'),
+      err: d.line_id ? null : JSON.stringify(d).slice(0, 200)
+    }));
     localStorage.setItem('sn_postlogin', '1');
     location.reload();
-  }).catch(()=>{ location.reload(); });
+  }).catch(e=>{
+    localStorage.setItem('sn_debug', JSON.stringify({ step: 'catch', err: String(e) }));
+    location.reload();
+  });
+} else if (_lineCode) {
+  // stateが一致しない or 存在しない（原因をデバッグ）
+  localStorage.setItem('sn_debug', JSON.stringify({
+    step: 'state_mismatch',
+    hasCode: !!_lineCode, hasLineState: !!_lineState,
+    hasSavedState: !!_savedState, match: _lineState === _savedState
+  }));
 }
 
 selectedCompanyId = null;
@@ -2854,6 +2869,10 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
     goScreen('p-list');
     return;
   }
+
+  // デバッグ情報があれば表示
+  const _dbg = localStorage.getItem('sn_debug');
+  if(_dbg){ localStorage.removeItem('sn_debug'); toast('🔍 ' + _dbg, 8000); }
 
   // LINE登録直後のreload時：sn_postloginフラグとsn_restoreがあればFBを復元してp3へ
   const _postLogin = localStorage.getItem('sn_postlogin');
