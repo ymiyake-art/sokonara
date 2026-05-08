@@ -1549,12 +1549,17 @@ function requireLineForContact() {
     openEmpathyForm();
     return;
   }
+  // beginLineLogin()はsn_restoreを上書きするため、intent付きで直接LINE遷移する
   localStorage.setItem('sn_restore', JSON.stringify({
     companyId: selectedCompanyId,
     q1: S.q1, q2: S.q2, q3: S.q3, free: S.free, fb: S.fb,
     intent: 'contact'
   }));
-  beginLineLogin();
+  const redirectUri = encodeURIComponent(location.origin + location.pathname);
+  const clientId = '2009807359';
+  const state = Math.random().toString(36).slice(2);
+  localStorage.setItem('snLineState', state);
+  location.href = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=profile`;
 }
 
 function beginLineLogin() {
