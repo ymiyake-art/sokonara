@@ -201,6 +201,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
         <div class="nav-item" id="ni-interests" onclick="switchTab('interests')"><div class="nav-dot" style="background:#e67e22"></div>興味通知フォーム</div>
         <div class="nav-item" id="ni-contacts" onclick="switchTab('contacts')"><div class="nav-dot" style="background:var(--warm)"></div>接点候補</div>
         <div class="nav-item" id="ni-report" onclick="switchTab('report')"><div class="nav-dot" style="background:var(--navy)"></div>AIレポート</div>
+        <div class="nav-item" id="ni-broadcast" onclick="switchTab('broadcast')"><div class="nav-dot" style="background:#06c755"></div>LINE配信</div>
       </div>
       <div class="admin-nav" style="border-top:1px solid rgba(255,255,255,0.07);padding-top:12px;">
         <div class="admin-nav-label">登録・管理</div>
@@ -312,9 +313,9 @@ function switchTab(tab){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const ni=document.getElementById('ni-'+tab);
   if(ni) ni.classList.add('active');
-  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',contacts:'接点候補リスト',report:'AIレポート生成',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧'};
+  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧'};
   document.getElementById('tabTitle').textContent=titles[tab]||tab;
-  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,contacts:renderContacts,report:renderReport,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList};
+  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList};
   fns[tab]?.();
 }
 
@@ -684,6 +685,103 @@ function renderSidebarCompanies(){
     return `<div class="co-item" onclick="editCo('${c.id}')" style="cursor:pointer" title="${name} を編集"><div class="co-av" style="background:var(--navy)">${ini}</div><div class="co-nm">${name}</div></div>`;
   }).join('');
   el.innerHTML=html;
+}
+
+// ===== LINE配信 =====
+function renderBroadcast(){
+  document.getElementById('adminContent').innerHTML=`
+    <div style="padding:24px;max-width:640px">
+
+      <!-- 一斉配信 -->
+      <div class="panel" style="margin-bottom:24px">
+        <div class="phdr">📢 一斉配信（全友だち）</div>
+        <div class="pbody">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:12px">公式アカウントを友だち追加しているユーザー全員にメッセージを送ります。</div>
+          <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px">メッセージ内容</label>
+          <textarea id="broadcastMsg" rows="5" placeholder="例：【ソコナラ】新しい経営層の記事を公開しました。ぜひご覧ください。&#10;https://sokonara.vercel.app/" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:13px;resize:vertical;line-height:1.7;font-family:inherit"></textarea>
+          <div style="font-size:11px;color:var(--text3);margin-top:6px;margin-bottom:14px">送信前に内容を必ず確認してください。取り消しはできません。</div>
+          <button class="ai-btn" onclick="sendBroadcast()" style="background:var(--teal);color:#fff;border-color:var(--teal)">全員に送信する</button>
+          <div id="broadcastResult" style="margin-top:10px;font-size:12px;display:none"></div>
+        </div>
+      </div>
+
+      <!-- 個別送信 -->
+      <div class="panel">
+        <div class="phdr">📩 個別送信（LINE ID指定）</div>
+        <div class="pbody">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:12px">interest_formsに登録済みの LINE ID を持つユーザーに個別送信します。</div>
+          <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px">送信先 LINE ID</label>
+          <input id="pushTo" placeholder="U1234567890abcdef..." style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:13px;margin-bottom:12px">
+          <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px">メッセージ内容</label>
+          <textarea id="pushMsg" rows="4" placeholder="例：ご共感ありがとうございます。ぜひ一度お話しましょう。" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:13px;resize:vertical;line-height:1.7;font-family:inherit"></textarea>
+          <div style="margin-top:12px">
+            <button class="ai-btn" onclick="sendPush()" style="background:var(--navy);color:#fff;border-color:var(--navy)">個別送信する</button>
+          </div>
+          <div id="pushResult" style="margin-top:10px;font-size:12px;display:none"></div>
+        </div>
+      </div>
+
+      <!-- LINE登録ユーザー一覧 -->
+      <div class="panel" style="margin-top:24px">
+        <div class="phdr">👥 LINE連携済みユーザー</div>
+        <div class="pbody" id="lineUserList"><div style="font-size:12px;color:var(--text2)">読み込み中...</div></div>
+      </div>
+    </div>`;
+
+  loadLineUsers();
+}
+
+async function loadLineUsers(){
+  const el = document.getElementById('lineUserList');
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/interest_forms?select=line_id,form_data,company_name,ceo_name,created_at&line_id=not.is.null&order=created_at.desc`,{
+      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
+    });
+    const rows = await res.json();
+    const seen = new Set();
+    const unique = rows.filter(r=>{ if(seen.has(r.line_id)) return false; seen.add(r.line_id); return true; });
+    if(unique.length===0){ el.innerHTML='<div style="font-size:12px;color:var(--text2)">LINE連携済みユーザーはまだいません</div>'; return; }
+    el.innerHTML=`<div style="font-size:12px;color:var(--text2);margin-bottom:12px">${unique.length}名が LINE 連携済み</div>`+unique.map(r=>{
+      const fd=r.form_data||{};
+      const dt=r.created_at?new Date(r.created_at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'}):''
+      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);flex-wrap:wrap">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:700;color:var(--navy)">${fd.name||'—'} <span style="font-weight:400;color:var(--text2)">${fd.job||''}</span></div>
+          <div style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace">${r.line_id}</div>
+        </div>
+        <div style="font-size:10px;color:var(--text3)">${r.company_name||''} / ${dt}</div>
+        <button onclick="document.getElementById('pushTo').value='${r.line_id}';document.getElementById('adminContent').scrollTop=0" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 8px;border:1px solid var(--teal);background:var(--teal-bg);color:var(--teal-d);border-radius:2px;cursor:pointer;white-space:nowrap">送信先に設定</button>
+      </div>`;
+    }).join('');
+  } catch(e){ el.innerHTML='<div style="font-size:12px;color:var(--hot)">読み込みに失敗しました</div>'; }
+}
+
+async function sendBroadcast(){
+  const msg = document.getElementById('broadcastMsg').value.trim();
+  const resultEl = document.getElementById('broadcastResult');
+  if(!msg){ resultEl.textContent='メッセージを入力してください'; resultEl.style.color='var(--hot)'; resultEl.style.display='block'; return; }
+  if(!confirm('全友だちにメッセージを送信します。よろしいですか？')) return;
+  resultEl.textContent='送信中...'; resultEl.style.color='var(--text2)'; resultEl.style.display='block';
+  try {
+    const res = await fetch('/api/line-push',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'broadcast',message:msg})});
+    const data = await res.json();
+    if(data.ok){ resultEl.textContent='✓ 送信しました'; resultEl.style.color='var(--teal-d)'; }
+    else { resultEl.textContent='エラー: '+JSON.stringify(data); resultEl.style.color='var(--hot)'; }
+  } catch(e){ resultEl.textContent='送信失敗: '+e.message; resultEl.style.color='var(--hot)'; }
+}
+
+async function sendPush(){
+  const to  = document.getElementById('pushTo').value.trim();
+  const msg = document.getElementById('pushMsg').value.trim();
+  const resultEl = document.getElementById('pushResult');
+  if(!to || !msg){ resultEl.textContent='送信先とメッセージを入力してください'; resultEl.style.color='var(--hot)'; resultEl.style.display='block'; return; }
+  resultEl.textContent='送信中...'; resultEl.style.color='var(--text2)'; resultEl.style.display='block';
+  try {
+    const res = await fetch('/api/line-push',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'push',to,message:msg})});
+    const data = await res.json();
+    if(data.ok){ resultEl.textContent='✓ 送信しました'; resultEl.style.color='var(--teal-d)'; }
+    else { resultEl.textContent='エラー: '+JSON.stringify(data); resultEl.style.color='var(--hot)'; }
+  } catch(e){ resultEl.textContent='送信失敗: '+e.message; resultEl.style.color='var(--hot)'; }
 }
 
 // ===== 企業登録 =====
