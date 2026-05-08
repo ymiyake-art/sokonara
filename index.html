@@ -1549,10 +1549,14 @@ function requireLineForContact() {
     openEmpathyForm();
     return;
   }
-  // sn_restore とは別の専用フラグで意図を保存する
-  localStorage.setItem('sn_contact_intent', '1');
-  localStorage.setItem('sn_contact_company', String(selectedCompanyId || ''));
-  beginLineLogin();
+  // intentをstateパラメータ自体に埋め込む（モバイルWebView対応）
+  // 形式: random.c.companyId
+  const redirectUri = encodeURIComponent(location.origin + location.pathname);
+  const clientId = '2009807359';
+  const coId = String(selectedCompanyId || '');
+  const state = Math.random().toString(36).slice(2) + '.c.' + coId;
+  localStorage.setItem('snLineState', state);
+  location.href = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${encodeURIComponent(state)}&scope=profile`;
 }
 
 function beginLineLogin() {
@@ -2856,9 +2860,16 @@ const urlParams = new URLSearchParams(location.search);
 const _lineCode = urlParams.get('code');
 const _lineState = urlParams.get('state');
 const _savedState = localStorage.getItem('snLineState');
-if (_lineCode && _lineState && _savedState && _lineState === _savedState) {
+// モバイルではLINEがWebView経由でコールバックするためlocalStorageが別になる場合がある。
+// stateの一致確認はできる場合のみ行い、codeが存在すれば交換を試みる。
+const _stateOk = _lineCode && _lineState && (_savedState === null || _lineState === _savedState);
+if (_stateOk) {
   localStorage.removeItem('snLineState');
   history.replaceState({}, '', location.pathname);
+  // stateにintentを埋め込んでいる場合（形式: random.c.companyId）
+  const _stateParts = _lineState.split('.');
+  const _isContact = _stateParts[1] === 'c';
+  const _coIdFromState = _stateParts[2] || '';
   fetch('/api/line-token', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
@@ -2867,6 +2878,10 @@ if (_lineCode && _lineState && _savedState && _lineState === _savedState) {
     if(d.line_id){
       localStorage.setItem('snLineId', d.line_id);
       localStorage.setItem('snLineName', d.display_name || '');
+    }
+    if(_isContact){
+      localStorage.setItem('sn_contact_intent', '1');
+      if(_coIdFromState) localStorage.setItem('sn_contact_company', _coIdFromState);
     }
     localStorage.setItem('sn_postlogin', '1');
     location.reload();
