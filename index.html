@@ -262,18 +262,17 @@ body {
   width: min(900px, calc(100% - 24px));
   background: var(--white);
   border-top: 1px solid var(--border);
-  padding: 14px 20px;
-  display: flex; align-items: center;
-  justify-content: center; gap: 20px;
+  padding: 12px 20px 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
   box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
 }
-.cta-sticky .btn-primary { margin-left: 0; }
 .cta-sticky-text strong {
   font-size: 13px; font-weight: 700;
-  color: var(--navy); display: block; margin-bottom: 2px;
+  color: var(--navy); white-space: nowrap;
 }
-.cta-sticky-text span { font-size: 11px; color: var(--text2); }
-.cta-sticky-text { text-align: center; }
+.cta-sticky-btns { display: flex; gap: 10px; }
+.cta-sticky-btns .btn-outline,
+.cta-sticky-btns .btn-primary { margin: 0; }
 
 /* =============================================
    P2: EMPATHY INPUT
@@ -1127,9 +1126,11 @@ body {
       <div class="cta-sticky-text">
         <strong>記事を読んで、どう感じましたか？</strong>
       </div>
-      <button class="btn-outline" id="p1ProjectBtn" onclick="openCompanyProjectsFromP1()" style="display:none">この経営層の共創テーマを見る →</button>
-      <button class="btn-outline" style="font-size:12px;padding:9px 14px;white-space:nowrap" onclick="requireLineForContact()">話してみたい</button>
-      <button class="btn-primary" style="white-space:nowrap" onclick="goScreen('p2')">価値観を整理する →</button>
+      <div class="cta-sticky-btns">
+        <button class="btn-outline" id="p1ProjectBtn" onclick="openCompanyProjectsFromP1()" style="display:none">この経営層の共創テーマを見る →</button>
+        <button class="btn-outline" style="font-size:13px;padding:10px 20px;white-space:nowrap" onclick="requireLineForContact()">話してみたい</button>
+        <button class="btn-primary" style="font-size:13px;padding:10px 20px;white-space:nowrap" onclick="goScreen('p2')">価値観を整理する</button>
+      </div>
     </div>
   </div>
 
