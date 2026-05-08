@@ -1549,17 +1549,10 @@ function requireLineForContact() {
     openEmpathyForm();
     return;
   }
-  // beginLineLogin()はsn_restoreを上書きするため、intent付きで直接LINE遷移する
-  localStorage.setItem('sn_restore', JSON.stringify({
-    companyId: selectedCompanyId,
-    q1: S.q1, q2: S.q2, q3: S.q3, free: S.free, fb: S.fb,
-    intent: 'contact'
-  }));
-  const redirectUri = encodeURIComponent(location.origin + location.pathname);
-  const clientId = '2009807359';
-  const state = Math.random().toString(36).slice(2);
-  localStorage.setItem('snLineState', state);
-  location.href = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=profile`;
+  // sn_restore とは別の専用フラグで意図を保存する
+  localStorage.setItem('sn_contact_intent', '1');
+  localStorage.setItem('sn_contact_company', String(selectedCompanyId || ''));
+  beginLineLogin();
 }
 
 function beginLineLogin() {
@@ -2892,8 +2885,22 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
     return;
   }
 
-  // LINE登録直後のreload時：sn_postloginフラグとsn_restoreがあればFBを復元してp3へ
+  // LINE登録直後のreload時：接点フォームへの意図があればフォームを開く
   const _postLogin = localStorage.getItem('sn_postlogin');
+  const _contactIntent = localStorage.getItem('sn_contact_intent');
+  if(_postLogin && _contactIntent){
+    localStorage.removeItem('sn_postlogin');
+    localStorage.removeItem('sn_contact_intent');
+    const savedCoId = localStorage.getItem('sn_contact_company');
+    localStorage.removeItem('sn_contact_company');
+    if(savedCoId) selectedCompanyId = savedCoId;
+    goScreen('p1');
+    renderP1FromCompany();
+    setTimeout(()=>openEmpathyForm(), 400);
+    return;
+  }
+
+  // LINE登録直後のreload時：sn_postloginフラグとsn_restoreがあればFBを復元してp3へ
   const _restoreRaw = localStorage.getItem('sn_restore');
   if(_postLogin && _restoreRaw){
     localStorage.removeItem('sn_postlogin');
@@ -2902,12 +2909,6 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
       const saved = JSON.parse(_restoreRaw);
       selectedCompanyId = saved.companyId || null;
       S.q1 = saved.q1||''; S.q2 = saved.q2||[]; S.q3 = saved.q3||''; S.free = saved.free||''; S.fb = saved.fb||null;
-      if(saved.intent === 'contact'){
-        goScreen('p1');
-        renderP1FromCompany();
-        setTimeout(()=>openEmpathyForm(), 300);
-        return;
-      }
       goScreen('p3');
       if(S.fb){ showFeedback(S.fb); }
       else { genFeedback(); }
