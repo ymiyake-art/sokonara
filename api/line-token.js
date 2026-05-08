@@ -67,11 +67,19 @@ export default async function handler(req) {
   });
   const profile = await profileRes.json();
 
+  // 公式アカウントの友だち状態を確認
+  const friendRes = await fetch('https://access.line.me/friendship/v1/status', {
+    headers: { 'Authorization': `Bearer ${tokenData.access_token}` }
+  });
+  const friendData = friendRes.ok ? await friendRes.json() : {};
+  const friend_flag = friendData.friendFlag === true;
+
   return new Response(JSON.stringify({
     access_token: tokenData.access_token,
     line_id:      profile.userId,
     display_name: profile.displayName,
     picture_url:  profile.pictureUrl,
+    friend_flag,
   }), {
     status: 200,
     headers: {

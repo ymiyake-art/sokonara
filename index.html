@@ -1230,20 +1230,18 @@ body {
           <div id="fbSummaryText" style="font-size:14px;line-height:1.9;color:rgba(255,255,255,0.9);white-space:pre-line;"></div>
         </div>
 
-        <!-- LINE未登録時のCTA（2パターン） -->
+        <!-- 公式LINE未登録時のCTA -->
         <div id="fbLineCta" style="display:none;margin-bottom:20px;">
           <div style="background:rgba(255,255,255,0.06);border-radius:4px;padding:20px;text-align:center;">
-            <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:6px;">LINE登録だけで、企業に個人情報は送られません</div>
-            <div style="font-size:11px;color:var(--teal);margin-bottom:14px;">※ 認証後、このブラウザ画面に戻ってください</div>
+            <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:6px;">続きは公式LINEを友だち追加すると読めます</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:16px;">経営層の新着情報もLINEでお届けします</div>
             <div style="display:flex;flex-direction:column;gap:10px;max-width:300px;margin:0 auto;">
               <button class="btn-line-login" onclick="beginLineLogin()" style="width:100%;justify-content:center;font-size:13px;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.070 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
-                フィードバックの続きを見る
-              </button>
-              <button class="btn-outline" onclick="openEmpathyForm()" style="width:100%;justify-content:center;font-size:13px;border-color:var(--teal);color:var(--teal);">
-                今すぐ接点を作る（LINE不要）
+                公式LINEを友だち追加して続きを見る
               </button>
             </div>
+            <div style="font-size:11px;color:var(--teal);margin-top:10px;">※ 認証後、このブラウザ画面に戻ってください</div>
           </div>
         </div>
 
@@ -1543,41 +1541,27 @@ const S = { q1:'', q2:[], q3:'', free:'', fb:null, screen:'p-list', mode:'user',
 function isLineRegistered() {
   return !!localStorage.getItem('snLineId');
 }
+function isLineFriend() {
+  return localStorage.getItem('snLineFriend') === '1';
+}
 
 // ソコナラ【公式】のボット基本ID（@から始まる値）
 const LINE_OFFICIAL_ID = '@630zglyb';
 
-async function requireLineForContact() {
-  const lineId = localStorage.getItem('snLineId');
-  if (lineId) {
-    // LINE登録済みの場合、友だち状態を確認（4秒タイムアウト）
-    let isFriend = true; // デフォルトは開く（API失敗時のフォールバック）
-    try {
-      const controller = new AbortController();
-      const tid = setTimeout(() => controller.abort(), 4000);
-      const res = await fetch('/api/check-friend', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lineId }),
-        signal: controller.signal
-      });
-      clearTimeout(tid);
-      const data = await res.json();
-      isFriend = data.friend !== false;
-    } catch(e) {
-      isFriend = true; // タイムアウト・エラー時はフォームを開く
-    }
-    if (isFriend) {
-      openEmpathyForm();
-    } else {
-      // ブロック済み or 未追加 → 再追加を促す
-      const addUrl = `https://line.me/R/ti/p/${encodeURIComponent(LINE_OFFICIAL_ID)}`;
-      toast('ソコナラ公式LINEを友だち追加してご利用ください', 4000);
-      location.href = addUrl;
-    }
+function requireLineForContact() {
+  if (isLineFriend()) {
+    openEmpathyForm();
     return;
   }
-  // 未登録 → LINEログイン（intentをstateに埋め込む）
+  // 未フォロー or ブロック済み → LINEログイン（友だち追加も同時に促す）
+  const addUrl = `https://line.me/R/ti/p/${encodeURIComponent(LINE_OFFICIAL_ID)}`;
+  if (isLineRegistered()) {
+    // LINE IDはあるが友だち未追加 → 追加ページへ
+    toast('ソコナラ公式LINEを友だち追加してご利用ください', 4000);
+    setTimeout(() => { location.href = addUrl; }, 800);
+    return;
+  }
+  // 完全未登録 → LINEログイン（intentをstateに埋め込む）
   const redirectUri = encodeURIComponent(location.origin + location.pathname);
   const clientId = '2009807359';
   const coId = String(selectedCompanyId || '');
@@ -2199,19 +2183,18 @@ function showFeedback(fb) {
   const summaryEl = document.getElementById('fbSummaryText');
   if(summaryEl) {
     const summaryText = fb.summary || '';
-    if(isLineRegistered()){
+    if(isLineFriend()){
       summaryEl.textContent = summaryText;
     } else {
-      // 文末（。）で分割して最初の2文を表示し途中で終える
       const sentences = summaryText.split(/(?<=。)/);
       const preview = sentences.slice(0, 3).join('');
       summaryEl.innerHTML = preview
         + '<span style="opacity:0.5">・・・</span>'
-        + '<span style="display:block;margin-top:10px;font-size:12px;color:var(--teal);font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">▼ 続きはLINE登録後に</span>';
+        + '<span style="display:block;margin-top:10px;font-size:12px;color:var(--teal);font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">▼ 続きは公式LINE登録後に</span>';
     }
   }
 
-  if(isLineRegistered()) {
+  if(isLineFriend()) {
     // LINE登録済み：要約非表示・詳細表示
     document.getElementById('fbSummary').style.display = 'none';
     document.getElementById('fbLineCta').style.display = 'none';
@@ -2679,8 +2662,9 @@ function openEmpathyForm() {
   const co = getCurrentCompany();
   const title = document.getElementById('empathyModalTitle');
   const sub = document.getElementById('empathyModalSub');
-  if(title) title.textContent = (co?.ceo||'経営層') + 'への共感を送る';
-  if(sub) sub.textContent = (co?.name||co?.company||'') + 'の記事を読んで共感した内容を送ります。';
+  const ceoName = co?.ceo || '経営層';
+  if(title) title.textContent = ceoName + 'さんへの共感を送る';
+  if(sub) sub.textContent = (co?.name||co?.company||'') + 'の記事を読んで、' + ceoName + 'さんに共感した内容を送ります。';
   document.getElementById('empName').value = '';
   document.getElementById('empJob').value = '';
   document.getElementById('empEmail').value = '';
@@ -2905,6 +2889,7 @@ if (_stateOk) {
     if(d.line_id){
       localStorage.setItem('snLineId', d.line_id);
       localStorage.setItem('snLineName', d.display_name || '');
+      localStorage.setItem('snLineFriend', d.friend_flag ? '1' : '0');
     }
     if(_isContact){
       localStorage.setItem('sn_contact_intent', '1');
