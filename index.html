@@ -1544,13 +1544,36 @@ function isLineRegistered() {
   return !!localStorage.getItem('snLineId');
 }
 
-function requireLineForContact() {
-  if (isLineRegistered()) {
-    openEmpathyForm();
+// ソコナラ【公式】のボット基本ID（@から始まる値）
+const LINE_OFFICIAL_ID = '@sokonara'; // ← LINE Developers「Messaging API設定」>「ボット基本ID」に差し替え
+
+async function requireLineForContact() {
+  const lineId = localStorage.getItem('snLineId');
+  if (lineId) {
+    // LINE登録済みの場合、友だち状態を確認
+    try {
+      const res = await fetch('/api/check-friend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lineId })
+      });
+      const data = await res.json();
+      if (data.friend) {
+        openEmpathyForm();
+        return;
+      }
+    } catch(e) {
+      // API失敗時はフォームを開く（UX優先）
+      openEmpathyForm();
+      return;
+    }
+    // ブロック済み or 未追加 → 再追加を促す
+    const addUrl = `https://line.me/R/ti/p/${encodeURIComponent(LINE_OFFICIAL_ID)}`;
+    toast('ソコナラ公式LINEを友だち追加してご利用ください', 4000);
+    setTimeout(() => { window.open(addUrl, '_blank'); }, 800);
     return;
   }
-  // intentをstateパラメータ自体に埋め込む（モバイルWebView対応）
-  // 形式: random.c.companyId
+  // 未登録 → LINEログイン（intentをstateに埋め込む）
   const redirectUri = encodeURIComponent(location.origin + location.pathname);
   const clientId = '2009807359';
   const coId = String(selectedCompanyId || '');
