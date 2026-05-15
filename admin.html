@@ -621,17 +621,30 @@ async function loadCompaniesAsync(){
   localStorage.setItem('sn_companies', JSON.stringify(companiesCache));
   return companiesCache;
 }
-function saveCompanies(arr){
+async function saveCompanies(arr){
   companiesCache = Array.isArray(arr)?arr:[];
   localStorage.setItem('sn_companies',JSON.stringify(companiesCache));
   if(!supabaseClient) return;
   const rows = companiesCache.map(toCompanyRow);
-  supabaseClient.from('companies').upsert(rows,{onConflict:'id'}).then(({error})=>{
-    if(error){
-      console.warn('companies save error:', error.message);
-      toast('⚠️ DB保存失敗: ' + error.message.slice(0,60));
+  const {error} = await supabaseClient.from('companies').upsert(rows,{onConflict:'id'});
+  if(error){
+    console.warn('companies save error:', error.message);
+    // catchphraseカラム未追加の場合は除外して再試行
+    if(error.message.includes('catchphrase') || error.message.includes('column')){
+      const minRows = rows.map(r=>{
+        const {catchphrase,...rest}=r; return rest;
+      });
+      const {error:e2} = await supabaseClient.from('companies').upsert(minRows,{onConflict:'id'});
+      if(e2){
+        toast('⚠️ DB保存失敗。Supabase SQL Editorで supabase_setup.sql を実行してください。');
+        console.error('minimal save also failed:', e2.message);
+      } else {
+        toast('⚠️ catchphrase未追加のため除外して保存。SQL Editorでカラム追加を推奨。');
+      }
+    } else {
+      toast('⚠️ DB保存失敗: ' + error.message.slice(0,80));
     }
-  });
+  }
 }
 function loadProjects(){
   if(Array.isArray(projectsCache) && projectsCache.length) return projectsCache;
