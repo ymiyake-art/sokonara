@@ -2354,7 +2354,9 @@ async function genReco(fb) {
     name: c.ceo||'経営層',
     co: c.name||c.company||'',
     color: c.color||'var(--navy)',
-    tags: Array.isArray(c.tags)?c.tags:[]
+    tags: Array.isArray(c.tags)?c.tags:[],
+    catchphrase: c.catchphrase||'',
+    quote: c.quote||''
   }));
   if(cos.length===0){
     document.getElementById('recoCards').innerHTML='<div style="padding:24px;color:var(--text2);font-size:13px;">他の経営層を準備中です。</div>';
@@ -2366,16 +2368,18 @@ async function genReco(fb) {
       <div class="reco-card-top">
         <div class="reco-av" style="background:${c.color}">${c.name[0]}</div>
         <div class="reco-meta">
-          <div class="reco-name">${c.name}</div>
-          <div class="reco-co">${c.co}</div>
-          <div class="reco-tags">${c.tags.map(t=>`<span class="reco-tag">${t}</span>`).join('')}</div>
+          <div class="reco-name">${escapeHtml(c.name)}</div>
+          <div class="reco-co">${escapeHtml(c.co)}</div>
+          ${c.catchphrase ? `<div style="font-size:11px;font-weight:700;color:var(--teal-d);margin:4px 0 6px;line-height:1.5;">${escapeHtml(c.catchphrase)}</div>` : ''}
+          <div class="reco-tags">${c.tags.slice(0,3).map(t=>`<span class="reco-tag">${escapeHtml(t)}</span>`).join('')}</div>
         </div>
       </div>
+      ${c.quote ? `<div style="padding:10px 18px;background:var(--teal-bg);border-bottom:1px solid var(--border);font-size:12px;color:var(--teal-d);font-weight:500;line-height:1.6;">「${escapeHtml(c.quote)}」</div>` : ''}
       <div class="reco-reason">
         <div class="reco-reason-label">おすすめの理由</div>
         <div class="reco-reason-text loading" id="rr${i}">　</div>
       </div>
-      <div style="padding:10px 18px 14px;font-size:12px;color:var(--text2)">記事を読む →</div>
+      <div style="padding:10px 18px 14px;font-size:12px;color:var(--teal);font-weight:700;">記事を読む →</div>
     </div>
   `).join('');
 
