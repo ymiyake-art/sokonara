@@ -1583,12 +1583,14 @@ function renderPhotoLib(){
   const el=document.getElementById('art-photo-lib');
   if(!el) return;
   if(!_articlePhotos.length){ el.innerHTML='<div style="font-size:11px;color:var(--text3);padding:8px 0">まだ写真がありません</div>'; return; }
-  el.innerHTML=_articlePhotos.map((p,i)=>`
-    <div style="position:relative;cursor:pointer" onclick="assignPhotoToTarget('${p.url}')" title="${p.name}">
-      <img src="${p.url}" style="width:80px;height:60px;object-fit:cover;border-radius:3px;border:2px solid var(--border);display:block">
-      <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(28,42,84,0.7);font-size:8px;color:#fff;padding:2px 4px;border-radius:0 0 3px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
-    </div>
-  `).join('');
+  el.innerHTML=_articlePhotos.map((p,i)=>{
+    const safeUrl=escHtml(p.url);
+    const safeName=escHtml(p.name);
+    return `<div style="position:relative;cursor:pointer" onclick="_assignPhoto(${i})" title="${safeName}">
+      <img src="${safeUrl}" style="width:80px;height:60px;object-fit:cover;border-radius:3px;border:2px solid var(--border);display:block">
+      <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(28,42,84,0.7);font-size:8px;color:#fff;padding:2px 4px;border-radius:0 0 3px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${safeName}</div>
+    </div>`;
+  }).join('');
 }
 
 let _pickingForSection = null;
@@ -1607,6 +1609,11 @@ function openPhotoPickerForSection(idx){
   document.getElementById('art-upload-status').textContent='写真をクリックしてセクションに割り当てください';
 }
 
+function _assignPhoto(photoIdx){
+  const p=_articlePhotos[photoIdx];
+  if(!p) return;
+  assignPhotoToTarget(p.url);
+}
 function assignPhotoToTarget(url){
   if(_pickingForSection===null){ toast('写真を選択するにはセクションの「写真選択」を押してください'); return; }
   _articleSections[_pickingForSection].photoUrl = url;
