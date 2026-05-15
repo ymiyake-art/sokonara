@@ -1481,7 +1481,7 @@ function parseNotion(text){
           const v=line.replace(/^\*\*タグ\*\*\s*/,'').trim();
           meta.tags=v.split(/[,、,\s　]+/).filter(Boolean);
         } else if(k==='引用フレーズ'){
-          meta.quote=line.replace(/^\*\*引用フレーズ\*\*\s*/,'').replace(/^「|」$/g,'').trim();
+          meta.quote=line.replace(/^\*\*引用フレーズ\*\*\s*/,'').trim();
         } else if(k==='キャッチフレーズ'){
           meta.catchphrase=line.replace(/^\*\*キャッチフレーズ\*\*\s*/,'').trim();
         } else if(k.includes('Q1選択肢')){
