@@ -2485,7 +2485,7 @@ async function genDashInsight() {
   try {
     const res = await fetch('/api/feedback',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({type:'insight',data:{reactions:124,reactionsDelta:'+18',completionRate:53,completionDelta:'+6pt',ctaRate:17.7,hotCount:7,topWord:'変えたいものがある人間に古い会社ほど面白い',topPct:43}}))
+      body:JSON.stringify({type:'insight',data:{reactions:124,reactionsDelta:'+18',completionRate:53,completionDelta:'+6pt',ctaRate:17.7,hotCount:7,topWord:'変えたいものがある人間に古い会社ほど面白い',topPct:43}})
     });
     const d=await res.json();
     el.textContent=d.content[0].text;
