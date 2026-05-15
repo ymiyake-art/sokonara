@@ -256,6 +256,47 @@ body {
   margin: 0 !important;
 }
 
+/* ===== 構造化記事スタイル ===== */
+.sec-block { margin-bottom: 40px; }
+.sec-heading {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 20px; font-weight: 700;
+  color: var(--navy); line-height: 1.5;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--teal);
+}
+.sec-photo {
+  width: 100%; border-radius: 6px;
+  margin-bottom: 18px; display: block;
+  max-height: 360px; object-fit: cover;
+}
+.sec-body {
+  font-size: 15px; line-height: 2.1;
+  color: #2a2a2a; font-weight: 300;
+  white-space: pre-line;
+}
+.sec-body strong { font-weight: 700; color: var(--navy); }
+.qa-block { margin-bottom: 32px; }
+.qa-q {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 15px; font-weight: 700;
+  color: var(--navy); line-height: 1.7;
+  margin-bottom: 10px;
+  padding-left: 14px;
+  border-left: 3px solid var(--teal);
+}
+.qa-a {
+  font-size: 14px; line-height: 2;
+  color: #2a2a2a; font-weight: 300;
+  padding-left: 14px;
+  white-space: pre-line;
+}
+.sec-divider {
+  border: none; border-top: 1px solid var(--border);
+  margin: 32px 0;
+}
+
 .cta-sticky {
   position: fixed; bottom: 0; left: 50%;
   transform: translateX(-50%);
@@ -1274,9 +1315,9 @@ body {
   <div id="p4" class="screen">
     <div class="reco-wrap">
       <div class="reco-heading">
-        <div class="reco-eyebrow">For You</div>
-        <div class="reco-title">あなたに合う経営層</div>
-        <div class="reco-sub" id="recoSub">共感した言葉をもとに、3人を選びました</div>
+        <div class="reco-eyebrow">Next Encounter</div>
+        <div class="reco-title">この経営層と対話してみませんか？</div>
+        <div class="reco-sub" id="recoSub">あなたの価値観に近い経営層をピックアップしました</div>
       </div>
 
       <div class="orig-card">
@@ -1297,18 +1338,17 @@ body {
 
   <!-- P5 -->
   <div id="p5" class="screen">
-    <div style="margin:auto;padding:40px 20px;text-align:center;max-width:420px">
+    <div style="margin:auto;padding:48px 24px;text-align:center;max-width:440px">
       <div class="complete-icon">✓</div>
       <div class="complete-title">共感を送信しました。</div>
-      <div class="complete-sub">ソコナラ事務局が内容を確認したうえで、必要に応じて企業・経営層へ共有します。内容を見た企業・経営層から、面談や対話の連絡が届く可能性があります。</div>
-      <div class="complete-steps">
-        <div class="complete-steps-label">次のステップ</div>
-        <div class="complete-step"><div class="complete-step-n">01</div><div>担当者から<strong> 数日以内にLINEでご連絡</strong>します</div></div>
-        <div class="complete-step"><div class="complete-step-n">02</div><div>壁打ち・副業・転職など、<strong>関わり方を一緒に考えます</strong></div></div>
-        <div class="complete-step"><div class="complete-step-n">03</div><div>断っても全く問題ありません。まず話しましょう。</div></div>
+      <div style="font-size:14px;color:rgba(255,255,255,0.8);line-height:2;margin:24px 0 16px;text-align:left;">
+        経営層があなたと話してみたいと感じた場合には、メールで連絡が入ります。<br>
+        その出会いが、キャリアの転機となるかもしれません。ぜひ対話を進めてみてください。
       </div>
-      <button class="btn-outline" onclick="goScreen('p4')">他の経営層も見る</button>
-      <button class="btn-line-login" id="lineCopyBtn" onclick="copyLineMessage()" style="margin-top:12px">LINEで送る文章をコピー</button>
+      <div style="font-size:13px;color:rgba(255,255,255,0.55);line-height:2;margin-bottom:36px;text-align:left;">
+        メッセージを送ること自体が、自分の価値観やこれからのキャリアを振り返るきっかけにもなります。他の経営層の記事も読みながら、共鳴した相手にメッセージを送ってみてください。
+      </div>
+      <button class="btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.4);" onclick="goScreen('p-list')">他の経営層の記事を読む →</button>
     </div>
   </div>
 
@@ -1327,15 +1367,15 @@ body {
 <!-- ===========================
      EMPATHY FORM MODAL
      =========================== -->
-<div id="empathyModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;overflow-y:auto;">
-  <div style="background:#fff;max-width:480px;margin:40px auto;border-radius:4px;padding:32px 24px;position:relative;">
+<div id="empathyModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div style="background:#fff;max-width:480px;margin:24px auto 40px;border-radius:4px;padding:28px 20px;position:relative;">
     <button onclick="document.getElementById('empathyModal').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text2);">×</button>
     <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:8px;">CONTACT FORM</div>
     <div style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:6px;" id="empathyModalTitle">経営層への共感を送る</div>
     <div style="font-size:12px;color:var(--text2);margin-bottom:16px;" id="empathyModalSub"></div>
 
     <div style="background:#f0faf8;border-left:3px solid var(--teal);border-radius:0 4px 4px 0;padding:12px 14px;margin-bottom:20px;font-size:12px;color:#2e6b62;line-height:1.8;">
-      詳しく書くほど、経営層からの返信率が上がります。<br>自己紹介や共感した理由は、具体的に書くのがおすすめです。
+      自己紹介や共感した理由を具体的にご記載いただくことで、企業との相互理解や対話が深まりやすくなります。
     </div>
 
     <div style="margin-bottom:14px;">
@@ -1393,7 +1433,18 @@ body {
     </div>
 
     <div style="background:var(--light);border-radius:4px;padding:12px 14px;margin-bottom:20px;font-size:11px;color:var(--text2);line-height:1.8;">
-      正式な応募ではありません。事務局が確認後、必要に応じて経営層へ共有します。
+      正式な応募ではありません。経営層があなたのメッセージを見て、話してみたいと感じた場合にメールで連絡が届きます。
+    </div>
+
+    <div style="margin-bottom:16px;display:flex;flex-direction:column;gap:12px;">
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+        <input type="checkbox" id="empConsent1" style="margin-top:3px;accent-color:var(--teal);flex-shrink:0;">
+        <span style="font-size:12px;color:var(--text);line-height:1.7;">私は、ソコナラ<a href="#" style="color:var(--teal);text-decoration:underline;">利用規約</a>および<a href="#" style="color:var(--teal);text-decoration:underline;">プライバシーポリシー</a>を確認し、同意の上で申し込みます。</span>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+        <input type="checkbox" id="empConsent2" style="margin-top:3px;accent-color:var(--teal);flex-shrink:0;">
+        <span style="font-size:12px;color:var(--text);line-height:1.7;">私は、株式会社ソコナラが、本フォームに入力した情報および提出書類を、ソコナラの利用企業に対して情報提供・推薦することに同意します。また、当該情報提供・推薦が職業紹介サービスの一環として行われる場合があることを確認しました。</span>
+      </label>
     </div>
 
     <button class="btn-primary" style="width:100%;justify-content:center;" onclick="submitEmpathyForm()">共感を送る</button>
@@ -1548,26 +1599,52 @@ function isLineFriend() {
 // ソコナラ【公式】のボット基本ID（@から始まる値）
 const LINE_OFFICIAL_ID = '@630zglyb';
 
-function requireLineForContact() {
-  if (isLineFriend()) {
-    openEmpathyForm();
-    return;
-  }
-  // 未フォロー or ブロック済み → LINEログイン（友だち追加も同時に促す）
-  const addUrl = `https://line.me/R/ti/p/${encodeURIComponent(LINE_OFFICIAL_ID)}`;
-  if (isLineRegistered()) {
-    // LINE IDはあるが友だち未追加 → 追加ページへ
-    toast('ソコナラ公式LINEを友だち追加してご利用ください', 4000);
-    setTimeout(() => { location.href = addUrl; }, 800);
-    return;
-  }
-  // 完全未登録 → LINEログイン（intentをstateに埋め込む）
+// LINE Login（友だち追加プロンプト付き）でコンタクト意図を持ってリダイレクト
+function _startLineLoginForContact() {
   const redirectUri = encodeURIComponent(location.origin + location.pathname);
   const clientId = '2009807359';
   const coId = String(selectedCompanyId || '');
   const state = Math.random().toString(36).slice(2) + '.c.' + coId;
   localStorage.setItem('snLineState', state);
-  location.href = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${encodeURIComponent(state)}&scope=profile`;
+  // bot_prompt=aggressive: 既ログイン済みでも友だち追加プロンプトを再表示する
+  location.href = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${encodeURIComponent(state)}&scope=profile&bot_prompt=aggressive`;
+}
+
+function requireLineForContact() {
+  const lineId = localStorage.getItem('snLineId');
+
+  if (!lineId) {
+    // 完全未登録 → LINEログイン＋友だち追加プロンプト
+    _startLineLoginForContact();
+    return;
+  }
+
+  // LINE IDあり → リアルタイムで友だち状態を確認（キャッシュは信用しない）
+  toast('確認中...', 3000);
+  const ctrl = new AbortController();
+  const tid = setTimeout(() => ctrl.abort(), 5000);
+  fetch('/api/check-friend', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ lineId }),
+    signal: ctrl.signal,
+  }).then(r => r.json()).then(d => {
+    clearTimeout(tid);
+    const isFriend = d.friend === true;
+    localStorage.setItem('snLineFriend', isFriend ? '1' : '0');
+    if (isFriend) {
+      openEmpathyForm();
+    } else {
+      // 未追加 → LINE Loginを再実行して友だち追加プロンプトを表示
+      // 完了後にOAuthコールバックでアプリへ自動復帰する
+      toast('ソコナラ公式LINEの友だち追加が必要です', 3000);
+      setTimeout(() => { _startLineLoginForContact(); }, 600);
+    }
+  }).catch(() => {
+    clearTimeout(tid);
+    // タイムアウト or エラー → LINE Loginで再確認
+    _startLineLoginForContact();
+  });
 }
 
 function beginLineLogin() {
@@ -1666,6 +1743,33 @@ function stripImageMarkdown(src){
     .replace(/!\[[^\]]*]\((https?:\/\/[^\s)]+)\)/g,'')
     .replace(/\n{3,}/g,'\n\n')
     .trim();
+}
+
+// ===== 構造化記事レンダリング =====
+function renderStructuredArticle(sections){
+  if(!Array.isArray(sections)||!sections.length) return '';
+  return sections.map((sec, i) => {
+    const heading = sec.heading ? `<h2 class="sec-heading">${escapeHtml(sec.heading)}</h2>` : '';
+    const photo = sec.photoUrl ? `<img class="sec-photo" src="${escapeHtml(sec.photoUrl)}" alt="${escapeHtml(sec.heading||'')}">` : '';
+    const divider = i > 0 ? '<hr class="sec-divider">' : '';
+
+    if(sec.type === 'qa'){
+      const items = Array.isArray(sec.items) ? sec.items : [];
+      const qaHtml = items.map(item=>`
+        <div class="qa-block">
+          <div class="qa-q">――${escapeHtml(item.q||'')}</div>
+          <div class="qa-a">${escapeHtml(item.a||'').replace(/\n/g,'<br>')}</div>
+        </div>
+      `).join('');
+      return `${divider}<div class="sec-block">${heading}${photo}${qaHtml}</div>`;
+    }
+
+    // 本文中の **bold** をHTMLに変換
+    const bodyHtml = escapeHtml(sec.body||'')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\n/g,'<br>');
+    return `${divider}<div class="sec-block">${heading}${photo}<div class="sec-body">${bodyHtml}</div></div>`;
+  }).join('');
 }
 
 function renderMarkdownArticle(md, opts){
@@ -1941,6 +2045,14 @@ function renderP1FromCompany(){
     const quoteHtml = quote ? `<div class="article-quote"><p>「${escapeHtml(quote)}」</p></div>` : '';
     if (!body && !quote) {
       bd.innerHTML = '<div class="no-article-msg">記事コンテンツを準備中です。<br>もうしばらくお待ちください。<br><br><a href="#" onclick="goScreen(\"p4\");return false;" style="color:var(--teal);font-size:12px">→ 他の経営層を見る</a></div>';
+    } else if (body.trimStart().startsWith('[{')) {
+      // 構造化記事（JSON sections）
+      try {
+        const sections = JSON.parse(body);
+        bd.innerHTML = quoteHtml + renderStructuredArticle(sections);
+      } catch(e) {
+        bd.innerHTML = quoteHtml + renderMarkdownArticle(body, {allowImages});
+      }
     } else if (body.trimStart().startsWith('INTERVIEW')) {
       bd.innerHTML = quoteHtml + renderInterviewBody(body);
     } else {
@@ -2221,7 +2333,7 @@ function showFeedback(fb) {
       const ceoLbl = (_co?.ceo||'') + (_co ? `（${_co.name||_co.company||''}）` : '');
       const lbl = document.getElementById('fbCtaLabel');
       if(lbl && ceoLbl) lbl.textContent = ceoLbl + ' に共感を伝えますか？';
-      if(fb.values?.[0]) document.getElementById('recoSub').textContent = `「${fb.values[0]}」の価値観をもとに選びました`;
+      if(fb.values?.[0]) document.getElementById('recoSub').textContent = `「${fb.values[0]}」を大切にする経営層をピックアップしました`;
       genReco(fb);
       saveSession();
     }, 1100);
@@ -2260,7 +2372,7 @@ async function genReco(fb) {
         </div>
       </div>
       <div class="reco-reason">
-        <div class="reco-reason-label">あなたに合う理由</div>
+        <div class="reco-reason-label">おすすめの理由</div>
         <div class="reco-reason-text loading" id="rr${i}">　</div>
       </div>
       <div style="padding:10px 18px 14px;font-size:12px;color:var(--text2)">記事を読む →</div>
@@ -2674,6 +2786,8 @@ function openEmpathyForm() {
   document.getElementById('empInvolvementOther').value = '';
   document.getElementById('empInvolvementOther').style.display = 'none';
   document.querySelectorAll('input[name="empInvolvement"]').forEach(r=>r.checked=false);
+  document.getElementById('empConsent1').checked = false;
+  document.getElementById('empConsent2').checked = false;
   document.getElementById('empathyError').style.display = 'none';
   // ④その他の表示制御
   document.querySelectorAll('input[name="empInvolvement"]').forEach(r=>{
@@ -2702,6 +2816,11 @@ async function submitEmpathyForm() {
     errEl.style.display = 'block';
     return;
   }
+  if(!document.getElementById('empConsent1').checked || !document.getElementById('empConsent2').checked){
+    errEl.textContent = '同意事項にチェックを入れてください';
+    errEl.style.display = 'block';
+    return;
+  }
   const involvementRadio = document.querySelector('input[name="empInvolvement"]:checked');
   let involvement = involvementRadio?.value || '';
   if(involvement === 'other') {
@@ -2724,7 +2843,6 @@ async function submitEmpathyForm() {
     const { error } = await supabaseClient.from('interest_forms').insert([payload]);
     if(error) throw error;
     document.getElementById('empathyModal').style.display = 'none';
-    toast('共感を送信しました。事務局が確認後、必要に応じて経営層へ共有します。');
     goScreen('p5');
   } catch(e) {
     console.error('empathy submit error:', e);
@@ -2901,6 +3019,18 @@ if (_stateOk) {
 }
 
 selectedCompanyId = null;
+
+// OAuthコールバック後のリロード時：即p1へ遷移してp-listを経由しない
+{
+  const _earlyPost = localStorage.getItem('sn_postlogin');
+  const _earlyContact = localStorage.getItem('sn_contact_intent');
+  const _earlyCoId = localStorage.getItem('sn_contact_company');
+  if(_earlyPost && _earlyContact) {
+    if(_earlyCoId) selectedCompanyId = _earlyCoId;
+    goScreen('p1');
+  }
+}
+
 Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
   renderCompanyList();
   renderTopLeaders();
@@ -2923,7 +3053,13 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
     if(savedCoId) selectedCompanyId = savedCoId;
     goScreen('p1');
     renderP1FromCompany();
-    setTimeout(()=>openEmpathyForm(), 400);
+    setTimeout(()=>{
+      if(localStorage.getItem('snLineFriend') === '1'){
+        openEmpathyForm();
+      } else {
+        _startLineLoginForContact();
+      }
+    }, 200);
     return;
   }
 

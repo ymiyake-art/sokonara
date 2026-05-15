@@ -205,6 +205,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
       </div>
       <div class="admin-nav" style="border-top:1px solid rgba(255,255,255,0.07);padding-top:12px;">
         <div class="admin-nav-label">登録・管理</div>
+        <div class="nav-item" id="ni-article" onclick="switchTab('article')"><div class="nav-dot" style="background:#f39c12"></div>📝 記事管理</div>
         <div class="nav-item" id="ni-addco" onclick="switchTab('addco')"><div class="nav-dot" style="background:#9b59b6"></div>企業登録</div>
         <div class="nav-item" id="ni-addpj" onclick="switchTab('addpj')"><div class="nav-dot" style="background:#27ae60"></div>共創テーマ登録</div>
         <div class="nav-item" id="ni-colist" onclick="switchTab('colist')"><div class="nav-dot" style="background:var(--teal)"></div>掲載企業一覧</div>
@@ -248,7 +249,7 @@ let curTab='dash';
 function getInitialTab(){
   try{
     const tab = new URLSearchParams(window.location.search).get('tab');
-    const valid = ['dash','reactions','contacts','report','addco','addpj','colist'];
+    const valid = ['dash','reactions','interests','contacts','report','broadcast','article','addco','addpj','colist'];
     return valid.includes(tab) ? tab : 'dash';
   }catch{
     return 'dash';
@@ -313,9 +314,9 @@ function switchTab(tab){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const ni=document.getElementById('ni-'+tab);
   if(ni) ni.classList.add('active');
-  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧'};
+  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',article:'📝 記事管理',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧'};
   document.getElementById('tabTitle').textContent=titles[tab]||tab;
-  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList};
+  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,article:renderArticleEditor,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList};
   fns[tab]?.();
 }
 
@@ -1269,6 +1270,406 @@ function deletePj(id){
   saveProjects(arr);
   toast('削除しました');
   renderCoList();
+}
+
+// ===== 記事管理 =====
+// Notion貼り付け → セクション解析
+// 写真ライブラリ（Supabase Storage） → セクションに割り当て
+// 保存 → companies.body に JSON として保存
+
+let _articlePhotos = []; // アップロード済み写真 { url, name }
+let _articleSections = []; // 解析済みセクション
+let _articleMeta = {}; // タグ・引用句など
+let _articleTitle = '';
+let _articleCompanyId = null;
+
+function renderArticleEditor(){
+  const companies = loadCompanies();
+  document.getElementById('adminContent').innerHTML = `
+  <div style="padding:24px;max-width:900px">
+
+    <!-- 企業選択 -->
+    <div class="panel" style="margin-bottom:20px">
+      <div class="phdr">対象の経営層を選択</div>
+      <div class="pbody">
+        <select id="art-company" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:13px;font-family:inherit;outline:none" onchange="onArtCompanyChange(this.value)">
+          <option value="">--- 選択してください ---</option>
+          ${companies.map(c=>`<option value="${c.id}">${c.ceo}（${c.name||c.company||''}）</option>`).join('')}
+        </select>
+      </div>
+    </div>
+
+    <!-- Notion貼り付け -->
+    <div class="panel" style="margin-bottom:20px">
+      <div class="phdr">
+        Notionから記事を貼り付け
+        <button class="abtn abtn-teal" style="font-size:10px;padding:4px 12px" onclick="parseNotionPaste()">解析する →</button>
+      </div>
+      <div class="pbody" style="padding:0">
+        <textarea id="art-notion-paste" rows="14" placeholder="Notionの記事をここに貼り付けてください（# タイトル から始まるフォーマット）" style="width:100%;box-sizing:border-box;padding:14px 16px;border:none;border-radius:0;font-size:12px;line-height:1.8;resize:vertical;font-family:'JetBrains Mono',monospace;outline:none;background:#fafafa;color:var(--text)"></textarea>
+      </div>
+    </div>
+
+    <!-- 解析結果 -->
+    <div id="art-parsed" style="display:none">
+
+      <!-- 写真ライブラリ -->
+      <div class="panel" style="margin-bottom:20px">
+        <div class="phdr">写真ライブラリ（ドラッグ&ドロップでアップロード）</div>
+        <div class="pbody">
+          <div id="art-dropzone" style="border:2px dashed var(--border);border-radius:4px;padding:24px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:14px"
+            ondragover="event.preventDefault();this.style.borderColor='var(--teal)';this.style.background='var(--teal-bg)'"
+            ondragleave="this.style.borderColor='var(--border)';this.style.background=''"
+            ondrop="handlePhotoDrop(event)"
+            onclick="document.getElementById('art-file-input').click()">
+            <div style="font-size:13px;color:var(--text2);margin-bottom:6px">📷 写真をドラッグ&ドロップ、またはクリックして選択</div>
+            <div style="font-size:11px;color:var(--text3)">JPG・PNG・WebP対応 / 複数ファイル可</div>
+          </div>
+          <input type="file" id="art-file-input" accept="image/*" multiple style="display:none" onchange="handlePhotoFileSelect(this.files)">
+          <div id="art-photo-lib" style="display:flex;flex-wrap:wrap;gap:10px;min-height:60px"></div>
+          <div id="art-upload-status" style="font-size:11px;color:var(--text2);margin-top:8px"></div>
+        </div>
+      </div>
+
+      <!-- セクション一覧 -->
+      <div class="panel" style="margin-bottom:20px">
+        <div class="phdr">解析されたセクション</div>
+        <div class="pbody" style="padding:0">
+          <div id="art-sections-list"></div>
+        </div>
+      </div>
+
+      <!-- 抽出メタデータ -->
+      <div class="panel" style="margin-bottom:20px">
+        <div class="phdr">抽出されたメタデータ（編集可）</div>
+        <div class="pbody">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+            <div>
+              <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">タグ（カンマ区切り）</label>
+              <input id="art-tags" type="text" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit">
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">キャッチフレーズ</label>
+              <input id="art-catchphrase" type="text" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit">
+            </div>
+          </div>
+          <div style="margin-bottom:14px">
+            <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">引用フレーズ</label>
+            <input id="art-quote" type="text" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit">
+          </div>
+          <div style="margin-bottom:14px">
+            <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">会社一言紹介</label>
+            <textarea id="art-intro" rows="3" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">Q1 選択肢（1行ずつ、最大4つ）</label>
+            <textarea id="art-q1" rows="4" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- 保存 -->
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:40px">
+        <button class="abtn abtn-teal" style="font-size:14px;padding:12px 32px" onclick="saveArticle()">💾 Supabaseに保存する</button>
+        <div id="art-save-status" style="font-size:12px;color:var(--text2)"></div>
+      </div>
+
+    </div>
+  </div>`;
+
+  // 既存の写真ライブラリを再描画
+  _articlePhotos = [];
+  _articleSections = [];
+  _articleCompanyId = null;
+  renderPhotoLib();
+}
+
+function onArtCompanyChange(id){
+  _articleCompanyId = id || null;
+  if(!id) return;
+  // 既存データを読み込んでフォームに反映
+  const co = loadCompanies().find(c=>String(c.id)===String(id));
+  if(!co) return;
+  const parsed = document.getElementById('art-parsed');
+  // bodyがJSONならセクションを復元
+  if(co.body && co.body.trimStart().startsWith('[')){
+    try{
+      _articleSections = JSON.parse(co.body);
+      _articleTitle = co.title||'';
+      if(parsed) parsed.style.display='block';
+      renderSectionsList();
+      fillMeta({
+        tags: co.tags||[],
+        catchphrase: co.catchphrase||'',
+        quote: co.quote||'',
+        companyIntro: co.companyIntro||'',
+        q1: co.q1||[]
+      });
+      toast('既存の記事データを読み込みました');
+    }catch(e){}
+  }
+}
+
+// ===== Notion パーサー =====
+function parseNotionPaste(){
+  const text = document.getElementById('art-notion-paste').value;
+  if(!text.trim()){ toast('テキストを貼り付けてください'); return; }
+  const result = parseNotion(text);
+  _articleTitle = result.title;
+  _articleSections = result.sections;
+  _articleMeta = result.meta;
+  document.getElementById('art-parsed').style.display = 'block';
+  renderSectionsList();
+  fillMeta(result.meta);
+  toast(`解析完了：セクション ${result.sections.length} 個`);
+}
+
+function parseNotion(text){
+  const lines = text.split('\n');
+  let title = '';
+  const sections = [];
+  const meta = { tags:[], quote:'', catchphrase:'', q1:[], companyIntro:'' };
+  let current = null;
+  let inMeta = false;
+  let inQ1 = false;
+  let skipNext = false;
+
+  for(let i=0;i<lines.length;i++){
+    const line = lines[i];
+    // タイトル
+    if(line.startsWith('# ') && !line.startsWith('## ') && !title){
+      title = line.slice(2).trim(); continue;
+    }
+    // セクション見出し
+    if(line.startsWith('## ')){
+      if(current && !inMeta) pushSection(current, sections);
+      const heading = line.slice(3).trim();
+      inMeta = heading.includes('📋') || heading.includes('プラットフォーム登録');
+      inQ1 = false;
+      if(inMeta || heading.includes('元情報')){ current=null; continue; }
+      const type = (heading.includes('に伺いました')||heading.includes('インタビュー')) ? 'qa' : 'section';
+      current = { heading, lines:[], type };
+      continue;
+    }
+    if(line.trim()==='---') continue;
+    // メタデータ解析
+    if(inMeta){
+      const bm = line.match(/^\*\*(.+?)\*\*/);
+      if(bm){
+        const k = bm[1];
+        if(k==='タグ'){
+          const v=line.replace(/^\*\*タグ\*\*\s*/,'').trim();
+          meta.tags=v.split(/[,、,\s　]+/).filter(Boolean);
+        } else if(k==='引用フレーズ'){
+          meta.quote=line.replace(/^\*\*引用フレーズ\*\*\s*/,'').replace(/^「|」$/g,'').trim();
+        } else if(k==='キャッチフレーズ'){
+          meta.catchphrase=line.replace(/^\*\*キャッチフレーズ\*\*\s*/,'').trim();
+        } else if(k.includes('Q1選択肢')){
+          inQ1=true;
+        } else if(k==='会社一言紹介'){
+          skipNext=true;
+        }
+      } else if(skipNext && line.trim() && !line.match(/^\*\*/)){
+        meta.companyIntro += (meta.companyIntro?'\n':'')+line.trim();
+      } else if(!line.trim()) { skipNext=false; }
+      if(inQ1 && line.startsWith('- ')){
+        const choice=line.slice(2).replace(/^[^：:]+[：:]\s*/,'').trim();
+        if(choice) meta.q1.push(choice);
+      }
+      continue;
+    }
+    if(current) current.lines.push(line);
+  }
+  if(current && !inMeta) pushSection(current, sections);
+  return {title, sections, meta};
+}
+
+function pushSection(sec, sections){
+  const bodyLines = sec.lines.filter(l=>l.trim()&&l.trim()!=='---');
+  if(sec.type==='qa'){
+    const items=[];
+    let cq=null, ca=[];
+    for(const l of bodyLines){
+      // **――…** or **――…？** patterns
+      const qm=l.match(/^\*\*――?\s*(.+?)\*\*$/)||l.match(/^\*\*[―-]{1,2}\s*(.+?)\*\*$/);
+      if(qm){ if(cq!==null) items.push({q:cq,a:ca.join('\n').trim()}); cq=qm[1].trim(); ca=[]; }
+      else if(cq!==null&&l.trim()) ca.push(l.trim());
+    }
+    if(cq!==null) items.push({q:cq,a:ca.join('\n').trim()});
+    sections.push({type:'qa',heading:sec.heading,items,photoUrl:''});
+  } else {
+    const body = bodyLines.join('\n').trim();
+    if(!body) return;
+    sections.push({type:'section',heading:sec.heading,body,photoUrl:''});
+  }
+}
+
+function fillMeta(meta){
+  const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=v||''; };
+  set('art-tags', (meta.tags||[]).join(', '));
+  set('art-catchphrase', meta.catchphrase||'');
+  set('art-quote', meta.quote||'');
+  set('art-intro', meta.companyIntro||'');
+  const q1El=document.getElementById('art-q1');
+  if(q1El) q1El.value=(meta.q1||[]).join('\n');
+}
+
+// ===== セクション一覧 =====
+function renderSectionsList(){
+  const el=document.getElementById('art-sections-list');
+  if(!el) return;
+  if(!_articleSections.length){ el.innerHTML='<div style="padding:20px;font-size:12px;color:var(--text3)">セクションがありません</div>'; return; }
+  el.innerHTML = _articleSections.map((sec,i)=>{
+    const typeLabel={section:'本文',qa:'Q&A',lead:'リード'}[sec.type]||'本文';
+    const typeColor={section:'var(--teal)',qa:'var(--navy)',lead:'#e67e22'}[sec.type]||'var(--teal)';
+    const bodyPreview = sec.type==='qa'
+      ? `Q: ${(sec.items||[])[0]?.q||''}…`
+      : (sec.body||'').slice(0,80)+'…';
+    const photoThumb = sec.photoUrl
+      ? `<img src="${sec.photoUrl}" style="width:64px;height:48px;object-fit:cover;border-radius:3px;border:2px solid var(--teal);flex-shrink:0">`
+      : `<div style="width:64px;height:48px;border:2px dashed var(--border);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--border);flex-shrink:0;cursor:pointer" onclick="openPhotoPickerForSection(${i})" title="写真を選択">+</div>`;
+    return `
+    <div style="display:grid;grid-template-columns:auto 1fr auto;gap:14px;padding:14px 16px;border-bottom:1px solid rgba(228,227,227,0.5);align-items:start">
+      ${photoThumb}
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 7px;background:${typeColor};color:#fff;border-radius:2px">${typeLabel}</span>
+          <span style="font-size:13px;font-weight:700;color:var(--navy)">${escHtml(sec.heading)}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.7">${escHtml(bodyPreview)}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+        <button onclick="openPhotoPickerForSection(${i})" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:4px 10px;border:1px solid var(--border);background:none;cursor:pointer;border-radius:2px;white-space:nowrap;color:var(--text2)">${sec.photoUrl?'写真変更':'📷 写真選択'}</button>
+        ${sec.photoUrl?`<button onclick="clearSectionPhoto(${i})" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:4px 10px;border:1px solid rgba(192,52,26,0.3);background:none;cursor:pointer;border-radius:2px;color:var(--hot)">削除</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function clearSectionPhoto(i){
+  _articleSections[i].photoUrl='';
+  renderSectionsList();
+}
+
+// ===== 写真ライブラリ =====
+function renderPhotoLib(){
+  const el=document.getElementById('art-photo-lib');
+  if(!el) return;
+  if(!_articlePhotos.length){ el.innerHTML='<div style="font-size:11px;color:var(--text3);padding:8px 0">まだ写真がありません</div>'; return; }
+  el.innerHTML=_articlePhotos.map((p,i)=>`
+    <div style="position:relative;cursor:pointer" onclick="assignPhotoToTarget('${p.url}')" title="${p.name}">
+      <img src="${p.url}" style="width:80px;height:60px;object-fit:cover;border-radius:3px;border:2px solid var(--border);display:block">
+      <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(28,42,84,0.7);font-size:8px;color:#fff;padding:2px 4px;border-radius:0 0 3px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+    </div>
+  `).join('');
+}
+
+let _pickingForSection = null;
+function openPhotoPickerForSection(idx){
+  _pickingForSection = idx;
+  if(!_articlePhotos.length){
+    toast('先に写真をアップロードしてください');
+    return;
+  }
+  // 写真ライブラリにフォーカス
+  const lib=document.getElementById('art-photo-lib');
+  if(lib){ lib.scrollIntoView({behavior:'smooth'});
+    lib.style.outline='2px solid var(--teal)';
+    setTimeout(()=>lib.style.outline='',2000);
+  }
+  document.getElementById('art-upload-status').textContent='写真をクリックしてセクションに割り当てください';
+}
+
+function assignPhotoToTarget(url){
+  if(_pickingForSection===null){ toast('写真を選択するにはセクションの「写真選択」を押してください'); return; }
+  _articleSections[_pickingForSection].photoUrl = url;
+  _pickingForSection = null;
+  document.getElementById('art-upload-status').textContent='写真を割り当てました ✓';
+  renderSectionsList();
+}
+
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ===== 写真アップロード =====
+async function handlePhotoDrop(e){
+  e.preventDefault();
+  e.currentTarget.style.borderColor='var(--border)';
+  e.currentTarget.style.background='';
+  await uploadPhotos(e.dataTransfer.files);
+}
+async function handlePhotoFileSelect(files){
+  await uploadPhotos(files);
+}
+
+async function uploadPhotos(files){
+  if(!files||!files.length) return;
+  const status=document.getElementById('art-upload-status');
+  if(status) status.textContent=`${files.length}枚アップロード中...`;
+
+  // Supabase Storage bucketを確認・作成
+  if(supabaseClient){
+    try{
+      await supabaseClient.storage.createBucket('article-images',{public:true});
+    }catch(e){ /* 既存の場合は無視 */ }
+  }
+
+  const uploaded=[];
+  for(const file of Array.from(files)){
+    if(!file.type.startsWith('image/')){ continue; }
+    try{
+      let url='';
+      if(supabaseClient){
+        const ext=file.name.split('.').pop().toLowerCase();
+        const path=`articles/${_articleCompanyId||'misc'}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+        const {error:upErr}=await supabaseClient.storage.from('article-images').upload(path,file,{contentType:file.type,upsert:false});
+        if(upErr) throw upErr;
+        const {data:urlData}=supabaseClient.storage.from('article-images').getPublicUrl(path);
+        url=urlData.publicUrl;
+      } else {
+        // Supabase未接続時：ObjectURL（ローカルのみ）
+        url=URL.createObjectURL(file);
+      }
+      uploaded.push({url, name:file.name});
+    }catch(err){
+      console.error('upload error:', err);
+      if(status) status.textContent=`⚠️ アップロード失敗: ${err.message||err}`;
+    }
+  }
+  _articlePhotos=[..._articlePhotos,...uploaded];
+  renderPhotoLib();
+  if(status) status.textContent=`✓ ${uploaded.length}枚アップロード完了`;
+}
+
+// ===== 保存 =====
+async function saveArticle(){
+  const companyId=document.getElementById('art-company')?.value;
+  if(!companyId){ toast('対象企業を選択してください'); return; }
+  if(!_articleSections.length){ toast('記事を解析してください'); return; }
+
+  const statusEl=document.getElementById('art-save-status');
+  if(statusEl) statusEl.textContent='保存中...';
+
+  const tags=(document.getElementById('art-tags')?.value||'').split(/[,、,\s　]+/).filter(Boolean);
+  const catchphrase=document.getElementById('art-catchphrase')?.value.trim()||'';
+  const quote=document.getElementById('art-quote')?.value.trim()||'';
+  const companyIntro=document.getElementById('art-intro')?.value.trim()||'';
+  const q1=(document.getElementById('art-q1')?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+
+  const companies=loadCompanies();
+  const idx=companies.findIndex(c=>String(c.id)===String(companyId));
+  if(idx<0){ toast('企業データが見つかりません'); return; }
+
+  companies[idx]={
+    ...companies[idx],
+    title: _articleTitle||companies[idx].title,
+    body: JSON.stringify(_articleSections),
+    tags, catchphrase, quote,
+    companyIntro, q1,
+    articleType:'standard'
+  };
+  saveCompanies(companies);
+  if(statusEl) statusEl.textContent='✓ 保存しました！';
+  toast('記事を保存しました。');
 }
 </script>
 </body>
