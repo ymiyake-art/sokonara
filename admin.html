@@ -1541,36 +1541,53 @@ function fillMeta(meta){
   if(q1El) q1El.value=(meta.q1||[]).join('\n');
 }
 
-// ===== セクション一覧 =====
+// ===== セクション一覧（編集可能） =====
 function renderSectionsList(){
   const el=document.getElementById('art-sections-list');
   if(!el) return;
   if(!_articleSections.length){ el.innerHTML='<div style="padding:20px;font-size:12px;color:var(--text3)">セクションがありません</div>'; return; }
+  const inp = (val,fn)=>`style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;outline:none;background:#fafafa" oninput="${fn}"`;
   el.innerHTML = _articleSections.map((sec,i)=>{
     const typeLabel={section:'本文',qa:'Q&A',lead:'リード'}[sec.type]||'本文';
     const typeColor={section:'var(--teal)',qa:'var(--navy)',lead:'#e67e22'}[sec.type]||'var(--teal)';
-    const bodyPreview = sec.type==='qa'
-      ? `Q: ${(sec.items||[])[0]?.q||''}…`
-      : (sec.body||'').slice(0,80)+'…';
     const photoThumb = sec.photoUrl
-      ? `<img src="${sec.photoUrl}" style="width:64px;height:48px;object-fit:cover;border-radius:3px;border:2px solid var(--teal);flex-shrink:0">`
+      ? `<img src="${sec.photoUrl}" style="width:64px;height:48px;object-fit:cover;border-radius:3px;border:2px solid var(--teal);flex-shrink:0;cursor:pointer" onclick="openPhotoPickerForSection(${i})">`
       : `<div style="width:64px;height:48px;border:2px dashed var(--border);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--border);flex-shrink:0;cursor:pointer" onclick="openPhotoPickerForSection(${i})" title="写真を選択">+</div>`;
+
+    const bodyEditor = sec.type==='qa'
+      ? (sec.items||[]).map((item,j)=>`
+          <div style="margin-bottom:10px;padding:8px;background:#f8f8f8;border-radius:3px;border:1px solid var(--border)">
+            <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Q${j+1}</div>
+            <input value="${escHtml(item.q||'')}" ${inp('','updateQItem('+i+','+j+',\'q\',this.value)')} style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;margin-bottom:6px">
+            <div style="font-size:10px;color:var(--text2);margin-bottom:4px">A${j+1}</div>
+            <textarea rows="3" ${inp('','updateQItem('+i+','+j+',\'a\',this.value)')} style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical">${escHtml(item.a||'')}</textarea>
+          </div>`).join('')
+      : `<textarea rows="5" oninput="updateSecBody(${i},this.value)" style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.7">${escHtml(sec.body||'')}</textarea>`;
+
     return `
-    <div style="display:grid;grid-template-columns:auto 1fr auto;gap:14px;padding:14px 16px;border-bottom:1px solid rgba(228,227,227,0.5);align-items:start">
-      ${photoThumb}
-      <div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-          <span style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 7px;background:${typeColor};color:#fff;border-radius:2px">${typeLabel}</span>
-          <span style="font-size:13px;font-weight:700;color:var(--navy)">${escHtml(sec.heading)}</span>
+    <div style="border-bottom:1px solid rgba(228,227,227,0.5);padding:14px 16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        ${photoThumb}
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 7px;background:${typeColor};color:#fff;border-radius:2px;flex-shrink:0">${typeLabel}</span>
+            <button onclick="openPhotoPickerForSection(${i})" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 8px;border:1px solid var(--border);background:none;cursor:pointer;border-radius:2px;color:var(--text2);flex-shrink:0">${sec.photoUrl?'写真変更':'📷'}</button>
+            ${sec.photoUrl?`<button onclick="clearSectionPhoto(${i})" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 8px;border:1px solid rgba(192,52,26,0.3);background:none;cursor:pointer;border-radius:2px;color:var(--hot);flex-shrink:0">削除</button>`:''}
+          </div>
+          <input value="${escHtml(sec.heading||'')}" placeholder="見出し" oninput="updateSecHeading(${i},this.value)" style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--border);border-radius:2px;font-size:13px;font-weight:700;font-family:inherit;color:var(--navy);outline:none">
         </div>
-        <div style="font-size:11px;color:var(--text2);line-height:1.7">${escHtml(bodyPreview)}</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
-        <button onclick="openPhotoPickerForSection(${i})" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:4px 10px;border:1px solid var(--border);background:none;cursor:pointer;border-radius:2px;white-space:nowrap;color:var(--text2)">${sec.photoUrl?'写真変更':'📷 写真選択'}</button>
-        ${sec.photoUrl?`<button onclick="clearSectionPhoto(${i})" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:4px 10px;border:1px solid rgba(192,52,26,0.3);background:none;cursor:pointer;border-radius:2px;color:var(--hot)">削除</button>`:''}
-      </div>
+      <div>${bodyEditor}</div>
     </div>`;
   }).join('');
+}
+
+function updateSecHeading(i,val){ _articleSections[i].heading=val; }
+function updateSecBody(i,val){ _articleSections[i].body=val; }
+function updateQItem(i,j,field,val){
+  if(!_articleSections[i].items) _articleSections[i].items=[];
+  if(!_articleSections[i].items[j]) _articleSections[i].items[j]={q:'',a:''};
+  _articleSections[i].items[j][field]=val;
 }
 
 function clearSectionPhoto(i){

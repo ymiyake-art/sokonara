@@ -50,8 +50,14 @@ CREATE INDEX IF NOT EXISTS idx_interest_forms_company_id ON interest_forms(compa
 CREATE INDEX IF NOT EXISTS idx_interest_forms_intent_type ON interest_forms(intent_type);
 
 -- 5. RLS（Row Level Security）設定
---    anon キーからのINSERTを許可、SELECTは管理者のみ
 
+-- companies テーブル：管理画面（anonキー）から読み書き可能にする
+ALTER TABLE companies ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "anon read companies"   ON companies FOR SELECT TO anon USING (true);
+CREATE POLICY "anon insert companies" ON companies FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "anon update companies" ON companies FOR UPDATE TO anon USING (true) WITH CHECK (true);
+
+-- ユーザー系テーブル：anonからINSERT、管理者のみSELECT
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "anon insert users" ON users FOR INSERT TO anon WITH CHECK (true);
 CREATE POLICY "service read users" ON users FOR SELECT TO service_role USING (true);
