@@ -1327,7 +1327,12 @@ function renderArticleEditor(){
           </div>
           <input type="file" id="art-file-input" accept="image/*" multiple style="display:none" onchange="handlePhotoFileSelect(this.files)">
           <div style="font-size:11px;color:var(--text3);margin-bottom:10px">
-            ⚠️ 初回のみ：Supabase ダッシュボード → Storage → <strong>New bucket</strong> → 名前: <code>article-images</code> → Public: <strong>ON</strong> に設定してください
+            ⚠️ アップロードを使うには：Supabase ダッシュボード → Storage → <strong>New bucket</strong> → 名前: <code>article-images</code> → Public: <strong>ON</strong> に設定してください
+          </div>
+          <!-- URL直接入力（Studioなどの既存URL） -->
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <input id="art-photo-url-input" type="url" placeholder="画像URLを直接入力（例：Studio の画像URL）" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit">
+            <button onclick="addPhotoByUrl()" style="font-family:'JetBrains Mono',monospace;font-size:9px;padding:6px 14px;background:var(--navy);color:#fff;border:none;border-radius:2px;cursor:pointer;white-space:nowrap">URLで追加</button>
           </div>
           <div id="art-photo-lib" style="display:flex;flex-wrap:wrap;gap:10px;min-height:60px"></div>
           <div id="art-upload-status" style="font-size:11px;color:var(--text2);margin-top:8px"></div>
@@ -1598,6 +1603,17 @@ function assignPhotoToTarget(url){
 }
 
 function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function addPhotoByUrl(){
+  const input=document.getElementById('art-photo-url-input');
+  const url=(input?.value||'').trim();
+  if(!url||!url.startsWith('http')){ toast('有効なURLを入力してください'); return; }
+  const name=url.split('/').pop().split('?')[0]||'photo';
+  _articlePhotos.push({url,name});
+  renderPhotoLib();
+  if(input) input.value='';
+  document.getElementById('art-upload-status').textContent='✓ URLを追加しました';
+}
 
 // ===== 写真アップロード =====
 async function handlePhotoDrop(e){
