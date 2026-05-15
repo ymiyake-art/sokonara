@@ -3,8 +3,7 @@ export const config = { runtime: 'edge' };
 const ALLOWED_ORIGINS = [
   'https://sokonara.vercel.app',
   'https://sokonara-git-main-ymiyake-arts-projects.vercel.app',
-  'https://sokonara.co.jp',
-  'https://www.sokonara.co.jp',
+  'https://app.sokonara.co.jp',
 ];
 
 function isAllowedOrigin(req) {
