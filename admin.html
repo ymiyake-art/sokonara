@@ -1303,12 +1303,37 @@ function renderArticleEditor(){
 
     <!-- 企業選択 -->
     <div class="panel" style="margin-bottom:20px">
-      <div class="phdr">対象の経営層を選択</div>
+      <div class="phdr" style="display:flex;align-items:center;justify-content:space-between">
+        <span>対象の経営層を選択</span>
+        <button class="abtn" style="font-size:10px;padding:3px 12px;background:var(--navy);color:#fff;border-color:var(--navy)" onclick="toggleNewCoForm()">＋ 新規登録</button>
+      </div>
       <div class="pbody">
         <select id="art-company" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:13px;font-family:inherit;outline:none" onchange="onArtCompanyChange(this.value)">
           <option value="">--- 選択してください ---</option>
           ${companies.map(c=>`<option value="${c.id}">${c.ceo}（${c.name||c.company||''}）</option>`).join('')}
         </select>
+      </div>
+      <!-- 新規登録フォーム（折りたたみ） -->
+      <div id="art-new-co-form" style="display:none;border-top:1px solid var(--border);padding:16px">
+        <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:12px">新規経営層の基本情報</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div>
+            <div style="font-size:11px;color:var(--text2);margin-bottom:4px">会社名 <span style="color:var(--hot)">*</span></div>
+            <input id="new-co-name" type="text" placeholder="例：株式会社タナカ精工" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit">
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text2);margin-bottom:4px">経営層名 <span style="color:var(--hot)">*</span></div>
+            <input id="new-co-ceo" type="text" placeholder="例：田中 誠一郎" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit">
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <div style="font-size:11px;color:var(--text2);margin-bottom:4px">写真URL（任意・後から追加可）</div>
+          <input id="new-co-photo" type="url" placeholder="https://..." style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit">
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="abtn abtn-teal" onclick="createNewCoFromArticleEditor()">登録して記事入力へ進む →</button>
+          <button class="abtn" onclick="toggleNewCoForm()">キャンセル</button>
+        </div>
       </div>
     </div>
 
@@ -1403,6 +1428,41 @@ function renderArticleEditor(){
   _articleSections = [];
   _articleCompanyId = null;
   renderPhotoLib();
+}
+
+function toggleNewCoForm(){
+  const f=document.getElementById('art-new-co-form');
+  if(f) f.style.display = f.style.display==='none' ? 'block' : 'none';
+}
+
+async function createNewCoFromArticleEditor(){
+  const name=(document.getElementById('new-co-name')?.value||'').trim();
+  const ceo=(document.getElementById('new-co-ceo')?.value||'').trim();
+  const photoUrl=(document.getElementById('new-co-photo')?.value||'').trim();
+  if(!name||!ceo){ toast('会社名と経営層名は必須です'); return; }
+
+  const companies=loadCompanies();
+  const newId='co_'+Date.now();
+  const newCo={
+    id:newId, name, ceo, type:'manager', plan:'standard', articleType:'standard',
+    photoUrl, industry:'', employeeSize:'', companyIntro:'', tags:[], title:'',
+    quote:'', body:'', q1:[], fee:'', catchphrase:'',
+    status:'active', created_at:new Date().toISOString(), reactions:0, cta:0,
+    color:'var(--navy)'
+  };
+  companies.push(newCo);
+  await saveCompanies(companies);
+
+  // セレクトボックスに追加して選択
+  const sel=document.getElementById('art-company');
+  if(sel){
+    const opt=document.createElement('option');
+    opt.value=newId; opt.textContent=`${ceo}（${name}）`; opt.selected=true;
+    sel.appendChild(opt);
+  }
+  _articleCompanyId=newId;
+  document.getElementById('art-new-co-form').style.display='none';
+  toast(`✓ ${ceo}（${name}）を登録しました`);
 }
 
 function onArtCompanyChange(id){
