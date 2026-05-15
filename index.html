@@ -3059,12 +3059,9 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
     goScreen('p1');
     renderP1FromCompany();
     setTimeout(()=>{
-      if(localStorage.getItem('snLineFriend') === '1'){
-        openEmpathyForm();
-      } else {
-        _startLineLoginForContact();
-      }
-    }, 200);
+      // 直後のフレンド状態をAPIで確認してからフォームを開く
+      requireLineForContact();
+    }, 300);
     return;
   }
 
