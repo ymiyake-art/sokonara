@@ -1496,8 +1496,12 @@ function renderArticleEditor(){
             <textarea id="art-q1" rows="4" oninput="refreshCardLabelChips()" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
           </div>
           <div style="margin-top:14px;padding:14px;background:var(--teal-bg);border-radius:4px;border:1px solid rgba(66,173,159,0.2)">
-            <label style="font-size:11px;font-weight:700;color:var(--teal);display:block;margin-bottom:8px">カードラベル <span style="font-weight:400;color:var(--text3)">— Q1選択肢からカード上部に表示するものを選択（任意）</span></label>
-            <div style="display:flex;flex-wrap:wrap;gap:8px" id="art-card-label-chips"></div>
+            <label style="font-size:11px;font-weight:700;color:var(--teal);display:block;margin-bottom:8px">カードフレーズ <span style="font-weight:400;color:var(--text3)">— Q1選択肢から1つ選択 → Enterで改行位置を指定（最大5行）</span></label>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px" id="art-card-label-chips"></div>
+            <div id="art-card-label-edit-wrap" style="display:none">
+              <textarea id="art-card-label-edit" rows="5" oninput="syncCardLabel()" placeholder="選択したフレーズを編集。Enterで改行位置を指定。" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid rgba(66,173,159,0.4);border-radius:2px;font-size:13px;font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-weight:700;line-height:1.65;resize:vertical;background:rgba(255,255,255,0.7)"></textarea>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px">※ 改行はカードでもその位置で反映されます</div>
+            </div>
             <input type="hidden" id="art-card-label" value="">
           </div>
         </div>
@@ -1721,7 +1725,10 @@ function fillMeta(meta){
   const q1El=document.getElementById('art-q1');
   if(q1El) q1El.value=(meta.q1||[]).join('\n');
   refreshCardLabelChips();
-  setCardLabel(meta.cardLabel||'');
+  const savedLabel=meta.cardLabel||'';
+  setCardLabel(savedLabel);
+  const taEdit=document.getElementById('art-card-label-edit');
+  if(taEdit && savedLabel){ taEdit.value=savedLabel; }
 }
 
 function refreshCardLabelChips(){
@@ -1734,23 +1741,46 @@ function refreshCardLabelChips(){
     container.innerHTML='<span style="font-size:11px;color:var(--text3)">Q1選択肢を入力すると選べます</span>';
     return;
   }
-  container.innerHTML=choices.map(opt=>`<div class="achip" onclick="toggleCardLabel(this,'${opt.replace(/'/g,'\\\'')}')" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);font-size:11px;cursor:pointer;transition:all .15s">${escHtml(opt)}</div>`).join('');
+  container.innerHTML=choices.map(opt=>`<div class="achip" data-val="${escHtml(opt)}" onclick="toggleCardLabel(this,'${opt.replace(/'/g,'\\\'')}')" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);font-size:11px;cursor:pointer;transition:all .15s">${escHtml(opt)}</div>`).join('');
   // 既存の選択状態を復元
   if(current) setCardLabel(current);
 }
 function toggleCardLabel(el, val){
   const current=document.getElementById('art-card-label')?.value||'';
-  setCardLabel(current===val ? '' : val);
+  // 同じチップを再クリックで解除
+  const next = current.replace(/\n/g,' ').trim()===val.trim() ? '' : val;
+  setCardLabel(next);
+  // 編集エリアをフォーカス
+  if(next){
+    const ta=document.getElementById('art-card-label-edit');
+    if(ta && !ta.value.trim()) ta.value=next;
+    setTimeout(()=>ta?.focus(),50);
+  }
 }
 function setCardLabel(val){
   const inp=document.getElementById('art-card-label');
   if(inp) inp.value=val;
+  const wrap=document.getElementById('art-card-label-edit-wrap');
+  const ta=document.getElementById('art-card-label-edit');
+  if(val){
+    if(wrap) wrap.style.display='block';
+    if(ta && !ta.value.trim()) ta.value=val;
+  } else {
+    if(wrap) wrap.style.display='none';
+    if(ta) ta.value='';
+  }
+  // チップのアクティブ状態（元テキストで照合）
   document.querySelectorAll('#art-card-label-chips .achip').forEach(ch=>{
-    const active=ch.textContent.trim()===val;
+    const active=ch.dataset.val===val.split('\n')[0] || val.startsWith(ch.dataset.val||ch.textContent.trim());
     ch.style.background=active?'var(--teal)':'var(--white)';
     ch.style.color=active?'#fff':'';
     ch.style.borderColor=active?'var(--teal)':'var(--border)';
   });
+}
+function syncCardLabel(){
+  const ta=document.getElementById('art-card-label-edit');
+  const inp=document.getElementById('art-card-label');
+  if(inp && ta) inp.value=ta.value;
 }
 
 // ===== セクション一覧（編集可能） =====
@@ -1930,7 +1960,7 @@ async function saveArticle(){
   const quote=document.getElementById('art-quote')?.value.trim()||'';
   const companyIntro=document.getElementById('art-intro')?.value.trim()||'';
   const q1=(document.getElementById('art-q1')?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
-  const cardLabel=document.getElementById('art-card-label')?.value||'';
+  const cardLabel=(document.getElementById('art-card-label-edit')?.value||document.getElementById('art-card-label')?.value||'').trim();
   // 基本情報
   const photoUrl=document.getElementById('art-profile-photo-url')?.value.trim()||'';
   const type=document.getElementById('art-type')?.value||'manager';

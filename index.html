@@ -969,7 +969,8 @@ h1, h2, h3, h4,
 .leader-card:hover{box-shadow:0 4px 16px rgba(28,42,84,0.10);transform:translateY(-2px);}
 .leader-card-top{padding:14px 14px 12px;flex:1;}
 .leader-label{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;padding:2px 9px;border-radius:20px;background:var(--teal-bg);color:var(--teal);border:1px solid rgba(66,173,159,0.25);margin-bottom:8px;}
-.leader-phrase{font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:15px;font-weight:700;color:var(--navy);line-height:1.65;letter-spacing:.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.leader-phrase{font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:14px;font-weight:700;color:var(--navy);line-height:1.65;letter-spacing:.01em;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;}
+@media(max-width:480px){.leader-phrase{font-size:14px;}}
 .leader-card-bottom{padding:8px 12px 10px;display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);}
 .leader-photo{width:36px;height:36px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;background-size:cover;background-position:center;flex-shrink:0;}
 .leader-meta{flex:1;min-width:0;}
@@ -1989,19 +1990,16 @@ function renderCompanyList(){
   el.innerHTML = list.map(c=>{
     const name=c.ceo||'経営層名未設定';
     const company=c.name||c.company||'会社名未設定';
-    const rawPhrase=(c.catchphrase||c.quote||'').trim();
+    const rawPhrase=(c.cardLabel||c.catchphrase||c.quote||'').trim();
     const phraseHtml = rawPhrase
-      ? rawPhrase.split('\n').map(l=>escapeHtml(l.trim())).join('<br>')
+      ? rawPhrase.split('\n').map(l=>escapeHtml(l)).join('<br>')
       : escapeHtml(name);
-    const label=c.cardLabel||'';
     const photo=c.photoUrl||'';
     const av = photo
       ? `<div class="leader-photo" style="background-image:url('${escapeHtml(photo)}');"></div>`
       : `<div class="leader-photo">${escapeHtml((company||'社').charAt(0))}</div>`;
-    const labelHtml = label ? `<div class="leader-label">${escapeHtml(label)}</div>` : '';
     return `<div class="leader-card" data-company-id="${escapeHtml(String(c.id||''))}" onclick="openCompanyArticleFromCard(this)">
       <div class="leader-card-top">
-        ${labelHtml}
         <div class="leader-phrase">${phraseHtml}</div>
       </div>
       <div class="leader-card-bottom">
