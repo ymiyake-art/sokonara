@@ -1387,16 +1387,21 @@ function renderArticleEditor(){
           <div>
             <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">経営層タイプ</label>
             <select id="art-type" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;outline:none">
-              <option value="manager">経営層</option>
-              <option value="advisor">アドバイザー</option>
-              <option value="founder">創業者</option>
+              <option value="keieisha">経営者</option>
+              <option value="keieiso">経営層</option>
+              <option value="kokeisha">後継者</option>
+              <option value="jigyo">事業責任者</option>
+              <option value="saiyo">採用責任者</option>
+              <option value="other">その他</option>
             </select>
           </div>
           <div>
             <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">契約プラン</label>
             <select id="art-plan" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;outline:none">
-              <option value="light">Light</option>
-              <option value="standard">Standard</option>
+              <option value="light">ライト</option>
+              <option value="standard">スタンダード</option>
+              <option value="enterprise">エンタープライズ</option>
+              <option value="recruitment">人材紹介のみ</option>
             </select>
           </div>
           <div>
@@ -1481,7 +1486,7 @@ function renderArticleEditor(){
             <textarea id="art-intro" rows="3" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
           </div>
           <div>
-            <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">Q1 選択肢（1行ずつ、最大4つ）</label>
+            <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">Q1 選択肢（1行ずつ、最大4つ）<span style="color:var(--teal);font-weight:600"> ※体言止め推奨</span><span style="color:var(--text3)"> 例：地域への挑戦、仲間との共創</span></label>
             <textarea id="art-q1" rows="4" oninput="refreshCardLabelChips()" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
           </div>
           <div style="margin-top:14px;padding:14px;background:var(--teal-bg);border-radius:4px;border:1px solid rgba(66,173,159,0.2)">
