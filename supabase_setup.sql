@@ -3,9 +3,11 @@
 -- Supabase Dashboard → SQL Editor で実行
 -- =============================================
 
--- 1. catchphrase カラム追加（companiesテーブル）
+-- 1. catchphrase / cardLabel カラム追加（companiesテーブル）
 ALTER TABLE companies
   ADD COLUMN IF NOT EXISTS catchphrase text DEFAULT '';
+ALTER TABLE companies
+  ADD COLUMN IF NOT EXISTS "cardLabel" text DEFAULT '';
 
 -- 2. ユーザーテーブル（LINE IDを主キー）
 CREATE TABLE IF NOT EXISTS users (

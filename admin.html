@@ -606,7 +606,7 @@ function toCompanyRow(c){
     id:c.id,name:c.name,ceo:c.ceo,type:c.type,plan:c.plan,articleType:c.articleType,
     photoUrl:c.photoUrl||'',industry:c.industry||'',employeeSize:c.employeeSize||'',companyIntro:c.companyIntro||'',
     tags:c.tags||[],title:c.title||'',quote:c.quote||'',body:c.body||'',q1:c.q1||[],fee:c.fee||'',
-    catchphrase:c.catchphrase||'',
+    catchphrase:c.catchphrase||'',cardLabel:c.cardLabel||'',
     status:c.status||'active',created_at:c.created_at||new Date().toISOString(),reactions:c.reactions||0,cta:c.cta||0
   };
 }
@@ -630,16 +630,16 @@ async function saveCompanies(arr){
   if(error){
     console.warn('companies save error:', error.message);
     // catchphraseカラム未追加の場合は除外して再試行
-    if(error.message.includes('catchphrase') || error.message.includes('column')){
+    if(error.message.includes('catchphrase') || error.message.includes('cardLabel') || error.message.includes('card_label') || error.message.includes('column')){
       const minRows = rows.map(r=>{
-        const {catchphrase,...rest}=r; return rest;
+        const {catchphrase,cardLabel,...rest}=r; return rest;
       });
       const {error:e2} = await supabaseClient.from('companies').upsert(minRows,{onConflict:'id'});
       if(e2){
         toast('⚠️ DB保存失敗。Supabase SQL Editorで supabase_setup.sql を実行してください。');
         console.error('minimal save also failed:', e2.message);
       } else {
-        toast('⚠️ catchphrase未追加のため除外して保存。SQL Editorでカラム追加を推奨。');
+        toast('⚠️ 一部カラム未追加のため除外して保存。SQL Editorでカラム追加を推奨。');
       }
     } else {
       toast('⚠️ DB保存失敗: ' + error.message.slice(0,80));
@@ -1411,6 +1411,13 @@ function renderArticleEditor(){
             <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">Q1 選択肢（1行ずつ、最大4つ）</label>
             <textarea id="art-q1" rows="4" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
           </div>
+          <div style="margin-top:14px;padding:14px;background:var(--teal-bg);border-radius:4px;border:1px solid rgba(66,173,159,0.2)">
+            <label style="font-size:11px;font-weight:700;color:var(--teal);display:block;margin-bottom:8px">カードラベル <span style="font-weight:400;color:var(--text3)">— カード上部に表示する共感ワード（任意）</span></label>
+            <div style="display:flex;flex-wrap:wrap;gap:8px" id="art-card-label-chips">
+              ${['挑戦できる環境','共鳴できる仲間・経営層','地域で自分の力を試したい','まず話を聞きたい・関わって試したい','自己理解を深めたい'].map(opt=>`<div class="achip" onclick="toggleCardLabel(this,'${opt}')" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);font-size:11px;cursor:pointer;transition:all .15s">${opt}</div>`).join('')}
+            </div>
+            <input type="hidden" id="art-card-label" value="">
+          </div>
         </div>
       </div>
 
@@ -1484,7 +1491,8 @@ function onArtCompanyChange(id){
         catchphrase: co.catchphrase||'',
         quote: co.quote||'',
         companyIntro: co.companyIntro||'',
-        q1: co.q1||[]
+        q1: co.q1||[],
+        cardLabel: co.cardLabel||''
       });
       toast('既存の記事データを読み込みました');
     }catch(e){}
@@ -1608,6 +1616,23 @@ function fillMeta(meta){
   set('art-intro', meta.companyIntro||'');
   const q1El=document.getElementById('art-q1');
   if(q1El) q1El.value=(meta.q1||[]).join('\n');
+  setCardLabel(meta.cardLabel||'');
+}
+
+function toggleCardLabel(el, val){
+  const current=document.getElementById('art-card-label')?.value||'';
+  const next = current===val ? '' : val;
+  setCardLabel(next);
+}
+function setCardLabel(val){
+  const inp=document.getElementById('art-card-label');
+  if(inp) inp.value=val;
+  document.querySelectorAll('#art-card-label-chips .achip').forEach(ch=>{
+    const active = ch.textContent.trim()===val;
+    ch.style.background = active ? 'var(--teal)' : 'var(--white)';
+    ch.style.color = active ? '#fff' : '';
+    ch.style.borderColor = active ? 'var(--teal)' : 'var(--border)';
+  });
 }
 
 // ===== セクション一覧（編集可能） =====
@@ -1787,6 +1812,7 @@ async function saveArticle(){
   const quote=document.getElementById('art-quote')?.value.trim()||'';
   const companyIntro=document.getElementById('art-intro')?.value.trim()||'';
   const q1=(document.getElementById('art-q1')?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  const cardLabel=document.getElementById('art-card-label')?.value||'';
 
   const companies=loadCompanies();
   const idx=companies.findIndex(c=>String(c.id)===String(companyId));
@@ -1797,7 +1823,7 @@ async function saveArticle(){
     title: _articleTitle||companies[idx].title,
     body: JSON.stringify(_articleSections),
     tags, catchphrase, quote,
-    companyIntro, q1,
+    companyIntro, q1, cardLabel,
     articleType:'standard'
   };
   saveCompanies(companies);
