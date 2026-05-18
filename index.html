@@ -1773,9 +1773,12 @@ function stripImageMarkdown(src){
 // ===== 構造化記事レンダリング =====
 function cleanArticleText(html){
   return html
-    .replace(/\*\*(.+?)\*\*/g,'【$1】')  // **強調** → 【強調】
-    .replace(/\*(.+?)\*/g,'「$1」')       // *italic* → 「italic」
-    .replace(/\*/g,'');                    // 残った * を除去
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')  // **bold** → <strong>
+    .replace(/\*(.+?)\*/g,'$1')                         // *italic* → そのまま
+    .replace(/\*/g,'')                                   // 残った * を除去
+    .replace(/\[([^\]]*)\]\([^)]*\)/g,'$1')             // [text](url) → text
+    .replace(/^#+\s+/gm,'')                              // 行頭の # 見出しマーカーを除去
+    .replace(/^[-]\s/gm,'');                             // 行頭の - リストマーカーを除去
 }
 
 function renderStructuredArticle(sections){
