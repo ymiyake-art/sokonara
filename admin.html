@@ -1492,7 +1492,10 @@ function renderArticleEditor(){
             <textarea id="art-intro" rows="3" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
           </div>
           <div>
-            <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">Q1 選択肢（1行ずつ、最大4つ）<span style="color:var(--teal);font-weight:600"> ※体言止め推奨</span><span style="color:var(--text3)"> 例：地域への挑戦、仲間との共創</span></label>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+              <label style="font-size:11px;color:var(--text2)">Q1 選択肢（1行ずつ、最大4つ）<span style="color:var(--teal);font-weight:600"> ※体言止め推奨</span><span style="color:var(--text3)"> 例：地域への挑戦、仲間との共創</span></label>
+              <button class="abtn" id="q1-rewrite-btn" onclick="rewriteQ1Taiigen()" style="font-size:10px;padding:3px 10px;background:var(--teal-bg);color:var(--teal);border:1px solid rgba(66,173,159,0.35);border-radius:2px;cursor:pointer;white-space:nowrap;margin-left:8px">✦ AIで体言止めに変換</button>
+            </div>
             <textarea id="art-q1" rows="4" oninput="refreshCardLabelChips()" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
           </div>
           <div style="margin-top:14px;padding:14px;background:var(--teal-bg);border-radius:4px;border:1px solid rgba(66,173,159,0.2)">
@@ -1729,6 +1732,33 @@ function fillMeta(meta){
   setCardLabel(savedLabel);
   const taEdit=document.getElementById('art-card-label-edit');
   if(taEdit && savedLabel){ taEdit.value=savedLabel; }
+}
+
+async function rewriteQ1Taiigen(){
+  const q1El=document.getElementById('art-q1');
+  const lines=(q1El?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  if(!lines.length){ toast('Q1選択肢を入力してください'); return; }
+  const btn=document.getElementById('q1-rewrite-btn');
+  if(btn){ btn.textContent='変換中…'; btn.disabled=true; }
+  try{
+    const res=await fetch('/api/feedback',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ type:'q1rewrite', data:{ lines } })
+    });
+    const json=await res.json();
+    const text=json.content?.[0]?.text||'';
+    let rewritten;
+    try{ rewritten=JSON.parse(text); }catch(e){ rewritten=null; }
+    if(Array.isArray(rewritten?.lines) && rewritten.lines.length){
+      q1El.value=rewritten.lines.join('\n');
+      q1El.dispatchEvent(new Event('input'));
+      toast('体言止めに変換しました');
+    } else {
+      toast('変換結果を取得できませんでした');
+    }
+  }catch(e){ toast('エラー：'+e.message); }
+  finally{ if(btn){ btn.textContent='✦ AIで体言止めに変換'; btn.disabled=false; } }
 }
 
 function refreshCardLabelChips(){
