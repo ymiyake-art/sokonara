@@ -286,7 +286,12 @@ h1, h2, h3, h4,
   color: #2a2a2a; font-weight: 300;
   white-space: pre-line;
 }
-.sec-body strong { font-weight: 700; color: var(--navy); }
+.sec-body-lead {
+  font-size: 17px; line-height: 2.0;
+  color: var(--navy); font-weight: 500;
+  white-space: pre-line;
+}
+.sec-body strong, .sec-body-lead strong { font-weight: 700; color: var(--navy); }
 .qa-block { margin-bottom: 32px; }
 .qa-q {
   font-family: 'Noto Serif JP', serif;
@@ -1800,7 +1805,8 @@ function renderStructuredArticle(sections){
     }
 
     const bodyHtml = cleanArticleText(escapeHtml(sec.body||'')).replace(/\n/g,'<br>');
-    return `${divider}<div class="sec-block">${heading}${photo}<div class="sec-body">${bodyHtml}</div></div>`;
+    const bodyClass = (i === 0) ? 'sec-body-lead' : 'sec-body';
+    return `${divider}<div class="sec-block">${heading}${photo}<div class="${bodyClass}">${bodyHtml}</div></div>`;
   }).join('');
 }
 

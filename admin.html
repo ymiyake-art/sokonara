@@ -1651,7 +1651,17 @@ function parseNotion(text){
       const heading = line.slice(3).trim();
       inMeta = heading.includes('📋') || heading.includes('プラットフォーム登録');
       inQ1 = false;
-      const SKIP_HEADINGS = ['ファーストビュー','タイトル','本文','ヘッダー','フッター','カバー','ビジュアル','レイアウト','デザイン','メモ','備考','下書き','TODO','todo','カードタイトル'];
+      // カードタイトルは catchphrase として抽出
+      if(heading==='カードタイトル' || heading.includes('カードタイトル')){
+        let j=i+1;
+        while(j<lines.length && !lines[j].trim()) j++;
+        if(j<lines.length && !lines[j].startsWith('##') && !lines[j].startsWith('<')){
+          meta.catchphrase = lines[j].trim();
+          i = j;
+        }
+        current=null; continue;
+      }
+      const SKIP_HEADINGS = ['ファーストビュー','タイトル','本文','ヘッダー','フッター','カバー','ビジュアル','レイアウト','デザイン','メモ','備考','下書き','TODO','todo'];
       const shouldSkip = SKIP_HEADINGS.some(s=>heading.includes(s));
       if(inMeta || heading.includes('元情報') || shouldSkip){ current=null; continue; }
       const HEADING_MAP = {
