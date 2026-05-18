@@ -1409,13 +1409,11 @@ function renderArticleEditor(){
           </div>
           <div>
             <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">Q1 選択肢（1行ずつ、最大4つ）</label>
-            <textarea id="art-q1" rows="4" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
+            <textarea id="art-q1" rows="4" oninput="refreshCardLabelChips()" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
           </div>
           <div style="margin-top:14px;padding:14px;background:var(--teal-bg);border-radius:4px;border:1px solid rgba(66,173,159,0.2)">
-            <label style="font-size:11px;font-weight:700;color:var(--teal);display:block;margin-bottom:8px">カードラベル <span style="font-weight:400;color:var(--text3)">— カード上部に表示する共感ワード（任意）</span></label>
-            <div style="display:flex;flex-wrap:wrap;gap:8px" id="art-card-label-chips">
-              ${['挑戦できる環境','共鳴できる仲間・経営層','地域で自分の力を試したい','まず話を聞きたい・関わって試したい','自己理解を深めたい'].map(opt=>`<div class="achip" onclick="toggleCardLabel(this,'${opt}')" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);font-size:11px;cursor:pointer;transition:all .15s">${opt}</div>`).join('')}
-            </div>
+            <label style="font-size:11px;font-weight:700;color:var(--teal);display:block;margin-bottom:8px">カードラベル <span style="font-weight:400;color:var(--text3)">— Q1選択肢からカード上部に表示するものを選択（任意）</span></label>
+            <div style="display:flex;flex-wrap:wrap;gap:8px" id="art-card-label-chips"></div>
             <input type="hidden" id="art-card-label" value="">
           </div>
         </div>
@@ -1616,22 +1614,36 @@ function fillMeta(meta){
   set('art-intro', meta.companyIntro||'');
   const q1El=document.getElementById('art-q1');
   if(q1El) q1El.value=(meta.q1||[]).join('\n');
+  refreshCardLabelChips();
   setCardLabel(meta.cardLabel||'');
 }
 
+function refreshCardLabelChips(){
+  const q1El=document.getElementById('art-q1');
+  const choices=(q1El?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  const current=document.getElementById('art-card-label')?.value||'';
+  const container=document.getElementById('art-card-label-chips');
+  if(!container) return;
+  if(!choices.length){
+    container.innerHTML='<span style="font-size:11px;color:var(--text3)">Q1選択肢を入力すると選べます</span>';
+    return;
+  }
+  container.innerHTML=choices.map(opt=>`<div class="achip" onclick="toggleCardLabel(this,'${opt.replace(/'/g,'\\\'')}')" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);font-size:11px;cursor:pointer;transition:all .15s">${escHtml(opt)}</div>`).join('');
+  // 既存の選択状態を復元
+  if(current) setCardLabel(current);
+}
 function toggleCardLabel(el, val){
   const current=document.getElementById('art-card-label')?.value||'';
-  const next = current===val ? '' : val;
-  setCardLabel(next);
+  setCardLabel(current===val ? '' : val);
 }
 function setCardLabel(val){
   const inp=document.getElementById('art-card-label');
   if(inp) inp.value=val;
   document.querySelectorAll('#art-card-label-chips .achip').forEach(ch=>{
-    const active = ch.textContent.trim()===val;
-    ch.style.background = active ? 'var(--teal)' : 'var(--white)';
-    ch.style.color = active ? '#fff' : '';
-    ch.style.borderColor = active ? 'var(--teal)' : 'var(--border)';
+    const active=ch.textContent.trim()===val;
+    ch.style.background=active?'var(--teal)':'var(--white)';
+    ch.style.color=active?'#fff':'';
+    ch.style.borderColor=active?'var(--teal)':'var(--border)';
   });
 }
 

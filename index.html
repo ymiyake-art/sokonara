@@ -1759,6 +1759,13 @@ function stripImageMarkdown(src){
 }
 
 // ===== 構造化記事レンダリング =====
+function cleanArticleText(html){
+  return html
+    .replace(/\*\*(.+?)\*\*/g,'【$1】')  // **強調** → 【強調】
+    .replace(/\*(.+?)\*/g,'「$1」')       // *italic* → 「italic」
+    .replace(/\*/g,'');                    // 残った * を除去
+}
+
 function renderStructuredArticle(sections){
   if(!Array.isArray(sections)||!sections.length) return '';
   return sections.map((sec, i) => {
@@ -1771,16 +1778,13 @@ function renderStructuredArticle(sections){
       const qaHtml = items.map(item=>`
         <div class="qa-block">
           <div class="qa-q">――${escapeHtml(item.q||'')}</div>
-          <div class="qa-a">${escapeHtml(item.a||'').replace(/\n/g,'<br>')}</div>
+          <div class="qa-a">${cleanArticleText(escapeHtml(item.a||'')).replace(/\n/g,'<br>')}</div>
         </div>
       `).join('');
       return `${divider}<div class="sec-block">${heading}${photo}${qaHtml}</div>`;
     }
 
-    // 本文中の **bold** をHTMLに変換
-    const bodyHtml = escapeHtml(sec.body||'')
-      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-      .replace(/\n/g,'<br>');
+    const bodyHtml = cleanArticleText(escapeHtml(sec.body||'')).replace(/\n/g,'<br>');
     return `${divider}<div class="sec-block">${heading}${photo}<div class="sec-body">${bodyHtml}</div></div>`;
   }).join('');
 }
