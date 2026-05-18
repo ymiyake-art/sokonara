@@ -1806,7 +1806,8 @@ function renderStructuredArticle(sections){
 
     const bodyHtml = cleanArticleText(escapeHtml(sec.body||'')).replace(/\n/g,'<br>');
     const bodyClass = (i === 0) ? 'sec-body-lead' : 'sec-body';
-    return `${divider}<div class="sec-block">${heading}${photo}<div class="${bodyClass}">${bodyHtml}</div></div>`;
+    const showHeading = (i === 0) ? '' : heading;
+    return `${divider}<div class="sec-block">${showHeading}${photo}<div class="${bodyClass}">${bodyHtml}</div></div>`;
   }).join('');
 }
 
