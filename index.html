@@ -965,15 +965,13 @@ h1, h2, h3, h4,
 .pj-chip-check{width:18px;height:18px;border-radius:2px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;flex-shrink:0;transition:all 0.18s;}
 .pj-chip.selected .pj-chip-check{background:var(--teal);border-color:var(--teal);color:#fff;}
 .leaders-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
-.leader-card{background:var(--white);border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;transition:all .18s;display:flex;flex-direction:column;justify-content:space-between;min-height:220px;}
-.leader-card:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:0 6px 20px rgba(28,42,84,0.10);}
-.leader-card:hover .leader-phrase{color:var(--teal);}
-.leader-card-top{padding:18px 16px 12px;}
-.leader-label{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;padding:3px 10px;border-radius:20px;background:var(--teal-bg);color:var(--teal);border:1px solid rgba(66,173,159,0.25);margin-bottom:10px;}
-.leader-phrase{font-family:'Noto Sans JP',sans-serif;font-size:15px;font-weight:700;color:var(--navy);line-height:1.7;letter-spacing:.01em;}
-.leader-phrase::first-letter{font-size:2em;line-height:.8;float:left;margin-right:2px;margin-top:2px;}
-.leader-card-bottom{padding:10px 14px 12px;display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);}
-.leader-photo{width:40px;height:40px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;background-size:cover;background-position:center;flex-shrink:0;}
+.leader-card{background:var(--white);border:1px solid var(--border);border-left:3px solid var(--teal);border-radius:4px;overflow:hidden;cursor:pointer;transition:all .18s;display:flex;flex-direction:column;}
+.leader-card:hover{box-shadow:0 4px 16px rgba(28,42,84,0.10);transform:translateY(-2px);}
+.leader-card-top{padding:14px 14px 12px;flex:1;}
+.leader-label{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;padding:2px 9px;border-radius:20px;background:var(--teal-bg);color:var(--teal);border:1px solid rgba(66,173,159,0.25);margin-bottom:8px;}
+.leader-phrase{font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:15px;font-weight:700;color:var(--navy);line-height:1.65;letter-spacing:.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.leader-card-bottom{padding:8px 12px 10px;display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);}
+.leader-photo{width:36px;height:36px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;background-size:cover;background-position:center;flex-shrink:0;}
 .leader-meta{flex:1;min-width:0;}
 .leader-name{font-size:13px;font-weight:700;color:var(--navy);}
 .leader-company{font-size:11px;color:#777;}
@@ -2994,7 +2992,7 @@ function renderAdminSidebar(){
   el.innerHTML = cos.map(function(c){
     const ini = (c.name||c.company||'社').charAt(0);
     const nm = (c.name||c.company||'会社名未設定').replace(/株式会社|合同会社|有限会社/g,'').trim();
-    return '<div class="admin-co-item" onclick="openAdminPage(\'colist\')"><div class="admin-co-av" style="background:'+(c.color||'var(--navy)')+'">' + escapeHtml(ini) + '</div><div class="admin-co-name">' + escapeHtml(nm) + '</div></div>';
+    return '<div class="admin-co-item" onclick="window.location.href=\'admin.html?company='+encodeURIComponent(c.id)+'\'"><div class="admin-co-av" style="background:'+(c.color||'var(--navy)')+'">' + escapeHtml(ini) + '</div><div class="admin-co-name">' + escapeHtml(nm) + '</div></div>';
   }).join('');
 }
 

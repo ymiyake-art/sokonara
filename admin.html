@@ -248,7 +248,11 @@ let editingCompanyId = null;
 let curTab='dash';
 function getInitialTab(){
   try{
-    const tab = new URLSearchParams(window.location.search).get('tab');
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    const company = params.get('company');
+    // ?company=ID → 記事管理タブを開き、企業を自動選択
+    if(company){ window._initCompanyId = company; return 'article'; }
     const valid = ['dash','reactions','interests','contacts','report','broadcast','article','addco','addpj','colist'];
     return valid.includes(tab) ? tab : 'dash';
   }catch{
@@ -324,18 +328,18 @@ function renderDash(){
   document.getElementById('adminContent').innerHTML=`
     <div style="padding:24px">
       <div class="kpi-row">
-        <div class="kpi kg"><div class="kpi-lbl">総反応数</div><div class="kpi-v">124</div><div class="kpi-d">↑ +18 先週比</div></div>
-        <div class="kpi kh"><div class="kpi-lbl">🔥 HOT</div><div class="kpi-v" style="color:var(--hot)">7</div><div class="kpi-d neu">要対応</div></div>
-        <div class="kpi kw"><div class="kpi-lbl">🌤 WARM</div><div class="kpi-v" style="color:var(--warm)">9</div><div class="kpi-d neu">フォロー中</div></div>
-        <div class="kpi kn"><div class="kpi-lbl">❄ COOL</div><div class="kpi-v" style="color:var(--navy)">6</div><div class="kpi-d neu">MEET枠へ</div></div>
-        <div class="kpi kt"><div class="kpi-lbl">完了率</div><div class="kpi-v" style="color:var(--teal)">53%</div><div class="kpi-d">↑ +6pt</div></div>
+        <div class="kpi kg"><div class="kpi-lbl">総反応数</div><div class="kpi-v">—</div><div class="kpi-d" style="color:var(--text3)">計測開始前</div></div>
+        <div class="kpi kh"><div class="kpi-lbl">🔥 HOT</div><div class="kpi-v" style="color:var(--hot)">—</div><div class="kpi-d neu">要対応</div></div>
+        <div class="kpi kw"><div class="kpi-lbl">🌤 WARM</div><div class="kpi-v" style="color:var(--warm)">—</div><div class="kpi-d neu">フォロー中</div></div>
+        <div class="kpi kn"><div class="kpi-lbl">❄ COOL</div><div class="kpi-v" style="color:var(--navy)">—</div><div class="kpi-d neu">MEET枠へ</div></div>
+        <div class="kpi kt"><div class="kpi-lbl">完了率</div><div class="kpi-v" style="color:var(--teal)">—</div><div class="kpi-d" style="color:var(--text3)">計測開始前</div></div>
       </div>
       <div class="funnel" style="margin-bottom:20px">
-        <div class="fs"><div class="fsv">412</div><div class="fsn">LINE配信</div><div class="fsr">—</div><div class="fsb" style="width:100%"></div></div>
-        <div class="fs"><div class="fsv">234</div><div class="fsn">クリック</div><div class="fsr">56.8%</div><div class="fsb" style="width:56%"></div></div>
-        <div class="fs"><div class="fsv">124</div><div class="fsn">完了</div><div class="fsr">53.0%</div><div class="fsb" style="width:30%"></div></div>
-        <div class="fs"><div class="fsv">22</div><div class="fsn">会いたい</div><div class="fsr">17.7%</div><div class="fsb" style="width:5%"></div></div>
-        <div class="fs"><div class="fsv">5</div><div class="fsn">実接続</div><div class="fsr">22.7%</div><div class="fsb" style="width:1%"></div></div>
+        <div class="fs"><div class="fsv">—</div><div class="fsn">LINE配信</div><div class="fsr">—</div><div class="fsb" style="width:0%"></div></div>
+        <div class="fs"><div class="fsv">—</div><div class="fsn">クリック</div><div class="fsr">—</div><div class="fsb" style="width:0%"></div></div>
+        <div class="fs"><div class="fsv">—</div><div class="fsn">完了</div><div class="fsr">—</div><div class="fsb" style="width:0%"></div></div>
+        <div class="fs"><div class="fsv">—</div><div class="fsn">会いたい</div><div class="fsr">—</div><div class="fsb" style="width:0%"></div></div>
+        <div class="fs"><div class="fsv">—</div><div class="fsn">実接続</div><div class="fsr">—</div><div class="fsb" style="width:0%"></div></div>
       </div>
       <div class="ai-blk">
         <div class="ai-hdr"><span class="ai-tg">AI INSIGHT</span><span class="ai-lbl">今週の傾向 — Claude生成</span></div>
@@ -1433,6 +1437,16 @@ function renderArticleEditor(){
   _articleSections = [];
   _articleCompanyId = null;
   renderPhotoLib();
+
+  // URLパラメータ ?company=ID で企業を自動選択
+  if(window._initCompanyId){
+    const sel = document.getElementById('art-company');
+    if(sel){
+      sel.value = window._initCompanyId;
+      onArtCompanyChange(window._initCompanyId);
+    }
+    window._initCompanyId = null;
+  }
 }
 
 function toggleNewCoForm(){
