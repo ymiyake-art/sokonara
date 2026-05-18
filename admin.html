@@ -1479,8 +1479,8 @@ function renderArticleEditor(){
               <input id="art-tags" type="text" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit">
             </div>
             <div>
-              <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">キャッチフレーズ <span style="font-size:10px;color:var(--text3)">Enterで改行位置を指定</span></label>
-              <textarea id="art-catchphrase" rows="3" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.7"></textarea>
+              <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">カードフレーズ <span style="font-size:10px;color:var(--teal);font-weight:600">※ Notionから自動取得</span><span style="font-size:10px;color:var(--text3)">　Enterで改行位置を調整（最大5行）</span></label>
+              <textarea id="art-catchphrase" rows="5" placeholder="Notion解析後に自動入力されます。改行位置をここで調整してください。" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:13px;font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-weight:700;resize:vertical;line-height:1.7"></textarea>
             </div>
           </div>
           <div style="margin-bottom:14px">
@@ -1495,16 +1495,7 @@ function renderArticleEditor(){
             <div style="margin-bottom:5px">
               <label style="font-size:11px;color:var(--text2)">Q1 選択肢（1行ずつ、最大4つ）<span style="color:var(--text3)"> ※読者が記事の中で選ぶ選択肢</span></label>
             </div>
-            <textarea id="art-q1" rows="4" oninput="refreshCardLabelChips()" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
-          </div>
-          <div style="margin-top:14px;padding:14px;background:var(--teal-bg);border-radius:4px;border:1px solid rgba(66,173,159,0.2)">
-            <label style="font-size:11px;font-weight:700;color:var(--teal);display:block;margin-bottom:8px">カードフレーズ <span style="font-weight:400;color:var(--text3)">— Q1から1つ選ぶ → AIが体言止めに変換 → Enterで改行位置を指定（最大5行）</span></label>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px" id="art-card-label-chips"></div>
-            <div id="art-card-label-edit-wrap" style="display:none">
-              <textarea id="art-card-label-edit" rows="5" oninput="syncCardLabel()" placeholder="選択したフレーズを編集。Enterで改行位置を指定。" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid rgba(66,173,159,0.4);border-radius:2px;font-size:13px;font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-weight:700;line-height:1.65;resize:vertical;background:rgba(255,255,255,0.7)"></textarea>
-              <div style="font-size:10px;color:var(--text3);margin-top:4px">※ 改行はカードでもその位置で反映されます</div>
-            </div>
-            <input type="hidden" id="art-card-label" value="">
+            <textarea id="art-q1" rows="4" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
           </div>
         </div>
       </div>
