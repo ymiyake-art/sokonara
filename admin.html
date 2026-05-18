@@ -1573,6 +1573,15 @@ async function createNewCoFromArticleEditor(){
 
 function onArtCompanyChange(id){
   _articleCompanyId = id || null;
+
+  // 企業切り替え時：貼り付けエリア・解析結果・メタをリセット
+  const notionPaste = document.getElementById('art-notion-paste');
+  if(notionPaste) notionPaste.value = '';
+  const parsed = document.getElementById('art-parsed');
+  if(parsed) parsed.style.display = 'none';
+  _articleSections = [];
+  _articleTitle = '';
+
   // 基本情報パネルの表示/非表示
   const basicInfo = document.getElementById('art-basic-info');
   if(!id){ if(basicInfo) basicInfo.style.display='none'; return; }
