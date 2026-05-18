@@ -1526,9 +1526,18 @@ function parseNotion(text){
       const heading = line.slice(3).trim();
       inMeta = heading.includes('📋') || heading.includes('プラットフォーム登録');
       inQ1 = false;
-      if(inMeta || heading.includes('元情報')){ current=null; continue; }
+      // WEB掲載に不向きな見出しはスキップ
+      const SKIP_HEADINGS = ['ファーストビュー','タイトル','本文','ヘッダー','フッター','カバー','ビジュアル','レイアウト','デザイン','メモ','備考','下書き','TODO','todo'];
+      const shouldSkip = SKIP_HEADINGS.some(s=>heading.includes(s));
+      if(inMeta || heading.includes('元情報') || shouldSkip){ current=null; continue; }
+      // 見出し語句の自動リネーム
+      const HEADING_MAP = {
+        'リード':'はじめに', 'lead':'はじめに', 'LEAD':'はじめに',
+        'プロフィール':'経歴・プロフィール', 'profile':'経歴・プロフィール',
+      };
+      const renamedHeading = HEADING_MAP[heading] || heading;
       const type = (heading.includes('に伺いました')||heading.includes('インタビュー')) ? 'qa' : 'section';
-      current = { heading, lines:[], type };
+      current = { heading: renamedHeading, lines:[], type };
       continue;
     }
     if(line.trim()==='---') continue;
@@ -1632,7 +1641,8 @@ function renderSectionsList(){
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
             <span style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 7px;background:${typeColor};color:#fff;border-radius:2px;flex-shrink:0">${typeLabel}</span>
             <button onclick="openPhotoPickerForSection(${i})" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 8px;border:1px solid var(--border);background:none;cursor:pointer;border-radius:2px;color:var(--text2);flex-shrink:0">${sec.photoUrl?'写真変更':'📷'}</button>
-            ${sec.photoUrl?`<button onclick="clearSectionPhoto(${i})" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 8px;border:1px solid rgba(192,52,26,0.3);background:none;cursor:pointer;border-radius:2px;color:var(--hot);flex-shrink:0">削除</button>`:''}
+            ${sec.photoUrl?`<button onclick="clearSectionPhoto(${i})" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 8px;border:1px solid rgba(192,52,26,0.3);background:none;cursor:pointer;border-radius:2px;color:var(--hot);flex-shrink:0">写真削除</button>`:''}
+            <button onclick="deleteSection(${i})" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 8px;border:1px solid rgba(192,52,26,0.4);background:rgba(192,52,26,0.06);cursor:pointer;border-radius:2px;color:var(--hot);flex-shrink:0;margin-left:auto">✕ セクション削除</button>
           </div>
           <input value="${escHtml(sec.heading||'')}" placeholder="見出し" oninput="updateSecHeading(${i},this.value)" style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--border);border-radius:2px;font-size:13px;font-weight:700;font-family:inherit;color:var(--navy);outline:none">
         </div>
@@ -1642,6 +1652,11 @@ function renderSectionsList(){
   }).join('');
 }
 
+function deleteSection(i){
+  if(!confirm(`セクション「${_articleSections[i].heading||'無題'}」を削除しますか？`)) return;
+  _articleSections.splice(i,1);
+  renderSectionsList();
+}
 function updateSecHeading(i,val){ _articleSections[i].heading=val; }
 function updateSecBody(i,val){ _articleSections[i].body=val; }
 function updateQItem(i,j,field,val){
