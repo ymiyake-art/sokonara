@@ -1805,7 +1805,7 @@ function renderStructuredArticle(sections){
     }
 
     const bodyHtml = cleanArticleText(escapeHtml(sec.body||'')).replace(/\n/g,'<br>');
-    const isLead = sec.type === 'lead' || sec.heading === 'リード文' || sec.heading === 'リード';
+    const isLead = i === 0 || sec.type === 'lead' || sec.heading === 'リード文' || sec.heading === 'リード';
     const bodyClass = isLead ? 'sec-body-lead' : 'sec-body';
     const showHeading = isLead ? '' : heading;
     return `${divider}<div class="sec-block">${showHeading}${photo}<div class="${bodyClass}">${bodyHtml}</div></div>`;
@@ -2108,10 +2108,10 @@ function renderP1FromCompany(){
     if (!body && !quote) {
       bd.innerHTML = '<div class="no-article-msg">記事コンテンツを準備中です。<br>もうしばらくお待ちください。<br><br><a href="#" onclick="goScreen(\"p4\");return false;" style="color:var(--teal);font-size:12px">→ 他の経営層を見る</a></div>';
     } else if (body.trimStart().startsWith('[{')) {
-      // 構造化記事（JSON sections）
+      // 構造化記事（JSON sections）- リード文がintroを担うのでquoteHtmlは不要
       try {
         const sections = JSON.parse(body);
-        bd.innerHTML = quoteHtml + renderStructuredArticle(sections);
+        bd.innerHTML = renderStructuredArticle(sections);
       } catch(e) {
         bd.innerHTML = quoteHtml + renderMarkdownArticle(body, {allowImages});
       }
