@@ -1630,9 +1630,17 @@ function parseNotion(text){
   let current = null;
   let inMeta = false;
   let inQ1 = false;
+  let inAside = false;
 
   for(let i=0;i<lines.length;i++){
     const line = lines[i];
+    const trimmed = line.trim();
+
+    // <aside>ブロックをスキップ
+    if(trimmed.startsWith('<aside>') || trimmed==='<aside>'){ inAside=true; continue; }
+    if(trimmed.startsWith('</aside>') || trimmed==='</aside>'){ inAside=false; continue; }
+    if(inAside) continue;
+
     // タイトル
     if(line.startsWith('# ') && !line.startsWith('## ') && !title){
       title = line.slice(2).trim(); continue;
@@ -1643,11 +1651,9 @@ function parseNotion(text){
       const heading = line.slice(3).trim();
       inMeta = heading.includes('📋') || heading.includes('プラットフォーム登録');
       inQ1 = false;
-      // WEB掲載に不向きな見出しはスキップ
-      const SKIP_HEADINGS = ['ファーストビュー','タイトル','本文','ヘッダー','フッター','カバー','ビジュアル','レイアウト','デザイン','メモ','備考','下書き','TODO','todo'];
+      const SKIP_HEADINGS = ['ファーストビュー','タイトル','本文','ヘッダー','フッター','カバー','ビジュアル','レイアウト','デザイン','メモ','備考','下書き','TODO','todo','カードタイトル'];
       const shouldSkip = SKIP_HEADINGS.some(s=>heading.includes(s));
       if(inMeta || heading.includes('元情報') || shouldSkip){ current=null; continue; }
-      // 見出し語句の自動リネーム
       const HEADING_MAP = {
         'リード':'はじめに', 'lead':'はじめに', 'LEAD':'はじめに',
         'プロフィール':'経歴・プロフィール', 'profile':'経歴・プロフィール',
@@ -1657,36 +1663,43 @@ function parseNotion(text){
       current = { heading: renamedHeading, lines:[], type };
       continue;
     }
-    if(line.trim()==='---') continue;
+    if(trimmed==='---') continue;
+
     // メタデータ解析
     if(inMeta){
       const bm = line.match(/^\*\*(.+?)\*\*/);
       if(bm){
+        inQ1 = false;
         const k = bm[1];
+        // **key**の後の値（全角スペース含む空白を除去）
+        const rest = line.slice(bm[0].length).replace(/^[\s　\t]+/, '').trim();
         if(k==='タグ'){
-          const v=line.replace(/^\*\*タグ\*\*\s*/,'').trim();
-          meta.tags=v.split(/[,、,\s　]+/).filter(Boolean);
+          meta.tags = rest.split(/[,、,\s　]+/).filter(Boolean);
         } else if(k==='引用フレーズ'){
-          meta.quote=line.replace(/^\*\*引用フレーズ\*\*\s*/,'').trim();
+          meta.quote = rest;
         } else if(k==='キャッチフレーズ'){
-          meta.catchphrase=line.replace(/^\*\*キャッチフレーズ\*\*\s*/,'').trim();
+          meta.catchphrase = rest;
         } else if(k.includes('Q1選択肢')){
-          inQ1=true;
+          inQ1 = true;
         } else if(k==='会社一言紹介'){
-          // Look-ahead: collect lines until next ** key
-          let j=i+1;
-          const introParts=[];
-          while(j<lines.length){
-            if(lines[j].match(/^\*\*/)||lines[j].startsWith('##')) break;
-            if(lines[j].trim()) introParts.push(lines[j].trim());
-            j++;
+          if(rest){
+            meta.companyIntro = rest;
+          } else {
+            let j=i+1;
+            const introParts=[];
+            while(j<lines.length){
+              if(lines[j].match(/^\*\*/)||lines[j].startsWith('##')) break;
+              if(lines[j].trim()) introParts.push(lines[j].trim());
+              j++;
+            }
+            meta.companyIntro=introParts.join('\n');
+            i=j-1;
           }
-          meta.companyIntro=introParts.join('\n');
-          i=j-1;
         }
       }
       if(inQ1 && line.startsWith('- ')){
-        const choice=line.slice(2).replace(/^[^：:]+[：:]\s*/,'').trim();
+        // "- Why：なぜ..." → "なぜ..."（Why: などのプレフィックスを除去）
+        const choice = line.slice(2).replace(/^[^：：:]+[：：:]\s*/,'').trim();
         if(choice) meta.q1.push(choice);
       }
       continue;
@@ -1725,11 +1738,6 @@ function fillMeta(meta){
   set('art-intro', meta.companyIntro||'');
   const q1El=document.getElementById('art-q1');
   if(q1El) q1El.value=(meta.q1||[]).join('\n');
-  refreshCardLabelChips();
-  const savedLabel=meta.cardLabel||'';
-  setCardLabel(savedLabel);
-  const taEdit=document.getElementById('art-card-label-edit');
-  if(taEdit && savedLabel){ taEdit.value=savedLabel; }
 }
 
 async function rewriteQ1Taiigen(){
