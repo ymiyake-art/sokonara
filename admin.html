@@ -1669,7 +1669,9 @@ function parseNotion(text){
         'プロフィール':'経歴・プロフィール', 'profile':'経歴・プロフィール',
       };
       const renamedHeading = HEADING_MAP[heading] || heading;
-      const type = (heading.includes('に伺いました')||heading.includes('インタビュー')) ? 'qa' : 'section';
+      const type = (heading.includes('に伺いました')||heading.includes('インタビュー')) ? 'qa'
+                 : (heading.includes('リード文')||heading==='リード'||heading==='lead') ? 'lead'
+                 : 'section';
       current = { heading: renamedHeading, lines:[], type };
       continue;
     }

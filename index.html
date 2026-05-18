@@ -1166,7 +1166,7 @@ h1, h2, h3, h4,
         <div class="company-intro-tags" id="companyIntroTags"></div>
         <div class="company-intro-text" id="companyIntroText"></div>
       </div>
-      <h1 class="article-title" id="p1ArticleTitle" style="display:none"></h1>
+      <h1 class="article-title" id="p1ArticleTitle"></h1>
       <div class="article-body" id="p1ArticleBody"></div>
     </div>
 
@@ -1805,8 +1805,9 @@ function renderStructuredArticle(sections){
     }
 
     const bodyHtml = cleanArticleText(escapeHtml(sec.body||'')).replace(/\n/g,'<br>');
-    const bodyClass = (i === 0) ? 'sec-body-lead' : 'sec-body';
-    const showHeading = (i === 0) ? '' : heading;
+    const isLead = sec.type === 'lead';
+    const bodyClass = isLead ? 'sec-body-lead' : 'sec-body';
+    const showHeading = isLead ? '' : heading;
     return `${divider}<div class="sec-block">${showHeading}${photo}<div class="${bodyClass}">${bodyHtml}</div></div>`;
   }).join('');
 }
