@@ -686,6 +686,11 @@ function saveProjects(arr){
     if(error) console.warn('projects save fallback:', error.message);
   });
 }
+function openArticleEditor(companyId){
+  window._initCompanyId = companyId;
+  switchTab('article');
+}
+
 function renderSidebarCompanies(){
   const el=document.getElementById('sidebarCompanies');
   if(!el) return;
@@ -695,7 +700,7 @@ function renderSidebarCompanies(){
   html+=companies.map(c=>{
     const name=c.name||'企業名未設定';
     const ini=name.trim().charAt(0)||'社';
-    return `<div class="co-item" onclick="editCo('${c.id}')" style="cursor:pointer" title="${name} を編集"><div class="co-av" style="background:var(--navy)">${ini}</div><div class="co-nm">${name}</div></div>`;
+    return `<div class="co-item" onclick="openArticleEditor('${c.id}')" style="cursor:pointer" title="${name} の記事を編集"><div class="co-av" style="background:var(--navy)">${ini}</div><div class="co-nm">${name}</div></div>`;
   }).join('');
   el.innerHTML=html;
 }
