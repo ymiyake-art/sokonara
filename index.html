@@ -971,12 +971,15 @@ h1, h2, h3, h4,
 .leader-label{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;padding:2px 9px;border-radius:20px;background:rgba(66,173,159,0.18);color:var(--teal);border:1px solid rgba(66,173,159,0.35);margin-bottom:8px;}
 .leader-phrase{font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:17px;font-weight:900;color:#fff;line-height:1.6;letter-spacing:.02em;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;}
 @media(max-width:480px){.leader-phrase{font-size:16px;}}
-.leader-card-bottom{padding:8px 12px 10px;display:flex;align-items:center;gap:10px;background:#fff;}
-.leader-photo{width:36px;height:36px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;background-size:cover;background-position:center;flex-shrink:0;}
+.leader-card-bottom{padding:12px 14px;background:#fff;display:flex;flex-direction:column;gap:8px;}
+.leader-card-profile{display:flex;align-items:center;gap:12px;}
+.leader-photo{width:64px;height:64px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;background-size:cover;background-position:center;flex-shrink:0;}
 .leader-meta{flex:1;min-width:0;}
 .leader-name{font-size:13px;font-weight:700;color:var(--navy);}
-.leader-company{font-size:11px;color:#888;}
-.leader-read{font-size:11px;color:var(--teal);font-weight:700;white-space:nowrap;}
+.leader-company{font-size:11px;color:#888;margin-top:2px;}
+.leader-tags{display:flex;flex-wrap:wrap;gap:4px;}
+.leader-tag{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--teal-bg);color:var(--teal);border:1px solid rgba(66,173,159,0.25);}
+.leader-cta{font-size:11px;color:var(--teal);font-weight:700;text-align:right;}
 .leader-quote{display:none;}
 @media(min-width:980px){.leaders-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
 
@@ -1990,22 +1993,32 @@ function renderCompanyList(){
   el.innerHTML = list.map(c=>{
     const name=c.ceo||'経営層名未設定';
     const company=c.name||c.company||'会社名未設定';
-    const rawPhrase=(c.cardLabel||c.catchphrase||c.quote||'').trim();
+    const rawPhrase=(c.catchphrase||c.quote||'').trim();
     const phraseHtml = rawPhrase
       ? rawPhrase.split('\n').map(l=>escapeHtml(l)).join('<br>')
       : escapeHtml(name);
     const photo=c.photoUrl||'';
     const av = photo
-      ? `<div class="leader-photo" style="background-image:url('${escapeHtml(photo)}');"></div>`
-      : `<div class="leader-photo">${escapeHtml((company||'社').charAt(0))}</div>`;
+      ? `<div class="leader-photo" style="background-image:url('${escapeHtml(photo)}');background-size:cover;background-position:center;"></div>`
+      : `<div class="leader-photo">${escapeHtml((name||'経').charAt(0))}</div>`;
+    const tags = Array.isArray(c.tags) ? c.tags.slice(0,3) : [];
+    const tagsHtml = tags.length
+      ? `<div class="leader-tags">${tags.map(t=>`<span class="leader-tag">${escapeHtml(t)}</span>`).join('')}</div>`
+      : '';
     return `<div class="leader-card" data-company-id="${escapeHtml(String(c.id||''))}" onclick="openCompanyArticleFromCard(this)">
       <div class="leader-card-top">
         <div class="leader-phrase">${phraseHtml}</div>
       </div>
       <div class="leader-card-bottom">
-        ${av}
-        <div class="leader-meta"><div class="leader-name">${escapeHtml(name)}</div><div class="leader-company">${escapeHtml(company)}</div></div>
-        <div class="leader-read">記事を読む →</div>
+        <div class="leader-card-profile">
+          ${av}
+          <div class="leader-meta">
+            <div class="leader-name">${escapeHtml(name)}</div>
+            <div class="leader-company">${escapeHtml(company)}</div>
+          </div>
+        </div>
+        ${tagsHtml}
+        <div class="leader-cta">経営層の想いに触れる →</div>
       </div>
     </div>`;
   }).join('');
