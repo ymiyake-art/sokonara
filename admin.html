@@ -1599,7 +1599,6 @@ function onArtCompanyChange(id){
   updateProfilePhotoPreview();
 
   // bodyがJSONならセクションを復元
-  const parsed = document.getElementById('art-parsed');
   if(co.body && co.body.trimStart().startsWith('[')){
     try{
       _articleSections = JSON.parse(co.body);
