@@ -1977,7 +1977,10 @@ function renderCompanyList(){
   el.innerHTML = list.map(c=>{
     const name=c.ceo||'経営層名未設定';
     const company=c.name||c.company||'会社名未設定';
-    const phrase=((c.catchphrase||c.quote)||'').replace(/\s+/g,' ').slice(0,60);
+    const rawPhrase=(c.catchphrase||c.quote||'').trim();
+    const phraseHtml = rawPhrase
+      ? rawPhrase.split('\n').map(l=>escapeHtml(l.trim())).join('<br>')
+      : escapeHtml(name);
     const label=c.cardLabel||'';
     const photo=c.photoUrl||'';
     const av = photo
@@ -1987,7 +1990,7 @@ function renderCompanyList(){
     return `<div class="leader-card" data-company-id="${escapeHtml(String(c.id||''))}" onclick="openCompanyArticleFromCard(this)">
       <div class="leader-card-top">
         ${labelHtml}
-        <div class="leader-phrase">${phrase ? escapeHtml(phrase) : escapeHtml(name)}</div>
+        <div class="leader-phrase">${phraseHtml}</div>
       </div>
       <div class="leader-card-bottom">
         ${av}
