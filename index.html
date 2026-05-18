@@ -1805,7 +1805,7 @@ function renderStructuredArticle(sections){
     }
 
     const bodyHtml = cleanArticleText(escapeHtml(sec.body||'')).replace(/\n/g,'<br>');
-    const isLead = sec.type === 'lead';
+    const isLead = sec.type === 'lead' || sec.heading === 'リード文' || sec.heading === 'リード';
     const bodyClass = isLead ? 'sec-body-lead' : 'sec-body';
     const showHeading = isLead ? '' : heading;
     return `${divider}<div class="sec-block">${showHeading}${photo}<div class="${bodyClass}">${bodyHtml}</div></div>`;
