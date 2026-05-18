@@ -698,9 +698,10 @@ function renderSidebarCompanies(){
   let html=`<div class="admin-nav-label" style="padding:0 16px 6px">掲載企業</div>`;
   html+=`<div class="co-item" onclick="switchTab('colist')" style="cursor:pointer"><div class="co-av" style="background:#555">全</div><div class="co-nm">全社まとめ</div><div class="co-bd">${companies.length}</div></div>`;
   html+=companies.map(c=>{
-    const name=c.name||'企業名未設定';
-    const ini=name.trim().charAt(0)||'社';
-    return `<div class="co-item" onclick="openArticleEditor('${c.id}')" style="cursor:pointer" title="${name} の記事を編集"><div class="co-av" style="background:var(--navy)">${ini}</div><div class="co-nm">${name}</div></div>`;
+    const name=(c.name||'企業名未設定').replace(/株式会社|合同会社|有限会社/g,'').trim();
+    const ceo=c.ceo||'';
+    const ini=ceo.trim().charAt(0)||name.charAt(0)||'社';
+    return `<div class="co-item" onclick="openArticleEditor('${c.id}')" style="cursor:pointer" title="${c.name} / ${ceo}"><div class="co-av" style="background:var(--navy)">${ini}</div><div style="min-width:0"><div class="co-nm">${ceo||name}</div><div style="font-size:10px;color:rgba(255,255,255,0.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div></div></div>`;
   }).join('');
   el.innerHTML=html;
 }
