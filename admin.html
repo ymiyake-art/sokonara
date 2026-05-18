@@ -690,6 +690,30 @@ function openArticleEditor(companyId){
   switchTab('article');
 }
 
+function updateProfilePhotoPreview(){
+  const url = document.getElementById('art-profile-photo-url')?.value.trim();
+  const preview = document.getElementById('art-profile-photo-preview');
+  const img = document.getElementById('art-profile-photo-img');
+  if(url && preview && img){ preview.style.display='block'; img.src=url; }
+  else if(preview){ preview.style.display='none'; }
+}
+
+async function handleProfilePhotoSelect(event){
+  const file = event.target.files?.[0];
+  if(!file || !supabaseClient) return;
+  const statusEl = document.getElementById('art-profile-photo-status');
+  if(statusEl) statusEl.textContent = 'アップロード中...';
+  const ext = file.name.split('.').pop();
+  const path = `companies/${Date.now()}.${ext}`;
+  const { data, error } = await supabaseClient.storage.from('company-photos').upload(path, file, { upsert: true });
+  if(error){ if(statusEl) statusEl.textContent = '失敗: ' + error.message; return; }
+  const { data: pub } = supabaseClient.storage.from('company-photos').getPublicUrl(path);
+  const url = pub?.publicUrl || '';
+  const inp = document.getElementById('art-profile-photo-url');
+  if(inp){ inp.value = url; updateProfilePhotoPreview(); }
+  if(statusEl) statusEl.textContent = 'アップロード完了';
+}
+
 function renderSidebarCompanies(){
   const el=document.getElementById('sidebarCompanies');
   if(!el) return;
@@ -1239,7 +1263,7 @@ function renderCoList(){
               </div>
               <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">${c.created}</div>
               <div style="display:flex;gap:6px">
-                <button onclick="editCo('${c.id}')" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border:1px solid var(--teal);background:var(--teal-bg);cursor:pointer;color:var(--teal-d);border-radius:2px">編集</button>
+                <button onclick="openArticleEditor('${c.id}')" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border:1px solid var(--teal);background:var(--teal-bg);cursor:pointer;color:var(--teal-d);border-radius:2px">編集</button>
                 <button onclick="deleteCo('${c.id}')" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border:1px solid var(--border);background:none;cursor:pointer;color:var(--text2);border-radius:2px">削除</button>
               </div>
             </div>
@@ -1337,6 +1361,51 @@ function renderArticleEditor(){
         <div style="display:flex;gap:8px">
           <button class="abtn abtn-teal" onclick="createNewCoFromArticleEditor()">登録して記事入力へ進む →</button>
           <button class="abtn" onclick="toggleNewCoForm()">キャンセル</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 基本情報（企業選択後に表示） -->
+    <div class="panel" id="art-basic-info" style="margin-bottom:20px;display:none">
+      <div class="phdr">基本情報</div>
+      <div class="pbody">
+        <!-- プロフィール写真 -->
+        <div style="margin-bottom:16px">
+          <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:6px">プロフィール写真（カードに表示）</label>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+            <input id="co-photo-file-art" type="file" accept="image/*" style="display:none" onchange="handleProfilePhotoSelect(event)">
+            <button type="button" onclick="document.getElementById('co-photo-file-art').click()" style="padding:6px 14px;background:var(--navy);color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;border-radius:2px;font-family:inherit;white-space:nowrap">📷 アップロード</button>
+            <span id="art-profile-photo-status" style="font-size:11px;color:var(--text3)">またはURLを入力</span>
+          </div>
+          <input id="art-profile-photo-url" type="url" placeholder="https://..." style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;margin-bottom:8px" oninput="updateProfilePhotoPreview()">
+          <div id="art-profile-photo-preview" style="display:none">
+            <img id="art-profile-photo-img" style="height:80px;border-radius:50%;border:2px solid var(--border);object-fit:cover">
+          </div>
+        </div>
+        <!-- タイプ・プラン -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div>
+            <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">経営層タイプ</label>
+            <select id="art-type" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;outline:none">
+              <option value="manager">経営層</option>
+              <option value="advisor">アドバイザー</option>
+              <option value="founder">創業者</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">契約プラン</label>
+            <select id="art-plan" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;outline:none">
+              <option value="light">Light</option>
+              <option value="standard">Standard</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">記事タイプ</label>
+            <select id="art-article-type" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;outline:none">
+              <option value="light">Light（テキストのみ）</option>
+              <option value="standard">Standard（写真あり）</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
@@ -1486,12 +1555,24 @@ async function createNewCoFromArticleEditor(){
 
 function onArtCompanyChange(id){
   _articleCompanyId = id || null;
-  if(!id) return;
-  // 既存データを読み込んでフォームに反映
+  // 基本情報パネルの表示/非表示
+  const basicInfo = document.getElementById('art-basic-info');
+  if(!id){ if(basicInfo) basicInfo.style.display='none'; return; }
+  if(basicInfo) basicInfo.style.display='block';
+
   const co = loadCompanies().find(c=>String(c.id)===String(id));
   if(!co) return;
-  const parsed = document.getElementById('art-parsed');
+
+  // 基本情報フィールドを復元
+  const setVal = (elId, val) => { const el=document.getElementById(elId); if(el) el.value=val||''; };
+  setVal('art-profile-photo-url', co.photoUrl||'');
+  setVal('art-type', co.type||'manager');
+  setVal('art-plan', co.plan||'light');
+  setVal('art-article-type', co.articleType||'light');
+  updateProfilePhotoPreview();
+
   // bodyがJSONならセクションを復元
+  const parsed = document.getElementById('art-parsed');
   if(co.body && co.body.trimStart().startsWith('[')){
     try{
       _articleSections = JSON.parse(co.body);
@@ -1506,7 +1587,7 @@ function onArtCompanyChange(id){
         q1: co.q1||[],
         cardLabel: co.cardLabel||''
       });
-      toast('既存の記事データを読み込みました');
+      toast('既存のデータを読み込みました');
     }catch(e){}
   }
 }
@@ -1839,6 +1920,11 @@ async function saveArticle(){
   const companyIntro=document.getElementById('art-intro')?.value.trim()||'';
   const q1=(document.getElementById('art-q1')?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
   const cardLabel=document.getElementById('art-card-label')?.value||'';
+  // 基本情報
+  const photoUrl=document.getElementById('art-profile-photo-url')?.value.trim()||'';
+  const type=document.getElementById('art-type')?.value||'manager';
+  const plan=document.getElementById('art-plan')?.value||'light';
+  const articleType=document.getElementById('art-article-type')?.value||'standard';
 
   const companies=loadCompanies();
   const idx=companies.findIndex(c=>String(c.id)===String(companyId));
@@ -1850,7 +1936,7 @@ async function saveArticle(){
     body: JSON.stringify(_articleSections),
     tags, catchphrase, quote,
     companyIntro, q1, cardLabel,
-    articleType:'standard'
+    photoUrl, type, plan, articleType
   };
   saveCompanies(companies);
   if(statusEl) statusEl.textContent='✓ 保存しました！';
