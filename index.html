@@ -979,25 +979,27 @@ h1, h2, h3, h4,
 .leader-card-photo-bg{position:absolute;inset:0;background-size:cover;background-position:center top;transition:transform .3s;}
 .leader-card:hover .leader-card-photo-bg{transform:scale(1.05);}
 
-/* 斜め帯（写真上の対角グラデーション） */
+/* 斜め帯（対角グラデーション） */
 .leader-card-top::before{
   content:'';position:absolute;inset:0;z-index:1;
-  background:linear-gradient(162deg,transparent 28%,rgba(28,42,84,0.72) 55%,rgba(14,22,50,0.94) 100%);
+  background:
+    linear-gradient(to top, rgba(10,18,48,0.88) 0%, rgba(10,18,48,0.55) 38%, transparent 62%),
+    linear-gradient(162deg, transparent 30%, rgba(28,42,84,0.45) 60%, rgba(14,22,50,0.65) 100%);
 }
-/* テール色アクセントライン */
+/* テール色アクセントライン（テキスト帯より上に配置） */
 .leader-card-top::after{
   content:'';position:absolute;z-index:2;
-  bottom:36%;left:-8%;width:116%;height:2px;
+  bottom:44%;left:-8%;width:116%;height:2px;
   background:var(--teal);
   transform:rotate(-8deg);
-  opacity:0.85;
+  opacity:0.9;
 }
 /* フレーズは写真下部に重ねる */
 .leader-phrase{
   position:absolute;bottom:12px;left:12px;right:12px;z-index:3;
   font-family:'Dela Gothic One','Zen Kaku Gothic New','Noto Sans JP',sans-serif;
-  font-size:15px;color:#fff;line-height:1.55;letter-spacing:.02em;
-  text-shadow:0 1px 6px rgba(0,0,0,0.5);
+  font-size:15px;color:#fff;line-height:1.6;letter-spacing:.03em;
+  text-shadow:0 1px 4px rgba(0,0,0,0.9), 0 2px 12px rgba(0,0,0,0.7);
   display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;
 }
 @media(max-width:480px){.leader-phrase{font-size:14px;}}
