@@ -316,16 +316,16 @@ h1, h2, h3, h4,
   position: fixed; bottom: 0; left: 50%;
   transform: translateX(-50%);
   width: min(900px, calc(100% - 24px));
-  background: var(--white);
-  border-top: 1px solid var(--border);
+  background: var(--navy);
+  border-top: 3px solid var(--teal);
   padding: 12px 20px 16px;
   display: flex; flex-direction: column; align-items: center; gap: 10px;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+  box-shadow: 0 -6px 24px rgba(28,42,84,0.25);
   transition: box-shadow .3s, border-top-color .3s;
 }
 @keyframes ctaBarPop {
-  0%,100% { box-shadow: 0 -4px 20px rgba(0,0,0,0.06); border-top-color: var(--border); }
-  40%      { box-shadow: 0 -8px 32px rgba(66,173,159,0.45); border-top-color: var(--teal); }
+  0%,100% { box-shadow: 0 -6px 24px rgba(28,42,84,0.25); border-top-color: var(--teal); }
+  40%      { box-shadow: 0 -10px 36px rgba(66,173,159,0.6); border-top-color: #6de8d8; }
 }
 .cta-sticky.cta-highlight { animation: ctaBarPop .7s ease 3; }
 @keyframes btnBounce {
@@ -348,10 +348,16 @@ h1, h2, h3, h4,
 }
 .cta-sticky-text strong {
   font-size: 13px; font-weight: 700;
-  color: var(--navy); white-space: nowrap;
+  color: rgba(255,255,255,0.85); white-space: nowrap;
 }
 .cta-sticky-btns { display: flex; gap: 10px; }
-.cta-sticky-btns .btn-outline,
+.cta-sticky-btns .btn-outline {
+  margin: 0;
+  border-color: rgba(255,255,255,0.4);
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+}
+.cta-sticky-btns .btn-outline:hover { background: rgba(255,255,255,0.15); }
 .cta-sticky-btns .btn-primary { margin: 0; }
 
 /* =============================================
