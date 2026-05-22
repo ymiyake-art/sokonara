@@ -321,6 +321,30 @@ h1, h2, h3, h4,
   padding: 12px 20px 16px;
   display: flex; flex-direction: column; align-items: center; gap: 10px;
   box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+  transition: box-shadow .3s, border-top-color .3s;
+}
+@keyframes ctaBarPop {
+  0%,100% { box-shadow: 0 -4px 20px rgba(0,0,0,0.06); border-top-color: var(--border); }
+  40%      { box-shadow: 0 -8px 32px rgba(66,173,159,0.45); border-top-color: var(--teal); }
+}
+.cta-sticky.cta-highlight { animation: ctaBarPop .7s ease 3; }
+@keyframes btnBounce {
+  0%,100% { transform: scale(1); }
+  30%     { transform: scale(1.08); }
+  60%     { transform: scale(0.97); }
+}
+.btn-primary.cta-bounce { animation: btnBounce .5s ease 3; }
+
+/* 記事ヒーロー写真 */
+.article-hero-photo {
+  width: 100%; height: 220px;
+  background-size: cover; background-position: center top;
+  border-radius: 8px; margin-bottom: 20px;
+  position: relative; overflow: hidden;
+}
+.article-hero-photo::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60%;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.85));
 }
 .cta-sticky-text strong {
   font-size: 13px; font-weight: 700;
@@ -1205,6 +1229,7 @@ h1, h2, h3, h4,
         <div class="company-intro-tags" id="companyIntroTags"></div>
         <div class="company-intro-text" id="companyIntroText"></div>
       </div>
+      <div id="p1HeroPhoto" class="article-hero-photo" style="display:none"></div>
       <h1 class="article-title" id="p1ArticleTitle"></h1>
       <div class="article-body" id="p1ArticleBody"></div>
     </div>
@@ -1940,6 +1965,13 @@ function handleEmpathy() {
   btn.classList.add('pop');
   setTimeout(() => btn.classList.remove('pop'), 220);
   setTimeout(() => { btn.classList.add('done'); icon.textContent = '♥'; label.textContent = '共感しました！'; }, 100);
+  // 共感後にCTAバーを強調
+  setTimeout(() => {
+    const cta = document.getElementById('p1CtaSticky');
+    const primaryBtn = cta && cta.querySelector('.btn-primary');
+    if (cta) { cta.classList.add('cta-highlight'); setTimeout(()=>cta.classList.remove('cta-highlight'), 2200); }
+    if (primaryBtn) { primaryBtn.classList.add('cta-bounce'); setTimeout(()=>primaryBtn.classList.remove('cta-bounce'), 2200); }
+  }, 400);
   // Supabase increment (best-effort)
   if (supabaseClient && selectedCompanyId) {
     const cos = loadCompanies();
@@ -2137,6 +2169,12 @@ function renderP1FromCompany(){
   }
   if(nm) nm.textContent = ceo;
   if(cn) cn.textContent = company;
+  // ヒーロー写真（記事タイトル直上）
+  const heroPhoto = document.getElementById('p1HeroPhoto');
+  if(heroPhoto){
+    if(photoUrl){ heroPhoto.style.backgroundImage=`url('${photoUrl}')`;heroPhoto.style.display=''; }
+    else { heroPhoto.style.display='none'; }
+  }
   if(tt){
     // If title is just the company name (auto-imported), show a more descriptive headline
     const displayTitle = (title && title !== company) ? title : (ceo ? `${ceo}さんの想い` : company);
