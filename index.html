@@ -339,12 +339,21 @@ h1, h2, h3, h4,
 .article-hero-photo {
   width: 100%; height: 220px;
   background-size: cover; background-position: center top;
+  background-repeat: no-repeat;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
   border-radius: 8px; margin-bottom: 20px;
   position: relative; overflow: hidden;
 }
+@media(min-width:600px){
+  .article-hero-photo { height: 320px; }
+}
+@media(min-width:960px){
+  .article-hero-photo { height: 420px; border-radius: 10px; }
+}
 .article-hero-photo::after {
-  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60%;
-  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.85));
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.75));
 }
 .cta-sticky-text strong {
   font-size: 13px; font-weight: 700;
@@ -2158,6 +2167,7 @@ function renderP1FromCompany(){
   const body = co?.body || '';
   const tags = (Array.isArray(co?.tags) && co.tags.length > 0) ? co.tags : [];
   const photoUrl = co?.photoUrl || '';
+  const heroUrl = co?.heroUrl || co?.photoUrl || '';
   const color = co?.color || 'var(--navy)';
   const articleType = co?.articleType || 'light';
   const allowImages = String(articleType).toLowerCase() === 'standard';
@@ -2187,10 +2197,10 @@ function renderP1FromCompany(){
   }
   if(nm) nm.textContent = ceo;
   if(cn) cn.textContent = company;
-  // ヒーロー写真（記事タイトル直上）
+  // ヒーロー写真（記事タイトル直上） heroUrl優先、なければphotoUrlでフォールバック
   const heroPhoto = document.getElementById('p1HeroPhoto');
   if(heroPhoto){
-    if(photoUrl){ heroPhoto.style.backgroundImage=`url('${photoUrl}')`;heroPhoto.style.display=''; }
+    if(heroUrl){ heroPhoto.style.backgroundImage=`url('${heroUrl}')`;heroPhoto.style.display=''; }
     else { heroPhoto.style.display='none'; }
   }
   if(tt){

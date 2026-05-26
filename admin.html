@@ -704,6 +704,30 @@ function updateProfilePhotoPreview(){
   else if(preview){ preview.style.display='none'; }
 }
 
+function updateHeroPhotoPreview(){
+  const url = document.getElementById('art-hero-photo-url')?.value.trim();
+  const preview = document.getElementById('art-hero-photo-preview');
+  const img = document.getElementById('art-hero-photo-img');
+  if(url && preview && img){ preview.style.display='block'; img.src=url; }
+  else if(preview){ preview.style.display='none'; }
+}
+
+async function handleHeroPhotoSelect(event){
+  const file = event.target.files?.[0];
+  if(!file || !supabaseClient) return;
+  const statusEl = document.getElementById('art-hero-photo-status');
+  if(statusEl) statusEl.textContent = 'アップロード中...';
+  const ext = file.name.split('.').pop();
+  const path = `articles/${Date.now()}.${ext}`;
+  const { error } = await supabaseClient.storage.from('article-images').upload(path, file, { upsert: true });
+  if(error){ if(statusEl) statusEl.textContent = '失敗: ' + error.message; return; }
+  const { data: pub } = supabaseClient.storage.from('article-images').getPublicUrl(path);
+  const url = pub?.publicUrl || '';
+  const inp = document.getElementById('art-hero-photo-url');
+  if(inp){ inp.value = url; updateHeroPhotoPreview(); }
+  if(statusEl) statusEl.textContent = 'アップロード完了 ✓';
+}
+
 async function handleProfilePhotoSelect(event){
   const file = event.target.files?.[0];
   if(!file || !supabaseClient) return;
@@ -1376,16 +1400,32 @@ function renderArticleEditor(){
       <div class="phdr">基本情報</div>
       <div class="pbody">
         <!-- プロフィール写真 -->
-        <div style="margin-bottom:16px">
-          <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:6px">プロフィール写真（カードに表示）</label>
-          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-            <input id="co-photo-file-art" type="file" accept="image/*" style="display:none" onchange="handleProfilePhotoSelect(event)">
-            <button type="button" onclick="document.getElementById('co-photo-file-art').click()" style="padding:6px 14px;background:var(--navy);color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;border-radius:2px;font-family:inherit;white-space:nowrap">📷 アップロード</button>
-            <span id="art-profile-photo-status" style="font-size:11px;color:var(--text3)">またはURLを入力</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <!-- カード写真 -->
+          <div>
+            <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:6px">📷 カード写真（一覧カードに表示）</label>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+              <input id="co-photo-file-art" type="file" accept="image/*" style="display:none" onchange="handleProfilePhotoSelect(event)">
+              <button type="button" onclick="document.getElementById('co-photo-file-art').click()" style="padding:6px 14px;background:var(--navy);color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;border-radius:2px;font-family:inherit;white-space:nowrap">アップロード</button>
+              <span id="art-profile-photo-status" style="font-size:11px;color:var(--text3)">またはURL</span>
+            </div>
+            <input id="art-profile-photo-url" type="url" placeholder="https://..." style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;margin-bottom:8px" oninput="updateProfilePhotoPreview()">
+            <div id="art-profile-photo-preview" style="display:none">
+              <img id="art-profile-photo-img" style="height:70px;border-radius:50%;border:2px solid var(--border);object-fit:cover">
+            </div>
           </div>
-          <input id="art-profile-photo-url" type="url" placeholder="https://..." style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;margin-bottom:8px" oninput="updateProfilePhotoPreview()">
-          <div id="art-profile-photo-preview" style="display:none">
-            <img id="art-profile-photo-img" style="height:80px;border-radius:50%;border:2px solid var(--border);object-fit:cover">
+          <!-- 記事ヒーロー画像 -->
+          <div>
+            <label style="font-size:11px;color:var(--teal-d);display:block;margin-bottom:6px">🖼 記事ヒーロー画像（記事TOP表示）<br><span style="font-size:10px;color:var(--text3);font-weight:400">※カードと別画像にしたい場合に設定</span></label>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+              <input id="art-hero-photo-file" type="file" accept="image/*" style="display:none" onchange="handleHeroPhotoSelect(event)">
+              <button type="button" onclick="document.getElementById('art-hero-photo-file').click()" style="padding:6px 14px;background:var(--teal);color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;border-radius:2px;font-family:inherit;white-space:nowrap">アップロード</button>
+              <span id="art-hero-photo-status" style="font-size:11px;color:var(--text3)">またはURL</span>
+            </div>
+            <input id="art-hero-photo-url" type="url" placeholder="https://（空欄 = カード写真と同じ）" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid rgba(66,173,159,0.35);border-radius:2px;font-size:12px;font-family:inherit;margin-bottom:8px" oninput="updateHeroPhotoPreview()">
+            <div id="art-hero-photo-preview" style="display:none">
+              <img id="art-hero-photo-img" style="height:70px;border-radius:4px;border:2px solid var(--teal);object-fit:cover">
+            </div>
           </div>
         </div>
         <!-- タイプ・プラン -->
@@ -1584,6 +1624,8 @@ function onArtCompanyChange(id){
   // 基本情報フィールドを復元
   const setVal = (elId, val) => { const el=document.getElementById(elId); if(el) el.value=val||''; };
   setVal('art-profile-photo-url', co.photoUrl||'');
+  setVal('art-hero-photo-url', co.heroUrl||'');
+  updateHeroPhotoPreview();
   setVal('art-type', co.type||'manager');
   setVal('art-plan', co.plan||'light');
   setVal('art-article-type', co.articleType||'light');
@@ -2037,6 +2079,7 @@ async function saveArticle(){
   const cardLabel=(document.getElementById('art-card-label-edit')?.value||document.getElementById('art-card-label')?.value||'').trim();
   // 基本情報
   const photoUrl=document.getElementById('art-profile-photo-url')?.value.trim()||'';
+  const heroUrl=document.getElementById('art-hero-photo-url')?.value.trim()||'';
   const type=document.getElementById('art-type')?.value||'manager';
   const plan=document.getElementById('art-plan')?.value||'light';
   const articleType=document.getElementById('art-article-type')?.value||'standard';
@@ -2051,7 +2094,7 @@ async function saveArticle(){
     body: JSON.stringify(_articleSections),
     tags, catchphrase, quote,
     companyIntro, q1, cardLabel,
-    photoUrl, type, plan, articleType
+    photoUrl, heroUrl, type, plan, articleType
   };
   saveCompanies(companies);
   if(statusEl) statusEl.textContent='✓ 保存しました！';
