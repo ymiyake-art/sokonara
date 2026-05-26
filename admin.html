@@ -48,6 +48,8 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
 .nav-item:hover{color:rgba(255,255,255,0.75);background:rgba(255,255,255,0.04);}
 .nav-item.active{color:#fff;border-left-color:var(--teal);background:rgba(66,173,159,0.1);}
 .nav-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.nav-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--hot);color:#fff;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;margin-left:auto;line-height:1;flex-shrink:0;}
+.nav-badge[data-count="0"],.nav-badge:empty{display:none;}
 .co-items{padding:12px 0;border-top:1px solid rgba(255,255,255,0.07);}
 .co-item{display:flex;align-items:center;gap:8px;padding:7px 16px;}
 .co-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;}
@@ -198,7 +200,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
         <div class="admin-nav-label">メニュー</div>
         <div class="nav-item active" id="ni-dash" onclick="switchTab('dash')"><div class="nav-dot" style="background:var(--teal)"></div>ダッシュボード</div>
         <div class="nav-item" id="ni-reactions" onclick="switchTab('reactions')"><div class="nav-dot" style="background:var(--hot)"></div>反応一覧</div>
-        <div class="nav-item" id="ni-interests" onclick="switchTab('interests')"><div class="nav-dot" style="background:#e67e22"></div>興味通知フォーム</div>
+        <div class="nav-item" id="ni-interests" onclick="switchTab('interests')"><div class="nav-dot" style="background:#e67e22"></div>興味通知フォーム<span class="nav-badge" id="interests-badge" data-count="0"></span></div>
         <div class="nav-item" id="ni-contacts" onclick="switchTab('contacts')"><div class="nav-dot" style="background:var(--warm)"></div>接点候補</div>
         <div class="nav-item" id="ni-report" onclick="switchTab('report')"><div class="nav-dot" style="background:var(--navy)"></div>AIレポート</div>
         <div class="nav-item" id="ni-broadcast" onclick="switchTab('broadcast')"><div class="nav-dot" style="background:#06c755"></div>LINE配信</div>
@@ -237,6 +239,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
 const COMPANIES=[];
 const REACTIONS=[];
 const EMPATHY=[];
+let _adminPw = ''; // ログイン時にセット（sessionStorageと同期）
 const SUPABASE_URL = 'https://ypwwuylcvjwcyazvpibd.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd3d1eWxjdmp3Y3lhenZwaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTY1MTMsImV4cCI6MjA5MjI3MjUxM30.7YseXt8libEzFsSAv4bI46l36kZ2lFz_jnh1JphVpvA';
 // Vercel設定手順:
@@ -278,12 +281,15 @@ async function checkPass(){
     });
     const data = await res.json();
     if(data.ok){
+      _adminPw = v;
+      sessionStorage.setItem('snAdminPw', v);
       document.getElementById('gate').style.display='none';
       document.getElementById('topbar').style.display='flex';
       document.getElementById('shell').style.display='block';
       localStorage.setItem('snAdmin', String(Date.now()));
       loadCompaniesAsync().finally(renderSidebarCompanies);
       loadProjectsAsync();
+      refreshInterestBadge();
       switchTab(getInitialTab());
     } else {
       document.getElementById('gate-err').style.display='block';
@@ -300,20 +306,25 @@ async function checkPass(){
     btn.textContent = 'ログイン';
   }
 }
-function logout(){localStorage.removeItem('snAdmin');location.reload();}
+function logout(){localStorage.removeItem('snAdmin');sessionStorage.removeItem('snAdminPw');_adminPw='';location.reload();}
 
 window.addEventListener('DOMContentLoaded',()=>{
   const ts = parseInt(localStorage.getItem('snAdmin')||'0', 10);
   const validSession = ts > 0 && (Date.now() - ts) < 24 * 60 * 60 * 1000; // 24時間
-  if(validSession){
+  const savedPw = sessionStorage.getItem('snAdminPw') || '';
+  if(validSession && savedPw){
+    _adminPw = savedPw;
     document.getElementById('gate').style.display='none';
     document.getElementById('topbar').style.display='flex';
     document.getElementById('shell').style.display='block';
     loadCompaniesAsync().finally(renderSidebarCompanies);
     loadProjectsAsync();
+    refreshInterestBadge();
     switchTab(getInitialTab());
   } else {
+    // セッション切れ or ブラウザ再起動 → 再ログイン
     localStorage.removeItem('snAdmin');
+    sessionStorage.removeItem('snAdminPw');
   }
 });
 
@@ -324,6 +335,11 @@ function switchTab(tab){
   if(ni) ni.classList.add('active');
   const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',article:'📝 記事管理',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧'};
   document.getElementById('tabTitle').textContent=titles[tab]||tab;
+  if(tab === 'interests'){
+    // 既読としてマーク
+    localStorage.setItem('snLastSeenInterests', new Date().toISOString());
+    setInterestBadge(0);
+  }
   const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,article:renderArticleEditor,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList};
   fns[tab]?.();
 }
@@ -463,15 +479,49 @@ function filterTemp(v){
   });
 }
 
+// ===== バッジ管理 =====
+function setInterestBadge(count){
+  const el = document.getElementById('interests-badge');
+  if(!el) return;
+  if(count > 0){
+    el.textContent = count > 99 ? '99+' : String(count);
+    el.dataset.count = String(count);
+    el.style.display = '';
+  } else {
+    el.textContent = '';
+    el.dataset.count = '0';
+    el.style.display = 'none';
+  }
+}
+
+async function refreshInterestBadge(){
+  if(!_adminPw) return;
+  const since = localStorage.getItem('snLastSeenInterests') || '';
+  try {
+    const res = await fetch('/api/interest-forms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: _adminPw, action: 'count_unread', since })
+    });
+    if(res.ok){
+      const { count } = await res.json();
+      setInterestBadge(count || 0);
+    }
+  } catch(e){ /* サイレント失敗 */ }
+}
+
 async function renderInterests(){
   const el = document.getElementById('adminContent');
   el.innerHTML = `<div style="padding:24px"><div style="font-size:12px;color:var(--text2);margin-bottom:16px">読み込み中...</div></div>`;
   let rows = [];
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/interest_forms?select=*&order=created_at.desc&limit=100`,{
-      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
+    const res = await fetch('/api/interest-forms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: _adminPw, action: 'list' })
     });
-    rows = await res.json();
+    if(res.ok){ rows = await res.json(); }
+    if(!Array.isArray(rows)) rows = [];
   } catch(e){ rows = []; }
 
   const typeLabel = {empathy:'共感',collaborate:'参画',hire:'転職'};
@@ -806,10 +856,12 @@ function renderBroadcast(){
 async function loadLineUsers(){
   const el = document.getElementById('lineUserList');
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/interest_forms?select=line_id,form_data,company_name,ceo_name,created_at&line_id=not.is.null&order=created_at.desc`,{
-      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
+    const res = await fetch('/api/interest-forms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: _adminPw, action: 'list_line_users' })
     });
-    const rows = await res.json();
+    const rows = res.ok ? await res.json() : [];
     const seen = new Set();
     const unique = rows.filter(r=>{ if(seen.has(r.line_id)) return false; seen.add(r.line_id); return true; });
     if(unique.length===0){ el.innerHTML='<div style="font-size:12px;color:var(--text2)">LINE連携済みユーザーはまだいません</div>'; return; }
