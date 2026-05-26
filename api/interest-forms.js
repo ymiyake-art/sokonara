@@ -15,7 +15,7 @@ export default async function handler(req) {
     return new Response('Method Not Allowed', { status: 405 });
   }
 
-  const { password, action, since } = await req.json();
+  const { password, action, since, id } = await req.json();
 
   // パスワード検証
   const correct = process.env.ADMIN_PASSWORD;
@@ -83,6 +83,24 @@ export default async function handler(req) {
     const match = contentRange.match(/\/(\d+)/);
     const count = match ? parseInt(match[1], 10) : 0;
     return new Response(JSON.stringify({ count }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+    });
+  }
+
+  // ---- 1件削除 ----
+  if (action === 'delete') {
+    if (!id) {
+      return new Response(JSON.stringify({ error: 'id required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+      });
+    }
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/interest_forms?id=eq.${encodeURIComponent(id)}`,
+      { method: 'DELETE', headers: sbHeaders }
+    );
+    return new Response(JSON.stringify({ ok: res.ok, status: res.status }), {
       status: 200,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
     });

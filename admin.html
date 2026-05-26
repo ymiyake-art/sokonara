@@ -240,6 +240,7 @@ const COMPANIES=[];
 const REACTIONS=[];
 const EMPATHY=[];
 let _adminPw = ''; // ログイン時にセット（sessionStorageと同期）
+let _interestRows = []; // 興味通知フォーム一覧キャッシュ（CSV用）
 const SUPABASE_URL = 'https://ypwwuylcvjwcyazvpibd.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd3d1eWxjdmp3Y3lhenZwaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTY1MTMsImV4cCI6MjA5MjI3MjUxM30.7YseXt8libEzFsSAv4bI46l36kZ2lFz_jnh1JphVpvA';
 // Vercel設定手順:
@@ -524,25 +525,31 @@ async function renderInterests(){
     if(!Array.isArray(rows)) rows = [];
   } catch(e){ rows = []; }
 
+  _interestRows = rows; // CSV用にキャッシュ
+
   const typeLabel = {empathy:'共感',collaborate:'参画',hire:'転職'};
   const typeBg    = {empathy:'rgba(66,173,159,0.1)',collaborate:'rgba(230,126,34,0.1)',hire:'rgba(192,52,26,0.08)'};
   const typeColor = {empathy:'var(--teal-d)',collaborate:'#e67e22',hire:'var(--hot)'};
 
   el.innerHTML = `<div style="padding:24px">
-    <div style="font-size:12px;color:var(--text2);margin-bottom:16px">${rows.length}件の興味通知</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <span style="font-size:12px;color:var(--text2)">${rows.length}件の興味通知</span>
+      ${rows.length>0?`<button onclick="downloadInterestsCsv()" style="margin-left:auto;padding:6px 14px;background:var(--navy);color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;border-radius:2px;font-family:inherit;display:flex;align-items:center;gap:6px">⬇ CSVダウンロード</button>`:''}
+    </div>
     ${rows.length===0?`<div style="background:var(--white);border:1px solid var(--border);padding:40px;text-align:center;border-radius:2px;color:var(--text2);">まだ登録がありません</div>`:''}
     ${rows.map(r=>{
       const fd = r.form_data||{};
       const values = Array.isArray(r.ai_values)&&r.ai_values.length ? r.ai_values.join(' / ') : '—';
       const dt = r.created_at ? new Date(r.created_at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
-      const isEmpathy = r.intent_type === 'empathy';
-      return `<div style="background:var(--white);border:1px solid var(--border);border-radius:2px;padding:14px 16px;margin-bottom:8px;">
+      const rid = String(r.id||'');
+      return `<div id="irow-${rid}" style="background:var(--white);border:1px solid var(--border);border-radius:2px;padding:14px 16px;margin-bottom:8px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
           <span style="font-size:9px;padding:2px 8px;background:${typeBg[r.intent_type]||'var(--bg)'};color:${typeColor[r.intent_type]||'var(--text2)'};border-radius:2px;font-family:'JetBrains Mono',monospace;font-weight:700">${typeLabel[r.intent_type]||r.intent_type}</span>
           <span style="font-size:13px;font-weight:700;color:var(--navy)">${fd.name || (fd.age ? fd.age+'代' : '—')}</span>
           ${fd.email ? `<span style="font-size:12px;color:var(--text2)">${fd.email}</span>` : ''}
           ${r.line_id ? `<span style="font-size:9px;padding:2px 6px;background:rgba(6,199,85,0.1);color:#06c755;border-radius:2px;font-family:'JetBrains Mono',monospace">LINE連携済</span>` : ''}
-          <span style="font-size:10px;color:var(--text3);margin-left:auto">${dt}</span>
+          <span style="font-size:10px;color:var(--text3)">${dt}</span>
+          <button onclick="deleteInterestRow('${rid}',this)" style="margin-left:auto;padding:3px 9px;background:none;border:1px solid rgba(192,52,26,0.3);color:var(--hot);font-size:10px;cursor:pointer;border-radius:2px;font-family:inherit;white-space:nowrap">🗑 削除</button>
         </div>
         <div style="font-size:11px;color:var(--text2);margin-bottom:4px">対象：<strong>${r.company_name||'—'} / ${r.ceo_name||'—'}</strong></div>
         <div style="font-size:11px;color:var(--teal-d);margin-bottom:4px">価値観：${values}</div>
@@ -560,6 +567,76 @@ async function renderInterests(){
       </div>`;
     }).join('')}
   </div>`;
+}
+
+async function deleteInterestRow(id, btn){
+  if(!id) return;
+  if(!confirm('このエントリを削除しますか？\n（この操作は取り消せません）')) return;
+  btn.disabled = true;
+  btn.textContent = '削除中...';
+  try {
+    const res = await fetch('/api/interest-forms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: _adminPw, action: 'delete', id })
+    });
+    const data = await res.json();
+    if(data.ok || res.ok){
+      const row = document.getElementById('irow-' + id);
+      if(row){ row.style.transition='opacity .3s'; row.style.opacity='0'; setTimeout(()=>row.remove(), 300); }
+      _interestRows = _interestRows.filter(r => String(r.id) !== String(id));
+      toast('削除しました');
+    } else {
+      btn.disabled = false; btn.textContent = '🗑 削除';
+      toast('削除に失敗しました');
+    }
+  } catch(e){
+    btn.disabled = false; btn.textContent = '🗑 削除';
+    toast('エラーが発生しました');
+  }
+}
+
+function downloadInterestsCsv(){
+  const rows = _interestRows;
+  if(!rows || rows.length === 0){ toast('データがありません'); return; }
+  const typeLabel = {empathy:'共感', collaborate:'参画', hire:'転職'};
+  const headers = ['日時','種別','氏名','メールアドレス','対象企業','対象経営層','価値観','刺さった言葉','希望接点','職場','年齢','自己紹介','共感理由','関わり方','コメント','LINE連携'];
+  const escape = v => `"${String(v==null?'':v).replace(/"/g,'""')}"`;
+  const csvLines = [headers.map(escape).join(',')];
+  rows.forEach(r => {
+    const fd = r.form_data || {};
+    const dt = r.created_at ? new Date(r.created_at).toLocaleString('ja-JP') : '';
+    const values = Array.isArray(r.ai_values) ? r.ai_values.join(' | ') : '';
+    csvLines.push([
+      dt,
+      typeLabel[r.intent_type] || r.intent_type || '',
+      fd.name || '',
+      fd.email || '',
+      r.company_name || '',
+      r.ceo_name || '',
+      values,
+      r.q1_answer || '',
+      r.q3_answer || '',
+      fd.job || '',
+      fd.age || '',
+      fd.self_intro || '',
+      fd.empathy_reason || '',
+      fd.involvement || '',
+      fd.comment || '',
+      r.line_id ? '済' : '',
+    ].map(escape).join(','));
+  });
+  const bom = '﻿'; // Excel用BOM（文字化け防止）
+  const blob = new Blob([bom + csvLines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `interest_forms_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('CSVをダウンロードしました');
 }
 
 function renderContacts(){
