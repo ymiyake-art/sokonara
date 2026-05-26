@@ -503,8 +503,9 @@ async function renderInterests(){
         ${fd.empathy_reason?`<div style="font-size:11px;color:var(--text2);margin-bottom:4px">共感理由：${fd.empathy_reason}</div>`:''}
         ${fd.involvement?`<div style="font-size:11px;color:var(--text2);margin-bottom:4px">関わり方：${fd.involvement}</div>`:''}
         ${fd.comment?`<div style="font-size:11px;color:var(--text2);margin-bottom:4px">コメント：${fd.comment}</div>`:''}
-        ${fd.email?`<div style="margin-top:8px;display:flex;gap:6px">
-          <a href="mailto:${fd.email}" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border:1px solid var(--teal);background:var(--teal-bg);color:var(--teal-d);border-radius:2px;text-decoration:none;">メール送信</a>
+        ${fd.email?`<div style="margin-top:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);word-break:break-all;">${fd.email}</span>
+          <button onclick="navigator.clipboard.writeText('${fd.email}').then(()=>{this.textContent='✓ コピー済み';setTimeout(()=>{this.textContent='メアドをコピー'},1500)})" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border:1px solid var(--teal);background:var(--teal-bg);color:var(--teal-d);border-radius:2px;cursor:pointer;white-space:nowrap;">メアドをコピー</button>
         </div>`:''}
       </div>`;
     }).join('')}
