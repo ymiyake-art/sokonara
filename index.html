@@ -1708,13 +1708,19 @@ function requireLineForContact() {
   const lineId = localStorage.getItem('snLineId');
 
   if (!lineId) {
-    // 完全未登録 → LINEログイン＋友だち追加プロンプト
+    // 未ログイン → LINEログイン
     _startLineLoginForContact();
     return;
   }
 
-  // LINE IDあり → リアルタイムで友だち状態を確認（キャッシュは信用しない）
-  toast('確認中...', 3000);
+  // LINE IDあり → ログイン時に取得済みのフレンド状態を使用
+  const cachedFriend = localStorage.getItem('snLineFriend');
+  if (cachedFriend === '1') {
+    openEmpathyForm();
+    return;
+  }
+
+  // フレンド未追加 or 不明 → APIで一度だけ確認（ループ防止のためリトライしない）
   const ctrl = new AbortController();
   const tid = setTimeout(() => ctrl.abort(), 5000);
   fetch('/api/check-friend', {
@@ -1729,15 +1735,21 @@ function requireLineForContact() {
     if (isFriend) {
       openEmpathyForm();
     } else {
-      // 未追加 → LINE Loginを再実行して友だち追加プロンプトを表示
-      // 完了後にOAuthコールバックでアプリへ自動復帰する
-      toast('ソコナラ公式LINEの友だち追加が必要です', 3000);
-      setTimeout(() => { _startLineLoginForContact(); }, 600);
+      // 未追加 → 一度だけ友だち追加プロンプト付きでLINEログイン
+      // ただし既にリトライ済みの場合はループ防止でフォームを開く
+      if (localStorage.getItem('sn_friend_retry')) {
+        localStorage.removeItem('sn_friend_retry');
+        openEmpathyForm();
+      } else {
+        localStorage.setItem('sn_friend_retry', '1');
+        toast('ソコナラ公式LINEの友だち追加が必要です', 3000);
+        setTimeout(() => { _startLineLoginForContact(); }, 600);
+      }
     }
   }).catch(() => {
     clearTimeout(tid);
-    // タイムアウト or エラー → LINE Loginで再確認
-    _startLineLoginForContact();
+    // API失敗時はループせずそのままフォームを開く
+    openEmpathyForm();
   });
 }
 
