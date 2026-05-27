@@ -735,7 +735,8 @@ function loadCompanies(){
 function toCompanyRow(c){
   return {
     id:c.id,name:c.name,ceo:c.ceo,type:c.type,plan:c.plan,articleType:c.articleType,
-    photoUrl:c.photoUrl||'',industry:c.industry||'',employeeSize:c.employeeSize||'',companyIntro:c.companyIntro||'',
+    photoUrl:c.photoUrl||'',heroUrl:c.heroUrl||'',
+    industry:c.industry||'',employeeSize:c.employeeSize||'',companyIntro:c.companyIntro||'',
     tags:c.tags||[],title:c.title||'',quote:c.quote||'',body:c.body||'',q1:c.q1||[],fee:c.fee||'',
     catchphrase:c.catchphrase||'',cardLabel:c.cardLabel||'',
     status:c.status||'active',created_at:c.created_at||new Date().toISOString(),reactions:c.reactions||0,cta:c.cta||0
@@ -763,7 +764,7 @@ async function saveCompanies(arr){
     // catchphraseカラム未追加の場合は除外して再試行
     if(error.message.includes('catchphrase') || error.message.includes('cardLabel') || error.message.includes('card_label') || error.message.includes('column')){
       const minRows = rows.map(r=>{
-        const {catchphrase,cardLabel,...rest}=r; return rest;
+        const {catchphrase,cardLabel,heroUrl,...rest}=r; return rest;
       });
       const {error:e2} = await supabaseClient.from('companies').upsert(minRows,{onConflict:'id'});
       if(e2){
