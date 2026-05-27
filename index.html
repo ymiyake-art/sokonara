@@ -351,10 +351,7 @@ h1, h2, h3, h4,
 @media(min-width:960px){
   .article-hero-photo { height: 420px; border-radius: 10px; }
 }
-.article-hero-photo::after {
-  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
-  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.75));
-}
+/* .article-hero-photo::after — グラデーションぼかし削除 */
 .cta-sticky-text strong {
   font-size: 13px; font-weight: 700;
   color: rgba(255,255,255,0.85); white-space: nowrap;
