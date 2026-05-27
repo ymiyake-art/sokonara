@@ -1672,7 +1672,13 @@ function renderArticleEditor(){
 
       <!-- セクション一覧 -->
       <div class="panel" style="margin-bottom:20px">
-        <div class="phdr">解析されたセクション</div>
+        <div class="phdr" style="display:flex;align-items:center">
+          <span>セクション</span>
+          <div style="margin-left:auto;display:flex;gap:6px">
+            <button onclick="addSection('section')" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 10px;background:var(--teal);color:#fff;border:none;border-radius:2px;cursor:pointer">＋ 本文</button>
+            <button onclick="addSection('qa')" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 10px;background:var(--navy);color:#fff;border:none;border-radius:2px;cursor:pointer">＋ Q&A</button>
+          </div>
+        </div>
         <div class="pbody" style="padding:0">
           <div id="art-sections-list"></div>
         </div>
@@ -2082,12 +2088,16 @@ function renderSectionsList(){
 
     const bodyEditor = sec.type==='qa'
       ? (sec.items||[]).map((item,j)=>`
-          <div style="margin-bottom:10px;padding:8px;background:#f8f8f8;border-radius:3px;border:1px solid var(--border)">
-            <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Q${j+1}</div>
+          <div style="margin-bottom:8px;padding:8px;background:#f8f8f8;border-radius:3px;border:1px solid var(--border)">
+            <div style="display:flex;align-items:center;margin-bottom:4px">
+              <span style="font-size:10px;color:var(--text2);font-weight:700">Q${j+1}</span>
+              <button onclick="deleteQaItem(${i},${j})" style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:8px;padding:1px 6px;border:1px solid rgba(192,52,26,0.3);background:none;cursor:pointer;border-radius:2px;color:var(--hot)">✕ 削除</button>
+            </div>
             <input value="${escHtml(item.q||'')}" ${inp('','updateQItem('+i+','+j+',\'q\',this.value)')} style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;margin-bottom:6px">
             <div style="font-size:10px;color:var(--text2);margin-bottom:4px">A${j+1}</div>
             <textarea rows="3" ${inp('','updateQItem('+i+','+j+',\'a\',this.value)')} style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical">${escHtml(item.a||'')}</textarea>
           </div>`).join('')
+        + `<button onclick="addQaItem(${i})" style="font-family:'JetBrains Mono',monospace;font-size:9px;padding:4px 12px;background:var(--navy);color:#fff;border:none;border-radius:2px;cursor:pointer;margin-top:4px">＋ Q&A追加</button>`
       : `<textarea rows="5" oninput="updateSecBody(${i},this.value)" style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.7">${escHtml(sec.body||'')}</textarea>`;
 
     return `
@@ -2098,7 +2108,7 @@ function renderSectionsList(){
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
             <span style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 7px;background:${typeColor};color:#fff;border-radius:2px;flex-shrink:0">${typeLabel}</span>
             <button onclick="openPhotoPickerForSection(${i})" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 8px;border:1px solid var(--border);background:none;cursor:pointer;border-radius:2px;color:var(--text2);flex-shrink:0">${sec.photoUrl?'写真変更':'📷'}</button>
-            ${sec.photoUrl?`<button onclick="clearSectionPhoto(${i})" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 8px;border:1px solid rgba(192,52,26,0.3);background:none;cursor:pointer;border-radius:2px;color:var(--hot);flex-shrink:0">写真削除</button>`:''}
+            ${sec.photoUrl?`<button onclick="deleteSectionPhoto(${i})" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 8px;border:1px solid rgba(192,52,26,0.3);background:none;cursor:pointer;border-radius:2px;color:var(--hot);flex-shrink:0">🗑 写真削除</button>`:''}
             <button onclick="deleteSection(${i})" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 8px;border:1px solid rgba(192,52,26,0.4);background:rgba(192,52,26,0.06);cursor:pointer;border-radius:2px;color:var(--hot);flex-shrink:0;margin-left:auto">✕ セクション削除</button>
           </div>
           <input value="${escHtml(sec.heading||'')}" placeholder="見出し" oninput="updateSecHeading(${i},this.value)" style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--border);border-radius:2px;font-size:13px;font-weight:700;font-family:inherit;color:var(--navy);outline:none">
@@ -2127,6 +2137,84 @@ function clearSectionPhoto(i){
   renderSectionsList();
 }
 
+// セクション写真をStorageから削除（確認付き）
+async function deleteSectionPhoto(i){
+  const url = _articleSections[i]?.photoUrl;
+  if(!url) return;
+  const isStorage = url.includes('/storage/v1/object/public/article-images/');
+  const msg = isStorage
+    ? 'この写真をセクションから外し、Supabase Storageからも完全削除しますか？\n（写真ライブラリに残す場合は「キャンセル」→「写真変更」で別の写真を選んでください）'
+    : 'この写真をセクションから外しますか？';
+  if(!confirm(msg)) return;
+  if(isStorage && supabaseClient){
+    const marker = '/object/public/article-images/';
+    const idx = url.indexOf(marker);
+    if(idx !== -1){
+      const path = url.slice(idx + marker.length);
+      await supabaseClient.storage.from('article-images').remove([path]);
+      // ライブラリからも削除
+      _articlePhotos = _articlePhotos.filter(p => p.url !== url);
+      renderPhotoLib();
+    }
+  }
+  _articleSections[i].photoUrl = '';
+  renderSectionsList();
+  toast('写真を削除しました');
+}
+
+// セクション追加
+function addSection(type){
+  const sec = { type: type||'section', heading:'', body:'', photoUrl:'' };
+  if(type==='qa') sec.items = [{q:'',a:''}];
+  _articleSections.push(sec);
+  // art-parsed が非表示なら表示
+  const parsed = document.getElementById('art-parsed');
+  if(parsed) parsed.style.display = 'block';
+  renderSectionsList();
+  // 追加したセクションまでスクロール
+  setTimeout(()=>{
+    const el = document.getElementById('art-sections-list');
+    if(el && el.lastElementChild) el.lastElementChild.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }, 80);
+}
+
+// Q&Aアイテム追加
+function addQaItem(i){
+  if(!_articleSections[i].items) _articleSections[i].items=[];
+  _articleSections[i].items.push({q:'',a:''});
+  renderSectionsList();
+}
+
+// Q&Aアイテム削除
+function deleteQaItem(i,j){
+  if(!confirm(`Q${j+1}を削除しますか？`)) return;
+  _articleSections[i].items.splice(j,1);
+  renderSectionsList();
+}
+
+// 写真ライブラリから削除（Storage含む）
+async function deletePhotoFromLib(i){
+  const p = _articlePhotos[i];
+  if(!p) return;
+  const isStorage = p.url.includes('/storage/v1/object/public/article-images/');
+  const msg = isStorage
+    ? `「${p.name}」をライブラリとSupabase Storageから完全削除しますか？`
+    : `「${p.name}」をライブラリから削除しますか？`;
+  if(!confirm(msg)) return;
+  if(isStorage && supabaseClient){
+    const marker = '/object/public/article-images/';
+    const idx = p.url.indexOf(marker);
+    if(idx !== -1){
+      const path = p.url.slice(idx + marker.length);
+      const {error} = await supabaseClient.storage.from('article-images').remove([path]);
+      if(error){ toast('Storage削除失敗: ' + error.message); return; }
+    }
+  }
+  _articlePhotos.splice(i,1);
+  renderPhotoLib();
+  toast('削除しました');
+}
+
 // ===== 写真ライブラリ =====
 function renderPhotoLib(){
   const el=document.getElementById('art-photo-lib');
@@ -2135,9 +2223,12 @@ function renderPhotoLib(){
   el.innerHTML=_articlePhotos.map((p,i)=>{
     const safeUrl=escHtml(p.url);
     const safeName=escHtml(p.name);
-    return `<div style="position:relative;cursor:pointer" onclick="_assignPhoto(${i})" title="${safeName}">
-      <img src="${safeUrl}" style="width:80px;height:60px;object-fit:cover;border-radius:3px;border:2px solid var(--border);display:block">
-      <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(28,42,84,0.7);font-size:8px;color:#fff;padding:2px 4px;border-radius:0 0 3px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${safeName}</div>
+    return `<div style="position:relative;display:inline-block">
+      <div style="cursor:pointer" onclick="_assignPhoto(${i})" title="クリックでセクションに割り当て：${safeName}">
+        <img src="${safeUrl}" style="width:80px;height:60px;object-fit:cover;border-radius:3px;border:2px solid var(--border);display:block">
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(28,42,84,0.7);font-size:8px;color:#fff;padding:2px 4px;border-radius:0 0 3px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${safeName}</div>
+      </div>
+      <button onclick="event.stopPropagation();deletePhotoFromLib(${i})" title="Storageから削除" style="position:absolute;top:-5px;right:-5px;width:17px;height:17px;background:var(--hot);color:#fff;border:none;border-radius:50%;font-size:10px;cursor:pointer;line-height:1;padding:0;display:flex;align-items:center;justify-content:center">×</button>
     </div>`;
   }).join('');
 }
