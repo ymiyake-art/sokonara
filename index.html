@@ -1699,64 +1699,29 @@ function isLineFriend() {
 // ソコナラ【公式】のボット基本ID（@から始まる値）
 const LINE_OFFICIAL_ID = '@630zglyb';
 
+// redirect_uri を固定（モバイルでのlocation.pathname差異を防ぐ）
+const LINE_REDIRECT_URI = 'https://app.sokonara.co.jp/';
+
 // LINE Login（友だち追加プロンプト付き）でコンタクト意図を持ってリダイレクト
 function _startLineLoginForContact() {
-  const redirectUri = encodeURIComponent(location.origin + location.pathname);
+  const redirectUri = encodeURIComponent(LINE_REDIRECT_URI);
   const clientId = '2009807359';
   const coId = String(selectedCompanyId || '');
   const state = Math.random().toString(36).slice(2) + '.c.' + coId;
   localStorage.setItem('snLineState', state);
-  // bot_prompt=aggressive: 既ログイン済みでも友だち追加プロンプトを再表示する
   location.href = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${encodeURIComponent(state)}&scope=profile&bot_prompt=aggressive`;
 }
 
 function requireLineForContact() {
   const lineId = localStorage.getItem('snLineId');
-
   if (!lineId) {
     // 未ログイン → LINEログイン
     _startLineLoginForContact();
     return;
   }
-
-  // LINE IDあり → ログイン時に取得済みのフレンド状態を使用
-  const cachedFriend = localStorage.getItem('snLineFriend');
-  if (cachedFriend === '1') {
-    openEmpathyForm();
-    return;
-  }
-
-  // フレンド未追加 or 不明 → APIで一度だけ確認（ループ防止のためリトライしない）
-  const ctrl = new AbortController();
-  const tid = setTimeout(() => ctrl.abort(), 5000);
-  fetch('/api/check-friend', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ lineId }),
-    signal: ctrl.signal,
-  }).then(r => r.json()).then(d => {
-    clearTimeout(tid);
-    const isFriend = d.friend === true;
-    localStorage.setItem('snLineFriend', isFriend ? '1' : '0');
-    if (isFriend) {
-      openEmpathyForm();
-    } else {
-      // 未追加 → 一度だけ友だち追加プロンプト付きでLINEログイン
-      // ただし既にリトライ済みの場合はループ防止でフォームを開く
-      if (localStorage.getItem('sn_friend_retry')) {
-        localStorage.removeItem('sn_friend_retry');
-        openEmpathyForm();
-      } else {
-        localStorage.setItem('sn_friend_retry', '1');
-        toast('ソコナラ公式LINEの友だち追加が必要です', 3000);
-        setTimeout(() => { _startLineLoginForContact(); }, 600);
-      }
-    }
-  }).catch(() => {
-    clearTimeout(tid);
-    // API失敗時はループせずそのままフォームを開く
-    openEmpathyForm();
-  });
+  // LINE ログイン済み → フレンドチェックなしで直接フォームを開く
+  // （Messaging API と Login channel の userId namespace が異なるためフレンドチェックは廃止）
+  openEmpathyForm();
 }
 
 function beginLineLogin() {
@@ -1765,8 +1730,8 @@ function beginLineLogin() {
     companyId: selectedCompanyId,
     q1: S.q1, q2: S.q2, q3: S.q3, free: S.free, fb: S.fb
   }));
-  const redirectUri = encodeURIComponent(location.origin + location.pathname);
-  const clientId = '2009807359'; // LINE Login channel ID
+  const redirectUri = encodeURIComponent(LINE_REDIRECT_URI);
+  const clientId = '2009807359';
   const state = Math.random().toString(36).slice(2);
   localStorage.setItem('snLineState', state);
   const url = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=profile`;
@@ -3145,7 +3110,7 @@ if (_stateOk) {
   fetch('/api/line-token', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({code: _lineCode, redirect_uri: location.origin + location.pathname})
+    body: JSON.stringify({code: _lineCode, redirect_uri: LINE_REDIRECT_URI})
   }).then(r=>r.json()).then(d=>{
     if(d.line_id){
       localStorage.setItem('snLineId', d.line_id);
@@ -3180,7 +3145,7 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
   renderAdminSidebar();
 
   // LINEコールバックページ（code付きURL）ではfetchが完了後にreloadするのでここでは何もしない
-  if(_lineCode && _savedState !== null){
+  if(_lineCode){
     goScreen('p-list');
     return;
   }
