@@ -2881,16 +2881,7 @@ function closeInterestModal(e){
   document.body.style.overflow = '';
 }
 
-const WEBCAS_FORM_BASE_URL = 'https://www17.webcas.net/db/pub/sokonara/register-meet-r/create/input';
-
-function buildWebcasUrl(co) {
-  const params = new URLSearchParams();
-  if(co?.name || co?.company) params.set('company', co.name || co.company);
-  if(co?.ceo)  params.set('ceo', co.ceo);
-  if(S.q3)     params.set('intent', S.q3);
-  const qs = params.toString();
-  return WEBCAS_FORM_BASE_URL + (qs ? '?' + qs : '');
-}
+const WEBCAS_FORM_URL = 'https://www17.webcas.net/db/pub/sokonara/register-meet-r/create/input';
 
 function openEmpathyForm() {
   const co = getCurrentCompany();
@@ -2939,7 +2930,7 @@ async function goToWebcasForm() {
   // WEBCASフォームへ遷移（企業・CEO・意向をURLパラメータで渡す）
   document.getElementById('empathyModal').style.display = 'none';
   localStorage.removeItem('sn_fb_cache');
-  window.open(buildWebcasUrl(co), '_blank');
+  window.open(WEBCAS_FORM_URL, '_blank');
   goScreen('p5');
 }
 
