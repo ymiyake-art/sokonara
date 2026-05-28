@@ -1473,12 +1473,32 @@ h1, h2, h3, h4,
 <!-- ===========================
      EMPATHY FORM MODAL
      =========================== -->
-<div id="empathyModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;overflow-y:auto;-webkit-overflow-scrolling:touch;">
-  <div style="background:#fff;max-width:480px;margin:24px auto 40px;border-radius:4px;padding:28px 20px;position:relative;">
-    <button onclick="document.getElementById('empathyModal').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text2);">×</button>
-    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:8px;">CONTACT FORM</div>
-    <div style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:6px;" id="empathyModalTitle">経営層への共感を送る</div>
-    <div style="font-size:12px;color:var(--text2);margin-bottom:16px;" id="empathyModalSub"></div>
+<div id="empathyModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div style="background:#fff;max-width:440px;margin:40px auto 40px;border-radius:6px;padding:28px 22px;position:relative;">
+    <button onclick="document.getElementById('empathyModal').style.display='none'" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text2);">×</button>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:8px;">NEXT STEP</div>
+    <div style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:6px;" id="empathyModalTitle">接点を作る</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:20px;" id="empathyModalSub"></div>
+
+    <div style="background:#f0faf8;border-left:3px solid var(--teal);border-radius:0 4px 4px 0;padding:14px 16px;margin-bottom:22px;font-size:13px;color:#2e6b62;line-height:1.9;">
+      次のページで氏名・メールアドレス等の詳細情報を入力します。<br>
+      入力いただいた情報は、関心を示した企業への推薦・情報提供に使用します。
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">
+      <div style="display:flex;align-items:flex-start;gap:12px;font-size:13px;color:var(--text);">
+        <div style="width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">1</div>
+        <div>「フォームに進む」ボタンを押すと登録フォームが開きます</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;font-size:13px;color:var(--text);">
+        <div style="width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">2</div>
+        <div>フォームに必要事項を入力して送信してください</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;font-size:13px;color:var(--text);">
+        <div style="width:22px;height:22px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">3</div>
+        <div>担当者が内容を確認し、経営層に取り次ぎます</div>
+      </div>
+    </div>
 
     <div style="background:#f0faf8;border-left:3px solid var(--teal);border-radius:0 4px 4px 0;padding:12px 14px;margin-bottom:20px;font-size:12px;color:#2e6b62;line-height:1.8;">
       自己紹介や共感した理由を具体的にご記載いただくことで、企業との相互理解や対話が深まりやすくなります。
@@ -1489,72 +1509,14 @@ h1, h2, h3, h4,
       <input id="empName" type="text" placeholder="例：田中 太郎" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:14px;">
     </div>
 
-    <div style="margin-bottom:14px;">
-      <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px;">現在の職場・職種 <span style="color:var(--hot)">*</span></label>
-      <input id="empJob" type="text" placeholder="例：株式会社〇〇 / 営業" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:14px;">
+    <button class="btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:14px;" onclick="goToWebcasForm()">
+      詳細登録フォームに進む →
+    </button>
+    <div style="font-size:11px;color:var(--text2);text-align:center;margin-top:10px;line-height:1.7;">
+      ※ 応募ではありません。まずは気軽な対話・情報交換から可能です。<br>
+      ※ 個人情報は次のページで入力します。このアプリには保存されません。
     </div>
-
-    <div style="margin-bottom:14px;">
-      <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px;">メールアドレス <span style="color:var(--hot)">*</span></label>
-      <input id="empEmail" type="email" placeholder="example@email.com" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:14px;">
-    </div>
-
-    <div style="margin-bottom:14px;">
-      <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px;">年齢 <span style="color:var(--hot)">*</span></label>
-      <input id="empAge" type="text" placeholder="例：32歳" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:14px;">
-    </div>
-
-    <div style="margin-bottom:16px;">
-      <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:4px;">自己紹介 <span style="color:var(--hot)">*</span></label>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">これまでの仕事・経験・関心テーマなどを自由にご記入ください。</div>
-      <textarea id="empSelf" rows="3" placeholder="例：IT企業で営業を5年経験。地域の課題解決に興味があります。" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:13px;resize:vertical;line-height:1.7;"></textarea>
-    </div>
-
-    <div style="margin-bottom:16px;">
-      <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:4px;">この記事に共感した理由 <span style="color:var(--hot)">*</span></label>
-      <textarea id="empReason" rows="3" placeholder="例：「なぜそれをやるのか」を大切にする姿勢に共感しました。" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:13px;resize:vertical;line-height:1.7;"></textarea>
-    </div>
-
-    <div style="margin-bottom:20px;">
-      <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:8px;">関わり方のイメージ <span style="color:var(--text3);font-weight:400;">（任意）</span></label>
-      <div id="empInvolvementChips" style="display:flex;flex-direction:column;gap:8px;">
-        <label style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:13px;line-height:1.5;">
-          <input type="radio" name="empInvolvement" value="転職を視野に入れている" style="margin-top:2px;accent-color:var(--teal);">
-          <span>① 転職を視野に入れている</span>
-        </label>
-        <label style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:13px;line-height:1.5;">
-          <input type="radio" name="empInvolvement" value="副業など関わり方を相談したい" style="margin-top:2px;accent-color:var(--teal);">
-          <span>② 副業など関わり方を相談したい</span>
-        </label>
-        <label style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:13px;line-height:1.5;">
-          <input type="radio" name="empInvolvement" value="ライトに関わってみたい" style="margin-top:2px;accent-color:var(--teal);">
-          <span>③ 打ち合わせへの参画などライトに関わってみたい</span>
-        </label>
-        <label style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:13px;line-height:1.5;">
-          <input type="radio" name="empInvolvement" value="other" style="margin-top:2px;accent-color:var(--teal);">
-          <span>④ その他</span>
-        </label>
-      </div>
-      <textarea id="empInvolvementOther" rows="2" placeholder="その他の場合は自由にご記入ください" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:13px;resize:vertical;line-height:1.7;margin-top:8px;display:none;"></textarea>
-    </div>
-
-    <div style="background:var(--light);border-radius:4px;padding:12px 14px;margin-bottom:20px;font-size:11px;color:var(--text2);line-height:1.8;">
-      正式な応募ではありません。経営層があなたのメッセージを見て、話してみたいと感じた場合にメールで連絡が届きます。
-    </div>
-
-    <div style="margin-bottom:16px;display:flex;flex-direction:column;gap:12px;">
-      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
-        <input type="checkbox" id="empConsent1" style="margin-top:3px;accent-color:var(--teal);flex-shrink:0;">
-        <span style="font-size:12px;color:var(--text);line-height:1.7;">私は、ソコナラ<a href="#" style="color:var(--teal);text-decoration:underline;">利用規約</a>および<a href="#" style="color:var(--teal);text-decoration:underline;">プライバシーポリシー</a>を確認し、同意の上で申し込みます。</span>
-      </label>
-      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
-        <input type="checkbox" id="empConsent2" style="margin-top:3px;accent-color:var(--teal);flex-shrink:0;">
-        <span style="font-size:12px;color:var(--text);line-height:1.7;">私は、株式会社ソコナラが、本フォームに入力した情報および提出書類を、ソコナラの利用企業に対して情報提供・推薦することに同意します。また、当該情報提供・推薦が職業紹介サービスの一環として行われる場合があることを確認しました。</span>
-      </label>
-    </div>
-
-    <button class="btn-primary" style="width:100%;justify-content:center;" onclick="submitEmpathyForm()">共感を送る</button>
-    <div id="empathyError" style="color:var(--hot);font-size:12px;text-align:center;margin-top:8px;display:none;"></div>
+    <div id="empathyError" style="color:var(--hot);font-size:12px;text-align:center;margin-top:10px;display:none;"></div>
   </div>
 </div>
 
@@ -2914,87 +2876,49 @@ function closeInterestModal(e){
   document.body.style.overflow = '';
 }
 
+const WEBCAS_FORM_URL = 'https://www17.webcas.net/db/pub/sokonara/register-meet-r/create/input';
+
 function openEmpathyForm() {
   const co = getCurrentCompany();
   const title = document.getElementById('empathyModalTitle');
-  const sub = document.getElementById('empathyModalSub');
+  const sub   = document.getElementById('empathyModalSub');
   const ceoName = co?.ceo || '経営層';
-  if(title) title.textContent = ceoName + 'さんへの共感を送る';
-  if(sub) sub.textContent = (co?.name||co?.company||'') + 'の記事を読んで、' + ceoName + 'さんに共感した内容を送ります。';
-  document.getElementById('empName').value = '';
-  document.getElementById('empJob').value = '';
-  document.getElementById('empEmail').value = '';
-  document.getElementById('empAge').value = '';
-  document.getElementById('empSelf').value = '';
-  document.getElementById('empReason').value = '';
-  document.getElementById('empInvolvementOther').value = '';
-  document.getElementById('empInvolvementOther').style.display = 'none';
-  document.querySelectorAll('input[name="empInvolvement"]').forEach(r=>r.checked=false);
-  document.getElementById('empConsent1').checked = false;
-  document.getElementById('empConsent2').checked = false;
-  document.getElementById('empathyError').style.display = 'none';
-  // ④その他の表示制御
-  document.querySelectorAll('input[name="empInvolvement"]').forEach(r=>{
-    r.onchange = ()=>{
-      document.getElementById('empInvolvementOther').style.display = r.value==='other'&&r.checked ? 'block' : (document.querySelector('input[name="empInvolvement"][value="other"]:checked') ? 'block' : 'none');
-    };
-  });
+  const coName  = co?.name || co?.company || '';
+  if(title) title.textContent = ceoName + 'さんへの接点を作る';
+  if(sub) sub.textContent = coName ? `${coName} / ${ceoName}さんの記事に関心を持たれた方へ` : `${ceoName}さんの記事に関心を持たれた方へ`;
+  const errEl = document.getElementById('empathyError');
+  if(errEl) errEl.style.display = 'none';
   document.getElementById('empathyModal').style.display = 'block';
 }
 
-async function submitEmpathyForm() {
-  const name  = document.getElementById('empName').value.trim();
-  const job   = document.getElementById('empJob').value.trim();
-  const email = document.getElementById('empEmail').value.trim();
-  const age   = document.getElementById('empAge').value.trim();
-  const self  = document.getElementById('empSelf').value.trim();
-  const reason = document.getElementById('empReason').value.trim();
-  const errEl = document.getElementById('empathyError');
-  if(!name || !job || !email || !age || !self || !reason) {
-    errEl.textContent = '氏名・職場・メール・年齢・自己紹介・共感理由は必須です';
-    errEl.style.display = 'block';
-    return;
-  }
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-    errEl.textContent = 'メールアドレスの形式が正しくありません';
-    errEl.style.display = 'block';
-    return;
-  }
-  if(!document.getElementById('empConsent1').checked || !document.getElementById('empConsent2').checked){
-    errEl.textContent = '同意事項にチェックを入れてください';
-    errEl.style.display = 'block';
-    return;
-  }
-  const involvementRadio = document.querySelector('input[name="empInvolvement"]:checked');
-  let involvement = involvementRadio?.value || '';
-  if(involvement === 'other') {
-    involvement = document.getElementById('empInvolvementOther').value.trim() || 'その他';
-  }
+async function goToWebcasForm() {
   const co = getCurrentCompany();
-  const payload = {
-    line_id: localStorage.getItem('snLineId') || null,
-    company_id: String(selectedCompanyId||''),
-    company_name: co?.name||co?.company||'',
-    ceo_name: co?.ceo||'',
-    intent_type: 'empathy',
-    q1_answer: S.q1||'',
-    q2_values: S.q2||[],
-    q3_answer: S.q3||'',
-    ai_values: S.fb?.values||[],
-    form_data: { name, job, email, age, self_intro: self, empathy_reason: reason, involvement }
-  };
+  // Supabaseに匿名の関心ログのみ保存（個人情報なし）
   try {
-    const { error } = await supabaseClient.from('interest_forms').insert([payload]);
-    if(error) throw error;
-    document.getElementById('empathyModal').style.display = 'none';
-    localStorage.removeItem('sn_fb_cache'); // 送信完了後はキャッシュをクリア
-    goScreen('p5');
+    const payload = {
+      line_id:    localStorage.getItem('snLineId') || null,
+      company_id: String(selectedCompanyId || ''),
+      company_name: co?.name || co?.company || '',
+      ceo_name:   co?.ceo || '',
+      intent_type: 'empathy',
+      q1_answer:  S.q1 || '',
+      q2_values:  S.q2 || [],
+      q3_answer:  S.q3 || '',
+      ai_values:  S.fb?.values || [],
+      form_data:  {},  // 個人情報はWEBCASで収集
+    };
+    if(supabaseClient) await supabaseClient.from('interest_forms').insert([payload]);
   } catch(e) {
-    console.error('empathy submit error:', e);
-    errEl.textContent = '送信に失敗しました: ' + (e?.message || e?.details || e?.code || JSON.stringify(e).slice(0,120));
-    errEl.style.display = 'block';
+    console.warn('intent log failed (non-blocking):', e?.message || e);
   }
+  // WEBCASフォームへ遷移
+  document.getElementById('empathyModal').style.display = 'none';
+  localStorage.removeItem('sn_fb_cache');
+  window.open(WEBCAS_FORM_URL, '_blank');
+  goScreen('p5');
 }
+
+// submitEmpathyForm は goToWebcasForm() に統合しました
 
 async function submitInterestForm(formType, coName, ceoName){
   const name  = (document.getElementById('if-name')?.value||'').trim();
