@@ -2033,6 +2033,22 @@ function loadPrimaryCompany(){
 }
 
 function openCompanyArticle(id){
+  // 同じ企業の結果キャッシュがあれば直接p3へ復元
+  try {
+    const cacheRaw = localStorage.getItem('sn_fb_cache');
+    if(cacheRaw) {
+      const cache = JSON.parse(cacheRaw);
+      if(String(cache.companyId) === String(id) && cache.fb && (Date.now() - (cache.ts||0)) < 86400000) {
+        selectedCompanyId = String(id);
+        S.q1 = cache.q1||''; S.q2 = cache.q2||[]; S.q3 = cache.q3||''; S.free = cache.free||''; S.fb = cache.fb;
+        goScreen('p3');
+        showFeedback(S.fb);
+        renderP1FromCompany();
+        return;
+      }
+    }
+  } catch(e) {}
+
   selectedCompanyId = String(id || '');
   // Q1-Q3の表示状態をリセット
   S.q1=''; S.q2=[]; S.q3=''; S.free='';
@@ -2376,6 +2392,7 @@ async function genFeedback() {
     if(!m) throw new Error('no JSON in response');
     const fb = JSON.parse(m[0]);
     S.fb = fb;
+    _saveFbCache();
     showFeedback(fb);
   } catch(e) {
     console.error('[feedback error]', e?.message || e);
@@ -2387,31 +2404,35 @@ async function genFeedback() {
       bridge:'「なぜ変えるのか」に反応したあなたの視点が、対話の価値を高めます'
     };
     S.fb = fb;
+    _saveFbCache();
     showFeedback(fb);
   }
+}
+
+function _saveFbCache(){
+  try {
+    localStorage.setItem('sn_fb_cache', JSON.stringify({
+      companyId: selectedCompanyId,
+      fb: S.fb,
+      q1: S.q1, q2: S.q2, q3: S.q3, free: S.free,
+      ts: Date.now()
+    }));
+  } catch(e) {}
 }
 
 function showFeedback(fb) {
   document.getElementById('fbSkel').style.display = 'none';
   document.getElementById('fbContent').style.display = 'block';
 
-  // 簡易フィードバック（常に表示）
-  const summaryEl = document.getElementById('fbSummaryText');
-  if(summaryEl) {
-    const summaryText = fb.summary || '';
-    if(isLineFriend()){
-      summaryEl.textContent = summaryText;
-    } else {
-      const sentences = summaryText.split(/(?<=。)/);
-      const preview = sentences.slice(0, 3).join('');
-      summaryEl.innerHTML = preview
-        + '<span style="opacity:0.5">・・・</span>'
-        + '<span style="display:block;margin-top:10px;font-size:12px;color:var(--teal);font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">▼ 続きは公式LINE登録後に</span>';
-    }
-  }
+  // LINE登録済みかどうかで詳細表示を切り替え（フレンドチェックではなくログイン状態で判定）
+  const lineRegistered = isLineRegistered();
 
-  if(isLineFriend()) {
-    // LINE登録済み：要約非表示・詳細表示
+  // 簡易フィードバックテキスト
+  const summaryEl = document.getElementById('fbSummaryText');
+  if(summaryEl) summaryEl.textContent = fb.summary || '';
+
+  if(lineRegistered) {
+    // LINE登録済み：要約ブロック非表示・詳細フル表示
     document.getElementById('fbSummary').style.display = 'none';
     document.getElementById('fbLineCta').style.display = 'none';
     document.getElementById('fbDetail').style.display = 'block';
@@ -2442,7 +2463,15 @@ function showFeedback(fb) {
       saveSession();
     }, 1100);
   } else {
-    // LINE未登録：簡易表示のみ
+    // LINE未登録：要約のみ（続きをぼかし）
+    if(summaryEl) {
+      const summaryText = fb.summary || '';
+      const sentences = summaryText.split(/(?<=。)/);
+      const preview = sentences.slice(0, 3).join('');
+      summaryEl.innerHTML = preview
+        + '<span style="opacity:0.5">・・・</span>'
+        + '<span style="display:block;margin-top:10px;font-size:12px;color:var(--teal);font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">▼ 続きはLINE登録後に</span>';
+    }
     document.getElementById('fbLineCta').style.display = 'block';
     document.getElementById('fbDetail').style.display = 'none';
     const cta = document.getElementById('fbCta');
@@ -3058,6 +3087,7 @@ ${companyName}の${ceoName}との接点、
 }
 function resetAll(){
   S.q1='';S.q2=[];S.q3='';S.free='';S.fb=null;
+  localStorage.removeItem('sn_fb_cache');
   document.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
   const ft=document.getElementById('freeText'); if(ft) ft.value='';
   const sb=document.getElementById('submitBtn'); if(sb) sb.disabled=true;
