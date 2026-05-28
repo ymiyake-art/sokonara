@@ -1406,7 +1406,8 @@ h1, h2, h3, h4,
           <div id="fbCtaLabel" style="font-size:13px;color:var(--text2);margin-bottom:10px;text-align:center"></div>
           <div style="display:flex;flex-direction:column;gap:10px;">
             <button class="btn-primary" style="width:100%;justify-content:center;" onclick="openEmpathyForm()">この経営層との接点を作る</button>
-            <button class="btn-outline" style="width:100%;justify-content:center;font-size:13px;" onclick="goScreen('p-list')">他の経営層の記事を読む</button>
+            <button class="btn-outline" style="width:100%;justify-content:center;font-size:13px;" onclick="goScreen('p4')">あなたに近い経営層を見る →</button>
+            <button class="btn-outline" style="width:100%;justify-content:center;font-size:13px;opacity:0.7;" onclick="goScreen('p-list')">トップに戻る</button>
           </div>
         </div>
       </div>
@@ -1435,6 +1436,9 @@ h1, h2, h3, h4,
       </div>
 
       <div class="reco-cards" id="recoCards"></div>
+      <div style="margin-top:32px;padding-bottom:8px">
+        <button class="btn-outline" style="width:100%;justify-content:center;font-size:13px;" onclick="goScreen('p-list')">← トップに戻る</button>
+      </div>
     </div>
   </div>
 
@@ -2042,10 +2046,11 @@ function openCompanyArticle(id){
       const cache = JSON.parse(cacheRaw);
       if(String(cache.companyId) === String(id) && cache.fb && (Date.now() - (cache.ts||0)) < 86400000) {
         selectedCompanyId = String(id);
-        S.q1 = cache.q1||''; S.q2 = cache.q2||[]; S.q3 = cache.q3||''; S.free = cache.free||''; S.fb = cache.fb;
+        S.q2 = cache.q2||[]; S.q3 = cache.q3||''; S.free = cache.free||''; S.fb = cache.fb;
+        renderP1FromCompany(); // CEO名・ラベル更新（S.q1をリセットする場合あり）
+        S.q1 = cache.q1||''; // renderP1FromCompanyの後に再セット
         goScreen('p3');
         showFeedback(S.fb);
-        renderP1FromCompany();
         return;
       }
     }
@@ -2195,7 +2200,7 @@ function renderP1FromCompany(){
     const _quoteTxt = quote ? (quote.startsWith('「') ? escapeHtml(quote) : '「' + escapeHtml(quote) + '」') : '';
     const quoteHtml = _quoteTxt ? `<div class="article-quote"><p>${_quoteTxt}</p></div>` : '';
     if (!body && !quote) {
-      bd.innerHTML = '<div class="no-article-msg">記事コンテンツを準備中です。<br>もうしばらくお待ちください。<br><br><a href="#" onclick="goScreen(\"p4\");return false;" style="color:var(--teal);font-size:12px">→ 他の経営層を見る</a></div>';
+      bd.innerHTML = '<div class="no-article-msg">記事コンテンツを準備中です。<br>もうしばらくお待ちください。<br><br><a href="#" onclick="goScreen(\'p-list\');return false;" style="color:var(--teal);font-size:12px">→ 他の経営層を見る</a></div>';
     } else if (body.trimStart().startsWith('[{')) {
       // 構造化記事（JSON sections）- リード文がintroを担うのでquoteHtmlは不要
       try {
@@ -2797,8 +2802,8 @@ function randomState(len=8){
 // ===== INTEREST FORM MODAL =====
 function openInterestModal(trigger, overrideCoName, overrideCeoName){
   const q3 = S.q3 || trigger || '';
-  const isHire      = q3.includes('転職');
-  const isCollaborate = q3.includes('副業') || q3.includes('プロジェクト');
+  const isHire      = q3.includes('転職') || q3.includes('フルコミット');
+  const isCollaborate = q3.includes('副業') || q3.includes('プロジェクト') || q3.includes('関わりたい');
   const co = getCurrentCompany();
   const coName = overrideCoName || co?.name || '';
   const ceoName = overrideCeoName || co?.ceo || '';
@@ -2982,6 +2987,7 @@ async function submitEmpathyForm() {
     const { error } = await supabaseClient.from('interest_forms').insert([payload]);
     if(error) throw error;
     document.getElementById('empathyModal').style.display = 'none';
+    localStorage.removeItem('sn_fb_cache'); // 送信完了後はキャッシュをクリア
     goScreen('p5');
   } catch(e) {
     console.error('empathy submit error:', e);
@@ -3043,6 +3049,7 @@ async function submitInterestForm(formType, coName, ceoName){
 
   document.getElementById('interestModal').classList.remove('open');
   document.body.style.overflow = '';
+  localStorage.removeItem('sn_fb_cache'); // 送信完了後はキャッシュをクリア
   goScreen('p5');
 }
 
