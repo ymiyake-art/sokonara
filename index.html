@@ -1446,15 +1446,18 @@ h1, h2, h3, h4,
   <div id="p5" class="screen">
     <div style="margin:auto;padding:48px 24px;text-align:center;max-width:440px">
       <div class="complete-icon">✓</div>
-      <div class="complete-title">共感を送信しました。</div>
-      <div style="font-size:14px;color:rgba(255,255,255,0.8);line-height:2;margin:24px 0 16px;text-align:left;">
-        経営層があなたと話してみたいと感じた場合には、メールで連絡が入ります。<br>
-        その出会いが、キャリアの転機となるかもしれません。ぜひ対話を進めてみてください。
+      <div class="complete-title">フォームを開きました。</div>
+      <div style="font-size:14px;color:rgba(255,255,255,0.9);line-height:2;margin:24px 0 16px;text-align:left;background:rgba(66,173,159,0.15);border-left:3px solid var(--teal);padding:14px 16px;border-radius:0 4px 4px 0;">
+        別タブで登録フォームが開いています。<br>
+        氏名・メールアドレスなどの詳細をご記入いただき、送信してください。
       </div>
       <div style="font-size:13px;color:rgba(255,255,255,0.55);line-height:2;margin-bottom:36px;text-align:left;">
-        メッセージを送ること自体が、自分の価値観やこれからのキャリアを振り返るきっかけにもなります。他の経営層の記事も読みながら、共鳴した相手にメッセージを送ってみてください。
+        登録完了後、担当者が内容を確認し、ご関心の経営層へ取り次ぎます。メールにてご連絡差し上げます。
       </div>
-      <button class="btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.4);" onclick="goScreen('p-list')">他の経営層の記事を読む →</button>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button class="btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.4);width:100%;justify-content:center;" onclick="window.open(WEBCAS_FORM_URL,'_blank')">フォームをもう一度開く</button>
+        <button class="btn-outline" style="color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.2);width:100%;justify-content:center;font-size:13px;" onclick="goScreen('p-list')">他の経営層の記事を読む →</button>
+      </div>
     </div>
   </div>
 
@@ -2883,54 +2886,29 @@ function closeInterestModal(e){
 
 const WEBCAS_FORM_URL = 'https://www17.webcas.net/db/pub/sokonara/register-meet-r/create/input';
 
-function openEmpathyForm() {
+async function openEmpathyForm() {
   const co = getCurrentCompany();
-  const title = document.getElementById('empathyModalTitle');
-  const sub   = document.getElementById('empathyModalSub');
-  const ceoName = co?.ceo || '経営層';
-  const coName  = co?.name || co?.company || '';
-  if(title) title.textContent = ceoName + 'さんへの接点を作る';
-  if(sub) sub.textContent = coName ? `${coName} / ${ceoName}さんの記事に関心を持たれた方へ` : `${ceoName}さんの記事に関心を持たれた方へ`;
-
-  // 「フォームで伝える内容」を表示
-  const hint = document.getElementById('empathyCompanyHint');
-  if(hint) {
-    const intentLabel = S.q3 || '話を聞いてみたい';
-    hint.innerHTML = coName && co?.ceo
-      ? `<strong>${coName} / ${co.ceo}さん</strong>の記事に共感<br>関わり方：${intentLabel}`
-      : '';
-    hint.style.display = (coName || co?.ceo) ? 'block' : 'none';
-  }
-
-  const errEl = document.getElementById('empathyError');
-  if(errEl) errEl.style.display = 'none';
-  document.getElementById('empathyModal').style.display = 'block';
-}
-
-async function goToWebcasForm() {
-  const co = getCurrentCompany();
-  // Supabaseに匿名の関心ログのみ保存（個人情報なし）
+  // Supabaseに匿名の関心ログのみ保存（個人情報なし・ノンブロッキング）
   try {
     const payload = {
-      line_id:    localStorage.getItem('snLineId') || null,
-      company_id: String(selectedCompanyId || ''),
+      line_id:      localStorage.getItem('snLineId') || null,
+      company_id:   String(selectedCompanyId || ''),
       company_name: co?.name || co?.company || '',
-      ceo_name:   co?.ceo || '',
-      intent_type: 'empathy',
-      q1_answer:  S.q1 || '',
-      q2_values:  S.q2 || [],
-      q3_answer:  S.q3 || '',
-      ai_values:  S.fb?.values || [],
-      form_data:  {},  // 個人情報はWEBCASで収集
+      ceo_name:     co?.ceo || '',
+      intent_type:  'empathy',
+      q1_answer:    S.q1 || '',
+      q2_values:    S.q2 || [],
+      q3_answer:    S.q3 || '',
+      ai_values:    S.fb?.values || [],
+      form_data:    {},
     };
     if(supabaseClient) await supabaseClient.from('interest_forms').insert([payload]);
   } catch(e) {
     console.warn('intent log failed (non-blocking):', e?.message || e);
   }
-  // WEBCASフォームへ遷移（企業・CEO・意向をURLパラメータで渡す）
-  document.getElementById('empathyModal').style.display = 'none';
   localStorage.removeItem('sn_fb_cache');
   window.open(WEBCAS_FORM_URL, '_blank');
+  toast('登録フォームを開きました。詳細をご記入ください。', 3200);
   goScreen('p5');
 }
 
