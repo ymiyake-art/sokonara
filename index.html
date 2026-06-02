@@ -2330,6 +2330,11 @@ function goScreen(id) {
     else if(i===idx) d.classList.add('active');
   });
   window.scrollTo(0,0);
+  // ホーム画面追加バナー：TOPでのみ表示、それ以外では隠す
+  try {
+    if(id === 'p-list'){ if(typeof showPwaBanner==='function') setTimeout(showPwaBanner, 1500); }
+    else { if(typeof hidePwaBannerForNav==='function') hidePwaBannerForNav(); }
+  } catch(e) {}
 }
 
 function show(id){ document.getElementById(id).style.display='block'; }
@@ -3276,6 +3281,8 @@ function showPwaBanner(){
   if(_isStandalone()) return;
   if(!_isMobile()) return;
   if(localStorage.getItem('sn_pwa_dismissed') === '1') return;
+  // TOP（経営層一覧）画面のときだけ表示（記事画面ではCTAの邪魔になるため）
+  if(S.screen !== 'p-list') return;
 
   const banner = document.getElementById('pwaBanner');
   if(!banner) return;
@@ -3302,6 +3309,15 @@ function dismissPwaBanner(){
   const banner = document.getElementById('pwaBanner');
   if(banner){ banner.style.transform = 'translateY(110%)'; setTimeout(()=>{ banner.style.display='none'; }, 350); }
   localStorage.setItem('sn_pwa_dismissed', '1');
+}
+
+// 画面遷移用：却下フラグは立てずに一時的に隠す（TOPに戻れば再表示）
+function hidePwaBannerForNav(){
+  const banner = document.getElementById('pwaBanner');
+  if(banner && banner.style.display !== 'none'){
+    banner.style.transform = 'translateY(110%)';
+    setTimeout(()=>{ if(S.screen !== 'p-list') banner.style.display='none'; }, 350);
+  }
 }
 
 async function triggerPwaInstall(){
