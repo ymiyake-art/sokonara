@@ -2389,13 +2389,32 @@ async function genFeedback() {
   const _co = selectedCompanyId ? loadCompanies().find(c=>String(c.id||'')===String(selectedCompanyId)) : null;
   const ceoLabel = (_co && _co.ceo ? _co.ceo : '経営層') + (_co && (_co.name||_co.company) ? `（${_co.name||_co.company}）` : '');
 
+  // 経営層の記事・キャラクター情報（診断の文脈として渡す。bodyは長いので冒頭を抜粋）
+  const _stripBody = (b) => {
+    if(!b) return '';
+    let t = String(b);
+    if(t.trimStart().startsWith('[{')){
+      try{ t = JSON.parse(t).map(s=>[s.heading,s.body,(s.items||[]).map(i=>(i.q||'')+' '+(i.a||'')).join(' ')].filter(Boolean).join(' ')).join(' '); }catch{}
+    }
+    t = t.replace(/[#*>\-\n]+/g,' ').replace(/\s+/g,' ').trim();
+    return t.slice(0, 600);
+  };
+  const ceoProfile = _co ? {
+    ceo: _co.ceo||'', company: _co.name||_co.company||'',
+    catchphrase: _co.catchphrase||_co.quote||'',
+    title: _co.title||'',
+    tags: Array.isArray(_co.tags) ? _co.tags.filter(Boolean) : [],
+    intro: _co.companyIntro||_co.intro||'',
+    articleExcerpt: _stripBody(_co.body)
+  } : null;
+
   try {
     const res = await fetch('/api/feedback',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         type: 'values',
-        data: { ceoLabel, q1: S.q1, q2: S.q2, q3: S.q3, free: S.free||'' }
+        data: { ceoLabel, ceoProfile, q1: S.q1, q2: S.q2, q3: S.q3, free: S.free||'' }
       })
     });
     if(!res.ok) throw new Error('API error ' + res.status);
