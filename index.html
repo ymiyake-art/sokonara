@@ -1312,8 +1312,9 @@ h1, h2, h3, h4,
           <div class="q-prog-step active"></div>
           <div class="q-prog-step"></div>
           <div class="q-prog-step"></div>
+          <div class="q-prog-step"></div>
         </div>
-        <div class="q-num">Q 1 / 3</div>
+        <div class="q-num">Q 1 / 4</div>
         <div class="q-text">この記事の中で、最も刺さった言葉は？</div>
         <div class="chip-list" id="q1chips">
           <div class="chip" onclick="pickQ1(this,'変えたいものがある人間に、古い会社ほど面白いフィールドはない')"><div class="chip-check">✓</div><span>変えたいものがある人間に、古い会社ほど面白いフィールドはない</span></div>
@@ -1332,8 +1333,9 @@ h1, h2, h3, h4,
           <div class="q-prog-step done"></div>
           <div class="q-prog-step active"></div>
           <div class="q-prog-step"></div>
+          <div class="q-prog-step"></div>
         </div>
-        <div class="q-num">Q 2 / 3</div>
+        <div class="q-num">Q 2 / 4</div>
         <div class="q-text">今、あなたが求めているものは？<br><span class="q-sub">（複数選択可）</span></div>
         <div class="chip-list" id="q2chips">
           <div class="chip" onclick="toggleQ2(this)"><div class="chip-check">✓</div><span>挑戦できる環境</span></div>
@@ -1344,18 +1346,43 @@ h1, h2, h3, h4,
         </div>
         <div class="q-nav">
           <button class="btn-outline" onclick="show('q1b'),hide('q2b')">← 戻る</button>
-          <button class="btn-primary" id="q2next" onclick="show('q3b'),hide('q2b')" disabled>次へ →</button>
+          <button class="btn-primary" id="q2next" onclick="show('qaboutb'),hide('q2b')" disabled>次へ →</button>
         </div>
       </div>
 
-      <!-- Q3 -->
-      <div id="q3b" style="display:none">
+      <!-- Q3（個人について） -->
+      <div id="qaboutb" style="display:none">
         <div class="q-progress">
           <div class="q-prog-step done"></div>
           <div class="q-prog-step done"></div>
           <div class="q-prog-step active"></div>
+          <div class="q-prog-step"></div>
         </div>
-        <div class="q-num">Q 3 / 3</div>
+        <div class="q-num">Q 3 / 4</div>
+        <div class="q-text">今のあなたの状況に近いものは？<br><span class="q-sub">（複数選択可）</span></div>
+        <div class="chip-list" id="qaboutchips">
+          <div class="chip" onclick="toggleAbout(this)"><div class="chip-check">✓</div><span>今の仕事や働き方にモヤモヤがある</span></div>
+          <div class="chip" onclick="toggleAbout(this)"><div class="chip-check">✓</div><span>転職・キャリアチェンジを考えている</span></div>
+          <div class="chip" onclick="toggleAbout(this)"><div class="chip-check">✓</div><span>副業・プロジェクトで力を試したい</span></div>
+          <div class="chip" onclick="toggleAbout(this)"><div class="chip-check">✓</div><span>地元・地域で働くことに関心がある</span></div>
+          <div class="chip" onclick="toggleAbout(this)"><div class="chip-check">✓</div><span>今は急いでいないが、良い出会いがあれば</span></div>
+          <div class="chip" onclick="toggleAbout(this)"><div class="chip-check">✓</div><span>自分のキャリアや強みを整理したい</span></div>
+        </div>
+        <div class="q-nav">
+          <button class="btn-outline" onclick="show('q2b'),hide('qaboutb')">← 戻る</button>
+          <button class="btn-primary" id="qaboutnext" onclick="show('q3b'),hide('qaboutb')">次へ →</button>
+        </div>
+      </div>
+
+      <!-- Q4（関わり方） -->
+      <div id="q3b" style="display:none">
+        <div class="q-progress">
+          <div class="q-prog-step done"></div>
+          <div class="q-prog-step done"></div>
+          <div class="q-prog-step done"></div>
+          <div class="q-prog-step active"></div>
+        </div>
+        <div class="q-num">Q 4 / 4</div>
         <div class="q-text" id="q3CeoText">経営層との接点として、興味があるのは？</div>
         <div class="chip-list" id="q3chips">
           <div class="chip" onclick="pickQ3(this,'まず話を聞いてみたい')"><div class="chip-check">✓</div><span>まず話を聞いてみたい</span></div>
@@ -1369,7 +1396,7 @@ h1, h2, h3, h4,
         <div style="font-size:11px;color:var(--teal);margin-bottom:6px;font-family:'JetBrains Mono',monospace;letter-spacing:0.5px;">※ 記述が多いほどAI診断の精度が上がります</div>
         <textarea id="freeText" class="free-input" rows="4" placeholder="この経営層に会えたとしたら、最初に何を聞きたいですか？気になったこと・感じたことなど自由に。"></textarea>
         <div class="q-nav" style="margin-top:18px">
-          <button class="btn-outline" onclick="show('q2b'),hide('q3b')">← 戻る</button>
+          <button class="btn-outline" onclick="show('qaboutb'),hide('q3b')">← 戻る</button>
           <button class="btn-primary" id="submitBtn" onclick="submitEmpathy()" disabled>自分の価値観を見る →</button>
         </div>
       </div>
@@ -1698,7 +1725,7 @@ const Q2_DIST = [
 ];
 
 // ===== STATE =====
-const S = { q1:'', q2:[], q3:'', free:'', fb:null, screen:'p-list', mode:'user', adminTab:'dash' };
+const S = { q1:'', q2:[], about:[], q3:'', free:'', fb:null, screen:'p-list', mode:'user', adminTab:'dash' };
 
 function isLineRegistered() {
   return !!localStorage.getItem('snLineId');
@@ -1749,12 +1776,12 @@ function beginLineLogin() {
   // LINE遷移前に現在の状態をlocalStorageに保存（高速パス。fb込み）
   localStorage.setItem('sn_restore', JSON.stringify({
     companyId: selectedCompanyId,
-    q1: S.q1, q2: S.q2, q3: S.q3, free: S.free, fb: S.fb
+    q1: S.q1, q2: S.q2, about: S.about, q3: S.q3, free: S.free, fb: S.fb
   }));
   const redirectUri = encodeURIComponent(LINE_REDIRECT_URI);
   const clientId = '2009807359';
   // 回答をstateに埋め込む（localStorageが失われても診断を再生成できるよう、URL経由で持ち回す）
-  const payload = _b64encUtf8({ c: selectedCompanyId||'', q1: S.q1||'', q2: S.q2||[], q3: S.q3||'' });
+  const payload = _b64encUtf8({ c: selectedCompanyId||'', q1: S.q1||'', q2: S.q2||[], a: S.about||[], q3: S.q3||'' });
   const state = Math.random().toString(36).slice(2) + '.f.' + payload;
   localStorage.setItem('snLineState', state);
   const url = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${encodeURIComponent(state)}&scope=profile`;
@@ -2063,7 +2090,7 @@ function openCompanyArticle(id){
       const cache = JSON.parse(cacheRaw);
       if(String(cache.companyId) === String(id) && cache.fb && (Date.now() - (cache.ts||0)) < 86400000) {
         selectedCompanyId = String(id);
-        S.q2 = cache.q2||[]; S.q3 = cache.q3||''; S.free = cache.free||''; S.fb = cache.fb;
+        S.q2 = cache.q2||[]; S.about = cache.about||[]; S.q3 = cache.q3||''; S.free = cache.free||''; S.fb = cache.fb;
         renderP1FromCompany(); // CEO名・ラベル更新（S.q1をリセットする場合あり）
         S.q1 = cache.q1||''; // renderP1FromCompanyの後に再セット
         goScreen('p3');
@@ -2074,12 +2101,12 @@ function openCompanyArticle(id){
   } catch(e) {}
 
   selectedCompanyId = String(id || '');
-  // Q1-Q3の表示状態をリセット
-  S.q1=''; S.q2=[]; S.q3=''; S.free='';
+  // Q1-Q4の表示状態をリセット
+  S.q1=''; S.q2=[]; S.about=[]; S.q3=''; S.free='';
   const ft=document.getElementById('freeText'); if(ft) ft.value='';
-  ['q2b','q3b'].forEach(i=>{ const el=document.getElementById(i); if(el) el.style.display='none'; });
+  ['q2b','qaboutb','q3b'].forEach(i=>{ const el=document.getElementById(i); if(el) el.style.display='none'; });
   const q1b = document.getElementById('q1b'); if(q1b) q1b.style.display='block';
-  document.querySelectorAll('#q1chips .chip, #q2chips .chip, #q3chips .chip').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('#q1chips .chip, #q2chips .chip, #qaboutchips .chip, #q3chips .chip').forEach(c=>c.classList.remove('selected'));
   const q1n = document.getElementById('q1next'); if(q1n) q1n.disabled=true;
   const sb = document.getElementById('submitBtn'); if(sb) sb.disabled=true;
   goScreen('p1');
@@ -2383,6 +2410,12 @@ function toggleQ2(el) {
   document.getElementById('q2next').disabled = S.q2.length===0;
 }
 
+// ===== Q3（個人について）=====
+function toggleAbout(el) {
+  el.classList.toggle('selected');
+  S.about = [...document.querySelectorAll('#qaboutchips .chip.selected')].map(c=>c.querySelector('span').textContent);
+}
+
 // ===== Q3 =====
 function pickQ3(el, val) {
   document.querySelectorAll('#q3chips .chip').forEach(c=>c.classList.remove('selected'));
@@ -2431,7 +2464,7 @@ async function genFeedback() {
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         type: 'values',
-        data: { ceoLabel, ceoProfile, q1: S.q1, q2: S.q2, q3: S.q3, free: S.free||'' }
+        data: { ceoLabel, ceoProfile, q1: S.q1, q2: S.q2, about: S.about, q3: S.q3, free: S.free||'' }
       })
     });
     if(!res.ok) throw new Error('API error ' + res.status);
@@ -2462,7 +2495,7 @@ function _saveFbCache(){
     localStorage.setItem('sn_fb_cache', JSON.stringify({
       companyId: selectedCompanyId,
       fb: S.fb,
-      q1: S.q1, q2: S.q2, q3: S.q3, free: S.free,
+      q1: S.q1, q2: S.q2, about: S.about, q3: S.q3, free: S.free,
       ts: Date.now()
     }));
   } catch(e) {}
@@ -3087,14 +3120,14 @@ ${companyName}の${ceoName}との接点、
   }
 }
 function resetAll(){
-  S.q1='';S.q2=[];S.q3='';S.free='';S.fb=null;
+  S.q1='';S.q2=[];S.about=[];S.q3='';S.free='';S.fb=null;
   localStorage.removeItem('sn_fb_cache');
   document.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
   const ft=document.getElementById('freeText'); if(ft) ft.value='';
   const sb=document.getElementById('submitBtn'); if(sb) sb.disabled=true;
   const q2n=document.getElementById('q2next'); if(q2n) q2n.disabled=true;
   ['q1b'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='block';});
-  ['q2b','q3b'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  ['q2b','qaboutb','q3b'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   ['msgBlock','bridgeBlock'].forEach(id=>{document.getElementById(id)?.classList.remove('show');});
   document.querySelectorAll('.value-tag').forEach(t=>t.classList.remove('show'));
   const fs=document.getElementById('fbSkel');if(fs)fs.style.display='block';
@@ -3225,7 +3258,7 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
         // ① localStorageが生きている：fbをそのまま復元（再生成不要）
         const saved = JSON.parse(_restoreRaw);
         selectedCompanyId = saved.companyId || null;
-        S.q1 = saved.q1||''; S.q2 = saved.q2||[]; S.q3 = saved.q3||''; S.free = saved.free||''; S.fb = saved.fb||null;
+        S.q1 = saved.q1||''; S.q2 = saved.q2||[]; S.about = saved.about||[]; S.q3 = saved.q3||''; S.free = saved.free||''; S.fb = saved.fb||null;
         goScreen('p3');
         if(S.fb){ _saveFbCache(); showFeedback(S.fb); }
         else { genFeedback(); }
@@ -3234,7 +3267,7 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
         // ② localStorageが失われた（モバイルのコンテキスト切替）：stateの回答から再生成
         const st = JSON.parse(_restoreStateRaw);
         selectedCompanyId = st.c || null;
-        S.q1 = st.q1||''; S.q2 = st.q2||[]; S.q3 = st.q3||''; S.free = '';
+        S.q1 = st.q1||''; S.q2 = st.q2||[]; S.about = st.a||[]; S.q3 = st.q3||''; S.free = '';
         goScreen('p3');
         genFeedback(); // fbは持ち越せないので再生成（LINEログイン済みなのでフル表示になる）
         return;
