@@ -1735,17 +1735,29 @@ function requireLineForContact() {
   openEmpathyForm();
 }
 
+// Unicode対応 URL-safe base64（stateにJSONを埋め込むため）
+function _b64encUtf8(obj){
+  try{ return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,''); }
+  catch(e){ return ''; }
+}
+function _b64decUtf8(s){
+  try{ s=String(s).replace(/-/g,'+').replace(/_/g,'/'); return JSON.parse(decodeURIComponent(escape(atob(s)))); }
+  catch(e){ return null; }
+}
+
 function beginLineLogin() {
-  // LINE遷移前に現在の状態を保存
+  // LINE遷移前に現在の状態をlocalStorageに保存（高速パス。fb込み）
   localStorage.setItem('sn_restore', JSON.stringify({
     companyId: selectedCompanyId,
     q1: S.q1, q2: S.q2, q3: S.q3, free: S.free, fb: S.fb
   }));
   const redirectUri = encodeURIComponent(LINE_REDIRECT_URI);
   const clientId = '2009807359';
-  const state = Math.random().toString(36).slice(2);
+  // 回答をstateに埋め込む（localStorageが失われても診断を再生成できるよう、URL経由で持ち回す）
+  const payload = _b64encUtf8({ c: selectedCompanyId||'', q1: S.q1||'', q2: S.q2||[], q3: S.q3||'' });
+  const state = Math.random().toString(36).slice(2) + '.f.' + payload;
   localStorage.setItem('snLineState', state);
-  const url = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=profile`;
+  const url = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${encodeURIComponent(state)}&scope=profile`;
   location.href = url;
 }
 const SCREENS = ['p-list','p1','p2','p3','p4','p5'];
@@ -3127,10 +3139,18 @@ const _cleanUrl = location.pathname || '/';
 if (_stateOk) {
   localStorage.setItem('sn_consumed_code', _lineCode);
   localStorage.removeItem('snLineState');
-  // stateにintentを埋め込んでいる場合（形式: random.c.companyId）
+  // stateの形式：random.c.companyId（接点）/ random.f.base64payload（フィードバック）
   const _stateParts = _lineState.split('.');
-  const _isContact = _stateParts[1] === 'c';
-  const _coIdFromState = _stateParts[2] || '';
+  const _flow = _stateParts[1];        // 'c' or 'f'
+  const _isContact = _flow === 'c';
+  const _coIdFromState = _isContact ? (_stateParts[2] || '') : '';
+  // フィードバックフロー：stateに埋めた回答をlocalStorageへ復元（localStorageが消えていても再生成できる）
+  if(_flow === 'f' && _stateParts[2]){
+    const _payload = _b64decUtf8(_stateParts[2]);
+    if(_payload){
+      localStorage.setItem('sn_restore_state', JSON.stringify(_payload));
+    }
+  }
   fetch('/api/line-token', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
@@ -3194,19 +3214,32 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
     return;
   }
 
-  // LINE登録直後のreload時：sn_postloginフラグとsn_restoreがあればFBを復元してp3へ
+  // LINE登録直後：①高速パス（sn_restore：fb込み）→ ②フォールバック（sn_restore_state：stateから復元し再生成）
   const _restoreRaw = localStorage.getItem('sn_restore');
-  if(_postLogin && _restoreRaw){
+  const _restoreStateRaw = localStorage.getItem('sn_restore_state');
+  if(_postLogin && (_restoreRaw || _restoreStateRaw)){
     localStorage.removeItem('sn_postlogin');
     localStorage.removeItem('sn_restore');
+    localStorage.removeItem('sn_restore_state');
     try{
-      const saved = JSON.parse(_restoreRaw);
-      selectedCompanyId = saved.companyId || null;
-      S.q1 = saved.q1||''; S.q2 = saved.q2||[]; S.q3 = saved.q3||''; S.free = saved.free||''; S.fb = saved.fb||null;
-      goScreen('p3');
-      if(S.fb){ _saveFbCache(); showFeedback(S.fb); }
-      else { genFeedback(); }
-      return;
+      if(_restoreRaw){
+        // ① localStorageが生きている：fbをそのまま復元（再生成不要）
+        const saved = JSON.parse(_restoreRaw);
+        selectedCompanyId = saved.companyId || null;
+        S.q1 = saved.q1||''; S.q2 = saved.q2||[]; S.q3 = saved.q3||''; S.free = saved.free||''; S.fb = saved.fb||null;
+        goScreen('p3');
+        if(S.fb){ _saveFbCache(); showFeedback(S.fb); }
+        else { genFeedback(); }
+        return;
+      } else {
+        // ② localStorageが失われた（モバイルのコンテキスト切替）：stateの回答から再生成
+        const st = JSON.parse(_restoreStateRaw);
+        selectedCompanyId = st.c || null;
+        S.q1 = st.q1||''; S.q2 = st.q2||[]; S.q3 = st.q3||''; S.free = '';
+        goScreen('p3');
+        genFeedback(); // fbは持ち越せないので再生成（LINEログイン済みなのでフル表示になる）
+        return;
+      }
     }catch(e){ console.warn('restore failed:', e); }
   }
 
