@@ -3100,10 +3100,14 @@ const _lineState = urlParams.get('state');
 const _savedState = localStorage.getItem('snLineState');
 // モバイルではLINEがWebView経由でコールバックするためlocalStorageが別になる場合がある。
 // stateの一致確認はできる場合のみ行い、codeが存在すれば交換を試みる。
-const _stateOk = _lineCode && _lineState && (_savedState === null || _lineState === _savedState);
+// 同じcodeの二重交換を防ぐ（codeは使い捨て。iOSでreloadが?code=付きURLを再読込する対策）
+const _consumedCode = localStorage.getItem('sn_consumed_code');
+const _stateOk = _lineCode && _lineState && _lineCode !== _consumedCode
+  && (_savedState === null || _lineState === _savedState);
+const _cleanUrl = location.pathname || '/';
 if (_stateOk) {
+  localStorage.setItem('sn_consumed_code', _lineCode);
   localStorage.removeItem('snLineState');
-  history.replaceState({}, '', location.pathname);
   // stateにintentを埋め込んでいる場合（形式: random.c.companyId）
   const _stateParts = _lineState.split('.');
   const _isContact = _stateParts[1] === 'c';
@@ -3123,8 +3127,9 @@ if (_stateOk) {
       if(_coIdFromState) localStorage.setItem('sn_contact_company', _coIdFromState);
     }
     localStorage.setItem('sn_postlogin', '1');
-    location.reload();
-  }).catch(()=>{ location.reload(); });
+    // ?code= を確実に消したURLへ遷移（reloadだとcodeが残る端末がある）
+    location.replace(_cleanUrl);
+  }).catch(()=>{ location.replace(_cleanUrl); });
 }
 
 selectedCompanyId = null;
@@ -3145,8 +3150,9 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
   renderTopLeaders();
   renderAdminSidebar();
 
-  // LINEコールバックページ（code付きURL）ではfetchが完了後にreloadするのでここでは何もしない
-  if(_lineCode){
+  // トークン交換中（code付きURL）はfetch完了後に遷移するのでここでは待つだけ。
+  // ただしcodeが消費済み・stateNGの場合は交換しないので、復元処理へ進める。
+  if(_stateOk){
     goScreen('p-list');
     return;
   }
@@ -3179,7 +3185,7 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
       selectedCompanyId = saved.companyId || null;
       S.q1 = saved.q1||''; S.q2 = saved.q2||[]; S.q3 = saved.q3||''; S.free = saved.free||''; S.fb = saved.fb||null;
       goScreen('p3');
-      if(S.fb){ showFeedback(S.fb); }
+      if(S.fb){ _saveFbCache(); showFeedback(S.fb); }
       else { genFeedback(); }
       return;
     }catch(e){ console.warn('restore failed:', e); }
