@@ -2303,7 +2303,10 @@ function renderP1FromCompany(){
   const cn2 = document.getElementById('ctaNoteEl');
   if(cn2) cn2.textContent = ceoFirst + 'さんへの「会いたい」はこの後でも送れます';
   const oav = document.getElementById('origCardAv');
-  if(oav) oav.textContent = (company||'社').charAt(0);
+  if(oav){
+    if(photoUrl){ oav.style.backgroundImage=`url('${photoUrl}')`; oav.style.backgroundSize='cover'; oav.style.backgroundPosition='center'; oav.textContent=''; }
+    else { oav.style.backgroundImage='none'; oav.textContent=(company||'社').charAt(0); }
+  }
   const onm = document.getElementById('origCardName');
   if(onm) onm.textContent = ceo && company ? ceo + ' — ' + company : ceo || company || '';
 }
@@ -2554,6 +2557,7 @@ async function genReco(fb) {
     name: c.ceo||'経営層',
     co: c.name||c.company||'',
     color: c.color||'var(--navy)',
+    photoUrl: c.photoUrl||'',
     tags: Array.isArray(c.tags)?c.tags:[],
     catchphrase: c.catchphrase||'',
     quote: c.quote||''
@@ -2566,7 +2570,7 @@ async function genReco(fb) {
   cont.innerHTML = cos.map((c,i)=>`
     <div class="reco-card" style="cursor:pointer" onclick="openCompanyArticle('${escapeHtml(String(c.id))}')">
       <div class="reco-card-top">
-        <div class="reco-av" style="background:${c.color}">${c.name[0]}</div>
+        <div class="reco-av" style="background:${c.photoUrl ? `url('${escapeHtml(c.photoUrl)}') center/cover no-repeat` : c.color}">${c.photoUrl ? '' : escapeHtml(c.name[0]||'経')}</div>
         <div class="reco-meta">
           <div class="reco-name">${escapeHtml(c.name)}</div>
           <div class="reco-co">${escapeHtml(c.co)}</div>

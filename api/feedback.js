@@ -151,7 +151,8 @@ export default async function handler(req) {
       'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'gpt-4o-mini',
+      // ユーザー向けのAI診断(values)は品質優先で4o、その他の軽い処理はminiでコスト抑制
+      model: type === 'values' ? 'gpt-4o' : 'gpt-4o-mini',
       max_tokens: 1000,
       messages: [
         { role: 'system', content: prompt.system },
