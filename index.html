@@ -2,8 +2,15 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ソコナラ</title>
+<!-- PWA / ホーム画面追加 -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1C2A54">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ソコナラ">
+<link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@400;600;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&family=Dela+Gothic+One&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1174,6 +1181,27 @@ h1, h2, h3, h4,
     <div id="topLeadersCount" style="font-size:11px;color:rgba(255,255,255,0.72);margin-bottom:22px;"></div>
     <button class="btn-primary" style="width:100%;justify-content:center;background:#42AD9F;margin-bottom:10px;" onclick="enterFromTop('company')">まず1人、読んでみる →</button>
     <button class="btn-primary" style="width:100%;justify-content:center;background:#1C2A54;border:1px solid rgba(255,255,255,0.45);" onclick="enterFromTop('project')">共創テーマを見る →</button>
+  </div>
+</div>
+
+<!-- ===== ホーム画面に追加バナー（下部スライドアップ） ===== -->
+<div id="pwaBanner" style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:3000;background:#1C2A54;border-top:1px solid rgba(66,173,159,0.5);box-shadow:0 -6px 24px rgba(0,0,0,0.3);padding:16px 18px calc(16px + env(safe-area-inset-bottom,0px));transform:translateY(110%);transition:transform .35s cubic-bezier(.2,.8,.2,1);">
+  <div style="max-width:480px;margin:0 auto;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="" style="height:22px;width:auto;">
+      <span style="font-size:13px;font-weight:700;color:#fff;">ホーム画面に追加すると便利です</span>
+      <button onclick="dismissPwaBanner()" style="margin-left:auto;background:none;border:none;color:rgba(255,255,255,0.45);font-size:20px;cursor:pointer;line-height:1;padding:2px 4px;">×</button>
+    </div>
+    <div id="pwaBannerIos" style="display:none;font-size:12px;color:rgba(255,255,255,0.82);line-height:1.9;">
+      画面下の共有ボタン <span style="font-size:14px;">⬆️</span> →「<strong style="color:#42AD9F;">ホーム画面に追加</strong>」で、次回からアプリのように開けます。
+    </div>
+    <div id="pwaBannerAndroid" style="display:none;">
+      <div style="font-size:12px;color:rgba(255,255,255,0.82);line-height:1.7;margin-bottom:10px;">次回からワンタップで開けます。</div>
+      <button onclick="triggerPwaInstall()" style="width:100%;background:#42AD9F;color:#fff;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;">ホーム画面に追加する</button>
+    </div>
+    <div id="pwaBannerGeneric" style="display:none;font-size:12px;color:rgba(255,255,255,0.82);line-height:1.9;">
+      ブラウザメニューから「<strong style="color:#42AD9F;">ホーム画面に追加</strong>」を選ぶと、アプリのように使えます。
+    </div>
   </div>
 </div>
 
@@ -3171,6 +3199,72 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
     renderPjList();
   }
 });
+
+// ===== PWA: ホーム画面に追加 =====
+let _deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Chrome系のネイティブ追加プロンプトを保持
+  e.preventDefault();
+  _deferredInstallPrompt = e;
+});
+
+function _isStandalone(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function _isIos(){
+  return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+}
+function _isMobile(){
+  return /android|iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+
+function showPwaBanner(){
+  // すでにインストール済み・PC・却下済みなら出さない
+  if(_isStandalone()) return;
+  if(!_isMobile()) return;
+  if(localStorage.getItem('sn_pwa_dismissed') === '1') return;
+
+  const banner = document.getElementById('pwaBanner');
+  if(!banner) return;
+
+  const ios     = document.getElementById('pwaBannerIos');
+  const android = document.getElementById('pwaBannerAndroid');
+  const generic = document.getElementById('pwaBannerGeneric');
+  [ios, android, generic].forEach(el => { if(el) el.style.display = 'none'; });
+
+  if(_isIos()){
+    if(ios) ios.style.display = 'block';
+  } else if(_deferredInstallPrompt){
+    if(android) android.style.display = 'block';
+  } else {
+    if(generic) generic.style.display = 'block';
+  }
+
+  banner.style.display = 'block';
+  // スライドアップ
+  requestAnimationFrame(()=>{ banner.style.transform = 'translateY(0)'; });
+}
+
+function dismissPwaBanner(){
+  const banner = document.getElementById('pwaBanner');
+  if(banner){ banner.style.transform = 'translateY(110%)'; setTimeout(()=>{ banner.style.display='none'; }, 350); }
+  localStorage.setItem('sn_pwa_dismissed', '1');
+}
+
+async function triggerPwaInstall(){
+  if(!_deferredInstallPrompt){ return; }
+  _deferredInstallPrompt.prompt();
+  try {
+    const { outcome } = await _deferredInstallPrompt.userChoice;
+    if(outcome === 'accepted'){ dismissPwaBanner(); }
+  } catch(e){}
+  _deferredInstallPrompt = null;
+}
+
+// 初回訪問から少し待って表示（記事を1つ見た頃合い）
+setTimeout(showPwaBanner, 6000);
+window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
 </script>
 </body>
 </html>

@@ -1,0 +1,24 @@
+{
+  "name": "ソコナラ",
+  "short_name": "ソコナラ",
+  "description": "地域企業の経営層と、まず話してみる。地域キャリア共創プラットフォーム。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1C2A54",
+  "theme_color": "#1C2A54",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
