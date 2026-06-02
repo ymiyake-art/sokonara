@@ -1337,8 +1337,9 @@ h1, h2, h3, h4,
           <div class="chip" onclick="pickQ3(this,'まだ整理できていない')"><div class="chip-check">✓</div><span>まだ整理できていない</span></div>
         </div>
         <div style="margin-top:14px;font-size:12px;color:var(--text2);line-height:1.6;">※ 応募ではありません。まずは気軽な対話や情報交換から可能です。</div>
-        <div style="margin-top:20px;margin-bottom:6px" class="free-label">一言あれば（任意）</div>
-        <textarea id="freeText" class="free-input" rows="3" placeholder="気になったこと、感じたことなど"></textarea>
+        <div style="margin-top:20px;margin-bottom:4px" class="free-label">一言あれば（任意）</div>
+        <div style="font-size:11px;color:var(--teal);margin-bottom:6px;font-family:'JetBrains Mono',monospace;letter-spacing:0.5px;">※ 記述が多いほどAI診断の精度が上がります</div>
+        <textarea id="freeText" class="free-input" rows="4" placeholder="この経営層に会えたとしたら、最初に何を聞きたいですか？気になったこと・感じたことなど自由に。"></textarea>
         <div class="q-nav" style="margin-top:18px">
           <button class="btn-outline" onclick="show('q2b'),hide('q3b')">← 戻る</button>
           <button class="btn-primary" id="submitBtn" onclick="submitEmpathy()" disabled>自分の価値観を見る →</button>
