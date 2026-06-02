@@ -1264,6 +1264,7 @@ h1, h2, h3, h4,
     </div>
 
     <div class="article-wrap" id="articleBody" onscroll="updateRead()">
+      <button id="prevResultBtn" onclick="showPrevResult()" style="display:none;width:100%;margin-bottom:14px;padding:11px;border:1px solid var(--teal);background:var(--teal-bg);color:var(--teal-d);border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">前回のあなたの診断結果を見る →</button>
       <div class="article-tags" id="p1Tags"></div>
       <div id="companyIntro" class="company-intro" style="display:none">
         <div class="company-intro-tags" id="companyIntroTags"></div>
@@ -2075,23 +2076,7 @@ function loadPrimaryCompany(){
 }
 
 function openCompanyArticle(id){
-  // 同じ企業の結果キャッシュがあれば直接p3へ復元
-  try {
-    const cacheRaw = localStorage.getItem('sn_fb_cache');
-    if(cacheRaw) {
-      const cache = JSON.parse(cacheRaw);
-      if(String(cache.companyId) === String(id) && cache.fb && (Date.now() - (cache.ts||0)) < 86400000) {
-        selectedCompanyId = String(id);
-        S.q2 = cache.q2||[]; S.about = cache.about||[]; S.q3 = cache.q3||''; S.free = cache.free||''; S.fb = cache.fb;
-        renderP1FromCompany(); // CEO名・ラベル更新（S.q1をリセットする場合あり）
-        S.q1 = cache.q1||''; // renderP1FromCompanyの後に再セット
-        goScreen('p3');
-        showFeedback(S.fb);
-        return;
-      }
-    }
-  } catch(e) {}
-
+  // 常に記事(p1)を開く。前回の診断結果がキャッシュされていればp1上にボタンで表示する
   selectedCompanyId = String(id || '');
   // Q1-Q4の表示状態をリセット
   S.q1=''; S.q2=[]; S.about=[]; S.q3=''; S.free='';
@@ -2103,6 +2088,37 @@ function openCompanyArticle(id){
   const sb = document.getElementById('submitBtn'); if(sb) sb.disabled=true;
   goScreen('p1');
   renderP1FromCompany();
+  updatePrevResultButton(id);
+}
+
+// 前回の診断結果ボタンの表示制御（p1上部）
+function updatePrevResultButton(id){
+  const btn = document.getElementById('prevResultBtn');
+  if(!btn) return;
+  try {
+    const cacheRaw = localStorage.getItem('sn_fb_cache');
+    if(cacheRaw){
+      const cache = JSON.parse(cacheRaw);
+      if(String(cache.companyId) === String(id) && cache.fb && (Date.now() - (cache.ts||0)) < 86400000){
+        btn.style.display = 'block';
+        return;
+      }
+    }
+  } catch(e) {}
+  btn.style.display = 'none';
+}
+
+// 前回の診断結果を表示（キャッシュから復元してp3へ）
+function showPrevResult(){
+  try {
+    const cacheRaw = localStorage.getItem('sn_fb_cache');
+    if(!cacheRaw) return;
+    const cache = JSON.parse(cacheRaw);
+    if(String(cache.companyId) !== String(selectedCompanyId) || !cache.fb) return;
+    S.q1 = cache.q1||''; S.q2 = cache.q2||[]; S.about = cache.about||[]; S.q3 = cache.q3||''; S.free = cache.free||''; S.fb = cache.fb;
+    goScreen('p3');
+    showFeedback(S.fb);
+  } catch(e) {}
 }
 
 function openCompanyArticleFromCard(el){
