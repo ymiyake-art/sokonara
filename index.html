@@ -2480,15 +2480,9 @@ function showFeedback(fb) {
     document.getElementById('fbLineCta').style.display = 'none';
     document.getElementById('fbDetail').style.display = 'block';
 
+    // 価値観キーワード表示は廃止（記事の抜粋に見えてピンと来ないため）
     const tags = document.getElementById('valueTags');
-    tags.innerHTML = '';
-    (fb.values||[]).forEach((v,i)=>{
-      const t = document.createElement('div');
-      t.className = 'value-tag';
-      t.textContent = v;
-      tags.appendChild(t);
-      setTimeout(()=>t.classList.add('show'), i*200);
-    });
+    if(tags){ tags.innerHTML = ''; const sec = tags.closest('.values-section'); if(sec) sec.style.display = 'none'; }
     document.getElementById('msgText').textContent = String(fb.message||'').replace(/\\n/g,'\n');
     setTimeout(()=>document.getElementById('msgBlock').classList.add('show'), 550);
     document.getElementById('bridgeText').textContent = fb.bridge||'';
@@ -2501,7 +2495,7 @@ function showFeedback(fb) {
       const ceoLbl = (_co?.ceo||'') + (_co ? `（${_co.name||_co.company||''}）` : '');
       const lbl = document.getElementById('fbCtaLabel');
       if(lbl && ceoLbl) lbl.textContent = ceoLbl + ' に共感を伝えますか？';
-      if(fb.values?.[0]) document.getElementById('recoSub').textContent = `「${fb.values[0]}」を大切にする経営層をピックアップしました`;
+      const _rs = document.getElementById('recoSub'); if(_rs) _rs.textContent = 'あなたの反応に近い経営層をピックアップしました';
       genReco(fb);
       saveSession();
     }, 1100);
