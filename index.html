@@ -1520,15 +1520,7 @@ h1, h2, h3, h4,
 
 </div><!-- /user -->
 
-<!-- ===========================
-     INTEREST FORM MODAL
-     =========================== -->
-<div id="interestModal" onclick="closeInterestModal(event)">
-  <div class="imodal-sheet" id="imodalSheet">
-    <div class="imodal-handle"></div>
-    <div id="imodalInner"></div>
-  </div>
-</div>
+<!-- INTEREST FORM MODAL は廃止（WEBCAS誘導に統合） -->
 
 <!-- ===========================
      EMPATHY FORM MODAL
@@ -1724,9 +1716,6 @@ const S = { q1:'', q2:[], about:[], q3:'', free:'', fb:null, screen:'p-list', mo
 
 function isLineRegistered() {
   return !!localStorage.getItem('snLineId');
-}
-function isLineFriend() {
-  return localStorage.getItem('snLineFriend') === '1';
 }
 
 // ソコナラ【公式】のボット基本ID（@から始まる値）
@@ -2903,120 +2892,10 @@ function randomState(len=8){
   return out;
 }
 
-// ===== INTEREST FORM MODAL =====
-function openInterestModal(trigger, overrideCoName, overrideCeoName){
-  const q3 = S.q3 || trigger || '';
-  const isHire      = q3.includes('転職') || q3.includes('フルコミット');
-  const isCollaborate = q3.includes('副業') || q3.includes('プロジェクト') || q3.includes('関わりたい');
-  const co = getCurrentCompany();
-  const coName = overrideCoName || co?.name || '';
-  const ceoName = overrideCeoName || co?.ceo || '';
-  const values = (S.fb?.values||[]).join('・') || '';
-
-  // フォームタイプ判定
-  const formType = isHire ? 'hire' : isCollaborate ? 'collaborate' : 'empathy';
-  const titles = {
-    empathy:     'この記事への共感を伝える',
-    collaborate: '参画・副業の意向を伝える',
-    hire:        '転職・フルコミットの意向を伝える',
-  };
-  const subs = {
-    empathy:     `${ceoName}さんの記事に共感した気持ちを送ります。担当者が内容を確認し、必要であればご連絡します。`,
-    collaborate: `${ceoName}さんとの副業・プロジェクト参画に興味があることを伝えます。`,
-    hire:        `${ceoName}さんの元への転職・フルコミットに興味があることを伝えます。`,
-  };
-
-  const commonFields = `
-    <div class="imodal-label">お名前（ニックネーム可）<span style="color:var(--hot)">*</span></div>
-    <input class="imodal-input" id="if-name" placeholder="例：田中 / タナカさん">
-    <div class="imodal-label">メールアドレス<span style="color:var(--hot)">*</span></div>
-    <input class="imodal-input" id="if-email" type="email" placeholder="example@email.com">
-    <div class="imodal-label">共感度（5点満点）<span style="color:var(--hot)">*</span></div>
-    <select class="imodal-select" id="if-score">
-      <option value="">選択してください</option>
-      ${[5,4,3,2,1].map(n=>`<option value="${n}">${n}点 — ${'★'.repeat(n)}${'☆'.repeat(5-n)}</option>`).join('')}
-    </select>
-    <div class="imodal-label">共感した内容・一言（任意）</div>
-    <textarea class="imodal-input" id="if-comment" rows="3" placeholder="気になったこと、感じたことなど" style="resize:vertical;"></textarea>
-  `;
-
-  const collaborateFields = `
-    <hr class="imodal-divider">
-    <div class="imodal-section-title">参画について</div>
-    <div class="imodal-label">どんな形で関わりたいですか<span style="color:var(--hot)">*</span></div>
-    <select class="imodal-select" id="if-involvement">
-      <option value="">選択してください</option>
-      <option>壁打ち・相談相手</option>
-      <option>副業・週1〜2時間程度</option>
-      <option>短期プロジェクト（3〜6ヶ月）</option>
-      <option>アドバイザー・顧問</option>
-    </select>
-    <div class="imodal-label">提供できる強み・経験<span style="color:var(--hot)">*</span></div>
-    <textarea class="imodal-input" id="if-strength" rows="3" placeholder="例：営業15年、Webマーケ、新規事業立ち上げ経験など" style="resize:vertical;"></textarea>
-    <div class="imodal-label">直近の勤務先・職種（任意）</div>
-    <input class="imodal-input" id="if-current-job" placeholder="例：株式会社〇〇 / マーケティング部">
-    <div class="imodal-label">参画可能な時期</div>
-    <select class="imodal-select" id="if-timing">
-      <option value="">選択してください</option>
-      <option>すぐにでも</option>
-      <option>1ヶ月以内</option>
-      <option>3ヶ月以内</option>
-      <option>時期未定</option>
-    </select>
-  `;
-
-  const hireFields = `
-    <hr class="imodal-divider">
-    <div class="imodal-section-title">転職について</div>
-    <div class="imodal-label">直近の勤務先・職種・役職<span style="color:var(--hot)">*</span></div>
-    <input class="imodal-input" id="if-current-job" placeholder="例：株式会社〇〇 / 営業部長">
-    <div class="imodal-label">現在の年収（任意）</div>
-    <select class="imodal-select" id="if-salary">
-      <option value="">選択しない</option>
-      ${['300万円未満','300〜400万円','400〜500万円','500〜600万円','600〜800万円','800万円以上'].map(s=>`<option>${s}</option>`).join('')}
-    </select>
-    <div class="imodal-label">希望転職時期<span style="color:var(--hot)">*</span></div>
-    <select class="imodal-select" id="if-timing">
-      <option value="">選択してください</option>
-      <option>3ヶ月以内</option>
-      <option>半年以内</option>
-      <option>1年以内</option>
-      <option>時期未定</option>
-    </select>
-    <div class="imodal-label">希望勤務地</div>
-    <input class="imodal-input" id="if-location" placeholder="例：福岡県内、リモート可であれば全国">
-    <div class="imodal-label">提供できる強み・経験<span style="color:var(--hot)">*</span></div>
-    <textarea class="imodal-input" id="if-strength" rows="3" placeholder="例：営業15年、新規開拓得意、マネジメント経験あり" style="resize:vertical;"></textarea>
-    <div class="imodal-label">電話番号（任意）</div>
-    <input class="imodal-input" id="if-tel" type="tel" placeholder="070-0000-0000">
-  `;
-
-  const autoInfo = values ? `
-    <div class="imodal-tag">✦ AIが読み解いた価値観：${escapeHtml(values)}</div>
-  ` : '';
-
-  document.getElementById('imodalInner').innerHTML = `
-    <div class="imodal-title">${titles[formType]}</div>
-    <div class="imodal-sub">${subs[formType]}</div>
-    ${autoInfo}
-    ${commonFields}
-    ${formType === 'collaborate' ? collaborateFields : ''}
-    ${formType === 'hire' ? hireFields : ''}
-    <hr class="imodal-divider">
-    <div class="imodal-agree">送信することで<a href="/privacy.html" target="_blank">プライバシーポリシー</a>に同意したものとみなします。</div>
-    <button class="imodal-submit" onclick="submitInterestForm('${formType}','${escapeHtml(coName)}','${escapeHtml(ceoName)}')">送信する</button>
-    <span class="imodal-cancel" onclick="closeInterestModal()">キャンセル</span>
-  `;
-
-  document.getElementById('interestModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeInterestModal(e){
-  if(e && e.target !== document.getElementById('interestModal')) return;
-  document.getElementById('interestModal').classList.remove('open');
-  document.body.style.overflow = '';
-}
+// ===== INTEREST FORM MODAL（廃止）=====
+// 個人情報入力モーダルはWEBCASフォーム誘導(goToWebcasForm)に統合済み。
+// 旧 openInterestModal / submitInterestForm / closeInterestModal は
+// 氏名・メール・電話等をSupabaseへ保存していたため、プライバシー方針に基づき削除しました。
 
 const WEBCAS_FORM_URL = 'https://www17.webcas.net/form/pub/sokonara/pf';
 
@@ -3055,64 +2934,8 @@ async function openEmpathyForm() {
   goScreen('p5');
 }
 
-// submitEmpathyForm は goToWebcasForm() に統合しました
-
-async function submitInterestForm(formType, coName, ceoName){
-  const name  = (document.getElementById('if-name')?.value||'').trim();
-  const email = (document.getElementById('if-email')?.value||'').trim();
-  const score = document.getElementById('if-score')?.value||'';
-  if(!name||!email||!score){ toast('必須項目を入力してください'); return; }
-
-  const co = getCurrentCompany();
-  const formData = {
-    name, email, score,
-    comment:      document.getElementById('if-comment')?.value||'',
-    involvement:  document.getElementById('if-involvement')?.value||'',
-    strength:     document.getElementById('if-strength')?.value||'',
-    current_job:  document.getElementById('if-current-job')?.value||'',
-    timing:       document.getElementById('if-timing')?.value||'',
-    salary:       document.getElementById('if-salary')?.value||'',
-    location:     document.getElementById('if-location')?.value||'',
-    tel:          document.getElementById('if-tel')?.value||'',
-  };
-
-  const row = {
-    id:          'if_' + Date.now(),
-    company_id:  co?.id || '',
-    company_name: coName,
-    ceo_name:    ceoName,
-    intent_type: formType,
-    q1_answer:   S.q1 || '',
-    q2_values:   S.q2 || [],
-    q3_answer:   S.q3 || '',
-    ai_values:   S.fb?.values || [],
-    form_data:   formData,
-    created_at:  new Date().toISOString(),
-  };
-
-  // Supabase に保存
-  try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/interest_forms`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Prefer': 'return=minimal',
-      },
-      body: JSON.stringify(row),
-    });
-    if(!res.ok) throw new Error(res.status);
-  } catch(e) {
-    console.warn('interest_forms save failed:', e);
-    // 保存失敗してもユーザー体験は継続
-  }
-
-  document.getElementById('interestModal').classList.remove('open');
-  document.body.style.overflow = '';
-  localStorage.removeItem('sn_fb_cache'); // 送信完了後はキャッシュをクリア
-  goScreen('p5');
-}
+// submitEmpathyForm / submitInterestForm は goToWebcasForm() に統合・廃止しました
+// （個人情報はSupabaseに保存せず、WEBCASフォームで収集する方針）
 
 // ===== SESSION SAVE =====
 async function saveSession(){
@@ -3225,9 +3048,8 @@ if (_stateOk) {
     body: JSON.stringify({code: _lineCode, redirect_uri: LINE_REDIRECT_URI})
   }).then(r=>r.json()).then(d=>{
     if(d.line_id){
+      // snLineId（匿名のLINE識別子）のみ保存。表示名(display_name=氏名)は保存しない方針。
       localStorage.setItem('snLineId', d.line_id);
-      localStorage.setItem('snLineName', d.display_name || '');
-      localStorage.setItem('snLineFriend', d.friend_flag ? '1' : '0');
     }
     if(_isContact){
       localStorage.setItem('sn_contact_intent', '1');

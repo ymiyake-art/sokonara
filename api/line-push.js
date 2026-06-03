@@ -29,7 +29,17 @@ export default async function handler(req) {
   if (req.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
   if (!isAllowedOrigin(req)) return new Response('Forbidden', { status: 403 });
 
-  const { mode, to, message } = await req.json();
+  const { mode, to, message, password } = await req.json();
+
+  // 管理パスワード認証（Originチェックだけでは偽装可能なため必須）
+  const correct = process.env.ADMIN_PASSWORD;
+  if (!correct || password !== correct) {
+    await new Promise(r => setTimeout(r, 400));
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': allowOrigin }
+    });
+  }
 
   if (!message) {
     return new Response(JSON.stringify({ error: 'message is required' }), {

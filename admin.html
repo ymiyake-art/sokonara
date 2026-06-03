@@ -1002,7 +1002,7 @@ async function sendBroadcast(){
   if(!confirm('全友だちにメッセージを送信します。よろしいですか？')) return;
   resultEl.textContent='送信中...'; resultEl.style.color='var(--text2)'; resultEl.style.display='block';
   try {
-    const res = await fetch('/api/line-push',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'broadcast',message:msg})});
+    const res = await fetch('/api/line-push',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'broadcast',message:msg,password:_adminPw})});
     const data = await res.json();
     if(data.ok){ resultEl.textContent='✓ 送信しました'; resultEl.style.color='var(--teal-d)'; }
     else { resultEl.textContent='エラー: '+JSON.stringify(data); resultEl.style.color='var(--hot)'; }
@@ -1016,7 +1016,7 @@ async function sendPush(){
   if(!to || !msg){ resultEl.textContent='送信先とメッセージを入力してください'; resultEl.style.color='var(--hot)'; resultEl.style.display='block'; return; }
   resultEl.textContent='送信中...'; resultEl.style.color='var(--text2)'; resultEl.style.display='block';
   try {
-    const res = await fetch('/api/line-push',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'push',to,message:msg})});
+    const res = await fetch('/api/line-push',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'push',to,message:msg,password:_adminPw})});
     const data = await res.json();
     if(data.ok){ resultEl.textContent='✓ 送信しました'; resultEl.style.color='var(--teal-d)'; }
     else { resultEl.textContent='エラー: '+JSON.stringify(data); resultEl.style.color='var(--hot)'; }
