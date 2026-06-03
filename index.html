@@ -2900,6 +2900,8 @@ function randomState(len=8){
 const WEBCAS_FORM_URL = 'https://www17.webcas.net/form/pub/sokonara/pf';
 
 async function openEmpathyForm() {
+  // 二重防御：LINE未登録なら接点フォームに進ませず、必ずLINEログインへ
+  if(!isLineRegistered()){ _startLineLoginForContact(); return; }
   const co = getCurrentCompany();
   // Supabaseに匿名の関心ログのみ保存（個人情報なし・ノンブロッキング）
   try {
