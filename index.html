@@ -1448,6 +1448,8 @@ h1, h2, h3, h4,
             <div class="bridge-label" id="bridgeLabelEl">経営層との接点理由</div>
             <div class="bridge-text" id="bridgeText"></div>
           </div>
+          <button onclick="copyFeedback()" style="width:100%;margin-top:16px;padding:11px;border:1px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.06);color:#fff;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">📋 診断結果をコピーする</button>
+          <div style="font-size:11px;color:rgba(255,255,255,0.5);line-height:1.7;margin-top:8px;text-align:center;">※ この診断結果は24時間で消えます。<br>残しておきたい場合はコピーして保存してください。</div>
         </div>
 
         <!-- LINE登録後のCTA -->
@@ -2085,7 +2087,7 @@ function openCompanyArticle(id){
   const q1b = document.getElementById('q1b'); if(q1b) q1b.style.display='block';
   document.querySelectorAll('#q1chips .chip, #q2chips .chip, #qaboutchips .chip, #q3chips .chip').forEach(c=>c.classList.remove('selected'));
   const q1n = document.getElementById('q1next'); if(q1n) q1n.disabled=true;
-  const sb = document.getElementById('submitBtn'); if(sb) sb.disabled=true;
+  const sb = document.getElementById('submitBtn'); if(sb) sb.disabled=false; // Q4は任意なので常に押せる
   goScreen('p1');
   renderP1FromCompany();
   updatePrevResultButton(id);
@@ -2510,6 +2512,28 @@ function _saveFbCache(){
       ts: Date.now()
     }));
   } catch(e) {}
+}
+
+function copyFeedback(){
+  const fb = S.fb;
+  if(!fb){ toast('コピーする結果がありません'); return; }
+  const co = selectedCompanyId ? loadCompanies().find(c=>String(c.id||'')===String(selectedCompanyId)) : null;
+  const ceoLine = co ? `${co.ceo||''}（${co.name||co.company||''}）さんの記事を読んで` : '';
+  const msg = String(fb.message||'').replace(/\\n/g,'\n');
+  const text = [
+    '【ソコナラ あなたの診断結果】',
+    ceoLine,
+    '',
+    fb.summary||'',
+    '',
+    msg,
+    fb.bridge ? '\n'+fb.bridge : '',
+    '',
+    'ソコナラ https://app.sokonara.co.jp/'
+  ].filter(x=>x!==undefined).join('\n');
+  navigator.clipboard.writeText(text).then(()=>toast('診断結果をコピーしました')).catch(()=>{
+    prompt('以下をコピーしてください', text);
+  });
 }
 
 function showFeedback(fb) {
@@ -3136,7 +3160,7 @@ function resetAll(){
   localStorage.removeItem('sn_fb_cache');
   document.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
   const ft=document.getElementById('freeText'); if(ft) ft.value='';
-  const sb=document.getElementById('submitBtn'); if(sb) sb.disabled=true;
+  const sb=document.getElementById('submitBtn'); if(sb) sb.disabled=false;
   const q2n=document.getElementById('q2next'); if(q2n) q2n.disabled=true;
   ['q1b'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='block';});
   ['q2b','qaboutb','q3b'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
