@@ -2414,8 +2414,10 @@ function openCompanyProjectsFromP1(){
 
 // ===== SCREEN NAV =====
 function goScreen(id) {
-  document.getElementById(S.screen).classList.remove('active');
-  document.getElementById(id).classList.add('active');
+  // 全ユーザー画面を確実に隠してから対象だけ表示（状態ズレによる二重表示を防ぐ）
+  SCREENS.forEach(s=>{ const el=document.getElementById(s); if(el) el.classList.remove('active'); });
+  const target = document.getElementById(id);
+  if(target) target.classList.add('active');
   S.screen = id;
   // progress
   document.getElementById('progressFill').style.width = (PROG[id]||0)+'%';
