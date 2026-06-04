@@ -1236,7 +1236,7 @@ h1, h2, h3, h4,
       <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 60% 0%,rgba(66,173,159,0.18) 0%,transparent 70%);pointer-events:none;"></div>
       <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:12px;">Sokonara — Regional Career Co-Creation</div>
       <div style="font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:22px;font-weight:900;color:#fff;line-height:1.55;letter-spacing:0.5px;margin-bottom:12px;">経営層の想いに触れ、<br>あなたらしいキャリアを見つける。</div>
-      <div style="max-width:340px;margin:0 auto 18px;font-size:13px;color:rgba(255,255,255,0.72);line-height:1.95;">地域企業の経営層の記事を読み、価値観や挑戦に共感する人と出会う。質問に答えると、あなたへの<strong style="color:var(--teal);font-weight:700;">「はたらくヒント」</strong>が見つかります。</div>
+      <div style="max-width:340px;margin:0 auto 18px;font-size:13px;color:rgba(255,255,255,0.72);line-height:1.95;">地域企業の経営層の記事を読み、価値観や挑戦に共感する人と出会えます。質問に答えると、あなたへの<strong style="color:var(--teal);font-weight:700;white-space:nowrap;">「はたらくヒント」</strong>が見つかります。</div>
 
       <!-- 3ステップ -->
       <div style="max-width:340px;margin:0 auto 6px;display:flex;align-items:stretch;justify-content:center;gap:6px;font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;">
@@ -2219,7 +2219,12 @@ function renderHeroLeaders(){
   if(!el) return;
   const list = loadCompanies().filter(c=>c && (c.ceo||c.name));
   if(list.length===0){ el.innerHTML=''; return; }
-  const pick = list.slice(0, 5);
+  // FVに出す経営層（指定の4名を優先。見つからない分は他で補完）
+  const PREFERRED = ['石蔵','古賀','井上','園田'];
+  const pick = [];
+  PREFERRED.forEach(kw=>{ const m = list.find(c=>String(c.ceo||'').includes(kw) && !pick.includes(c)); if(m) pick.push(m); });
+  list.forEach(c=>{ if(pick.length<4 && !pick.includes(c)) pick.push(c); });
+  pick.length = Math.min(pick.length, 4);
   el.innerHTML = pick.map(c=>{
     const id = escapeHtml(String(c.id||''));
     const name = escapeHtml(c.ceo || '経営層');
