@@ -1232,11 +1232,21 @@ h1, h2, h3, h4,
 <div id="user" class="view active">
   <div id="p-list" class="screen active">
     <!-- LP HERO -->
-    <div style="background:var(--navy);padding:36px 20px 32px;text-align:center;position:relative;overflow:hidden;">
+    <div style="background:var(--navy);padding:38px 20px 30px;text-align:center;position:relative;overflow:hidden;">
       <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 60% 0%,rgba(66,173,159,0.18) 0%,transparent 70%);pointer-events:none;"></div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:10px;">Sokonara — Regional Career Co-Creation</div>
-      <div style="font-family:'Noto Serif JP',serif;font-size:24px;font-weight:700;color:#fff;line-height:1.5;margin-bottom:10px;">同世代の経営層の想いに触れる。</div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:2;margin-bottom:24px;">共鳴した言葉を選ぶだけで、<br>キャリアの方向性が見えてきます。<br>気になる経営層と、直接話せます。</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:12px;">Sokonara — Regional Career Co-Creation</div>
+      <div style="font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:23px;font-weight:900;color:#fff;line-height:1.55;letter-spacing:0.5px;margin-bottom:12px;">同世代の経営層の想いに、<br>触れてみる。</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.72);line-height:1.95;margin-bottom:18px;">記事を読んで質問に答えると、AIがあなたへの<br><strong style="color:var(--teal);font-weight:700;">「はたらくヒント」</strong>を届けます。<br>共感できる経営層とは、直接つながれます。</div>
+
+      <!-- 3ステップ -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;margin-bottom:22px;font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;">
+        <span style="font-size:11px;color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);border-radius:20px;padding:5px 12px;">① 記事を読む</span>
+        <span style="color:var(--teal);font-size:11px;">→</span>
+        <span style="font-size:11px;color:#fff;background:rgba(66,173,159,0.2);border:1px solid rgba(66,173,159,0.5);border-radius:20px;padding:5px 12px;font-weight:700;">② はたらくヒント<span style="opacity:0.7;font-weight:400;">（無料・約3分）</span></span>
+        <span style="color:var(--teal);font-size:11px;">→</span>
+        <span style="font-size:11px;color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);border-radius:20px;padding:5px 12px;">③ 経営層と話す</span>
+      </div>
+
       <button class="btn-primary" onclick="loadCompaniesAsync().then(()=>{renderCompanyList();setTimeout(()=>document.getElementById('companyListBody')?.scrollIntoView({behavior:'smooth'}),80);})" style="width:100%;max-width:320px;justify-content:center;margin-bottom:10px;">経営層の記事を見る</button>
       <button class="btn-outline" onclick="switchMode('user',document.getElementById('mb-project'),'project')" style="width:100%;max-width:320px;justify-content:center;background:transparent;color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.3);">共創テーマから探す</button>
     </div>
@@ -1303,12 +1313,12 @@ h1, h2, h3, h4,
 
     <div class="cta-sticky" id="p1CtaSticky">
       <div class="cta-sticky-text">
-        <strong>記事を読んで、どう感じましたか？</strong>
+        <strong>4つの質問で、あなたへの「はたらくヒント」が届きます</strong>
       </div>
       <div class="cta-sticky-btns">
         <button class="btn-outline" id="p1ProjectBtn" onclick="openCompanyProjectsFromP1()" style="display:none">この経営層の共創テーマを見る →</button>
         <button class="btn-outline" style="font-size:13px;padding:10px 20px;white-space:nowrap" onclick="requireLineForContact()">話してみたい</button>
-        <button class="btn-primary" style="font-size:13px;padding:10px 20px;white-space:nowrap" onclick="goScreen('p2')">価値観を整理する</button>
+        <button class="btn-primary" style="font-size:13px;padding:10px 20px;white-space:nowrap" onclick="goScreen('p2')">はたらくヒントを受け取る（無料）</button>
       </div>
     </div>
   </div>
@@ -1316,6 +1326,12 @@ h1, h2, h3, h4,
   <!-- P2 -->
   <div id="p2" class="screen">
     <div class="empathy-wrap">
+      <!-- 診断イントロ -->
+      <div style="text-align:center;margin-bottom:22px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--teal);margin-bottom:6px;">WORKING HINT — 無料・約3分</div>
+        <div style="font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:18px;font-weight:900;color:var(--navy);line-height:1.5;">はたらくヒント診断</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.7;">4つの質問に答えると、AIがあなたへの<br>「はたらくヒント」を読み解いてお届けします。</div>
+      </div>
       <!-- Q1 -->
       <div id="q1b">
         <div class="q-progress">
@@ -1408,8 +1424,8 @@ h1, h2, h3, h4,
   <!-- P3 -->
   <div id="p3" class="screen">
     <div class="fb-wrap">
-      <div class="fb-eyebrow">Your Values</div>
-      <div class="fb-heading" id="fbSub">あなたの言葉から読み解きました</div>
+      <div class="fb-eyebrow">Working Hint</div>
+      <div class="fb-heading" id="fbSub">あなたへの、はたらくヒント</div>
 
       <div id="fbSkel" class="skel-wrap">
         <div style="display:flex;gap:8px;margin-bottom:28px">
@@ -1427,7 +1443,7 @@ h1, h2, h3, h4,
       <div id="fbContent" style="display:none">
         <!-- 簡易フィードバック（LINE登録前後共通） -->
         <div id="fbSummary" class="fb-summary-block" style="background:rgba(66,173,159,0.15);border-left:3px solid var(--teal);padding:16px 18px;border-radius:0 4px 4px 0;margin-bottom:20px;">
-          <div style="font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:2px;color:var(--teal);margin-bottom:8px;">YOUR FEEDBACK</div>
+          <div style="font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:2px;color:var(--teal);margin-bottom:8px;">WORKING HINT</div>
           <div id="fbSummaryText" style="font-size:14px;line-height:1.9;color:rgba(255,255,255,0.9);white-space:pre-line;"></div>
         </div>
 
@@ -1480,7 +1496,7 @@ h1, h2, h3, h4,
       <div class="reco-heading">
         <div class="reco-eyebrow">Next Encounter</div>
         <div class="reco-title">この経営層と対話してみませんか？</div>
-        <div class="reco-sub" id="recoSub">あなたの価値観に近い経営層をピックアップしました</div>
+        <div class="reco-sub" id="recoSub">あなたに近い経営層をピックアップしました</div>
       </div>
 
       <div class="orig-card">
