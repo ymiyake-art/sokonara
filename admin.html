@@ -1713,6 +1713,11 @@ function renderArticleEditor(){
             <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">会社一言紹介</label>
             <textarea id="art-intro" rows="3" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
           </div>
+          <div style="margin-bottom:14px">
+            <label style="font-size:11px;color:var(--teal-d);display:block;margin-bottom:5px">こんな人と出会いたい <span style="font-size:10px;color:var(--text3);font-weight:400">※記事に「WHO I WANT TO MEET」として表示＋AI診断にも使用</span></label>
+            <textarea id="art-wanted" rows="3" placeholder="例：ガツガツ売るより、人と素直に向き合える人と組みたい。法人営業の経験があれば、きっと面白がってもらえる。" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid rgba(66,173,159,0.35);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
+            <div style="font-size:10px;color:var(--text3);margin-top:4px">※ 募集要項ではなく「どんな人柄・温度感の人と話したいか」を経営層の語り口で書くのがおすすめです</div>
+          </div>
           <div>
             <div style="margin-bottom:5px">
               <label style="font-size:11px;color:var(--text2)">Q1 選択肢（1行ずつ、最大4つ）<span style="color:var(--text3)"> ※読者が記事の中で選ぶ選択肢</span></label>
@@ -1824,6 +1829,7 @@ function onArtCompanyChange(id){
         catchphrase: co.catchphrase||'',
         quote: co.quote||'',
         companyIntro: co.companyIntro||'',
+        wantedProfile: co.wantedProfile||'',
         q1: co.q1||[],
         cardLabel: co.cardLabel||''
       });
@@ -1972,6 +1978,7 @@ function fillMeta(meta){
   set('art-catchphrase', meta.catchphrase||'');
   set('art-quote', meta.quote||'');
   set('art-intro', meta.companyIntro||'');
+  set('art-wanted', meta.wantedProfile||'');
   const q1El=document.getElementById('art-q1');
   if(q1El) q1El.value=(meta.q1||[]).join('\n');
 }
@@ -2341,6 +2348,7 @@ async function saveArticle(){
   const catchphrase=document.getElementById('art-catchphrase')?.value.trim()||'';
   const quote=document.getElementById('art-quote')?.value.trim()||'';
   const companyIntro=document.getElementById('art-intro')?.value.trim()||'';
+  const wantedProfile=document.getElementById('art-wanted')?.value.trim()||'';
   const q1=(document.getElementById('art-q1')?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
   const cardLabel=(document.getElementById('art-card-label-edit')?.value||document.getElementById('art-card-label')?.value||'').trim();
   // 基本情報
@@ -2359,7 +2367,7 @@ async function saveArticle(){
     title: _articleTitle||companies[idx].title,
     body: JSON.stringify(_articleSections),
     tags, catchphrase, quote,
-    companyIntro, q1, cardLabel,
+    companyIntro, wantedProfile, q1, cardLabel,
     photoUrl, heroUrl, type, plan, articleType
   };
   saveCompanies(companies);
