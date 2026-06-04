@@ -2429,7 +2429,11 @@ function goScreen(id) {
     if(i<idx) d.classList.add('done');
     else if(i===idx) d.classList.add('active');
   });
-  window.scrollTo(0,0);
+  // 描画確定後に確実にトップへ戻す（アプリ内ブラウザでscrollToが効かない対策）
+  const _toTop = ()=>{ try{ window.scrollTo(0,0); document.documentElement.scrollTop=0; document.body.scrollTop=0; }catch(e){} };
+  _toTop();
+  requestAnimationFrame(_toTop);
+  setTimeout(_toTop, 60);
   // ホーム画面追加バナー：TOPでのみ表示、それ以外では隠す
   try {
     if(id === 'p-list'){ if(typeof showPwaBanner==='function') setTimeout(showPwaBanner, 1500); }
