@@ -2459,7 +2459,8 @@ async function genFeedback() {
     title: _co.title||'',
     tags: Array.isArray(_co.tags) ? _co.tags.filter(Boolean) : [],
     intro: _co.companyIntro||_co.intro||'',
-    articleExcerpt: _stripBody(_co.body)
+    articleExcerpt: _stripBody(_co.body),
+    wantedProfile: _co.wantedProfile||''
   } : null;
 
   try {

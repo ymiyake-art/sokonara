@@ -738,7 +738,7 @@ function toCompanyRow(c){
     photoUrl:c.photoUrl||'',heroUrl:c.heroUrl||'',
     industry:c.industry||'',employeeSize:c.employeeSize||'',companyIntro:c.companyIntro||'',
     tags:c.tags||[],title:c.title||'',quote:c.quote||'',body:c.body||'',q1:c.q1||[],fee:c.fee||'',
-    catchphrase:c.catchphrase||'',cardLabel:c.cardLabel||'',
+    catchphrase:c.catchphrase||'',cardLabel:c.cardLabel||'',wantedProfile:c.wantedProfile||'',
     status:c.status||'active',created_at:c.created_at||new Date().toISOString(),reactions:c.reactions||0,cta:c.cta||0
   };
 }
@@ -762,9 +762,9 @@ async function saveCompanies(arr){
   if(error){
     console.warn('companies save error:', error.message);
     // catchphraseカラム未追加の場合は除外して再試行
-    if(error.message.includes('catchphrase') || error.message.includes('cardLabel') || error.message.includes('card_label') || error.message.includes('column')){
+    if(error.message.includes('catchphrase') || error.message.includes('cardLabel') || error.message.includes('card_label') || error.message.includes('wantedProfile') || error.message.includes('column')){
       const minRows = rows.map(r=>{
-        const {catchphrase,cardLabel,heroUrl,...rest}=r; return rest;
+        const {catchphrase,cardLabel,heroUrl,wantedProfile,...rest}=r; return rest;
       });
       const {error:e2} = await supabaseClient.from('companies').upsert(minRows,{onConflict:'id'});
       if(e2){
@@ -1103,6 +1103,11 @@ function renderAddCo(){
             <input id="co-tags" type="text" placeholder="例：壁打ち歓迎, 副業OK, 福岡, 製造業DX" style="${inp()}">
           </div>
           <div style="margin-bottom:14px">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:5px">求める人材像（任意・AI診断のマッチングに使用／記事には表示しません）</div>
+            <textarea id="co-wanted" rows="3" placeholder="例：体育会系の文化に馴染める素直な法人営業。ガツガツ売るより人と向き合える人。営業経験があると活きる。" style="${inp()}resize:vertical;"></textarea>
+            <div style="font-size:10px;color:var(--text3);margin-top:4px">※ 職種・スキルだけでなく「どんな人柄・温度感の人と組みたいか」を書くと診断が当たりやすくなります</div>
+          </div>
+          <div style="margin-bottom:14px">
             <div style="font-size:11px;color:var(--text2);margin-bottom:5px">記事タイトル <span style="color:var(--hot)">*</span></div>
             <input id="co-title" type="text" placeholder="例：「継ぐ」ではなく「変える」ためにこの会社に残った" style="${inp()}">
           </div>
@@ -1218,6 +1223,7 @@ function saveCo(){
     size:document.getElementById('co-size').value.trim(),
     intro:document.getElementById('co-intro').value.trim(),
     tags:document.getElementById('co-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    wantedProfile:(document.getElementById('co-wanted')?.value||'').trim(),
     title,quote,catchphrase,body,q1,
     fee:document.getElementById('co-fee').value||'',
     status:'active',
@@ -1252,6 +1258,7 @@ function editCo(id){
     set('co-intro',co.companyIntro||co.intro); set('co-tags',(co.tags||[]).join(', '));
     set('co-title',co.title); set('co-quote',co.quote); set('co-body',co.body); set('co-fee',co.fee);
     if(document.getElementById('coCatchphrase')) document.getElementById('coCatchphrase').value=co.catchphrase||'';
+    set('co-wanted', co.wantedProfile||'');
     [1,2,3,4].forEach((i,idx)=>set('co-q'+i,(co.q1||[])[idx]||''));
     updateBodyCounter();
     updatePhotoPreview();
