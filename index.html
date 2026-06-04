@@ -1275,6 +1275,13 @@ h1, h2, h3, h4,
       <div id="p1HeroPhoto" class="article-hero-photo" style="display:none"></div>
       <h1 class="article-title" id="p1ArticleTitle"></h1>
       <div class="article-body" id="p1ArticleBody"></div>
+
+      <!-- こんな人と出会いたい -->
+      <div id="wantedSection" style="display:none;margin-top:28px;background:var(--teal-bg);border:1px solid var(--teal-mid);border-radius:10px;padding:20px 22px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--teal-d);margin-bottom:8px;">WHO I WANT TO MEET</div>
+        <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:10px;" id="wantedTitle">こんな人と出会いたい</div>
+        <div id="wantedText" style="font-size:14px;line-height:1.9;color:var(--text);white-space:pre-line;"></div>
+      </div>
     </div>
 
     <!-- 共感ボタン -->
@@ -2261,6 +2268,15 @@ function renderP1FromCompany(){
       bd.innerHTML = quoteHtml + renderMarkdownArticle(shapedBody, {allowImages});
     }
   }
+  // こんな人と出会いたい
+  const wantedSec = document.getElementById('wantedSection');
+  const wantedTxt = document.getElementById('wantedText');
+  const wantedProfile = (co?.wantedProfile || '').trim();
+  if(wantedSec && wantedTxt){
+    if(wantedProfile){ wantedTxt.textContent = wantedProfile; wantedSec.style.display = 'block'; }
+    else { wantedSec.style.display = 'none'; }
+  }
+
   // 共感ボタンリセット
   const empSec = document.getElementById('empathySection');
   const empBtn = document.getElementById('empathyBtnEl');
