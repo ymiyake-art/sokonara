@@ -1743,6 +1743,7 @@ const Q2_DIST = [
 
 // ===== STATE =====
 const S = { q1:'', q2:[], about:[], q3:'', free:'', fb:null, screen:'p-list', mode:'user', adminTab:'dash' };
+let _suppressHistoryPush = false; // popstate（戻る）処理中はhistory.pushStateを抑止
 
 function isLineRegistered() {
   return !!localStorage.getItem('snLineId');
@@ -2414,11 +2415,16 @@ function openCompanyProjectsFromP1(){
 
 // ===== SCREEN NAV =====
 function goScreen(id) {
+  const _prev = S.screen;
   // 全ユーザー画面を確実に隠してから対象だけ表示（状態ズレによる二重表示を防ぐ）
   SCREENS.forEach(s=>{ const el=document.getElementById(s); if(el) el.classList.remove('active'); });
   const target = document.getElementById(id);
   if(target) target.classList.add('active');
   S.screen = id;
+  // ブラウザの戻る対応：画面が変わったら履歴に積む（popstate中は積まない）
+  if(!_suppressHistoryPush && id !== _prev){
+    try { history.pushState({ sn:id }, ''); } catch(e) {}
+  }
   // progress
   document.getElementById('progressFill').style.width = (PROG[id]||0)+'%';
   SCREENS.forEach((s,i)=>{
@@ -3265,6 +3271,30 @@ try {
   const _v = parseInt(localStorage.getItem('sn_visit_count')||'0', 10) + 1;
   localStorage.setItem('sn_visit_count', String(_v));
 } catch(e) {}
+
+// ===== ブラウザ「戻る」対応（SPA履歴）=====
+// 戻るボタンで前の画面に戻る。ページは再読込しないので入力（S）は消えない。
+try { history.replaceState({ sn: 'p-list' }, ''); } catch(e) {}
+window.addEventListener('popstate', function(e){
+  // 接点モーダルが開いていれば、まず閉じるだけ（画面遷移しない）
+  const em = document.getElementById('empathyModal');
+  if(em && em.style.display === 'block'){
+    em.style.display = 'none';
+    try { history.pushState({ sn: S.screen }, ''); } catch(_) {}
+    return;
+  }
+  // 共創テーマ詳細/応募中なら一覧へ戻す
+  if(S.mode==='user' && document.getElementById('project')?.classList.contains('active')){
+    const apply = document.getElementById('pj-apply');
+    const detail = document.getElementById('pj-detail');
+    if(apply && apply.style.display!=='none'){ showPjScreen('pj-detail'); return; }
+    if(detail && detail.style.display!=='none'){ showPjScreen('pj-list'); return; }
+  }
+  const st = e.state;
+  const id = (st && st.sn && SCREENS.includes(st.sn)) ? st.sn : 'p-list';
+  _suppressHistoryPush = true;
+  try { goScreen(id); } finally { _suppressHistoryPush = false; }
+});
 
 window.addEventListener('beforeinstallprompt', (e) => {
   // Chrome系のネイティブ追加プロンプトを保持
