@@ -663,52 +663,144 @@ function renderContacts(){
   `).join('')+`</div>`;
 }
 
+let _reportRows = []; // CSV/削除用キャッシュ
 function renderReport(){
+  const cos = loadCompanies();
   document.getElementById('adminContent').innerHTML=`
     <div style="padding:24px">
       <div class="panel" style="margin-bottom:20px">
-        <div class="phdr">企業を選択してレポートを生成</div>
+        <div class="phdr">企業を選んで共感レポートを表示</div>
         <div class="pbody">
-          <div class="cogrid">
-            ${COMPANIES.map(c=>`
-              <div class="cocard" onclick="genReport('${c.id}')">
-                <div class="coav" style="background:${c.color}">${c.name[0]}</div>
-                <div><div class="conm">${c.name}</div><div class="comt">${c.reactions}反応 / ${c.cta}CTA / HOT ${c.hot}件</div></div>
-                <div class="coarr">→</div>
-              </div>`).join('')}
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:6px">
+            <select id="report-company" style="flex:1;min-width:200px;padding:9px 12px;border:1px solid var(--border);border-radius:2px;font-size:13px;font-family:inherit;outline:none">
+              <option value="">— 経営層を選択 —</option>
+              ${cos.map(c=>`<option value="${c.id}">${(c.ceo||c.name||'')} （${c.name||''}）</option>`).join('')}
+            </select>
+            <button class="abtn abtn-teal" style="font-size:13px;padding:9px 20px" onclick="genReport(document.getElementById('report-company').value)">レポート表示</button>
           </div>
+          <div style="font-size:11px;color:var(--text3)">※ 診断を受けた人の「匿名」傾向です（氏名・連絡先は記録していません）</div>
         </div>
       </div>
-      <div id="reportOut" style="display:none">
-        <div class="rpt-out">
-          <div class="ai-hdr"><span class="ai-tg">AI MONTHLY REPORT</span><span class="ai-lbl" id="reportLabel"></span></div>
-          <div class="rpt-body" id="reportBody"></div>
-          <div class="rpt-acts">
-            <button class="ai-btn" onclick="toast('PDF出力は実装予定です')">↓ PDF出力</button>
-            <button class="ai-btn" onclick="toast('Notion連携は実装予定です')">→ Notionに送る</button>
-          </div>
+      <div id="reportOut" style="display:none"></div>
+    </div>`;
+}
+
+function _dist(rows, getter){
+  const map = {};
+  rows.forEach(r=>{ const vals = getter(r); (Array.isArray(vals)?vals:[vals]).forEach(v=>{ if(v&&String(v).trim()){ const k=String(v).trim(); map[k]=(map[k]||0)+1; } }); });
+  return Object.entries(map).sort((a,b)=>b[1]-a[1]);
+}
+function _bar(label, count, total){
+  const pct = total? Math.round(count/total*100):0;
+  return `<div style="margin-bottom:8px">
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text);margin-bottom:3px"><span style="flex:1;padding-right:8px">${escapeHtmlA(label)}</span><span style="color:var(--text3);white-space:nowrap">${count}件 / ${pct}%</span></div>
+    <div style="height:7px;background:rgba(0,0,0,0.06);border-radius:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--teal)"></div></div>
+  </div>`;
+}
+function escapeHtmlA(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+async function genReport(id){
+  if(!id){ toast('経営層を選択してください'); return; }
+  const co = loadCompanies().find(c=>String(c.id)===String(id));
+  const out = document.getElementById('reportOut');
+  out.style.display='block';
+  out.innerHTML='<div class="panel"><div class="pbody" style="text-align:center;color:var(--text2);font-size:13px;padding:30px">読み込み中...</div></div>';
+  out.scrollIntoView({behavior:'smooth'});
+  let rows = [];
+  try {
+    const res = await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw, action:'list', company_id:id})});
+    if(res.status===401){ out.innerHTML='<div class="panel"><div class="pbody" style="color:var(--hot);padding:20px">認証エラー。再ログインしてください。</div></div>'; return; }
+    rows = await res.json();
+    if(!Array.isArray(rows)) rows = [];
+  } catch(e){ out.innerHTML='<div class="panel"><div class="pbody" style="color:var(--hot);padding:20px">取得失敗: '+e.message+'</div></div>'; return; }
+  _reportRows = rows;
+
+  const total = rows.length;
+  const reactions = co?.reactions || 0;
+  const q1Dist = _dist(rows, r=>r.q1_answer);
+  const q2Dist = _dist(rows, r=>r.q2_values);
+  const aboutDist = _dist(rows, r=>String(r.q3_answer||'').split('、'));
+  const comments = rows.filter(r=>r.ai_message && r.ai_message.trim());
+
+  out.innerHTML = `
+    <div class="panel" style="margin-bottom:20px">
+      <div class="phdr">${escapeHtmlA(co?.ceo||'')}（${escapeHtmlA(co?.name||'')}）共感レポート
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="abtn" style="font-size:10px;padding:4px 12px;border:1px solid var(--border)" onclick="downloadReportCsv('${id}')">CSV出力</button>
+          <button class="abtn" style="font-size:10px;padding:4px 12px;border:1px solid var(--hot);color:var(--hot)" onclick="clearReportData('${id}')">テストデータ全消去</button>
         </div>
+      </div>
+      <div class="pbody">
+        <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:8px">
+          <div><div style="font-size:11px;color:var(--text3)">❤ 共感ボタン</div><div style="font-size:26px;font-weight:700;color:var(--navy)">${reactions}</div></div>
+          <div><div style="font-size:11px;color:var(--text3)">診断を受けた人</div><div style="font-size:26px;font-weight:700;color:var(--teal-d)">${total}</div></div>
+          <div><div style="font-size:11px;color:var(--text3)">コメント数</div><div style="font-size:26px;font-weight:700;color:var(--navy)">${comments.length}</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:20px">
+      <div class="phdr">どこに共感が集まったか（刺さった言葉）</div>
+      <div class="pbody">${q1Dist.length? q1Dist.map(([k,v])=>_bar(k,v,total)).join('') : '<div style="color:var(--text3);font-size:12px">データなし</div>'}</div>
+    </div>
+
+    <div class="panel" style="margin-bottom:20px">
+      <div class="phdr">求めているもの</div>
+      <div class="pbody">${q2Dist.length? q2Dist.map(([k,v])=>_bar(k,v,total)).join('') : '<div style="color:var(--text3);font-size:12px">データなし</div>'}</div>
+    </div>
+
+    <div class="panel" style="margin-bottom:20px">
+      <div class="phdr">今の状況</div>
+      <div class="pbody">${aboutDist.length? aboutDist.map(([k,v])=>_bar(k,v,total)).join('') : '<div style="color:var(--text3);font-size:12px">データなし</div>'}</div>
+    </div>
+
+    <div class="panel" style="margin-bottom:20px">
+      <div class="phdr">寄せられたコメント（匿名・個人情報マスク済み） <span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:6px">${comments.length}件</span></div>
+      <div class="pbody" style="padding:0">
+        ${comments.length? comments.map(r=>`
+          <div style="display:flex;gap:10px;align-items:flex-start;padding:12px 16px;border-bottom:1px solid rgba(228,227,227,0.5)">
+            <div style="flex:1;font-size:13px;line-height:1.7;color:var(--text);white-space:pre-line">${escapeHtmlA(r.ai_message)}</div>
+            <button onclick="deleteReportRow('${r.id}','${id}')" style="font-size:11px;color:var(--hot);background:none;border:none;cursor:pointer;white-space:nowrap">削除</button>
+          </div>`).join('') : '<div style="padding:16px;color:var(--text3);font-size:12px">コメントはまだありません</div>'}
       </div>
     </div>`;
 }
 
-async function genReport(id){
-  const c=COMPANIES.find(x=>x.id===id);
-  if(!c) return;
-  document.getElementById('reportOut').style.display='block';
-  document.getElementById('reportLabel').textContent=`${c.name} — 2026年4月`;
-  const body=document.getElementById('reportBody');
-  body.innerHTML='<div class="ai-load" style="height:80px"></div>';
-  document.getElementById('reportOut').scrollIntoView({behavior:'smooth'});
-  try{
-    const res=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({system:'あなたはソコナラの月次レポートライターです。【今月のサマリ】【どんな人が反応したか】【印象的なコメント2件】【来月への示唆】の4構成で日本語レポートを書いてください。',user:`企業：${c.name}（${c.ceo}）、2026年4月。反応${c.reactions}件、CTA${c.cta}件、HOT${c.hot}件、WARM${c.warm}件。`})});
-    const d=await res.json();
-    body.innerHTML=d.content[0].text.replace(/\n/g,'<br>').replace(/【(.*?)】/g,'<strong style="color:var(--teal)">【$1】</strong>');
-    toast(`${c.name}のレポートを生成しました`);
-  }catch{
-    body.innerHTML=`<strong style="color:var(--teal)">【今月のサマリ】</strong><br>反応${c.reactions}件、CTA${c.cta}件。HOT${c.hot}件が接続待ちです。<br><br><strong style="color:var(--teal)">【どんな人が反応したか】</strong><br>変革への意志と地域への関心を持つ30〜40代が中心です。<br><br><strong style="color:var(--teal)">【印象的なコメント】</strong><br>「事業承継に関わりたかった」「福岡移住を検討中」<br><br><strong style="color:var(--teal)">【来月への示唆】</strong><br>次回は「今一番困っていること」を前面に出した構成を推奨します。`;
-  }
+async function deleteReportRow(rowId, companyId){
+  if(!confirm('このコメント（共感ログ）を削除しますか？')) return;
+  try {
+    await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw, action:'delete', id:rowId})});
+    toast('削除しました');
+    genReport(companyId);
+  } catch(e){ toast('削除失敗: '+e.message); }
+}
+
+async function clearReportData(companyId){
+  if(!confirm('この経営層の共感ログ（テストデータ）を全て削除します。よろしいですか？')) return;
+  try {
+    await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw, action:'clear', company_id:companyId})});
+    toast('全件削除しました');
+    genReport(companyId);
+  } catch(e){ toast('削除失敗: '+e.message); }
+}
+
+function downloadReportCsv(companyId){
+  const co = loadCompanies().find(c=>String(c.id)===String(companyId));
+  const rows = _reportRows||[];
+  const header = ['日時','刺さった言葉(Q1)','求めているもの(Q2)','今の状況','コメント(マスク済み)'];
+  const esc = s => '"'+String(s||'').replace(/"/g,'""')+'"';
+  const lines = [header.map(esc).join(',')];
+  rows.forEach(r=>{
+    lines.push([
+      r.created_at||'', r.q1_answer||'', (Array.isArray(r.q2_values)?r.q2_values.join('・'):''), r.q3_answer||'', r.ai_message||''
+    ].map(esc).join(','));
+  });
+  const bom = '﻿';
+  const blob = new Blob([bom+lines.join('\r\n')], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `共感レポート_${(co?.name||'company')}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
 }
 
 function contactUser(id){

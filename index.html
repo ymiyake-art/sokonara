@@ -2512,6 +2512,7 @@ async function genFeedback() {
     S.fb = fb;
     _saveFbCache();
     showFeedback(fb);
+    logResonance(); // 匿名の共感ログを記録（個人情報なし）
   } catch(e) {
     console.error('[feedback error]', e?.message || e);
     toast('AIエラー（詳細はコンソール確認）: ' + (e?.message || '不明'));
@@ -2525,6 +2526,35 @@ async function genFeedback() {
     _saveFbCache();
     showFeedback(fb);
   }
+}
+
+// 自由記述から個人情報を除去（メール・電話・URL・長い数字列をマスク）
+function maskPII(text){
+  if(!text) return '';
+  let t = String(text);
+  t = t.replace(/[\w.+-]+@[\w-]+\.[\w.-]+/g, '【メール略】');
+  t = t.replace(/https?:\/\/[^\s]+/g, '【URL略】');
+  t = t.replace(/0\d{1,3}[-(\s]?\d{2,4}[-)\s]?\d{3,4}/g, '【電話略】');
+  t = t.replace(/\d{6,}/g, '【数字略】');
+  return t.trim().slice(0, 300);
+}
+
+// 匿名の共感ログを記録（誰がではなく「何に共感したか」を企業レポート用に蓄積）
+async function logResonance(){
+  if(!supabaseClient || !selectedCompanyId) return;
+  const co = loadCompanies().find(c=>String(c.id||'')===String(selectedCompanyId));
+  try {
+    await supabaseClient.from('user_sessions').insert([{
+      id: 'rs_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+      line_id: null,                       // 個人を特定しない
+      company_id: String(selectedCompanyId),
+      q1_answer: S.q1 || '',               // 刺さった言葉（＝どこに共感したか）
+      q2_values: S.q2 || [],               // 求めているもの
+      q3_answer: (S.about || []).join('、'),// 今の状況
+      ai_values: [],
+      ai_message: maskPII(S.free || ''),   // 自由記述（個人情報マスク済み）
+    }]);
+  } catch(e) { console.warn('resonance log skipped:', e?.message || e); }
 }
 
 function _saveFbCache(){
