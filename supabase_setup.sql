@@ -10,6 +10,8 @@ ALTER TABLE companies
   ADD COLUMN IF NOT EXISTS "cardLabel" text DEFAULT '';
 ALTER TABLE companies
   ADD COLUMN IF NOT EXISTS "wantedProfile" text DEFAULT '';
+ALTER TABLE companies
+  ADD COLUMN IF NOT EXISTS "summaryComment" text DEFAULT '';
 
 -- 2. ユーザーテーブル（LINE IDを主キー）
 CREATE TABLE IF NOT EXISTS users (

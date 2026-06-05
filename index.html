@@ -1300,8 +1300,8 @@ h1, h2, h3, h4,
         <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--teal-d);margin-bottom:10px;">ABOUT THIS LEADER</div>
         <div id="p1SummaryTagsRow" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;"></div>
         <div id="p1SummaryRecoWrap" style="display:none;">
-          <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:4px;">📌 こんな方におすすめ</div>
-          <div id="p1SummaryReco" style="font-size:13px;line-height:1.8;color:var(--text);"></div>
+          <div style="font-size:11px;font-weight:700;color:var(--teal-d);margin-bottom:4px;">📌 ソコナラより — こんな方におすすめ</div>
+          <div id="p1SummaryReco" style="font-size:13px;line-height:1.85;color:var(--text);"></div>
         </div>
       </div>
 
@@ -2380,12 +2380,8 @@ function renderP1FromCompany(){
   if(sumBox && sumTags){
     const tagItems = (Array.isArray(co?.tags) ? co.tags.filter(t=>t&&t.trim()&&t.trim()!=='/') : []).slice(0,4);
     sumTags.innerHTML = tagItems.map(t=>`<span style="font-size:11px;color:var(--teal-d);background:var(--teal-bg);border:1px solid var(--teal-mid);border-radius:20px;padding:3px 11px;">${escapeHtml(t)}</span>`).join('');
-    // こんな方におすすめ：wantedProfileの冒頭1〜2文を抜粋（経営層の語りから）
-    let recoText = '';
-    if(wantedProfile){
-      const sentences = wantedProfile.split(/(?<=。)/).filter(Boolean);
-      recoText = sentences.slice(0,2).join('').replace(/[！。\s]*$/,'。');
-    }
+    // ソコナラ編集コメント（第三者目線）。管理画面の「記事冒頭コメント」を表示
+    const recoText = (co?.summaryComment || '').trim();
     if(sumReco && sumRecoWrap){
       if(recoText){ sumReco.textContent = recoText; sumRecoWrap.style.display = 'block'; }
       else { sumRecoWrap.style.display = 'none'; }

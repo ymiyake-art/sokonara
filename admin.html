@@ -830,7 +830,7 @@ function toCompanyRow(c){
     photoUrl:c.photoUrl||'',heroUrl:c.heroUrl||'',
     industry:c.industry||'',employeeSize:c.employeeSize||'',companyIntro:c.companyIntro||'',
     tags:c.tags||[],title:c.title||'',quote:c.quote||'',body:c.body||'',q1:c.q1||[],fee:c.fee||'',
-    catchphrase:c.catchphrase||'',cardLabel:c.cardLabel||'',wantedProfile:c.wantedProfile||'',
+    catchphrase:c.catchphrase||'',cardLabel:c.cardLabel||'',wantedProfile:c.wantedProfile||'',summaryComment:c.summaryComment||'',
     status:c.status||'active',created_at:c.created_at||new Date().toISOString(),reactions:c.reactions||0,cta:c.cta||0
   };
 }
@@ -854,9 +854,9 @@ async function saveCompanies(arr){
   if(error){
     console.warn('companies save error:', error.message);
     // catchphraseカラム未追加の場合は除外して再試行
-    if(error.message.includes('catchphrase') || error.message.includes('cardLabel') || error.message.includes('card_label') || error.message.includes('wantedProfile') || error.message.includes('column')){
+    if(error.message.includes('catchphrase') || error.message.includes('cardLabel') || error.message.includes('card_label') || error.message.includes('wantedProfile') || error.message.includes('summaryComment') || error.message.includes('column')){
       const minRows = rows.map(r=>{
-        const {catchphrase,cardLabel,heroUrl,wantedProfile,...rest}=r; return rest;
+        const {catchphrase,cardLabel,heroUrl,wantedProfile,summaryComment,...rest}=r; return rest;
       });
       const {error:e2} = await supabaseClient.from('companies').upsert(minRows,{onConflict:'id'});
       if(e2){
@@ -1806,6 +1806,11 @@ function renderArticleEditor(){
             <textarea id="art-intro" rows="3" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
           </div>
           <div style="margin-bottom:14px">
+            <label style="font-size:11px;color:var(--navy);display:block;margin-bottom:5px;font-weight:700">記事冒頭コメント（ソコナラ編集／こんな方におすすめ） <span style="font-size:10px;color:var(--text3);font-weight:400">※記事の一番上に「ソコナラより」として表示</span></label>
+            <textarea id="art-summary-comment" rows="3" placeholder="例：変化の途中にある会社で、自分の手で形づくっていきたい方におすすめです。営業やカスタマーサクセスの経験が活きます。（※ソコナラ視点の第三者コメントで）" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
+            <div style="font-size:10px;color:var(--text3);margin-top:4px">※ 経営層本人の語り（「〜出会いたいです」）ではなく、ソコナラが読者に向けて書く第三者目線のひとことにしてください</div>
+          </div>
+          <div style="margin-bottom:14px">
             <label style="font-size:11px;color:var(--teal-d);display:block;margin-bottom:5px">こんな人と出会いたい <span style="font-size:10px;color:var(--text3);font-weight:400">※記事に「WHO I WANT TO MEET」として表示＋AI診断にも使用</span></label>
             <textarea id="art-wanted" rows="3" placeholder="例：ガツガツ売るより、人と素直に向き合える人と組みたい。法人営業の経験があれば、きっと面白がってもらえる。" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid rgba(66,173,159,0.35);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
             <div style="font-size:10px;color:var(--text3);margin-top:4px">※ 募集要項ではなく「どんな人柄・温度感の人と話したいか」を経営層の語り口で書くのがおすすめです</div>
@@ -1921,6 +1926,7 @@ function onArtCompanyChange(id){
         catchphrase: co.catchphrase||'',
         quote: co.quote||'',
         companyIntro: co.companyIntro||'',
+        summaryComment: co.summaryComment||'',
         wantedProfile: co.wantedProfile||'',
         q1: co.q1||[],
         cardLabel: co.cardLabel||''
@@ -2070,6 +2076,7 @@ function fillMeta(meta){
   set('art-catchphrase', meta.catchphrase||'');
   set('art-quote', meta.quote||'');
   set('art-intro', meta.companyIntro||'');
+  set('art-summary-comment', meta.summaryComment||'');
   set('art-wanted', meta.wantedProfile||'');
   const q1El=document.getElementById('art-q1');
   if(q1El) q1El.value=(meta.q1||[]).join('\n');
@@ -2440,6 +2447,7 @@ async function saveArticle(){
   const catchphrase=document.getElementById('art-catchphrase')?.value.trim()||'';
   const quote=document.getElementById('art-quote')?.value.trim()||'';
   const companyIntro=document.getElementById('art-intro')?.value.trim()||'';
+  const summaryComment=document.getElementById('art-summary-comment')?.value.trim()||'';
   const wantedProfile=document.getElementById('art-wanted')?.value.trim()||'';
   const q1=(document.getElementById('art-q1')?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
   const cardLabel=(document.getElementById('art-card-label-edit')?.value||document.getElementById('art-card-label')?.value||'').trim();
@@ -2459,7 +2467,7 @@ async function saveArticle(){
     title: _articleTitle||companies[idx].title,
     body: JSON.stringify(_articleSections),
     tags, catchphrase, quote,
-    companyIntro, wantedProfile, q1, cardLabel,
+    companyIntro, summaryComment, wantedProfile, q1, cardLabel,
     photoUrl, heroUrl, type, plan, articleType
   };
   saveCompanies(companies);
