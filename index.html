@@ -1210,7 +1210,7 @@ h1, h2, h3, h4,
 
 <!-- ===== MODE BAR ===== -->
 <div class="mode-bar" style="display:flex">
-  <div class="mode-brand"><img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ"></div>
+  <div class="mode-brand" style="cursor:pointer;" onclick="switchMode('user',document.getElementById('mb-company'),'company')" title="経営層一覧へ"><img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ"></div>
   <button class="mode-btn active" id="mb-company" onclick="switchMode('user',this,'company')">経営層一覧</button>
   <button class="mode-btn" id="mb-project" onclick="switchMode('user',this,'project')">共創テーマ</button>
   <!-- 管理画面・リセットは admin.html から直接アクセス（公開ナビからは非表示） -->
@@ -1444,8 +1444,19 @@ h1, h2, h3, h4,
   <!-- P3 -->
   <div id="p3" class="screen">
     <div class="fb-wrap">
-      <div class="fb-eyebrow">Working Hint</div>
-      <div class="fb-heading" id="fbSub">あなたへの、はたらくヒント</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px;">
+        <svg width="56" height="56" viewBox="0 0 64 64" fill="none" style="flex-shrink:0;" aria-hidden="true">
+          <path d="M32 8c-9.4 0-17 7.2-17 16.1 0 6 3.3 11.2 8.2 14v5.4c0 1.2 1 2.2 2.2 2.2h13.2c1.2 0 2.2-1 2.2-2.2v-5.4c4.9-2.8 8.2-8 8.2-14C49 15.2 41.4 8 32 8Z" stroke="#42AD9F" stroke-width="2.5"/>
+          <path d="M25 51h14M27 56h10" stroke="#1C2A54" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M28 38c0-3 1.8-4.5 4-6.5 2.2 2 4 3.5 4 6.5" stroke="#1C2A54" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M32 26v6" stroke="#1C2A54" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M54 18l4-2M53 27l4 0M10 18l-4-2M11 27l-4 0M32 4V1" stroke="#42AD9F" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <div class="fb-eyebrow" style="margin-bottom:2px;">Working Hint</div>
+          <div class="fb-heading" id="fbSub" style="margin-bottom:0;">あなたへの、はたらくヒント</div>
+        </div>
+      </div>
 
       <div id="fbSkel" class="skel-wrap">
         <div style="display:flex;gap:8px;margin-bottom:28px">
