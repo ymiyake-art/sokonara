@@ -2676,14 +2676,23 @@ function showFeedback(fb) {
       saveSession();
     }, 1100);
   } else {
-    // LINE未登録：要約のみ（続きをぼかし）
+    // LINE未登録：要約を多めに見せて「文の途中」でブツッと切る（続きが気になるように）
     if(summaryEl) {
-      const summaryText = fb.summary || '';
-      const sentences = summaryText.split(/(?<=。)/);
-      const preview = sentences.slice(0, 3).join('');
-      summaryEl.innerHTML = preview
-        + '<span style="opacity:0.5">・・・</span>'
-        + '<span style="display:block;margin-top:10px;font-size:12px;color:var(--teal);font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">▼ 続きはLINE登録後に</span>';
+      const summaryText = (fb.summary || '').trim();
+      // 句点で区切らず、文字数で途中カット（最後の文の途中で切れる方が続きが気になる）
+      const CUT = 165;
+      let preview;
+      if(summaryText.length <= CUT){
+        // 短い場合は8割あたりで途中カット
+        preview = summaryText.slice(0, Math.max(40, Math.floor(summaryText.length * 0.8)));
+      } else {
+        preview = summaryText.slice(0, CUT);
+      }
+      // 末尾が句読点だと「区切り感」が出るので、途中になるよう削る
+      preview = preview.replace(/[。、！？\s]+$/,'');
+      summaryEl.innerHTML = escapeHtml(preview)
+        + '<span style="opacity:0.55">…</span>'
+        + '<span style="display:block;margin-top:12px;font-size:12px;color:var(--teal);font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">▼ 続きはLINE登録で読めます</span>';
     }
     document.getElementById('fbLineCta').style.display = 'block';
     document.getElementById('fbDetail').style.display = 'none';
