@@ -252,11 +252,11 @@ h1, h2, h3, h4,
   color: var(--teal-d);
   background: rgba(66,173,159,0.12);
 }
-.company-intro-text { font-size: 12px; line-height: 1.8; color: rgba(28,42,84,0.78); white-space: pre-line; }
+.company-intro-text { font-size: 14px; line-height: 1.85; color: rgba(28,42,84,0.82); white-space: pre-line; }
 
 .article-body p {
   color: #2a2a2a; margin-bottom: 18px;
-  font-size: 15px; line-height: 2; font-weight: 300;
+  font-size: 16px; line-height: 2; font-weight: 300;
 }
 .article-body img {
   width: 100%;
@@ -292,7 +292,7 @@ h1, h2, h3, h4,
   max-height: 360px; object-fit: cover;
 }
 .sec-body {
-  font-size: 15px; line-height: 2.1;
+  font-size: 16px; line-height: 2.05;
   color: #2a2a2a; font-weight: 300;
   white-space: pre-line;
 }
@@ -1292,6 +1292,17 @@ h1, h2, h3, h4,
       </div>
       <div id="p1HeroPhoto" class="article-hero-photo" style="display:none"></div>
       <h1 class="article-title" id="p1ArticleTitle"></h1>
+
+      <!-- 記事冒頭サマリー（こんな方におすすめ / 特徴） -->
+      <div id="p1Summary" style="display:none;background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:22px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--teal-d);margin-bottom:10px;">ABOUT THIS LEADER</div>
+        <div id="p1SummaryTagsRow" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;"></div>
+        <div id="p1SummaryRecoWrap" style="display:none;">
+          <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:4px;">📌 こんな方におすすめ</div>
+          <div id="p1SummaryReco" style="font-size:13px;line-height:1.8;color:var(--text);"></div>
+        </div>
+      </div>
+
       <div class="article-body" id="p1ArticleBody"></div>
 
       <!-- こんな人と出会いたい -->
@@ -1321,12 +1332,13 @@ h1, h2, h3, h4,
 
     <div class="cta-sticky" id="p1CtaSticky">
       <div class="cta-sticky-text">
-        <strong>4つの質問で、あなたへの「はたらくヒント」が届きます</strong>
+        <strong>まずは無料で、あなたへの「はたらくヒント」を</strong>
+        <span style="display:block;font-size:11px;color:var(--text2);margin-top:2px;font-weight:400;">4つの質問に答えるだけ（約3分）／この経営層に直接伝えることもできます</span>
       </div>
       <div class="cta-sticky-btns">
         <button class="btn-outline" id="p1ProjectBtn" onclick="openCompanyProjectsFromP1()" style="display:none">この経営層の共創テーマを見る →</button>
-        <button class="btn-outline" style="font-size:13px;padding:10px 20px;white-space:nowrap" onclick="requireLineForContact()">話してみたい</button>
-        <button class="btn-primary" style="font-size:13px;padding:10px 20px;white-space:nowrap" onclick="goScreen('p2')">はたらくヒントを受け取る（無料）</button>
+        <button class="btn-outline" style="font-size:13px;padding:10px 16px;white-space:nowrap" onclick="requireLineForContact()" title="LINE登録のうえ、登録フォームに進みます">この経営層に伝える</button>
+        <button class="btn-primary" style="font-size:13px;padding:10px 18px;white-space:nowrap" onclick="goScreen('p2')">はたらくヒントを受け取る（無料）</button>
       </div>
     </div>
   </div>
@@ -2329,6 +2341,27 @@ function renderP1FromCompany(){
   if(wantedSec && wantedTxt){
     if(wantedProfile){ wantedTxt.textContent = wantedProfile; wantedSec.style.display = 'block'; }
     else { wantedSec.style.display = 'none'; }
+  }
+
+  // 記事冒頭サマリー（テーマtags ＋ こんな方におすすめ）
+  const sumBox = document.getElementById('p1Summary');
+  const sumTags = document.getElementById('p1SummaryTagsRow');
+  const sumRecoWrap = document.getElementById('p1SummaryRecoWrap');
+  const sumReco = document.getElementById('p1SummaryReco');
+  if(sumBox && sumTags){
+    const tagItems = (Array.isArray(co?.tags) ? co.tags.filter(t=>t&&t.trim()&&t.trim()!=='/') : []).slice(0,4);
+    sumTags.innerHTML = tagItems.map(t=>`<span style="font-size:11px;color:var(--teal-d);background:var(--teal-bg);border:1px solid var(--teal-mid);border-radius:20px;padding:3px 11px;">${escapeHtml(t)}</span>`).join('');
+    // こんな方におすすめ：wantedProfileの冒頭1〜2文を抜粋（経営層の語りから）
+    let recoText = '';
+    if(wantedProfile){
+      const sentences = wantedProfile.split(/(?<=。)/).filter(Boolean);
+      recoText = sentences.slice(0,2).join('').replace(/[！。\s]*$/,'。');
+    }
+    if(sumReco && sumRecoWrap){
+      if(recoText){ sumReco.textContent = recoText; sumRecoWrap.style.display = 'block'; }
+      else { sumRecoWrap.style.display = 'none'; }
+    }
+    sumBox.style.display = (tagItems.length || recoText) ? 'block' : 'none';
   }
 
   // 共感ボタンリセット
