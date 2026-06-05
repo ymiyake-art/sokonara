@@ -1527,10 +1527,9 @@ h1, h2, h3, h4,
   <div id="p5" class="screen">
     <div style="margin:auto;padding:48px 24px;text-align:center;max-width:440px">
       <div class="complete-icon">✓</div>
-      <div class="complete-title">フォームを開きました。</div>
+      <div class="complete-title">あと一歩です</div>
       <div style="font-size:14px;color:rgba(255,255,255,0.9);line-height:2;margin:24px 0 16px;text-align:left;background:rgba(66,173,159,0.15);border-left:3px solid var(--teal);padding:14px 16px;border-radius:0 4px 4px 0;">
-        別タブで登録フォームが開いています。<br>
-        氏名・メールアドレスなどの詳細をご記入いただき、送信してください。
+        下のボタンから登録フォームを開き、<br>氏名・メールアドレスなどをご記入のうえ送信してください。
       </div>
       <!-- 経営層名ヒント -->
       <div id="p5CeoHint" style="display:none;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:14px 16px;margin-bottom:16px;text-align:left;">
@@ -1538,11 +1537,11 @@ h1, h2, h3, h4,
         <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px;">「関心をお持ちの経営層」欄に：</div>
         <div id="p5CeoHintText" style="font-size:14px;font-weight:700;color:#fff;line-height:1.6;"></div>
       </div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.55);line-height:2;margin-bottom:36px;text-align:left;">
+      <div style="font-size:13px;color:rgba(255,255,255,0.55);line-height:2;margin-bottom:28px;text-align:left;">
         ご入力いただいた内容を経営層へ直接お伝えします。<br>経営層が話したいと思った場合にメールでご連絡が届きます。
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;">
-        <button class="btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.4);width:100%;justify-content:center;" onclick="window.open(WEBCAS_FORM_URL,'_blank')">フォームをもう一度開く</button>
+        <button class="btn-primary" style="width:100%;justify-content:center;" onclick="window.open(WEBCAS_FORM_URL,'_blank')">登録フォームを開く →</button>
         <button class="btn-outline" style="color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.2);width:100%;justify-content:center;font-size:13px;" onclick="goScreen('p-list')">他の経営層の記事を読む →</button>
       </div>
     </div>
@@ -3043,8 +3042,8 @@ async function openEmpathyForm() {
     hintTxt.textContent = ceoName && coName ? `${ceoName}さん（${coName}）` : ceoName || coName;
     hintEl.style.display = (ceoName || coName) ? 'block' : 'none';
   }
-  window.open(WEBCAS_FORM_URL, '_blank');
-  toast('登録フォームを開きました。詳細をご記入ください。', 3200);
+  // 自動ポップアップはしない（画面が散らかる＋ポップアップブロック対策）。
+  // p5でユーザーがボタンをタップして開く（ユーザー操作なので確実に開く）
   goScreen('p5');
 }
 
