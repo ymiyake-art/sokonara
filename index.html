@@ -213,7 +213,7 @@ h1, h2, h3, h4,
   font-size: 10px; color: var(--text3);
 }
 
-.article-wrap { padding: 32px 20px 120px; max-width: 640px; margin: 0 auto; }
+.article-wrap { padding: 32px 20px 28px; max-width: 640px; margin: 0 auto; }
 
 .article-tags {
   display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px;
@@ -1047,6 +1047,8 @@ h1, h2, h3, h4,
   font-size:18px;color:#fff;line-height:1.55;letter-spacing:.03em;
   text-shadow:0 1px 4px rgba(0,0,0,0.9), 0 2px 12px rgba(0,0,0,0.7);
   display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;
+  /* 日本語の自然な位置で折り返す（助詞だけが行頭/行末に来にくい） */
+  word-break:auto-phrase; line-break:strict; overflow-wrap:break-word;
 }
 @media(max-width:480px){.leader-phrase{font-size:16px;}}
 
@@ -1329,6 +1331,9 @@ h1, h2, h3, h4,
         <div id="relatedCeosList"></div>
       </div>
     </div>
+
+    <!-- 固定CTAバーに隠れないための余白 -->
+    <div style="height:150px;flex-shrink:0;" aria-hidden="true"></div>
 
     <div class="cta-sticky" id="p1CtaSticky">
       <div class="cta-sticky-text">
