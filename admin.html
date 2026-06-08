@@ -534,7 +534,10 @@ async function renderInterests(){
   el.innerHTML = `<div style="padding:24px">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
       <span style="font-size:12px;color:var(--text2)">${rows.length}件の興味通知</span>
-      ${rows.length>0?`<button onclick="downloadInterestsCsv()" style="margin-left:auto;padding:6px 14px;background:var(--navy);color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;border-radius:2px;font-family:inherit;display:flex;align-items:center;gap:6px">⬇ CSVダウンロード</button>`:''}
+      ${rows.length>0?`
+      <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);cursor:pointer;"><input type="checkbox" id="ig-selall" onclick="toggleInterestSelectAll(this)" style="width:15px;height:15px;cursor:pointer;"> 全選択</label>
+      <button id="ig-delsel" onclick="deleteSelectedInterests()" disabled style="padding:6px 14px;background:none;border:1px solid rgba(192,52,26,0.4);color:var(--hot);font-size:11px;font-weight:700;cursor:pointer;border-radius:2px;font-family:inherit;opacity:0.5;">🗑 選択削除（0）</button>
+      <button onclick="downloadInterestsCsv()" style="margin-left:auto;padding:6px 14px;background:var(--navy);color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;border-radius:2px;font-family:inherit;display:flex;align-items:center;gap:6px">⬇ CSVダウンロード</button>`:''}
     </div>
     ${rows.length===0?`<div style="background:var(--white);border:1px solid var(--border);padding:40px;text-align:center;border-radius:2px;color:var(--text2);">まだ登録がありません</div>`:''}
     ${rows.map(r=>{
@@ -544,6 +547,7 @@ async function renderInterests(){
       const rid = String(r.id||'');
       return `<div id="irow-${rid}" style="background:var(--white);border:1px solid var(--border);border-radius:2px;padding:14px 16px;margin-bottom:8px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
+          <input type="checkbox" class="ig-check" value="${rid}" onclick="updateInterestSelCount()" style="width:16px;height:16px;cursor:pointer;flex-shrink:0;">
           <span style="font-size:9px;padding:2px 8px;background:${typeBg[r.intent_type]||'var(--bg)'};color:${typeColor[r.intent_type]||'var(--text2)'};border-radius:2px;font-family:'JetBrains Mono',monospace;font-weight:700">${typeLabel[r.intent_type]||r.intent_type}</span>
           <span style="font-size:13px;font-weight:700;color:var(--navy)">${fd.name || (fd.age ? fd.age+'代' : '—')}</span>
           ${fd.email ? `<span style="font-size:12px;color:var(--text2)">${fd.email}</span>` : ''}
@@ -594,6 +598,45 @@ async function deleteInterestRow(id, btn){
     btn.disabled = false; btn.textContent = '🗑 削除';
     toast('エラーが発生しました');
   }
+}
+
+function updateInterestSelCount(){
+  const checks = [...document.querySelectorAll('.ig-check')];
+  const sel = checks.filter(c=>c.checked).length;
+  const btn = document.getElementById('ig-delsel');
+  if(btn){ btn.textContent = `🗑 選択削除（${sel}）`; btn.disabled = sel===0; btn.style.opacity = sel===0 ? '0.5' : '1'; }
+  const all = document.getElementById('ig-selall');
+  if(all){ all.checked = checks.length>0 && sel===checks.length; }
+}
+function toggleInterestSelectAll(cb){
+  document.querySelectorAll('.ig-check').forEach(c=>{ c.checked = cb.checked; });
+  updateInterestSelCount();
+}
+async function deleteSelectedInterests(){
+  const ids = [...document.querySelectorAll('.ig-check')].filter(c=>c.checked).map(c=>c.value);
+  if(ids.length===0) return;
+  if(!confirm(`選択した ${ids.length} 件を削除しますか？\n（この操作は取り消せません）`)) return;
+  const btn = document.getElementById('ig-delsel');
+  if(btn){ btn.disabled = true; btn.textContent = '削除中...'; }
+  let ok = 0;
+  for(const id of ids){
+    try {
+      const res = await fetch('/api/interest-forms', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: _adminPw, action: 'delete', id })
+      });
+      const data = await res.json();
+      if(data.ok || res.ok){
+        ok++;
+        const row = document.getElementById('irow-' + id);
+        if(row){ row.remove(); }
+        _interestRows = _interestRows.filter(r => String(r.id) !== String(id));
+      }
+    } catch(e){}
+  }
+  const all = document.getElementById('ig-selall'); if(all) all.checked = false;
+  updateInterestSelCount();
+  toast(`${ok}件を削除しました`);
 }
 
 function downloadInterestsCsv(){
