@@ -741,10 +741,72 @@ function renderReport(){
           <div id="empathy-log" style="padding:16px;font-size:12px;color:var(--text2)">読み込み中...</div>
         </div>
       </div>
+      <div class="panel" style="margin-bottom:20px">
+        <div class="phdr">📋 診断のログ（いつ・どの記事で診断されたか）
+          <button class="abtn" style="margin-left:auto;font-size:10px;padding:4px 12px;border:1px solid var(--border)" onclick="renderDiagnosisLog()">🔄 更新</button>
+          <button class="abtn" style="font-size:10px;padding:4px 12px;border:1px solid var(--hot);color:var(--hot)" onclick="clearDiagnosisLog()">全消去</button>
+        </div>
+        <div class="pbody" style="padding:0">
+          <div id="diagnosis-log" style="padding:16px;font-size:12px;color:var(--text2)">読み込み中...</div>
+        </div>
+      </div>
       <div id="reportOut" style="display:none"></div>
     </div>`;
   renderReportOverview();
   renderEmpathyLog();
+  renderDiagnosisLog();
+}
+
+// 診断のログ一覧（いつ・どの記事で診断されたか）
+async function renderDiagnosisLog(){
+  const el = document.getElementById('diagnosis-log');
+  if(!el) return;
+  el.textContent = '読み込み中...';
+  let rows = [];
+  try {
+    const res = await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw, action:'list'})});
+    if(res.status===401){ el.innerHTML='<span style="color:var(--hot)">認証エラー。再ログインしてください。</span>'; return; }
+    rows = await res.json();
+    if(!Array.isArray(rows)) rows = [];
+  } catch(e){ el.innerHTML='<span style="color:var(--hot)">取得失敗: '+e.message+'</span>'; return; }
+
+  if(rows.length===0){ el.innerHTML='<span style="color:var(--text3)">まだ診断はありません</span>'; return; }
+
+  const cos = loadCompanies();
+  const coName = (cid)=>{ const c = cos.find(x=>String(x.id)===String(cid)); return c ? (c.ceo||'') + ' / ' + ((c.name||'').replace(/株式会社|合同会社|有限会社/g,'').trim()) : (cid||'—'); };
+
+  el.innerHTML = `
+    <div style="padding:0 0 8px;font-size:11px;color:var(--text3)">${rows.length}件</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead><tr style="border-bottom:1px solid var(--border);color:var(--text3);text-align:left;">
+        <th style="padding:6px 10px;font-weight:700;white-space:nowrap;">日時</th>
+        <th style="padding:6px 10px;font-weight:700;">経営層 / 会社</th>
+        <th style="padding:6px 10px;font-weight:700;">刺さった言葉・コメント</th>
+        <th style="padding:6px 10px;"></th>
+      </tr></thead>
+      <tbody>
+        ${rows.map(r=>{
+          const dt = r.created_at ? new Date(r.created_at).toLocaleString('ja-JP',{year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+          const snippet = (r.q1_answer ? '「'+r.q1_answer+'」' : '') + (r.ai_message ? '　'+r.ai_message : '');
+          return `<tr style="border-bottom:1px solid rgba(228,227,227,0.5);vertical-align:top;">
+            <td style="padding:8px 10px;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);">${dt}</td>
+            <td style="padding:8px 10px;white-space:nowrap;"><strong style="color:var(--navy)">${escapeHtmlA(coName(r.company_id).split(' / ')[0])}</strong><span style="color:var(--text3);"> / ${escapeHtmlA(coName(r.company_id).split(' / ')[1]||'')}</span></td>
+            <td style="padding:8px 10px;color:var(--text2);font-size:11px;line-height:1.6;">${escapeHtmlA(snippet) || '—'}</td>
+            <td style="padding:8px 10px;text-align:right;"><button onclick="deleteDiagnosisLog('${r.id}')" style="font-size:11px;color:var(--hot);background:none;border:none;cursor:pointer;">削除</button></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+async function deleteDiagnosisLog(id){
+  if(!confirm('この診断ログを削除しますか？')) return;
+  try { await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw, action:'delete', id})}); toast('削除しました'); renderDiagnosisLog(); renderReportOverview(); }
+  catch(e){ toast('削除失敗: '+e.message); }
+}
+async function clearDiagnosisLog(){
+  if(!confirm('診断ログを全て削除します（テストデータ消去）。よろしいですか？')) return;
+  try { await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw, action:'clear'})}); toast('全件削除しました'); renderDiagnosisLog(); renderReportOverview(); }
+  catch(e){ toast('削除失敗: '+e.message); }
 }
 
 // 共感ボタンのログ一覧（いつ・どの記事に）
