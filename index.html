@@ -2077,6 +2077,14 @@ function handleEmpathy() {
       const newReactions = (co.reactions || 0) + 1;
       supabaseClient.from('companies').update({ reactions: newReactions })
         .eq('id', selectedCompanyId).then(() => {});
+      // 共感ログ（いつ・どの記事に押されたか）を匿名で記録
+      supabaseClient.from('empathy_logs').insert([{
+        id: 'em_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+        company_id: String(selectedCompanyId),
+        company_name: co.name || co.company || '',
+        ceo_name: co.ceo || '',
+        line_id: null,
+      }]).then(()=>{}, (e)=>console.warn('empathy log skipped:', e?.message||e));
     }
   }
 }

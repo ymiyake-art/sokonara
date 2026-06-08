@@ -14,7 +14,9 @@ export default async function handler(req) {
   }
   if (req.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
 
-  const { password, action, company_id, id } = await req.json();
+  const { password, action, company_id, id, table } = await req.json();
+  // 対象テーブル（ホワイトリスト）。指定なしは従来通りuser_sessions（診断ログ）
+  const TBL = table === 'empathy_logs' ? 'empathy_logs' : 'user_sessions';
 
   // 管理パスワード認証
   const correct = process.env.ADMIN_PASSWORD;
@@ -43,9 +45,9 @@ export default async function handler(req) {
     status, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
   });
 
-  // ---- 共感ログ一覧（企業ごと or 全件） ----
+  // ---- 一覧（企業ごと or 全件） ----
   if (action === 'list') {
-    let url = `${SUPABASE_URL}/rest/v1/user_sessions?select=*&order=created_at.desc&limit=1000`;
+    let url = `${SUPABASE_URL}/rest/v1/${TBL}?select=*&order=created_at.desc&limit=2000`;
     if (company_id) url += `&company_id=eq.${encodeURIComponent(company_id)}`;
     const res = await fetch(url, { headers: sbHeaders });
     const data = await res.json();
@@ -56,7 +58,7 @@ export default async function handler(req) {
   if (action === 'delete') {
     if (!id) return json({ error: 'id required' }, 400);
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/user_sessions?id=eq.${encodeURIComponent(id)}`,
+      `${SUPABASE_URL}/rest/v1/${TBL}?id=eq.${encodeURIComponent(id)}`,
       { method: 'DELETE', headers: sbHeaders }
     );
     return json({ ok: res.ok, status: res.status });
@@ -64,8 +66,8 @@ export default async function handler(req) {
 
   // ---- 一括削除（テストデータ消去：企業指定 or 全件） ----
   if (action === 'clear') {
-    let url = `${SUPABASE_URL}/rest/v1/user_sessions?id=neq.__none__`;
-    if (company_id) url = `${SUPABASE_URL}/rest/v1/user_sessions?company_id=eq.${encodeURIComponent(company_id)}`;
+    let url = `${SUPABASE_URL}/rest/v1/${TBL}?id=neq.__none__`;
+    if (company_id) url = `${SUPABASE_URL}/rest/v1/${TBL}?company_id=eq.${encodeURIComponent(company_id)}`;
     const res = await fetch(url, { method: 'DELETE', headers: sbHeaders });
     return json({ ok: res.ok, status: res.status });
   }

@@ -55,6 +55,20 @@ CREATE TABLE IF NOT EXISTS interest_forms (
 CREATE INDEX IF NOT EXISTS idx_interest_forms_company_id ON interest_forms(company_id);
 CREATE INDEX IF NOT EXISTS idx_interest_forms_intent_type ON interest_forms(intent_type);
 
+-- 4b. 共感ボタンのログ（いつ・どの記事に押されたか）
+CREATE TABLE IF NOT EXISTS empathy_logs (
+  id           text PRIMARY KEY,
+  company_id   text,
+  company_name text DEFAULT '',
+  ceo_name     text DEFAULT '',
+  line_id      text,
+  created_at   timestamptz DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_empathy_logs_company_id ON empathy_logs(company_id);
+ALTER TABLE empathy_logs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "anon insert empathy"  ON empathy_logs FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "service read empathy" ON empathy_logs FOR SELECT TO service_role USING (true);
+
 -- 5. RLS（Row Level Security）設定
 
 -- companies テーブル：管理画面（anonキー）から読み書き可能にする

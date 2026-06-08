@@ -732,9 +732,65 @@ function renderReport(){
           <div style="font-size:11px;color:var(--text3)">※ 診断を受けた人の「匿名」傾向です（氏名・連絡先は記録していません）</div>
         </div>
       </div>
+      <div class="panel" style="margin-bottom:20px">
+        <div class="phdr">❤ 共感ボタンのログ（いつ・どの記事に押されたか）
+          <button class="abtn" style="margin-left:auto;font-size:10px;padding:4px 12px;border:1px solid var(--border)" onclick="renderEmpathyLog()">🔄 更新</button>
+          <button class="abtn" style="font-size:10px;padding:4px 12px;border:1px solid var(--hot);color:var(--hot)" onclick="clearEmpathyLog()">全消去</button>
+        </div>
+        <div class="pbody" style="padding:0">
+          <div id="empathy-log" style="padding:16px;font-size:12px;color:var(--text2)">読み込み中...</div>
+        </div>
+      </div>
       <div id="reportOut" style="display:none"></div>
     </div>`;
   renderReportOverview();
+  renderEmpathyLog();
+}
+
+// 共感ボタンのログ一覧（いつ・どの記事に）
+async function renderEmpathyLog(){
+  const el = document.getElementById('empathy-log');
+  if(!el) return;
+  el.textContent = '読み込み中...';
+  let rows = [];
+  try {
+    const res = await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw, action:'list', table:'empathy_logs'})});
+    if(res.status===401){ el.innerHTML='<span style="color:var(--hot)">認証エラー。再ログインしてください。</span>'; return; }
+    rows = await res.json();
+    if(!Array.isArray(rows)) rows = [];
+  } catch(e){ el.innerHTML='<span style="color:var(--hot)">取得失敗: '+e.message+'</span>'; return; }
+
+  if(rows.length===0){ el.innerHTML='<span style="color:var(--text3)">まだ共感ボタンは押されていません</span>'; return; }
+
+  el.innerHTML = `
+    <div style="padding:0 0 8px;font-size:11px;color:var(--text3)">${rows.length}件</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead><tr style="border-bottom:1px solid var(--border);color:var(--text3);text-align:left;">
+        <th style="padding:6px 10px;font-weight:700;white-space:nowrap;">日時</th>
+        <th style="padding:6px 10px;font-weight:700;">経営層 / 会社</th>
+        <th style="padding:6px 10px;"></th>
+      </tr></thead>
+      <tbody>
+        ${rows.map(r=>{
+          const dt = r.created_at ? new Date(r.created_at).toLocaleString('ja-JP',{year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+          return `<tr style="border-bottom:1px solid rgba(228,227,227,0.5);">
+            <td style="padding:8px 10px;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);">${dt}</td>
+            <td style="padding:8px 10px;"><strong style="color:var(--navy)">${escapeHtmlA(r.ceo_name||'')}</strong><span style="color:var(--text3);"> / ${escapeHtmlA((r.company_name||'').replace(/株式会社|合同会社|有限会社/g,'').trim())}</span></td>
+            <td style="padding:8px 10px;text-align:right;"><button onclick="deleteEmpathyLog('${r.id}')" style="font-size:11px;color:var(--hot);background:none;border:none;cursor:pointer;">削除</button></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+async function deleteEmpathyLog(id){
+  if(!confirm('この共感ログを削除しますか？')) return;
+  try { await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw, action:'delete', table:'empathy_logs', id})}); toast('削除しました'); renderEmpathyLog(); }
+  catch(e){ toast('削除失敗: '+e.message); }
+}
+async function clearEmpathyLog(){
+  if(!confirm('共感ログを全て削除します（テストデータ消去）。よろしいですか？')) return;
+  try { await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw, action:'clear', table:'empathy_logs'})}); toast('全件削除しました'); renderEmpathyLog(); }
+  catch(e){ toast('削除失敗: '+e.message); }
 }
 
 // 全経営層の共感数・診断数を一覧表示
