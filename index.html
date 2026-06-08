@@ -2532,7 +2532,7 @@ window.addEventListener('scroll', updateRead);
 
 // ===== SHARE URL =====
 function copyArticleUrl() {
-  const url = location.origin + location.pathname + '?cid=' + encodeURIComponent(selectedCompanyId || '');
+  const url = 'https://app.sokonara.co.jp/?cid=' + encodeURIComponent(selectedCompanyId || '');
   navigator.clipboard.writeText(url).then(() => toast('URLをコピーしました')).catch(() => {
     prompt('URLをコピーしてください', url);
   });
@@ -2830,7 +2830,7 @@ function renderAdminTab(tab) {
 }
 
 function openAdminPage(tab){
-  window.location.href = `admin.html?tab=${encodeURIComponent(tab || 'dash')}`;
+  window.location.href = `https://app.sokonara.co.jp/admin.html?tab=${encodeURIComponent(tab || 'dash')}`;
 }
 
 // ===== DASH =====
@@ -3191,7 +3191,7 @@ function renderAdminSidebar(){
   el.innerHTML = cos.map(function(c){
     const ini = (c.name||c.company||'社').charAt(0);
     const nm = (c.name||c.company||'会社名未設定').replace(/株式会社|合同会社|有限会社/g,'').trim();
-    return '<div class="admin-co-item" onclick="window.location.href=\'admin.html?company='+encodeURIComponent(c.id)+'\'"><div class="admin-co-av" style="background:'+(c.color||'var(--navy)')+'">' + escapeHtml(ini) + '</div><div class="admin-co-name">' + escapeHtml(nm) + '</div></div>';
+    return '<div class="admin-co-item" onclick="window.location.href=\'https://app.sokonara.co.jp/admin.html?company='+encodeURIComponent(c.id)+'\'"><div class="admin-co-av" style="background:'+(c.color||'var(--navy)')+'">' + escapeHtml(ini) + '</div><div class="admin-co-name">' + escapeHtml(nm) + '</div></div>';
   }).join('');
 }
 
