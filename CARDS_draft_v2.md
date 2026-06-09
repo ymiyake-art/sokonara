@@ -1,21 +1,32 @@
 # 課題カード たたき台（v2）— 既存6経営層から抽出
 
 > 既存6社（経営層6名）の記事から、「自分の出番が想像できる課題文」として抽出した叩き台。
-> 各カードは1経営層（=将来の共創テーマ）に紐づく。タグはレコメンド兼テーマ推定用。
-> タグ語彙: dx(DX/エンジニア) / newbiz(新規事業) / local(地方創生) / expertise(専門性) / orgchange(組織変革) / growth(自己成長) / global(海外志向)
+> 各カードは1経営層（=将来の共創テーマ）に紐づく。
+
+## カード設計方針（2026-06-09 確定）
+カードは **What だけにせず、課題 × 経営層の想い × 自分の出番** を入口で見せる。
+- 1行目：**課題**（大きく）
+- 2行目：**経営層の想い・人柄**（想いが伝わる一文）
+- 詳細は記事で深掘り
+- 比率の目安：What共鳴70% / Why共鳴20% / Who共鳴10%
+
+## タグは2系統（すべて日本語表示）
+- **事業テーマタグ(btags)**：dx(DX・IT) / newbiz(新規事業) / local(地方創生) / expertise(専門性) / orgchange(組織変革) / growth(自己成長) / global(海外志向)
+- **共鳴タグ(rtags)**：team(仲間) / selfrealization(自己実現) / challenge(挑戦) / trust(信頼) / craft(職人気質) / mission(使命) / dialogue(対話)
+- 狙い：「新規事業志向の人は仲間重視の経営者に反応しやすいか」等を後で分析できる。
 
 ---
 
-## カード一覧
+## カード一覧（改善後・2層構成）
 
-| # | card_id | 課題カード文（表示） | 紐づく経営層 | tags |
-|---|---------|---------------------|-------------|------|
-| 1 | card_schoo_inoue | 九州で「学びが当たり前にある」社会を、事業として成り立たせたい | Schoo 井上真吾 | newbiz, local |
-| 2 | card_schoo_sonoda | 学びで地域の選択肢を増やす拠点を、福岡にゼロからつくりたい | Schoo 園田圭輔 | local, newbiz |
-| 3 | card_ruby_inaba | 生成AI時代に、エンジニアの価値の出し方をチームで作り直したい | Ruby開発 稲葉 | dx, orgchange |
-| 4 | card_excees_ueno | IT×XRで、福岡発の強い受託開発会社を第2創業期からつくりたい | エクシーズ 上野 | dx, newbiz |
-| 5 | card_ishikura | 「建材で地球を救う」遮熱シートを、福岡から全国へ広げたい | 石蔵商店 建材事業部 | newbiz, growth |
-| 6 | card_ad_koga | 紙の印刷会社を、データとDXで中小企業を元気にする販促パートナーに変えたい | アド印刷 古賀 | dx, expertise |
+| # | card_id | 1行目：課題 / 2行目：想い | 経営層 | btags | rtags |
+|---|---------|---------------------|-------|-------|-------|
+| 1 | card_schoo_inoue | 九州で学びが当たり前にある社会を、事業として成り立たせたい／地域の可能性を信じ、学びのインフラを本気でつくる挑戦です。 | Schoo 井上真吾 | newbiz, local | mission, challenge |
+| 2 | card_schoo_sonoda | 学びで地域の選択肢を増やす拠点を、福岡にゼロからつくりたい／人が変わる瞬間を、地域の中で増やしていく仕事です。 | Schoo 園田圭輔 | local, newbiz | dialogue, mission |
+| 3 | card_ruby_inaba | 生成AI時代に、エンジニアの価値の出し方をチームで作り直したい／技術だけでなく、仲間とどう価値を出すかを問い直す挑戦です。 | Ruby開発 稲葉 | dx, orgchange | team, trust, challenge |
+| 4 | card_excees_ueno | IT×XRで、福岡発の強い受託開発会社を第2創業期からつくりたい／技術者が誇りを持てる会社を、次のステージへ進める挑戦です。 | エクシーズ 上野 | dx, newbiz | challenge, craft |
+| 5 | card_ishikura | 福岡発の遮熱シートで、建材の未来を変えたい／仲間を大切にしながら、地球を救う事業を全国へ広げる挑戦です。 | 石蔵商店 建材事業部 | newbiz, growth | team, mission, challenge |
+| 6 | card_ad_koga | 印刷会社を、地域企業の販促DXパートナーへ変えたい／働く人が自分らしく力を発揮できる会社づくりにも挑んでいます。 | アド印刷 古賀 | dx, expertise | selfrealization, dialogue, local |
 
 ---
 

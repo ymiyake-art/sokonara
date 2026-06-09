@@ -58,13 +58,17 @@ body{
 .card.anim{ transition:transform .35s cubic-bezier(.22,1,.36,1), opacity .35s;}
 .card .tagrow{ display:flex; gap:6px; flex-wrap:wrap;}
 .card .tag{
-  font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1px;
-  color:var(--teal-d); background:var(--teal-bg); padding:4px 9px; border-radius:20px;
+  font-size:11px; font-weight:500;
+  color:var(--teal-d); background:var(--teal-bg); padding:4px 10px; border-radius:20px;
 }
+.card .tag.rtag{ color:var(--red); background:var(--red-bg);}
 .card .body{ display:flex; flex-direction:column; justify-content:center; flex:1;}
 .card .ctitle{
-  font-family:'Zen Kaku Gothic New',sans-serif; font-size:23px; font-weight:700;
+  font-family:'Zen Kaku Gothic New',sans-serif; font-size:22px; font-weight:700;
   line-height:1.55; letter-spacing:.5px;
+}
+.card .csub{
+  font-size:13.5px; color:var(--text2); line-height:1.7; margin-top:14px; font-weight:500;
 }
 .card .leader{ font-size:12px; color:var(--text2); margin-top:18px; line-height:1.5;}
 .card .leader b{ color:var(--text); font-weight:700;}
@@ -150,14 +154,16 @@ body{
 
 <script>
 // ---- カードデータ（CARDS_draft_v2.md より。後でSupabase or 確定文に差し替え）----
+// btags=事業テーマタグ / rtags=共鳴タグ（想い・人柄）
 const TAG_LABEL = {dx:'DX・IT', newbiz:'新規事業', local:'地方創生', expertise:'専門性', orgchange:'組織変革', growth:'自己成長', global:'海外志向'};
+const RTAG_LABEL = {team:'仲間', selfrealization:'自己実現', challenge:'挑戦', trust:'信頼', craft:'職人気質', mission:'使命', dialogue:'対話'};
 const CARDS = [
-  {id:'card_schoo_inoue', title:'九州で「学びが当たり前にある」社会を、事業として成り立たせたい', leader:'井上真吾', company:'株式会社Schoo', tags:['newbiz','local']},
-  {id:'card_schoo_sonoda', title:'学びで地域の選択肢を増やす拠点を、福岡にゼロからつくりたい', leader:'園田圭輔', company:'株式会社Schoo', tags:['local','newbiz']},
-  {id:'card_ruby_inaba', title:'生成AI時代に、エンジニアの価値の出し方をチームで作り直したい', leader:'稲葉さん', company:'株式会社Ruby開発', tags:['dx','orgchange']},
-  {id:'card_excees_ueno', title:'IT×XRで、福岡発の強い受託開発会社を第2創業期からつくりたい', leader:'上野さん', company:'株式会社エクシーズ', tags:['dx','newbiz']},
-  {id:'card_ishikura', title:'「建材で地球を救う」遮熱シートを、福岡から全国へ広げたい', leader:'石蔵商店 代表', company:'石蔵商店 建材事業部', tags:['newbiz','growth']},
-  {id:'card_ad_koga', title:'紙の印刷会社を、データとDXで中小企業を元気にする販促パートナーに変えたい', leader:'古賀さん', company:'アド印刷株式会社', tags:['dx','expertise']},
+  {id:'card_schoo_inoue', title:'九州で学びが当たり前にある社会を、事業として成り立たせたい', sub:'地域の可能性を信じ、学びのインフラを本気でつくる挑戦です。', leader:'井上真吾', company:'株式会社Schoo', btags:['newbiz','local'], rtags:['mission','challenge']},
+  {id:'card_schoo_sonoda', title:'学びで地域の選択肢を増やす拠点を、福岡にゼロからつくりたい', sub:'人が変わる瞬間を、地域の中で増やしていく仕事です。', leader:'園田圭輔', company:'株式会社Schoo', btags:['local','newbiz'], rtags:['dialogue','mission']},
+  {id:'card_ruby_inaba', title:'生成AI時代に、エンジニアの価値の出し方をチームで作り直したい', sub:'技術だけでなく、仲間とどう価値を出すかを問い直す挑戦です。', leader:'稲葉さん', company:'株式会社Ruby開発', btags:['dx','orgchange'], rtags:['team','trust','challenge']},
+  {id:'card_excees_ueno', title:'IT×XRで、福岡発の強い受託開発会社を第2創業期からつくりたい', sub:'技術者が誇りを持てる会社を、次のステージへ進める挑戦です。', leader:'上野さん', company:'株式会社エクシーズ', btags:['dx','newbiz'], rtags:['challenge','craft']},
+  {id:'card_ishikura', title:'福岡発の遮熱シートで、建材の未来を変えたい', sub:'仲間を大切にしながら、地球を救う事業を全国へ広げる挑戦です。', leader:'石蔵商店 代表', company:'石蔵商店 建材事業部', btags:['newbiz','growth'], rtags:['team','mission','challenge']},
+  {id:'card_ad_koga', title:'印刷会社を、地域企業の販促DXパートナーへ変えたい', sub:'働く人が自分らしく力を発揮できる会社づくりにも挑んでいます。', leader:'古賀さん', company:'アド印刷株式会社', btags:['dx','expertise'], rtags:['selfrealization','dialogue','local']},
 ];
 
 let deck=[], idx=0, picked=[], dropped=[];
@@ -175,11 +181,13 @@ function renderStack(){
     const depth=i-idx;
     el.style.transform=`scale(${1-depth*0.04}) translateY(${depth*10}px)`;
     el.style.zIndex=100-depth;
+    const btags=(c.btags||[]).map(t=>`<span class="tag">${TAG_LABEL[t]||t}</span>`).join('');
+    const rtags=(c.rtags||[]).map(t=>`<span class="tag rtag">${RTAG_LABEL[t]||t}</span>`).join('');
     el.innerHTML=`
       <div class="stamp like">関わりたい</div>
       <div class="stamp nope">スキップ</div>
-      <div class="tagrow">${c.tags.map(t=>`<span class="tag">${TAG_LABEL[t]||t}</span>`).join('')}</div>
-      <div class="body"><div class="ctitle">${c.title}</div></div>
+      <div class="tagrow">${btags}${rtags}</div>
+      <div class="body"><div class="ctitle">${c.title}</div><div class="csub">${c.sub||''}</div></div>
       <div class="leader">この課題に向き合う経営層<br><b>${c.company}　${c.leader}</b></div>`;
     stage.appendChild(el);
     if(depth===0) attachDrag(el);
@@ -244,9 +252,9 @@ function showResult(){
   document.querySelector('.head').style.display='none';
   const r=document.getElementById('result'); r.style.display='flex';
 
-  // タグ集計（pickedのみ）
+  // タグ集計（pickedのみ・事業テーマタグ）
   const cnt={};
-  picked.forEach(c=>c.tags.forEach(t=>cnt[t]=(cnt[t]||0)+1));
+  picked.forEach(c=>(c.btags||[]).forEach(t=>cnt[t]=(cnt[t]||0)+1));
   const ranked=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
   const max=ranked.length?ranked[0][1]:1;
   document.getElementById('ranks').innerHTML = ranked.length
@@ -261,7 +269,7 @@ function showResult(){
   if(ranked.length){
     const topTags=ranked.slice(0,2).map(x=>x[0]);
     reco = picked.slice().sort((a,b)=>
-      b.tags.filter(t=>topTags.includes(t)).length - a.tags.filter(t=>topTags.includes(t)).length
+      (b.btags||[]).filter(t=>topTags.includes(t)).length - (a.btags||[]).filter(t=>topTags.includes(t)).length
     )[0];
   }
   document.getElementById('reco').innerHTML = reco ? `
