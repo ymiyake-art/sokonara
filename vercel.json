@@ -1,6 +1,7 @@
 {
   "rewrites": [
-    { "source": "/admin", "destination": "/admin.html" }
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/", "has": [{ "type": "host", "value": "pf.sokonara.co.jp" }], "destination": "/pf/index.html" }
   ],
   "headers": [
     {

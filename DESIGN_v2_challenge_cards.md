@@ -209,6 +209,15 @@ pf/index.html に以下の全画面フローを実装・プレビュー確認済
 
 ---
 
+## 実装状況・追記（2026-06-09 第2弾）
+- **TOP入口**（#screenTop）実装：FVコピー＋4ステップ＋CTA「課題カードを選んでみる」。
+- **AI診断 本番化**：api/feedback.js に `type:'cardfeedback'` を追加（gpt-4o・1800tok）。
+  入力＝選んだ課題/捨てた課題/上位テーマ/メモchips/メモ自由記述/記事抜粋/wantedProfile。占い対策・主語厳禁を継承。
+  pf側は `/api/feedback` を呼び、失敗時はローカル簡易生成にフォールバック（プレビューはAPIが無いので簡易版表示）。
+- **CORS**：feedback.js の許可originに `pf.sokonara.co.jp` と Vercelプレビュー（`sokonara-*.vercel.app`）を追加。
+- **デプロイ**：vercel.json にホスト別リライト追加。`pf.sokonara.co.jp` のルート→`/pf/index.html`。
+  → **残作業（ユーザー操作）**：Vercelダッシュボードで pf.sokonara.co.jp をドメイン追加＋DNSにCNAME設定。ブランチをmainにマージ or pf用にプロダクション設定。
+
 ## 11. 未決事項（要相談）
 
 - [ ] 課題カードUIは **二択 or 1枚スワイプ(Tinder式)** どちらを先に作るか
