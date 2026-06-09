@@ -218,6 +218,13 @@ pf/index.html に以下の全画面フローを実装・プレビュー確認済
 - **デプロイ**：vercel.json にホスト別リライト追加。`pf.sokonara.co.jp` のルート→`/pf/index.html`。
   → **残作業（ユーザー操作）**：Vercelダッシュボードで pf.sokonara.co.jp をドメイン追加＋DNSにCNAME設定。ブランチをmainにマージ or pf用にプロダクション設定。
 
+## 実装状況・追記（2026-06-09 第3弾：カードDB化＋管理画面）
+- **challenge_cards テーブル**新設（`challenge_cards_setup.sql`）。1経営層2枚＝**12枚**にシード。RLSは companies と同じ姿勢（anonフル・管理画面はパスワードゲート）。
+- **pf**：起動時に `challenge_cards`(active・sort順)を読み込み。失敗時はコード内6枚にフォールバック。
+- **admin.html**：ナビ「🗂️ 課題カード(v2)」追加。一覧／追加／編集／表示ON-OFF／並び順／削除（card_title・card_sub・company_id・leader・company・btags・rtags・active・sort）。テーブル未作成時はSQL実行を促すメッセージ表示。
+- ⚠️ **残作業（ユーザー操作）**：Supabaseダッシュボード SQL Editor で `challenge_cards_setup.sql` を実行 → その後pfが12枚／adminで編集可能に。
+- 色は元 index.html トークン（--teal等）を全面踏襲。
+
 ## 11. 未決事項（要相談）
 
 - [ ] 課題カードUIは **二択 or 1枚スワイプ(Tinder式)** どちらを先に作るか

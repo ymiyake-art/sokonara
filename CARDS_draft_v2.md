@@ -64,6 +64,10 @@
 
 ---
 
+## ⚠️ 最新は Supabase `challenge_cards`（12枚に拡張済）
+2026-06-09より、カードは `challenge_cards` テーブルで管理（admin「🗂️課題カード(v2)」で編集）。
+1経営層2枚＝12枚にシード（`challenge_cards_setup.sql`）。下記の旧6枚一覧は初期の叩き台。
+
 ## カバレッジ確認（7テーマ）
 - dx: 3, 4, 6 ✓
 - newbiz: 1, 2, 4, 5 ✓

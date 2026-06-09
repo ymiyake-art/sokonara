@@ -289,7 +289,8 @@ body{
 // btags=事業テーマタグ / rtags=共鳴タグ（想い・人柄）
 const TAG_LABEL = {dx:'DX・IT', newbiz:'新規事業', local:'地方創生', expertise:'専門性', orgchange:'組織変革', growth:'自己成長', global:'海外志向'};
 const RTAG_LABEL = {team:'仲間', selfrealization:'自己実現', challenge:'挑戦', trust:'信頼', craft:'職人気質', mission:'使命', dialogue:'対話'};
-const CARDS = [
+// Supabase challenge_cards から読み込む。失敗時はこのフォールバックを使う。
+let CARDS = [
   {id:'card_schoo_inoue', companyId:'co_import_1776760337430', title:'九州で学びが当たり前にある社会を、事業として成り立たせたい', sub:'地域の可能性を信じ、学びのインフラを本気でつくる挑戦です。', leader:'井上', company:'株式会社Schoo', btags:['newbiz','local'], rtags:['mission','challenge']},
   {id:'card_schoo_sonoda', companyId:'co_import_1776760337431', title:'学びで地域の選択肢を増やす拠点を、福岡にゼロからつくりたい', sub:'人が変わる瞬間を、地域の中で増やしていく仕事です。', leader:'園田', company:'株式会社Schoo', btags:['local','newbiz'], rtags:['dialogue','mission']},
   {id:'card_ruby_inaba', companyId:'co_import_1776760337432', title:'生成AI時代に、エンジニアの価値の出し方をチームで作り直したい', sub:'技術だけでなく、仲間とどう価値を出すかを問い直す挑戦です。', leader:'稲葉', company:'株式会社Ruby開発', btags:['dx','orgchange'], rtags:['team','trust','challenge']},
@@ -572,7 +573,21 @@ function restart(){
   renderStack();
 }
 
-restart();
+// Supabase challenge_cards からカードを読み込む（active のみ・sort順）。失敗時はフォールバックのまま。
+async function loadCards(){
+  try{
+    const url=`${SUPA_URL}/rest/v1/challenge_cards?active=eq.true&order=sort.asc&select=*`;
+    const res=await fetch(url,{headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY}});
+    if(!res.ok) throw new Error('cards '+res.status);
+    const rows=await res.json();
+    if(Array.isArray(rows)&&rows.length){
+      CARDS=rows.map(r=>({id:r.id, companyId:r.company_id, title:r.card_title, sub:r.card_sub||'',
+        leader:r.leader||'', company:r.company||'', btags:r.btags||[], rtags:r.rtags||[]}));
+    }
+  }catch(e){ /* フォールバックのCARDSを使用 */ }
+}
+
+(async function init(){ await loadCards(); restart(); })();
 </script>
 </body>
 </html>
