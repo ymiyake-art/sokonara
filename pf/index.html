@@ -168,7 +168,10 @@ body{
 .chips{ display:flex;flex-wrap:wrap;gap:9px;}
 .chip{ font-size:13px;padding:9px 14px;border:1px solid var(--border);border-radius:22px;background:#fff;cursor:pointer;transition:all .15s;}
 .chip.on{ background:var(--teal-bg);border-color:var(--teal);color:var(--teal-d);font-weight:700;}
-.memoText{ width:100%;margin-top:16px;min-height:90px;padding:13px;border:1px solid var(--border);
+.memoFreeLabel{ font-size:13.5px;font-weight:700;line-height:1.6;margin-top:26px;}
+.memoFreeLabel span{ color:var(--text3);font-weight:400;font-size:12px;}
+.memoFreeNote{ font-size:11px;color:var(--teal-d);margin-top:6px;font-family:'JetBrains Mono',monospace;letter-spacing:.3px;}
+.memoText{ width:100%;margin-top:10px;min-height:110px;padding:13px;border:1px solid var(--border);
   border-radius:10px;font-family:'Noto Sans JP',sans-serif;font-size:14px;line-height:1.7;resize:vertical;}
 
 /* feedback */
@@ -246,12 +249,14 @@ body{
 
   <!-- ===== MEMO ===== -->
   <div id="screenMemo" class="fs">
-    <div class="fsbar"><button class="back" onclick="goArticle()">←</button><span>仮想共創メモ</span></div>
+    <div class="fsbar"><button class="back" onclick="goArticle()">←</button><span>あなたのこと</span></div>
     <div class="fsbody">
       <h2 class="qh">この会社に関わるとしたら、<br>あなたは何ができそうですか？</h2>
-      <p class="qsub">まだ転職を決めていなくても大丈夫です。仮に関わるなら何ができそうか、自由に選んでみてください。</p>
+      <p class="qsub">まだ転職を決めていなくても大丈夫です。仮に関わるなら何ができそうか、選んでみてください。（任意・複数可）</p>
       <div class="chips" id="memoChips"></div>
-      <textarea id="memoText" class="memoText" placeholder="（任意）具体的に書けることがあれば。例：受発注まわりの業務を整理してIT化できそう"></textarea>
+      <div class="memoFreeLabel">記事を読んで感じたこと・気持ち・聞いてみたいことを、自由にどうぞ <span>（任意）</span></div>
+      <div class="memoFreeNote">※ 書くほど、はたらくヒントがあなたに合ったものになります</div>
+      <textarea id="memoText" class="memoText" placeholder="例：今の仕事は安定しているけど、もっと人と近い距離で働きたい。この方になら自分の悩みを話せそうだと思った。"></textarea>
     </div>
     <div class="fsfoot"><button class="btn-primary" onclick="goFeedback()">はたらくヒントを見る →</button>
       <button class="btn-text" onclick="goFeedback()">スキップして進む</button></div>
