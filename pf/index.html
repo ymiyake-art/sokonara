@@ -168,6 +168,8 @@ body{
 .chips{ display:flex;flex-wrap:wrap;gap:9px;}
 .chip{ font-size:13px;padding:9px 14px;border:1px solid var(--border);border-radius:22px;background:#fff;cursor:pointer;transition:all .15s;}
 .chip.on{ background:var(--teal-bg);border-color:var(--teal);color:var(--teal-d);font-weight:700;}
+.q1chips{ flex-direction:column; gap:11px;}
+.q1chips .chip{ width:100%; text-align:left; line-height:1.6; padding:14px 16px; border-radius:12px; font-size:13.5px;}
 .memoFreeLabel{ font-size:13.5px;font-weight:700;line-height:1.6;margin-top:26px;}
 .memoFreeLabel span{ color:var(--text3);font-weight:400;font-size:12px;}
 .memoFreeNote{ font-size:11px;color:var(--teal-d);margin-top:6px;font-family:'JetBrains Mono',monospace;letter-spacing:.3px;}
@@ -244,7 +246,18 @@ body{
       <div id="artContent"><div class="loading">記事を読み込み中…</div></div>
       <div class="spacer"></div>
     </div>
-    <div class="fsfoot"><button class="btn-primary" onclick="goMemo()">はたらくヒントを受け取る（無料）→</button></div>
+    <div class="fsfoot"><button class="btn-primary" onclick="goQ1()">はたらくヒントを受け取る（無料）→</button></div>
+  </div>
+
+  <!-- ===== Q1（刺さった言葉） ===== -->
+  <div id="screenQ1" class="fs">
+    <div class="fsbar"><button class="back" onclick="goArticle()">←</button><span>記事の感想</span></div>
+    <div class="fsbody">
+      <h2 class="qh">この記事の中で、<br>最も「刺さった言葉」は？</h2>
+      <p class="qsub">直感で1つ選んでください。あなたが何に反応したかが、はたらくヒントの手がかりになります。</p>
+      <div class="chips q1chips" id="q1Chips"></div>
+    </div>
+    <div class="fsfoot"><button class="btn-primary" id="q1Next" onclick="goMemo()" disabled>次へ →</button></div>
   </div>
 
   <!-- ===== MEMO ===== -->
@@ -414,6 +427,13 @@ function showResult(){
     )[0];
   }
   recoCard = reco || null;
+  // 匿名ログ: 結果到達時に1行作成（以後マイルストーンでPATCH）
+  const rtagsHit=[]; picked.forEach(c=>(c.rtags||[]).forEach(t=>{ if(!rtagsHit.includes(t)) rtagsHit.push(t); }));
+  logInsert({
+    picked_cards:picked.map(x=>x.id), dropped_cards:dropped.map(x=>x.id),
+    top_tags:ranked.slice(0,3).map(x=>x[0]), rtags_hit:rtagsHit,
+    recommended_company:reco?reco.companyId:null, recommended_card:reco?reco.id:null
+  });
   document.getElementById('reco').innerHTML = reco ? `
     <div class="rk">おすすめの経営層</div>
     <div class="rt">${reco.title}</div>
@@ -424,6 +444,32 @@ function showResult(){
 const MEMO_CHIPS=['業務改善','IT・DX','新規事業','営業・販路開拓','組織づくり','採用・育成','商品企画','広報・発信','海外展開','まだ分からない'];
 let memoSelected=new Set();
 let articleCache={};
+
+// ===== 匿名ログ（card_logs）=====
+let logId=null;
+function maskPII(s){
+  return String(s||'')
+    .replace(/[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}/g,'[メール]')
+    .replace(/https?:\/\/\S+/g,'[URL]')
+    .replace(/0\d{1,4}[-(\s]?\d{1,4}[-)\s]?\d{3,4}/g,'[電話]')
+    .replace(/\d{6,}/g,'[番号]');
+}
+async function logInsert(row){
+  try{
+    logId=(crypto.randomUUID?crypto.randomUUID():'log_'+Date.now()+'_'+Math.random().toString(36).slice(2));
+    await fetch(`${SUPA_URL}/rest/v1/card_logs`,{method:'POST',
+      headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},
+      body:JSON.stringify({id:logId,...row})});
+  }catch(e){ logId=null; }
+}
+async function logUpdate(fields){
+  if(!logId) return;
+  try{
+    await fetch(`${SUPA_URL}/rest/v1/card_logs?id=eq.${logId}`,{method:'PATCH',
+      headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},
+      body:JSON.stringify({...fields,updated_at:new Date().toISOString()})});
+  }catch(e){}
+}
 
 function hideAllFs(){ document.querySelectorAll('.fs').forEach(e=>e.classList.remove('show')); }
 function showFs(id){ hideAllFs(); document.getElementById(id).classList.add('show'); document.querySelector('.fsbody')&&0; const el=document.getElementById(id).querySelector('.fsbody'); if(el)el.scrollTop=0; }
@@ -442,11 +488,11 @@ async function renderArticle(card){
   try{
     let secs=articleCache[card.companyId];
     if(!secs){
-      const url=`${SUPA_URL}/rest/v1/companies?id=eq.${card.companyId}&select=body,wantedProfile,summaryComment`;
+      const url=`${SUPA_URL}/rest/v1/companies?id=eq.${card.companyId}&select=body,wantedProfile,summaryComment,q1`;
       const res=await fetch(url,{headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY}});
       const rows=await res.json();
       const row=rows[0]||{};
-      secs={body:JSON.parse(row.body||'[]'), wanted:row.wantedProfile||'', summary:row.summaryComment||''};
+      secs={body:JSON.parse(row.body||'[]'), wanted:row.wantedProfile||'', summary:row.summaryComment||'', q1:(row.q1||[]).filter(Boolean)};
       articleCache[card.companyId]=secs;
     }
     let html='';
@@ -463,9 +509,30 @@ async function renderArticle(card){
 }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+let selectedQ1='';
+function goQ1(){
+  logUpdate({article_read:true});
+  const secs=articleCache[recoCard.companyId]||{q1:[]};
+  const q1=secs.q1&&secs.q1.length?secs.q1:[];
+  const box=document.getElementById('q1Chips');
+  const next=document.getElementById('q1Next');
+  if(!q1.length){ // 刺さった言葉が未登録ならスキップ
+    selectedQ1=''; goMemo(); return;
+  }
+  showFs('screenQ1');
+  next.disabled=!selectedQ1;
+  box.innerHTML=q1.map(p=>`<span class="chip${p===selectedQ1?' on':''}" data-q="${esc(p)}">${esc(p)}</span>`).join('');
+  box.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{
+    selectedQ1=ch.dataset.q;
+    box.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+    ch.classList.add('on'); next.disabled=false;
+  });
+}
+
 function goMemo(){
   showFs('screenMemo');
   fbData=null; // メモ変更後は診断を再生成
+  logUpdate({q1_phrase:selectedQ1||''});
   const box=document.getElementById('memoChips');
   if(!box.dataset.built){
     box.innerHTML=MEMO_CHIPS.map(c=>`<span class="chip" data-c="${c}">${c}</span>`).join('');
@@ -481,6 +548,7 @@ let fbData=null;
 async function goFeedback(){
   showFs('screenFeedback');
   document.getElementById('fbFoot').innerHTML='';
+  logUpdate({ai_viewed:true, memo_chips:[...memoSelected], memo_text:maskPII(document.getElementById('memoText').value||'')});
   if(!fbData){
     document.getElementById('fbContent').innerHTML='<div class="loading">AIがあなたのヒントを整理中…</div>';
     fbData=await loadFeedback();
@@ -496,7 +564,8 @@ async function loadFeedback(){
   const payload={ type:'cardfeedback', data:{
     picked:picked.map(x=>x.title), dropped:dropped.map(x=>x.title),
     topTags:(c.btags||[]).map(t=>TAG_LABEL[t]||t),
-    memoChips:[...memoSelected], memoText:document.getElementById('memoText').value||'',
+    q1Phrase:selectedQ1||'',
+    memoChips:[...memoSelected], memoText:maskPII(document.getElementById('memoText').value||''),
     leader:{ ceo:c.leader, company:c.company, cardTitle:c.title, cardSub:c.sub,
       articleExcerpt:excerpt, wantedProfile:secs.wanted||'' }
   }};
@@ -545,10 +614,11 @@ function renderFeedback(){
   }
 }
 function isLineRegistered(){ return !!localStorage.getItem('pf_demo_line'); }
-function fakeLineRegister(){ localStorage.setItem('pf_demo_line','1'); renderFeedback(); }
+function fakeLineRegister(){ localStorage.setItem('pf_demo_line','1'); logUpdate({line_registered:true}); renderFeedback(); }
 
 function goContact(){
   showFs('screenContact');
+  logUpdate({contact_cta:true});
   document.getElementById('contactSub').innerHTML=
     `${esc(recoCard.company)}　${esc(recoCard.leader)}さんとの接点を作ります。<br>あなたの「できそうなこと」を添えて、話を聞いてみましょう。`;
 }
@@ -564,7 +634,7 @@ function backToTop(){
 
 function restart(){
   hideAllFs();
-  memoSelected=new Set(); fbData=null;
+  memoSelected=new Set(); fbData=null; selectedQ1=''; logId=null;
   localStorage.removeItem('pf_demo_line');
   const mc=document.getElementById('memoChips'); if(mc){mc.dataset.built='';mc.innerHTML='';}
   idx=0; picked=[]; dropped=[];

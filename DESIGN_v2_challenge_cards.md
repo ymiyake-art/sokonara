@@ -233,6 +233,13 @@ pf/index.html に以下の全画面フローを実装・プレビュー確認済
 - **Q4 自由記述**：「あなたのこと」画面に統合。**できそうなこと（チップ）＋気持ちを自由に書く欄**の2部構成。
   自由欄は仮想転職に限定せず「記事を読んで感じたこと・気持ち・聞いてみたいこと」を広く受ける。
 
+## 実装状況・追記（2026-06-09 第4弾：Q1ステップ＋ログ）
+- **記事後Q1ステップ**（#screenQ1）実装：companies.q1（admin記事管理で登録済み・各社4文）を読み、1つ選択。AI診断の根拠＆ログに反映。未登録社は自動スキップ。
+- **card_logs テーブル**（`card_logs_setup.sql`）：匿名ログ。picked/dropped/top_tags/rtags_hit/recommended/q1_phrase/memo_chips/memo_text(PIIマスク)/article_read/ai_viewed/line_registered/contact_cta。
+- **pf記録処理**：結果到達でINSERT→各マイルストーン(記事/Q1/メモ/AI/登録/接点)でPATCH。失敗は静かに無視（体験に影響なし）。
+- ⚠️ **残作業（ユーザー操作）**：Supabase SQL Editor で `card_logs_setup.sql` を実行 → 計測開始。
+- 次：admin に経営層フィードバック集計ビュー（どのタイプが・どの言葉に反応したか）= Phase2。
+
 ## 11. 未決事項（要相談）
 
 - [ ] 課題カードUIは **二択 or 1枚スワイプ(Tinder式)** どちらを先に作るか
