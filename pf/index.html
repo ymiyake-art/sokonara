@@ -682,9 +682,11 @@ function buildDeck(){
 function openRecoArticle(){
   if(!recoCard){ return; }
   logUpdate({article_read:true});
+  const cnt={}; picked.forEach(c=>(c.btags||[]).forEach(t=>cnt[t]=(cnt[t]||0)+1));
+  const topTags=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([t])=>TAG_LABEL[t]||t);
   const sel=encodeURIComponent(JSON.stringify({
-    picked:picked.map(x=>x.id), dropped:dropped.map(x=>x.id),
-    topTags:(recoCard.btags||[]), logId:logId||''
+    picked:picked.map(x=>x.title), dropped:dropped.map(x=>x.title),
+    topTags, logId:logId||''
   }));
   const url=`https://app.sokonara.co.jp/?cid=${encodeURIComponent(recoCard.companyId)}&from=cards&sel=${sel}`;
   window.location.href=url;
