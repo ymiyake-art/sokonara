@@ -1243,11 +1243,10 @@ h1, h2, h3, h4,
 <div id="user" class="view active">
   <div id="p-list" class="screen active">
     <!-- LP HERO -->
-    <div style="background:var(--navy);padding:38px 20px 30px;text-align:center;position:relative;overflow:hidden;">
-      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 60% 0%,rgba(66,173,159,0.18) 0%,transparent 70%);pointer-events:none;"></div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:12px;">Sokonara — Regional Career Co-Creation</div>
-      <div style="font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:22px;font-weight:900;color:#fff;line-height:1.55;letter-spacing:0.5px;margin-bottom:12px;">経営層の想いに触れ、<br>あなたらしいキャリアを見つける。</div>
-      <div style="max-width:340px;margin:0 auto 18px;font-size:13px;color:rgba(255,255,255,0.72);line-height:1.95;">地域企業の経営層の記事を読み、価値観や挑戦に共感する人と出会えます。質問に答えると、あなたへの<strong style="color:var(--teal);font-weight:700;white-space:nowrap;">「はたらくヒント」</strong>が見つかります。</div>
+    <div style="background-color:var(--navy);background-image:linear-gradient(rgba(28,42,84,0.45),rgba(28,42,84,0.72) 55%,rgba(28,42,84,0.92) 100%),url('/images/TOP.jpg');background-size:cover;background-position:center top;background-repeat:no-repeat;padding:48px 20px 30px;text-align:center;position:relative;overflow:hidden;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:14px;">Sokonara — Regional Career Co-Creation</div>
+      <div style="font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:23px;font-weight:900;color:#fff;line-height:1.55;letter-spacing:0.5px;margin-bottom:14px;text-shadow:0 2px 12px rgba(0,0,0,0.35);">「自分なら力になれるかも」<br>から始まる出会い</div>
+      <div style="max-width:340px;margin:0 auto 18px;font-size:13px;color:rgba(255,255,255,0.85);line-height:1.95;text-shadow:0 1px 8px rgba(0,0,0,0.3);">地域企業の課題を選ぶと、あなたに合う経営層の記事が届きます。</div>
 
       <!-- 3ステップ（右に流れる矢羽根ステッパー） -->
       <div style="max-width:344px;margin:0 auto 6px;display:flex;align-items:stretch;font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;">
@@ -1257,8 +1256,8 @@ h1, h2, h3, h4,
       </div>
       <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:20px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">無料・約3分</div>
 
-      <button class="btn-primary" onclick="loadCompaniesAsync().then(()=>{renderCompanyList();setTimeout(()=>document.getElementById('companyListBody')?.scrollIntoView({behavior:'smooth'}),80);})" style="width:100%;max-width:320px;justify-content:center;margin-bottom:10px;">経営層から探す</button>
-      <button class="btn-outline" onclick="goCards()" style="width:100%;max-width:320px;justify-content:center;background:transparent;color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.3);">課題から探す（カードで）</button>
+      <button class="btn-primary" onclick="goCards()" style="width:100%;max-width:320px;justify-content:center;margin-bottom:10px;background:var(--teal);">課題カードを選んでみる →</button>
+      <button class="btn-outline" onclick="loadCompaniesAsync().then(()=>{renderCompanyList();setTimeout(()=>document.getElementById('companyListBody')?.scrollIntoView({behavior:'smooth'}),80);})" style="width:100%;max-width:320px;justify-content:center;background:transparent;color:rgba(255,255,255,0.8);border-color:rgba(255,255,255,0.35);">経営層の記事を一覧で見る</button>
 
       <!-- 経営層の顔（FV内に表示・人で惹きつける） -->
       <div style="margin-top:26px;">
