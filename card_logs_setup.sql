@@ -29,7 +29,9 @@ ALTER TABLE card_logs ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "anon insert logs" ON card_logs;
 DROP POLICY IF EXISTS "anon update logs" ON card_logs;
 DROP POLICY IF EXISTS "anon select logs" ON card_logs;
--- pfが匿名でINSERT/UPDATE。管理画面の集計用にSELECTも許可（既存テーブルと同じ姿勢）。
+DROP POLICY IF EXISTS "anon delete logs" ON card_logs;
+-- pfが匿名でINSERT/UPDATE。管理画面の集計・削除用にSELECT/DELETEも許可（既存テーブルと同じ姿勢）。
 CREATE POLICY "anon insert logs" ON card_logs FOR INSERT TO anon WITH CHECK (true);
 CREATE POLICY "anon update logs" ON card_logs FOR UPDATE TO anon USING (true) WITH CHECK (true);
 CREATE POLICY "anon select logs" ON card_logs FOR SELECT TO anon USING (true);
+CREATE POLICY "anon delete logs" ON card_logs FOR DELETE TO anon USING (true);

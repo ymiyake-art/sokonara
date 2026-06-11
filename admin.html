@@ -414,11 +414,20 @@ function cardEdit(id){
   const box=document.getElementById('adminContent');
   box.innerHTML=`<div style="padding:24px;max-width:680px">
     <div style="font-size:15px;font-weight:700;margin-bottom:4px">${id?'カードを編集':'カードを追加'}</div>
+    <div style="background:#f7f3fb;border:1px solid #e6d9f2;border-radius:8px;padding:13px 15px;margin:12px 0 4px;font-size:12px;line-height:1.85;color:var(--text2);">
+      <b style="color:#8e44ad;">良い課題カードの書き方</b><br>
+      ・抽象的なビジョンではなく、<b>いま実際に直面している具体的な課題</b>を1つ。<br>
+      　△ 悪い例：「DXを進めたい」「組織を強くしたい」（ふわっとして出番が想像できない）<br>
+      　◎ 良い例：「東京・大阪の販路をゼロから開拓して全国へ広げたい」「紙と電話の受発注を現場に合うDXで変えたい」<br>
+      ・読んだ人が <b>「自分なら力になれそう」と"出番"を想像できる粒度</b>に。<br>
+      ・<b>求人票（職種・条件）にはしない</b>。あくまで課題と、それに向き合う想い。<br>
+      ・2行目に <b>経営層の人柄・想いが伝わる一文</b>を添える（What70 / Why20 / Who10）。
+    </div>
     <label style="${lbl}">ID（半角英数字・編集不可）</label>
     <input id="f-id" style="${inp}" value="${escA(c.id)}" ${id?'disabled':'placeholder="card_xxx_a"'}>
-    <label style="${lbl}">1行目：課題</label>
+    <label style="${lbl}">1行目：課題（具体的に・出番が想像できる粒度で）</label>
     <input id="f-title" style="${inp}" value="${escA(c.card_title)}">
-    <label style="${lbl}">2行目：経営層の想い</label>
+    <label style="${lbl}">2行目：経営層の想い・人柄が伝わる一文</label>
     <input id="f-sub" style="${inp}" value="${escA(c.card_sub||'')}">
     <label style="${lbl}">紐づく経営層（記事レコメンド先）</label>
     <select id="f-co" style="${inp}" onchange="cardFillCo()"><option value="">— 選択 —</option>${coOpts}</select>
@@ -531,9 +540,12 @@ async function renderResonance(){
 
   box.innerHTML=`
   <div style="padding:24px;max-width:980px">
-    <div style="font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.7">
-      課題カード経由（共創テーマから探す）の匿名セッション <b>${N}</b>件。<br>
-      「どんなタイプが・どの言葉に反応し・どこまで進んだか」を経営層ごとに集計。個人情報は含みません。
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px;">
+      <div style="font-size:13px;color:var(--text2);line-height:1.7">
+        課題カード経由（課題から探す）の匿名セッション <b>${N}</b>件。<br>
+        「どんなタイプが・どの言葉に反応し・どこまで進んだか」を経営層ごとに集計。個人情報は含みません。
+      </div>
+      ${N? `<button onclick="cardLogDeleteAll()" style="flex:0 0 auto;padding:8px 14px;background:none;border:1px solid var(--hot);color:var(--hot);border-radius:4px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">全セッション消去</button>`:''}
     </div>
 
     <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
@@ -578,7 +590,34 @@ async function renderResonance(){
         <div>${chipRow(tally(chips),x=>x,'#2980b9')}</div>
       </div>`;
     }).join('')||'<div style="color:var(--text3)">まだデータがありません。</div>'}
+
+    ${N? `<div style="font-weight:700;font-size:14px;margin:22px 0 12px;">最近のセッション（個別削除）</div>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      ${logs.slice(0,40).map(l=>{
+        const stage = l.contact_cta?'面談CTA':l.line_registered?'LINE登録':l.ai_viewed?'AI診断':l.article_read?'記事':'カード';
+        const when = l.created_at? new Date(l.created_at).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+        return `<div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);font-size:12px;">
+          <div style="width:88px;color:var(--text3)">${escA(when)}</div>
+          <div style="flex:1;color:var(--text2)">${escA(coName(l.recommended_company))} ／ <span style="color:#8e44ad">${stage}</span>${l.q1_phrase?` ／ 「${escA(String(l.q1_phrase).slice(0,16))}…」`:''}</div>
+          <button onclick="cardLogDelete('${escA(l.id)}')" style="flex:0 0 auto;padding:3px 10px;background:none;border:1px solid var(--hot);color:var(--hot);border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit;">削除</button>
+        </div>`;
+      }).join('')}
+    </div>`:''}
   </div>`;
+}
+
+async function cardLogDelete(id){
+  if(!confirm('このセッションログを削除しますか？')) return;
+  const {error}=await supabaseClient.from('card_logs').delete().eq('id',id);
+  if(error){ toast('削除失敗: '+error.message); return; }
+  toast('削除しました'); renderResonance();
+}
+async function cardLogDeleteAll(){
+  if(!confirm('card_logs の全セッションを消去します。元に戻せません。よろしいですか？')) return;
+  // anonでの一括DELETEはWHERE必須。常に真の条件で全件削除。
+  const {error}=await supabaseClient.from('card_logs').delete().neq('id','__never__');
+  if(error){ toast('全消去失敗: '+error.message); return; }
+  toast('全セッションを消去しました'); renderResonance();
 }
 
 function renderDash(){
