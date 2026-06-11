@@ -2719,7 +2719,10 @@ async function genFeedback() {
   } : null;
 
   // カード経由（共創テーマから探す）なら pf式の診断(cardfeedback)で、選んだ/捨てた課題を根拠にする
-  const useCards = !!(SN_CARDS && (SN_CARDS.picked?.length || SN_CARDS.dropped?.length));
+  // カード選択は「その選択が向けられた経営層(cid)」と、いま見ている経営層が一致する時だけ診断に使う。
+  // （別経営層を見たときに前回のカード選択が混ざるのを防ぐ。cid未指定の古い形式は後方互換で許可）
+  const _cardsMatchCo = SN_CARDS && (!SN_CARDS.cid || String(SN_CARDS.cid)===String(selectedCompanyId));
+  const useCards = !!(SN_CARDS && _cardsMatchCo && (SN_CARDS.picked?.length || SN_CARDS.dropped?.length));
   const reqBody = useCards ? {
     type: 'cardfeedback',
     data: {

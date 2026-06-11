@@ -718,6 +718,7 @@ function openRecoArticle(){
   const cnt={}; picked.forEach(c=>(c.btags||[]).forEach(t=>cnt[t]=(cnt[t]||0)+1));
   const topTags=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([t])=>TAG_LABEL[t]||t);
   const sel=encodeURIComponent(JSON.stringify({
+    cid:recoCard.companyId, // どの経営層向けの選択かを明示（別経営層への混入を防ぐ）
     picked:picked.map(x=>x.title), dropped:dropped.map(x=>x.title),
     topTags, logId:logId||''
   }));
