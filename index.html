@@ -3386,7 +3386,7 @@ if (_stateOk) {
 
 selectedCompanyId = null;
 
-// OAuthコールバック後のリロード時：即p1へ遷移してp-listを経由しない
+// OAuthコールバック後のリロード時：TOP(p-list)を経由せず即目的画面へ遷移
 {
   const _earlyPost = localStorage.getItem('sn_postlogin');
   const _earlyContact = localStorage.getItem('sn_contact_intent');
@@ -3394,6 +3394,11 @@ selectedCompanyId = null;
   if(_earlyPost && _earlyContact) {
     if(_earlyCoId) selectedCompanyId = _earlyCoId;
     goScreen('p1');
+  } else if(_earlyPost && (localStorage.getItem('sn_restore') || localStorage.getItem('sn_restore_state'))) {
+    // フィードバック復元：TOPを見せず即p3（スケルトン表示）へ。本体の復元はload完了後に行う
+    goScreen('p3');
+    const _sk=document.getElementById('fbSkel'); if(_sk) _sk.style.display='block';
+    const _fc=document.getElementById('fbContent'); if(_fc) _fc.style.display='none';
   }
 }
 
@@ -3406,7 +3411,15 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
   // トークン交換中（code付きURL）はfetch完了後に遷移するのでここでは待つだけ。
   // ただしcodeが消費済み・stateNGの場合は交換しないので、復元処理へ進める。
   if(_stateOk){
-    goScreen('p-list');
+    // フィードバックフローならTOPを見せず、交換中もp3スケルトンを表示
+    const _f = (_lineState||'').split('.')[1];
+    if(_f === 'f'){
+      goScreen('p3');
+      const _sk=document.getElementById('fbSkel'); if(_sk) _sk.style.display='block';
+      const _fc=document.getElementById('fbContent'); if(_fc) _fc.style.display='none';
+    } else {
+      goScreen('p-list');
+    }
     return;
   }
 
@@ -3446,12 +3459,17 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
         else { genFeedback(); }
         return;
       } else {
-        // ② localStorageが失われた（モバイルのコンテキスト切替）：stateの回答から再生成
+        // ② sn_restoreは失われたが、stateから回答を復元
         const st = JSON.parse(_restoreStateRaw);
         selectedCompanyId = st.c || null;
-        S.q1 = st.q1||''; S.q2 = st.q2||[]; S.about = st.a||[]; S.q3 = st.q3||''; S.free = '';
+        S.q1 = st.q1||''; S.q2 = st.q2||[]; S.about = st.a||[]; S.q3 = st.q3||''; S.free = st.free||'';
         goScreen('p3');
-        genFeedback(); // fbは持ち越せないので再生成（LINEログイン済みなのでフル表示になる）
+        // ★ログイン前と同じレポートを見せる：まずsn_fb_cacheを再利用し、無い場合のみ再生成
+        let _cachedFb=null;
+        try{ const _c=JSON.parse(localStorage.getItem('sn_fb_cache')||'null');
+             if(_c && String(_c.companyId)===String(selectedCompanyId) && _c.fb) _cachedFb=_c.fb; }catch(e){}
+        if(_cachedFb){ S.fb=_cachedFb; showFeedback(_cachedFb); }
+        else { genFeedback(); } // キャッシュも無い場合のみ再生成
         return;
       }
     }catch(e){ console.warn('restore failed:', e); }
