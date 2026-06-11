@@ -211,6 +211,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
         <div class="nav-item" id="ni-addpj" onclick="switchTab('addpj')"><div class="nav-dot" style="background:#27ae60"></div>共創テーマ登録</div>
         <div class="nav-item" id="ni-colist" onclick="switchTab('colist')"><div class="nav-dot" style="background:var(--teal)"></div>掲載企業一覧</div>
         <div class="nav-item" id="ni-cards" onclick="switchTab('cards')"><div class="nav-dot" style="background:#9b59b6"></div>🗂️ 課題カード(v2)</div>
+        <div class="nav-item" id="ni-resonance" onclick="switchTab('resonance')"><div class="nav-dot" style="background:#8e44ad"></div>📊 共鳴データ(v2)</div>
       </div>
       <div class="co-items" id="sidebarCompanies"></div>
       <div style="margin-top:auto;padding:14px 16px;border-top:1px solid rgba(255,255,255,0.07)">
@@ -335,14 +336,14 @@ function switchTab(tab){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const ni=document.getElementById('ni-'+tab);
   if(ni) ni.classList.add('active');
-  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',article:'📝 記事管理',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧',cards:'🗂️ 課題カード(v2)'};
+  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',article:'📝 記事管理',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧',cards:'🗂️ 課題カード(v2)',resonance:'📊 共鳴データ(v2)'};
   document.getElementById('tabTitle').textContent=titles[tab]||tab;
   if(tab === 'interests'){
     // 既読としてマーク
     localStorage.setItem('snLastSeenInterests', new Date().toISOString());
     setInterestBadge(0);
   }
-  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,article:renderArticleEditor,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList,cards:renderCardsAdmin};
+  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,article:renderArticleEditor,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList,cards:renderCardsAdmin,resonance:renderResonance};
   fns[tab]?.();
 }
 
@@ -485,6 +486,100 @@ async function cardDelete(id){
 }
 
 function escA(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ===== v2 共鳴データ集計（card_logs）=====
+async function renderResonance(){
+  const box=document.getElementById('adminContent');
+  box.innerHTML=`<div style="padding:24px"><div style="color:var(--text3);font-size:13px">共鳴データを集計中…</div></div>`;
+  if(!supabaseClient){ box.innerHTML=`<div style="padding:24px;color:var(--hot)">Supabase未接続です。</div>`; return; }
+  const {data,error}=await supabaseClient.from('card_logs').select('*').order('created_at',{ascending:false});
+  if(error){
+    box.innerHTML=`<div style="padding:24px"><div style="color:var(--hot);font-weight:700;margin-bottom:8px">card_logs テーブルが見つかりません。</div>
+      <div style="font-size:13px;color:var(--text2)">SQL Editor で <code>card_logs_setup.sql</code> を実行してください。<br>${escA(error.message)}</div></div>`;
+    return;
+  }
+  const logs=data||[];
+  const cos=loadCompanies();
+  const coName=id=>{ const c=cos.find(x=>String(x.id)===String(id)); return c?(c.name||c.company||id):(id||'不明'); };
+  const coCeo =id=>{ const c=cos.find(x=>String(x.id)===String(id)); return c?(c.ceo||''):''; };
+  const pct=(n,d)=>d?Math.round(n/d*100):0;
+
+  // 全体ファネル
+  const N=logs.length;
+  const fRead=logs.filter(l=>l.article_read).length;
+  const fAi=logs.filter(l=>l.ai_viewed).length;
+  const fLine=logs.filter(l=>l.line_registered).length;
+  const fCta=logs.filter(l=>l.contact_cta).length;
+
+  // 集計ヘルパー
+  const tally=(arr)=>{ const m={}; arr.forEach(v=>{ if(v) m[v]=(m[v]||0)+1; }); return Object.entries(m).sort((a,b)=>b[1]-a[1]); };
+  const bLabel=t=>CARD_BTAGS[t]||t, rLabel=t=>CARD_RTAGS[t]||t;
+
+  // 全体のタグ・共鳴分布
+  const allTop=[],allR=[];
+  logs.forEach(l=>{ (l.top_tags||[]).forEach(t=>allTop.push(t)); (l.rtags_hit||[]).forEach(t=>allR.push(t)); });
+
+  // 経営層別
+  const byCo={};
+  logs.forEach(l=>{ const k=l.recommended_company||'不明'; (byCo[k]=byCo[k]||[]).push(l); });
+  const coRows=Object.entries(byCo).sort((a,b)=>b[1].length-a[1].length);
+
+  const chipRow=(entries,labeler,color)=>entries.slice(0,6).map(([t,n])=>
+    `<span style="display:inline-block;background:${color}1a;color:${color};font-size:11px;padding:3px 9px;border-radius:11px;margin:0 5px 5px 0;">${escA(labeler(t))} <b>${n}</b></span>`).join('')||'<span style="color:var(--text3);font-size:12px">—</span>';
+
+  const funnelBar=(n)=>`<div style="flex:1;background:var(--border);height:8px;border-radius:5px;overflow:hidden;"><div style="height:100%;width:${pct(n,N)}%;background:#8e44ad;border-radius:5px;"></div></div>`;
+
+  box.innerHTML=`
+  <div style="padding:24px;max-width:980px">
+    <div style="font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.7">
+      課題カード経由（共創テーマから探す）の匿名セッション <b>${N}</b>件。<br>
+      「どんなタイプが・どの言葉に反応し・どこまで進んだか」を経営層ごとに集計。個人情報は含みません。
+    </div>
+
+    <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:14px;">全体ファネル</div>
+      ${[['カード診断到達',N],['記事を読んだ',fRead],['AI診断を見た',fAi],['LINE登録',fLine],['面談CTA',fCta]].map(([lbl,n])=>
+        `<div style="display:flex;align-items:center;gap:12px;margin-bottom:9px;font-size:12px;">
+          <div style="width:110px;color:var(--text2)">${lbl}</div>
+          ${funnelBar(n)}
+          <div style="width:70px;text-align:right"><b>${n}</b> <span style="color:var(--text3)">(${pct(n,N)}%)</span></div>
+        </div>`).join('')}
+    </div>
+
+    <div class="two-col" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px;">
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:10px;">惹かれた課題テーマ（全体）</div>
+        <div>${chipRow(tally(allTop),bLabel,'#2e8c7f')}</div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:10px;">共鳴タイプ（全体）</div>
+        <div>${chipRow(tally(allR),rLabel,'#E2725B')}</div>
+      </div>
+    </div>
+
+    <div style="font-weight:700;font-size:14px;margin-bottom:12px;">経営層別の共鳴</div>
+    ${coRows.map(([cid,arr])=>{
+      const top=[],rt=[],q1=[],chips=[];
+      arr.forEach(l=>{ (l.top_tags||[]).forEach(t=>top.push(t)); (l.rtags_hit||[]).forEach(t=>rt.push(t)); if(l.q1_phrase)q1.push(l.q1_phrase); (l.memo_chips||[]).forEach(c=>chips.push(c)); });
+      const cta=arr.filter(l=>l.contact_cta).length, ai=arr.filter(l=>l.ai_viewed).length;
+      const q1t=tally(q1).slice(0,3);
+      return `<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;">
+          <div style="font-weight:700;font-size:14px;">${escA(coName(cid))} <span style="font-size:12px;color:var(--text2);font-weight:400">${escA(coCeo(cid))}</span></div>
+          <div style="font-size:12px;color:var(--text2)">${arr.length}件 ／ AI ${ai} ／ 面談 <b style="color:#8e44ad">${cta}</b></div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">惹かれた課題</div>
+        <div style="margin-bottom:8px;">${chipRow(tally(top),bLabel,'#2e8c7f')}</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">共鳴タイプ</div>
+        <div style="margin-bottom:8px;">${chipRow(tally(rt),rLabel,'#E2725B')}</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">反応した「刺さった言葉」TOP3</div>
+        <div style="font-size:12px;color:var(--text);line-height:1.7;margin-bottom:8px;">${q1t.length?q1t.map(([p,n])=>`・${escA(p)} <span style="color:var(--text3)">(${n})</span>`).join('<br>'):'<span style="color:var(--text3)">—</span>'}</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">仮想転職で「できそう」と選んだこと</div>
+        <div>${chipRow(tally(chips),x=>x,'#2980b9')}</div>
+      </div>`;
+    }).join('')||'<div style="color:var(--text3)">まだデータがありません。</div>'}
+  </div>`;
+}
 
 function renderDash(){
   document.getElementById('adminContent').innerHTML=`
