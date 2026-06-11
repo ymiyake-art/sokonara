@@ -1880,7 +1880,7 @@ function enterFromTop(target){
   toggleTopPage(false);
   const btn=document.getElementById(target==='project'?'mb-project':'mb-company');
   if(btn){ switchMode('user', btn, target==='project'?'project':'company'); }
-  if(target==='company'){ renderCompanyList(); goScreen('p-list'); }
+  if(target==='company'){ clearCardCtx(); renderCompanyList(); goScreen('p-list'); }
 }
 
 // 「課題から探す」＝課題カードのスワイプ導線（pf）へ
@@ -1893,9 +1893,21 @@ let SN_CARDS = null;
     const q = new URLSearchParams(window.location.search);
     if(q.get('from')==='cards' && q.get('sel')){
       SN_CARDS = JSON.parse(decodeURIComponent(q.get('sel')));
+      // LINEログインの往復(redirect_uriにparamが付かない)で消えないよう保持（2時間有効）
+      localStorage.setItem('sn_card_ctx', JSON.stringify({ ...SN_CARDS, _ts: Date.now() }));
+    } else {
+      // 往復から戻った直後など、URLにparamが無くてもlocalStorageから復元（2時間以内のみ）
+      const saved = localStorage.getItem('sn_card_ctx');
+      if(saved){
+        const o = JSON.parse(saved);
+        if(o && o._ts && (Date.now() - o._ts) < 2*60*60*1000){ delete o._ts; SN_CARDS = o; }
+        else { localStorage.removeItem('sn_card_ctx'); }
+      }
     }
   }catch(e){ SN_CARDS = null; }
 })();
+// 直接導線（経営層から探す）に切り替わったらカード文脈を破棄（誤った紐付け防止）
+function clearCardCtx(){ try{ localStorage.removeItem('sn_card_ctx'); }catch(e){} SN_CARDS = null; }
 
 // カード経由のセッションは pf で作成済みの card_logs 行(logId)をPATCHして、
 // 「どんな人(カード)が・どの言葉(Q1)に反応し・どこまで進んだか」を1行に統合する。
@@ -2242,6 +2254,7 @@ function showPrevResult(){
 
 function openCompanyArticleFromCard(el){
   if(!el) return;
+  clearCardCtx(); // 一覧から直接選んだ＝直接導線。カード文脈を破棄
   const id = el.getAttribute('data-company-id') || '';
   openCompanyArticle(id);
 }
@@ -3158,6 +3171,7 @@ async function openEmpathyForm() {
   // 二重防御：LINE未登録なら接点フォームに進ませず、必ずLINEログインへ
   if(!isLineRegistered()){ _startLineLoginForContact(); return; }
   patchCardLog({ contact_cta:true }); // カード経由なら成果（面談CTA）をログに反映＝ファネル完結
+  clearCardCtx(); // ジャーニー完了。以降の訪問に紐付かないようカード文脈を破棄
   const co = getCurrentCompany();
   // Supabaseに匿名の関心ログのみ保存（個人情報なし・ノンブロッキング）
   try {
