@@ -50,6 +50,12 @@ body{
   line-height:1.5;
 }
 .head .sub{ font-size:12px; color:var(--text2); margin-top:6px; line-height:1.6;}
+/* スワイプ操作ガイド（ボタンの色に対応：左=赤スキップ／右=ティール関わりたい） */
+.swipeGuide{ display:flex; align-items:center; justify-content:center; gap:8px; margin-top:12px; flex-wrap:wrap;}
+.sg-pill{ font-size:13px; font-weight:700; padding:6px 12px; border-radius:20px; white-space:nowrap; display:inline-flex; align-items:center; }
+.sg-left{ color:var(--red); background:var(--red-bg); }
+.sg-right{ color:var(--teal-d); background:var(--teal-mid); }
+.sg-or{ font-size:11px; color:var(--text3); }
 
 /* progress dots */
 .prog{ display:flex; justify-content:center; gap:7px; padding:14px 0 4px;}
@@ -252,7 +258,11 @@ body{
   <div class="head">
     <div class="kicker">CHALLENGE CARDS</div>
     <h1 id="hTitle">自分なら力になれるかも。<br>そう思える課題を選ぼう。</h1>
-    <div class="sub" id="hSub">気になる課題は <b>右</b> へ、ピンとこなければ <b>左</b> へスワイプ。</div>
+    <div class="swipeGuide">
+      <span class="sg-pill sg-left">← ✕ スキップ</span>
+      <span class="sg-or">スワイプで選ぶ</span>
+      <span class="sg-pill sg-right">♥ 関わりたい →</span>
+    </div>
   </div>
 
   <div class="prog" id="prog"></div>
