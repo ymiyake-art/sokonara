@@ -1345,12 +1345,11 @@ h1, h2, h3, h4,
     <div class="cta-sticky" id="p1CtaSticky">
       <div class="cta-sticky-text">
         <strong>まずは無料で、あなたへの「はたらくヒント」を</strong>
-        <span style="display:block;font-size:11px;color:var(--text2);margin-top:2px;font-weight:400;">4つの質問に答えるだけ（約3分）／この経営層に直接伝えることもできます</span>
+        <span style="display:block;font-size:11px;color:var(--text2);margin-top:2px;font-weight:400;">かんたんな質問に答えるだけ（約3分）／気になったら経営層に直接つながれます</span>
       </div>
       <div class="cta-sticky-btns">
-        <button class="btn-outline" id="p1ProjectBtn" onclick="openCompanyProjectsFromP1()" style="display:none">この経営層の共創テーマを見る →</button>
-        <button class="btn-outline" style="font-size:13px;padding:10px 16px;white-space:nowrap" onclick="requireLineForContact()" title="LINE登録のうえ、登録フォームに進みます">この経営層に伝える</button>
-        <button class="btn-primary" style="font-size:13px;padding:10px 18px;white-space:nowrap" onclick="goScreen('p2')">はたらくヒントを受け取る（無料）</button>
+        <button class="btn-outline" style="font-size:13px;padding:10px 16px;white-space:nowrap" onclick="requireLineForContact()" title="LINE登録のうえ、登録フォームに進みます">経営層とつながる</button>
+        <button class="btn-primary" style="font-size:13px;padding:10px 18px;white-space:nowrap" onclick="goScreen('p2')">はたらくヒント →</button>
       </div>
     </div>
   </div>
@@ -1368,7 +1367,7 @@ h1, h2, h3, h4,
         </svg>
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--teal);margin-bottom:6px;">WORKING HINT — 無料・約3分</div>
         <div style="font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:18px;font-weight:900;color:var(--navy);line-height:1.5;">はたらくヒント診断</div>
-        <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.7;">4つの質問に答えると、AIがあなたへの<br>「はたらくヒント」を読み解いてお届けします。</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.7;">かんたんな質問に答えると、AIがあなたへの<br>「はたらくヒント」を読み解いてお届けします。</div>
       </div>
       <!-- Q1 -->
       <div id="q1b">
@@ -2231,31 +2230,35 @@ function openCompanyArticle(id){
   document.querySelectorAll('#q1chips .chip, #q2chips .chip, #qaboutchips .chip, #q3chips .chip, #memoChips .chip').forEach(c=>c.classList.remove('selected'));
   const q1n = document.getElementById('q1next'); if(q1n) q1n.disabled=true;
   const sb = document.getElementById('submitBtn'); if(sb) sb.disabled=false; // Q4は任意なので常に押せる
-  // カード経由はQ2/Q3を省くので進捗表示を「全2問」に（直接導線は従来の4問）
+  updateQProgress();
+  goScreen('p1');
+  renderP1FromCompany();
+  updatePrevResultButton(id);
+}
+
+// 質問の進捗表示を、導線（カード経由=2問／直接=4問）に応じて更新。
+// 記事の開き方によらず常に正しく出るよう関数化（goScreen('p2')でも呼ぶ）。
+function updateQProgress(){
   const total = SN_CARDS ? 2 : 4;
   const q1num = document.querySelector('#q1b .q-num'); if(q1num) q1num.textContent = `Q 1 / ${total}`;
   const q4num = document.querySelector('#q3b .q-num'); if(q4num) q4num.textContent = SN_CARDS ? '仮想転職で深く考えてみる（Q2 / 2）' : '仮想転職で深く考えてみる';
   const q1dots = document.querySelectorAll('#q1b .q-prog-step');
   if(q1dots.length===4){
-    // カード経由は2問：1個目active・2個目空、3-4個目は隠す（直接導線は4個）
     q1dots[2].style.display = SN_CARDS?'none':'';
     q1dots[3].style.display = SN_CARDS?'none':'';
   }
   const q4dots = document.querySelectorAll('#q3b .q-prog-step');
   if(q4dots.length===4){
-    if(SN_CARDS){ // 2問目をactiveに・後ろ2個を隠す（連続した2ドットに）
+    if(SN_CARDS){
       q4dots[0].className='q-prog-step done'; q4dots[0].style.display='';
       q4dots[1].className='q-prog-step active'; q4dots[1].style.display='';
       q4dots[2].style.display='none'; q4dots[3].style.display='none';
-    } else { // 直接導線：従来の4個（done done done active）
+    } else {
       q4dots[0].className='q-prog-step done'; q4dots[1].className='q-prog-step done';
       q4dots[2].className='q-prog-step done'; q4dots[3].className='q-prog-step active';
       q4dots.forEach(d=>d.style.display='');
     }
   }
-  goScreen('p1');
-  renderP1FromCompany();
-  updatePrevResultButton(id);
 }
 
 // 前回の診断結果ボタンの表示制御（p1上部）
@@ -2583,6 +2586,7 @@ function goScreen(id) {
   const target = document.getElementById(id);
   if(target) target.classList.add('active');
   S.screen = id;
+  if(id==='p2' && typeof updateQProgress==='function') updateQProgress();
   // ブラウザの戻る対応：画面が変わったら履歴に積む（popstate中は積まない）
   if(!_suppressHistoryPush && id !== _prev){
     try { history.pushState({ sn:id }, ''); } catch(e) {}

@@ -385,30 +385,39 @@ function renderStack(){
   initProg();
 }
 
-let drag=null;
+// ドラッグ状態は単一オブジェクトで管理し、windowリスナーは一度だけ登録（蓄積バグ防止）
+let drag={el:null,startX:0,startY:0,curX:0,curY:0,active:false};
+function _dragMove(x,y){
+  if(!drag.active||!drag.el)return;
+  drag.curX=x-drag.startX; drag.curY=y-drag.startY;
+  const rot=drag.curX/18;
+  drag.el.style.transform=`translate(${drag.curX}px,${drag.curY}px) rotate(${rot}deg)`;
+  const op=Math.min(Math.abs(drag.curX)/120,1);
+  drag.el.querySelector('.stamp.like').style.opacity=drag.curX>0?op:0;
+  drag.el.querySelector('.stamp.nope').style.opacity=drag.curX<0?op:0;
+}
+function _dragUp(){
+  if(!drag.active||!drag.el)return;
+  const el=drag.el, curX=drag.curX; drag.active=false; el.style.cursor='grab';
+  if(curX>110){ flyOut(el,'right'); }
+  else if(curX<-110){ flyOut(el,'left'); }
+  else { el.classList.add('anim'); el.style.transform=''; el.querySelectorAll('.stamp').forEach(s=>s.style.opacity=0);
+    setTimeout(()=>el.classList.remove('anim'),350); }
+  drag.curX=0; drag.curY=0; drag.el=null;
+}
+let _dragGlobalBound=false;
+function bindDragGlobalsOnce(){
+  if(_dragGlobalBound)return; _dragGlobalBound=true;
+  window.addEventListener('mousemove',e=>_dragMove(e.clientX,e.clientY));
+  window.addEventListener('mouseup',_dragUp);
+  window.addEventListener('touchmove',e=>{ if(drag.active&&e.touches[0]) _dragMove(e.touches[0].clientX,e.touches[0].clientY); },{passive:true});
+  window.addEventListener('touchend',_dragUp);
+}
 function attachDrag(el){
-  let startX=0,startY=0,curX=0,curY=0,active=false;
-  const down=(x,y)=>{ active=true; startX=x; startY=y; el.style.transition='none'; el.style.cursor='grabbing';};
-  const move=(x,y)=>{ if(!active)return; curX=x-startX; curY=y-startY;
-    const rot=curX/18;
-    el.style.transform=`translate(${curX}px,${curY}px) rotate(${rot}deg)`;
-    const op=Math.min(Math.abs(curX)/120,1);
-    el.querySelector('.stamp.like').style.opacity=curX>0?op:0;
-    el.querySelector('.stamp.nope').style.opacity=curX<0?op:0;
-  };
-  const up=()=>{ if(!active)return; active=false; el.style.cursor='grab';
-    if(curX>110){ flyOut(el,'right'); }
-    else if(curX<-110){ flyOut(el,'left'); }
-    else { el.classList.add('anim'); el.style.transform=''; el.querySelectorAll('.stamp').forEach(s=>s.style.opacity=0);
-      setTimeout(()=>el.classList.remove('anim'),350); }
-    curX=0;curY=0;
-  };
+  bindDragGlobalsOnce();
+  const down=(x,y)=>{ drag.el=el; drag.active=true; drag.startX=x; drag.startY=y; drag.curX=0; drag.curY=0; el.style.transition='none'; el.style.cursor='grabbing';};
   el.addEventListener('touchstart',e=>down(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
-  el.addEventListener('touchmove',e=>move(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
-  el.addEventListener('touchend',up);
   el.addEventListener('mousedown',e=>down(e.clientX,e.clientY));
-  window.addEventListener('mousemove',e=>move(e.clientX,e.clientY));
-  window.addEventListener('mouseup',up);
 }
 
 function flyOut(el,dir){
