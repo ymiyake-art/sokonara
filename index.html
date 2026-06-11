@@ -1381,7 +1381,7 @@ h1, h2, h3, h4,
           <div class="chip" onclick="pickQ1(this,'地方の中小企業こそ、自分の人生を賭けられるフィールドだと気づいた')"><div class="chip-check">✓</div><span>地方の中小企業こそ、自分の人生を賭けられるフィールドだと気づいた</span></div>
         </div>
         <div class="q-nav" style="margin-top:18px">
-          <button class="btn-primary" id="q1next" onclick="hide('q1b');show('q2b')" disabled>次へ →</button>
+          <button class="btn-primary" id="q1next" onclick="goAfterQ1()" disabled>次へ →</button>
         </div>
       </div>
 
@@ -1452,7 +1452,7 @@ h1, h2, h3, h4,
         <div style="font-size:11px;color:var(--teal);margin-bottom:8px;font-family:'JetBrains Mono',monospace;letter-spacing:0.5px;">※ 書くほどAI診断があなたに合ったものになります</div>
         <textarea id="freeText" class="free-input" rows="5" placeholder="例：今の仕事は安定しているけど、もっと人と近い距離で働きたい。この方になら自分の悩みを話せそうだと思った。"></textarea>
         <div class="q-nav" style="margin-top:18px">
-          <button class="btn-outline" onclick="show('qaboutb'),hide('q3b')">← 戻る</button>
+          <button class="btn-outline" onclick="goBackFromMemo()">← 戻る</button>
           <button class="btn-primary" id="submitBtn" onclick="submitEmpathy()">診断結果を見る →</button>
         </div>
       </div>
@@ -1803,6 +1803,15 @@ function toggleMemo(el,val){
   el.classList.toggle('selected');
   if(el.classList.contains('selected')){ if(!S.memoChips.includes(val)) S.memoChips.push(val); }
   else { S.memoChips=S.memoChips.filter(v=>v!==val); }
+}
+// カード経由はカードで「求めるもの/今の状況」を表現済みなので Q2/Q3 をスキップし Q1→仮想転職へ
+function goAfterQ1(){
+  if(SN_CARDS){ buildMemoChips(); hide('q1b'); show('q3b'); }
+  else { hide('q1b'); show('q2b'); }
+}
+function goBackFromMemo(){
+  if(SN_CARDS){ show('q1b'); hide('q3b'); }
+  else { show('qaboutb'); hide('q3b'); }
 }
 let _suppressHistoryPush = false; // popstate（戻る）処理中はhistory.pushStateを抑止
 
@@ -2217,6 +2226,14 @@ function openCompanyArticle(id){
   document.querySelectorAll('#q1chips .chip, #q2chips .chip, #qaboutchips .chip, #q3chips .chip, #memoChips .chip').forEach(c=>c.classList.remove('selected'));
   const q1n = document.getElementById('q1next'); if(q1n) q1n.disabled=true;
   const sb = document.getElementById('submitBtn'); if(sb) sb.disabled=false; // Q4は任意なので常に押せる
+  // カード経由はQ2/Q3を省くので進捗表示を「全2問」に（直接導線は従来の4問）
+  const total = SN_CARDS ? 2 : 4;
+  const q1num = document.querySelector('#q1b .q-num'); if(q1num) q1num.textContent = `Q 1 / ${total}`;
+  const q4num = document.querySelector('#q3b .q-num'); if(q4num) q4num.textContent = SN_CARDS ? '仮想転職で深く考えてみる（Q2 / 2）' : '仮想転職で深く考えてみる';
+  const q1dots = document.querySelectorAll('#q1b .q-prog-step');
+  if(q1dots.length===4){ q1dots[2].style.display = SN_CARDS?'none':''; q1dots[3].style.display = SN_CARDS?'none':''; }
+  const q4dots = document.querySelectorAll('#q3b .q-prog-step');
+  if(q4dots.length===4){ q4dots[1].style.display = SN_CARDS?'none':''; q4dots[2].style.display = SN_CARDS?'none':''; }
   goScreen('p1');
   renderP1FromCompany();
   updatePrevResultButton(id);
