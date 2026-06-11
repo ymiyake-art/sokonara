@@ -115,8 +115,15 @@ body{
   padding:20px; box-shadow:var(--shadow);
 }
 .reco .rk{ font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;}
-.reco .rt{ font-family:'Zen Kaku Gothic New',sans-serif;font-size:18px;font-weight:700;line-height:1.5;margin:8px 0;}
-.reco .rl{ font-size:12px;color:var(--text2);}
+.recoLeader{ display:flex;align-items:center;gap:14px;margin-top:12px;}
+.recoAv{ width:64px;height:64px;border-radius:50%;background-size:cover;background-position:center;
+  border:2px solid var(--teal-mid);flex-shrink:0;}
+.recoAvFallback{ display:flex;align-items:center;justify-content:center;background:var(--navy);color:#fff;
+  font-family:'Zen Kaku Gothic New',sans-serif;font-size:24px;font-weight:700;}
+.recoName{ font-family:'Zen Kaku Gothic New',sans-serif;font-size:19px;font-weight:700;color:var(--navy);}
+.recoCo{ font-size:12.5px;color:var(--text2);margin-top:3px;}
+.recoCatch{ font-size:13.5px;color:var(--navy);font-weight:700;line-height:1.6;margin-top:14px;}
+.recoTask{ font-size:12px;color:var(--text2);line-height:1.6;margin-top:8px;padding-top:10px;border-top:1px solid var(--border);}
 .btn-primary{
   margin-top:22px; width:100%; padding:15px; border:none; border-radius:10px;
   background:var(--teal); color:#fff; font-family:'Noto Sans JP',sans-serif;
@@ -135,13 +142,19 @@ body{
 .topKicker{ font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--navy);text-transform:uppercase;margin-bottom:16px;}
 .topH{ font-family:'Zen Kaku Gothic New',sans-serif;font-size:26px;font-weight:900;line-height:1.5;letter-spacing:.5px;}
 .topLead{ font-size:14px;color:var(--text2);line-height:1.9;margin-top:22px;}
-.topSteps{ display:flex;gap:8px;margin-top:30px;}
-.topStep{ flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;}
-.topStep .si{ font-size:20px;}
-.topStep .st{ font-size:10.5px;color:var(--text2);margin-top:5px;line-height:1.4;font-weight:700;}
+/* 進め方の説明ストリップ（ボタンではない＝矢印でつなぐ・タップ不可に見せる） */
+.topSteps{ display:flex;align-items:center;justify-content:center;gap:4px;margin-top:32px;}
+.topStep{ text-align:center;flex:0 0 auto;}
+.topStep .si{ font-size:22px;}
+.topStep .st{ font-size:10px;color:var(--text2);margin-top:4px;line-height:1.35;font-weight:700;}
+.topArrow{ color:var(--text3);font-size:13px;margin-bottom:14px;}
 .topFoot{ padding-bottom:18px;}
-.topCta{ width:100%;padding:17px;border:none;border-radius:12px;background:var(--teal);color:#fff;
-  font-family:'Noto Sans JP',sans-serif;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(66,173,159,0.3);}
+.topCta{ width:100%;padding:18px;border:none;border-radius:14px;background:var(--teal);color:#fff;
+  font-family:'Noto Sans JP',sans-serif;font-size:16px;font-weight:700;cursor:pointer;
+  box-shadow:0 8px 24px rgba(66,173,159,0.35); display:flex;align-items:center;justify-content:center;gap:8px;
+  animation:ctaPulse 2.2s ease-in-out infinite;}
+.topCta::after{ content:'→'; font-size:18px; }
+@keyframes ctaPulse{ 0%,100%{ transform:translateY(0); box-shadow:0 8px 24px rgba(66,173,159,0.35);} 50%{ transform:translateY(-3px); box-shadow:0 14px 30px rgba(66,173,159,0.45);} }
 .topNote{ text-align:center;font-size:11px;color:var(--text3);margin-top:12px;}
 
 /* ===== fullscreen flow screens ===== */
@@ -207,14 +220,17 @@ body{
     </div>
     <div class="topSteps">
       <div class="topStep"><div class="si">🗂️</div><div class="st">課題を<br>選ぶ</div></div>
+      <div class="topArrow">→</div>
       <div class="topStep"><div class="si">📄</div><div class="st">記事を<br>読む</div></div>
+      <div class="topArrow">→</div>
       <div class="topStep"><div class="si">💡</div><div class="st">ヒントを<br>受け取る</div></div>
+      <div class="topArrow">→</div>
       <div class="topStep"><div class="si">🤝</div><div class="st">経営層と<br>話す</div></div>
     </div>
   </div>
   <div class="topFoot">
     <button class="topCta" onclick="startCards()">課題カードを選んでみる</button>
-    <div class="topNote">無料・約3分</div>
+    <div class="topNote">↑ ここから・無料・約3分</div>
   </div>
 </div>
 
@@ -241,7 +257,7 @@ body{
     <div class="lead">スワイプの結果から、関心の方向を整理しました。</div>
     <div id="ranks"></div>
     <div class="reco" id="reco"></div>
-    <button class="btn-primary" onclick="goArticle()">この経営層の記事を読む →</button>
+    <button class="btn-primary" onclick="openRecoArticle()">この経営層の記事を読む →</button>
     <button class="btn-text" onclick="restart()">もう一度カードを選ぶ</button>
   </div>
 
@@ -440,10 +456,23 @@ function showResult(){
     top_tags:ranked.slice(0,3).map(x=>x[0]), rtags_hit:rtagsHit,
     recommended_company:reco?reco.companyId:null, recommended_card:reco?reco.id:null
   });
+  const co = reco ? (COMPANIES_MAP[reco.companyId]||{}) : {};
+  const photo = co.photoUrl||co.heroUrl||'';
+  const catch_ = co.catchphrase||reco?.sub||'';
+  const avatar = photo
+    ? `<div class="recoAv" style="background-image:url('${esc(photo)}')"></div>`
+    : `<div class="recoAv recoAvFallback">${esc((reco?.company||'　').slice(0,1))}</div>`;
   document.getElementById('reco').innerHTML = reco ? `
-    <div class="rk">おすすめの経営層</div>
-    <div class="rt">${reco.title}</div>
-    <div class="rl">${reco.company}　${reco.leader}さん</div>` : '';
+    <div class="rk">あなたにおすすめの経営層</div>
+    <div class="recoLeader">
+      ${avatar}
+      <div class="recoInfo">
+        <div class="recoName">${esc(reco.leader)}さん</div>
+        <div class="recoCo">${esc(reco.company)}</div>
+      </div>
+    </div>
+    <div class="recoCatch">${esc(catch_)}</div>
+    <div class="recoTask">課題：${esc(reco.title)}</div>` : '';
 }
 
 // ===== 続きの導線 =====
@@ -638,13 +667,36 @@ function backToTop(){
   hideAllFs();
 }
 
+// 適正枚数のデッキを作る：1経営層につき1枚（同じ人が連続しない）、最大6枚にサンプリング。
+const DECK_SIZE=6;
+function buildDeck(){
+  const byCo={};
+  CARDS.forEach(c=>{ (byCo[c.companyId]=byCo[c.companyId]||[]).push(c); });
+  // 各社からランダムに1枚
+  let one=Object.values(byCo).map(arr=>arr[Math.floor(Math.random()*arr.length)]);
+  one.sort(()=>Math.random()-0.5);
+  return one.slice(0, DECK_SIZE);
+}
+
+// 既存の記事ページ（?cid=）へ。カード選択も渡し、Phase2の診断材料にする。
+function openRecoArticle(){
+  if(!recoCard){ return; }
+  logUpdate({article_read:true});
+  const sel=encodeURIComponent(JSON.stringify({
+    picked:picked.map(x=>x.id), dropped:dropped.map(x=>x.id),
+    topTags:(recoCard.btags||[]), logId:logId||''
+  }));
+  const url=`https://app.sokonara.co.jp/?cid=${encodeURIComponent(recoCard.companyId)}&from=cards&sel=${sel}`;
+  window.location.href=url;
+}
+
 function restart(){
   hideAllFs();
   memoSelected=new Set(); fbData=null; selectedQ1=''; logId=null;
   localStorage.removeItem('pf_demo_line');
   const mc=document.getElementById('memoChips'); if(mc){mc.dataset.built='';mc.innerHTML='';}
   idx=0; picked=[]; dropped=[];
-  deck=CARDS.slice().sort(()=>Math.random()-0.5);
+  deck=buildDeck();
   document.getElementById('stage').style.display='';
   document.getElementById('actions').style.display='flex';
   document.querySelector('.hint').style.display='';
@@ -652,6 +704,17 @@ function restart(){
   document.querySelector('.head').style.display='';
   document.getElementById('result').style.display='none';
   renderStack();
+}
+
+// 会社データ（写真・キャッチ）を読み込み、結果の経営層カード表示に使う。
+let COMPANIES_MAP={};
+async function loadCompaniesPf(){
+  try{
+    const url=`${SUPA_URL}/rest/v1/companies?select=*`;
+    const res=await fetch(url,{headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY}});
+    if(!res.ok) return;
+    (await res.json()).forEach(c=>{ COMPANIES_MAP[c.id]=c; });
+  }catch(e){}
 }
 
 // Supabase challenge_cards からカードを読み込む（active のみ・sort順）。失敗時はフォールバックのまま。
@@ -668,7 +731,7 @@ async function loadCards(){
   }catch(e){ /* フォールバックのCARDSを使用 */ }
 }
 
-(async function init(){ await loadCards(); restart(); })();
+(async function init(){ await Promise.all([loadCards(), loadCompaniesPf()]); restart(); })();
 </script>
 </body>
 </html>
