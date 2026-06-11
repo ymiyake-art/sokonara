@@ -1897,6 +1897,19 @@ let SN_CARDS = null;
   }catch(e){ SN_CARDS = null; }
 })();
 
+// カード経由のセッションは pf で作成済みの card_logs 行(logId)をPATCHして、
+// 「どんな人(カード)が・どの言葉(Q1)に反応し・どこまで進んだか」を1行に統合する。
+async function patchCardLog(fields){
+  if(!(SN_CARDS && SN_CARDS.logId)) return;
+  try{
+    await fetch(`${SUPABASE_URL}/rest/v1/card_logs?id=eq.${encodeURIComponent(SN_CARDS.logId)}`,{
+      method:'PATCH',
+      headers:{ apikey:SUPABASE_KEY, Authorization:'Bearer '+SUPABASE_KEY, 'Content-Type':'application/json', Prefer:'return=minimal' },
+      body:JSON.stringify({ ...fields, updated_at:new Date().toISOString() })
+    });
+  }catch(e){}
+}
+
 function loadCompanies(){
   if(cachedCompanies.length) return cachedCompanies;
   try{
@@ -2703,8 +2716,19 @@ function maskPII(text){
 
 // 匿名の共感ログを記録（誰がではなく「何に共感したか」を企業レポート用に蓄積）
 async function logResonance(){
-  if(!supabaseClient || !selectedCompanyId) return;
-  const co = loadCompanies().find(c=>String(c.id||'')===String(selectedCompanyId));
+  if(!selectedCompanyId) return;
+  // カード経由：pfで作成済みの card_logs 行に「言葉・メモ・診断閲覧」を追記して1本化（資産化の核）
+  if(SN_CARDS && SN_CARDS.logId){
+    patchCardLog({
+      q1_phrase: S.q1 || '',
+      memo_chips: S.memoChips || [],
+      memo_text: maskPII(S.free || ''),
+      ai_viewed: true
+    });
+    return;
+  }
+  // 直接（経営層から探す）：従来どおり user_sessions に記録
+  if(!supabaseClient) return;
   try {
     await supabaseClient.from('user_sessions').insert([{
       id: 'rs_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
@@ -2789,23 +2813,18 @@ function showFeedback(fb) {
       saveSession();
     }, 1100);
   } else {
-    // LINE未登録：要約を多めに見せて「文の途中」でブツッと切る（続きが気になるように）
+    // LINE未登録：summaryは全文見せ、本文(message)の冒頭をチラ見せして途中でカット（pf版の分量）
     if(summaryEl) {
       const summaryText = (fb.summary || '').trim();
-      // 句点で区切らず、文字数で途中カット（最後の文の途中で切れる方が続きが気になる）
-      const CUT = 165;
-      let preview;
-      if(summaryText.length <= CUT){
-        // 短い場合は8割あたりで途中カット
-        preview = summaryText.slice(0, Math.max(40, Math.floor(summaryText.length * 0.8)));
-      } else {
-        preview = summaryText.slice(0, CUT);
-      }
-      // 末尾が句読点だと「区切り感」が出るので、途中になるよう削る
-      preview = preview.replace(/[。、！？\s]+$/,'');
-      summaryEl.innerHTML = escapeHtml(preview)
-        + '<span style="opacity:0.55">…</span>'
-        + '<span style="display:block;margin-top:12px;font-size:12px;color:var(--teal);font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">▼ 続きはLINE登録で読めます</span>';
+      const msgText = String(fb.message || '').replace(/\\n/g,'\n').trim();
+      // 本文の冒頭を70字ほど見せて途中で切る
+      let teaser = msgText.slice(0, 70).replace(/[。、！？\s]+$/,'');
+      const teaserHtml = teaser
+        ? `<span style="display:block;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);color:var(--text2);line-height:1.9;">${escapeHtml(teaser)}<span style="opacity:0.55">…</span></span>`
+        : '';
+      summaryEl.innerHTML = escapeHtml(summaryText)
+        + teaserHtml
+        + '<span style="display:block;margin-top:14px;font-size:12px;color:var(--teal);font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">▼ 続き（あなたの役割・面談で聞くと良い問い）はLINE登録で読めます</span>';
     }
     document.getElementById('fbLineCta').style.display = 'block';
     document.getElementById('fbDetail').style.display = 'none';
@@ -3138,6 +3157,7 @@ const WEBCAS_FORM_URL = 'https://www17.webcas.net/form/pub/sokonara/pf';
 async function openEmpathyForm() {
   // 二重防御：LINE未登録なら接点フォームに進ませず、必ずLINEログインへ
   if(!isLineRegistered()){ _startLineLoginForContact(); return; }
+  patchCardLog({ contact_cta:true }); // カード経由なら成果（面談CTA）をログに反映＝ファネル完結
   const co = getCurrentCompany();
   // Supabaseに匿名の関心ログのみ保存（個人情報なし・ノンブロッキング）
   try {
@@ -3288,6 +3308,7 @@ if (_stateOk) {
     if(d.line_id){
       // snLineId（匿名のLINE識別子）のみ保存。表示名(display_name=氏名)は保存しない方針。
       localStorage.setItem('snLineId', d.line_id);
+      patchCardLog({ line_registered:true }); // カード経由ならログに反映
     }
     if(_isContact){
       localStorage.setItem('sn_contact_intent', '1');
