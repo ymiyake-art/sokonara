@@ -258,6 +258,13 @@ h1, h2, h3, h4,
   color: #2a2a2a; margin-bottom: 18px;
   font-size: 16px; line-height: 1.9; font-weight: 400;
 }
+/* 要約ファースト ダイジェスト */
+#p1Digest .dg-row{ margin-bottom:14px; }
+#p1Digest .dg-row:last-of-type{ margin-bottom:0; }
+#p1Digest .dg-h{ font-size:11px; font-weight:700; color:var(--teal-d); margin-bottom:5px; }
+#p1Digest .dg-b{ font-size:14px; line-height:1.85; color:var(--text); white-space:pre-line; }
+.article-fulllabel{ display:flex; align-items:center; gap:10px; margin:8px 0 18px; color:var(--text3); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:2px; }
+.article-fulllabel::before,.article-fulllabel::after{ content:''; flex:1; height:1px; background:var(--border); }
 .article-body img {
   width: 100%;
   max-height: 340px; object-fit: cover;
@@ -1312,7 +1319,17 @@ h1, h2, h3, h4,
       <div id="p1HeroPhoto" class="article-hero-photo" style="display:none"></div>
       <h1 class="article-title" id="p1ArticleTitle"></h1>
 
-      <!-- 記事冒頭サマリー（こんな方におすすめ / 特徴） -->
+      <!-- 要約ファースト：課題／なぜ／求める仲間（記事は深掘り用） -->
+      <div id="p1Digest" style="display:none;background:#fff;border:1px solid var(--teal-mid);border-radius:12px;padding:18px 20px;margin-bottom:18px;box-shadow:0 4px 16px rgba(28,42,84,0.05);">
+        <div id="p1DigestTags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;"></div>
+        <div class="dg-row"><div class="dg-h">🎯 向き合う課題</div><div class="dg-b" id="dgChallenge"></div></div>
+        <div class="dg-row"><div class="dg-h">💭 なぜ取り組むのか</div><div class="dg-b" id="dgWhy"></div></div>
+        <div class="dg-row" id="dgWantedRow"><div class="dg-h">🤝 どんな仲間を求めているか</div><div class="dg-b" id="dgWanted"></div></div>
+        <div id="dgReco" style="display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border);font-size:12.5px;color:var(--text2);line-height:1.8;"></div>
+        <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--teal-d);font-family:'JetBrains Mono',monospace;letter-spacing:1px;">↓ もっと詳しくは記事で</div>
+      </div>
+
+      <!-- 記事冒頭サマリー（こんな方におすすめ / 特徴）：旧。デジェストに統合のため非表示運用 -->
       <div id="p1Summary" style="display:none;background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:22px;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--teal-d);margin-bottom:10px;">ABOUT THIS LEADER</div>
         <div id="p1SummaryTagsRow" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;"></div>
@@ -1322,6 +1339,7 @@ h1, h2, h3, h4,
         </div>
       </div>
 
+      <div class="article-fulllabel" id="p1FullLabel" style="display:none;">記事全文</div>
       <div class="article-body" id="p1ArticleBody"></div>
 
       <!-- こんな人と出会いたい -->
@@ -2501,7 +2519,37 @@ function renderP1FromCompany(){
       if(recoText){ sumReco.textContent = recoText; sumRecoWrap.style.display = 'block'; }
       else { sumRecoWrap.style.display = 'none'; }
     }
-    sumBox.style.display = (tagItems.length || recoText) ? 'block' : 'none';
+    sumBox.style.display = 'none'; // 旧サマリーはダイジェストに統合
+  }
+
+  // ===== 要約ファースト ダイジェスト（課題／なぜ／求める仲間）=====
+  const dg = document.getElementById('p1Digest');
+  if(dg){
+    // 課題：キャッチフレーズ（無ければタイトル）
+    const challenge = (co?.catchphrase||'').trim() || (title&&title!==company?title:'') ;
+    // なぜ：本文の先頭セクション（リード文）から抜粋
+    let why='';
+    try{
+      let secs=[]; const b=co?.body||'';
+      if(String(b).trimStart().startsWith('[{')) secs=JSON.parse(b);
+      if(secs.length){ why=(secs[0].body||secs[0].text||'').replace(/\s+/g,' ').trim(); }
+      else { why=String(b).replace(/<[^>]+>/g,' ').replace(/[#*>\-\n]+/g,' ').replace(/\s+/g,' ').trim(); }
+    }catch(e){}
+    if(why.length>150) why=why.slice(0,150).replace(/[、。\s]+$/,'')+'…';
+    const wanted=(co?.wantedProfile||'').trim();
+    // タグ
+    const dtags=(Array.isArray(co?.tags)?co.tags.filter(t=>t&&t.trim()&&t.trim()!=='/'):[]).slice(0,4);
+    document.getElementById('p1DigestTags').innerHTML=dtags.map(t=>`<span style="font-size:11px;color:var(--teal-d);background:var(--teal-bg);border:1px solid var(--teal-mid);border-radius:20px;padding:3px 11px;">${escapeHtml(t)}</span>`).join('');
+    document.getElementById('dgChallenge').textContent = challenge || '—';
+    document.getElementById('dgWhy').textContent = why || '記事をご覧ください。';
+    const wRow=document.getElementById('dgWantedRow');
+    if(wanted){ document.getElementById('dgWanted').textContent=wanted; wRow.style.display=''; } else { wRow.style.display='none'; }
+    // ソコナラより（第三者目線）
+    const reco=(co?.summaryComment||'').trim();
+    const dgReco=document.getElementById('dgReco');
+    if(reco){ dgReco.innerHTML=`<b style="color:var(--teal-d);">📌 ソコナラより</b> ${escapeHtml(reco)}`; dgReco.style.display=''; } else { dgReco.style.display='none'; }
+    dg.style.display = (challenge||why||wanted) ? 'block' : 'none';
+    const fl=document.getElementById('p1FullLabel'); if(fl) fl.style.display = (challenge||why||wanted) ? 'flex' : 'none';
   }
 
   // 共感ボタンリセット
@@ -2532,7 +2580,9 @@ function renderP1FromCompany(){
   renderCeoAvatar(av, company, color, photoUrl);
 
   if(ci && ciTags && ciText){
-    const hasIntro = Boolean(intro);
+    // 要約ダイジェストを出す場合は会社概要を隠して重複を避ける（要約ファースト）
+    const digestShown = document.getElementById('p1Digest') && document.getElementById('p1Digest').style.display !== 'none';
+    const hasIntro = Boolean(intro) && !digestShown;
     ci.style.display = hasIntro ? 'block' : 'none';
     if(hasIntro){
       const tagItems = [
