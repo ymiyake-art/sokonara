@@ -417,7 +417,7 @@ function renderStack(){
       <div class="stamp like">関わりたい</div>
       <div class="stamp nope">スキップ</div>
       <div class="tagrow">${btags}${rtags}</div>
-      <div class="body"><div class="ctitle">${c.title}</div><div class="csub">${c.sub||''}</div></div>
+      <div class="body"><div class="ctitle">${esc(c.title)}</div><div class="csub">${esc(c.sub||'')}</div></div>
       <div class="leader">この課題に取り組む、ある地域企業の経営層</div>`;
     stage.appendChild(el);
     if(depth===0) attachDrag(el);
