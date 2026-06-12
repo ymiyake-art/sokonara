@@ -508,6 +508,9 @@ async function renderResonance(){
     return;
   }
   const logs=data||[];
+  // カードタイトル（カード別集計用）
+  let cardTitle={};
+  try{ const {data:cd}=await supabaseClient.from('challenge_cards').select('id,card_title,company'); (cd||[]).forEach(c=>{cardTitle[c.id]={t:c.card_title,co:c.company};}); }catch(e){}
   const cos=loadCompanies();
   const coName=id=>{ const c=cos.find(x=>String(x.id)===String(id)); return c?(c.name||c.company||id):(id||'不明'); };
   const coCeo =id=>{ const c=cos.find(x=>String(x.id)===String(id)); return c?(c.ceo||''):''; };
@@ -590,6 +593,37 @@ async function renderResonance(){
         <div>${chipRow(tally(chips),x=>x,'#2980b9')}</div>
       </div>`;
     }).join('')||'<div style="color:var(--text3)">まだデータがありません。</div>'}
+
+    ${(function(){
+      // ===== カード別パフォーマンス =====
+      const cs={}; const E=id=>cs[id]||(cs[id]={shown:0,picked:0,reco:0,read:0,ai:0,cta:0});
+      logs.forEach(l=>{
+        const p=new Set(l.picked_cards||[]);
+        new Set([...(l.picked_cards||[]),...(l.dropped_cards||[])]).forEach(id=>{ const s=E(id); s.shown++; if(p.has(id))s.picked++; });
+        if(l.recommended_card){ const s=E(l.recommended_card); s.reco++; if(l.article_read)s.read++; if(l.ai_viewed)s.ai++; if(l.contact_cta)s.cta++; }
+      });
+      const rows=Object.entries(cs).sort((a,b)=>b[1].shown-a[1].shown);
+      if(!rows.length) return '';
+      return `<div style="font-weight:700;font-size:14px;margin:24px 0 12px;">カード別パフォーマンス</div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+        <div style="display:flex;font-size:10px;color:var(--text3);padding:8px 12px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;">
+          <div style="flex:1">カード</div><div style="width:46px;text-align:right">表示</div><div style="width:54px;text-align:right">興味率</div><div style="width:42px;text-align:right">推薦</div><div style="width:42px;text-align:right">記事</div><div style="width:36px;text-align:right">AI</div><div style="width:42px;text-align:right">面談</div>
+        </div>
+        ${rows.map(([id,s])=>{
+          const info=cardTitle[id]||{}; const t=info.t||id;
+          return `<div style="display:flex;align-items:center;font-size:11.5px;padding:9px 12px;border-bottom:1px solid var(--border);">
+            <div style="flex:1;color:var(--text);line-height:1.4;padding-right:8px;">${escA(t)}<br><span style="font-size:10px;color:var(--text3)">${escA(info.co||'')}</span></div>
+            <div style="width:46px;text-align:right">${s.shown}</div>
+            <div style="width:54px;text-align:right;font-weight:700;color:#2e8c7f">${pct(s.picked,s.shown)}%</div>
+            <div style="width:42px;text-align:right">${s.reco}</div>
+            <div style="width:42px;text-align:right">${s.read}</div>
+            <div style="width:36px;text-align:right">${s.ai}</div>
+            <div style="width:42px;text-align:right;font-weight:700;color:#8e44ad">${s.cta}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="font-size:10.5px;color:var(--text3);margin-top:6px;line-height:1.6;">興味率＝「関わりたい」÷表示数。推薦以降（記事/AI/面談）は、そのカードが推薦された場合の到達数。</div>`;
+    })()}
 
     ${N? `<div style="font-weight:700;font-size:14px;margin:22px 0 12px;">最近のセッション（個別削除）</div>
     <div style="background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
