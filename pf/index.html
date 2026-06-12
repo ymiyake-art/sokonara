@@ -137,6 +137,20 @@ body{
 .recoCo{ font-size:12.5px;color:var(--text2);margin-top:3px;}
 .recoCatch{ font-size:13.5px;color:var(--navy);font-weight:700;line-height:1.6;margin-top:14px;}
 .recoTask{ font-size:12px;color:var(--text2);line-height:1.6;margin-top:8px;padding-top:10px;border-top:1px solid var(--border);}
+/* 〇〇タイプ */
+.typeBox{ background:linear-gradient(135deg,rgba(66,173,159,0.14),rgba(28,42,84,0.08));border:1px solid var(--teal);border-radius:14px;padding:18px;margin-bottom:18px;box-shadow:var(--shadow);}
+.typeBox .tk{ font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--teal-d);text-transform:uppercase;}
+.typeBox .tn{ font-family:'Zen Kaku Gothic New',sans-serif;font-size:20px;font-weight:900;color:var(--navy);line-height:1.4;margin:6px 0 8px;}
+.typeBox .td{ font-size:13px;color:var(--text2);line-height:1.8;}
+/* 偶然の2人目 */
+.reco2{ margin-top:12px;background:var(--surface);border:1px dashed var(--border);border-radius:14px;padding:14px 16px;}
+.reco2 .r2k{ font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:8px;}
+.reco2 .r2row{ display:flex;align-items:center;gap:11px;}
+.reco2 .r2av{ width:46px;height:46px;border-radius:50%;background-size:cover;background-position:center;flex-shrink:0;border:1.5px solid var(--border);}
+.reco2 .r2name{ font-weight:700;font-size:14px;color:var(--navy);}
+.reco2 .r2task{ font-size:11.5px;color:var(--text2);line-height:1.5;margin-top:2px;}
+/* 記事を読む予告 */
+.readTeaser{ margin-top:16px;background:var(--teal-bg);border-radius:12px;padding:13px 15px;font-size:12.5px;color:var(--teal-d);line-height:1.8;}
 .btn-primary{
   margin-top:22px; width:100%; padding:15px; border:none; border-radius:10px;
   background:var(--teal); color:#fff; font-family:'Noto Sans JP',sans-serif;
@@ -277,10 +291,13 @@ body{
 
   <!-- RESULT -->
   <div id="result">
-    <h2>あなたが惹かれた課題</h2>
+    <div id="typeBox"></div>
+    <h2 style="font-size:16px;margin-top:6px;">あなたが惹かれた課題</h2>
     <div class="lead">スワイプの結果から、関心の方向を整理しました。</div>
     <div id="ranks"></div>
     <div class="reco" id="reco"></div>
+    <div class="reco2" id="reco2"></div>
+    <div class="readTeaser" id="readTeaser"></div>
     <button class="btn-primary" onclick="openRecoArticle()">この経営層の記事を読む →</button>
     <button class="btn-text" onclick="restart()">もう一度カードを選ぶ</button>
   </div>
@@ -369,6 +386,7 @@ let CARDS = [
 const SUPA_URL='https://ypwwuylcvjwcyazvpibd.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd3d1eWxjdmp3Y3lhenZwaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTY1MTMsImV4cCI6MjA5MjI3MjUxM30.7YseXt8libEzFsSAv4bI46l36kZ2lFz_jnh1JphVpvA';
 let recoCard=null; // 結果で選ばれたおすすめカード
+let reco2Card=null; // 偶然の2人目（傾向に近い別の経営層）
 
 let deck=[], idx=0, picked=[], dropped=[];
 
@@ -510,6 +528,46 @@ function showResult(){
     </div>
     <div class="recoCatch">${esc(catch_)}</div>
     <div class="recoTask">課題：${esc(reco.title)}</div>` : '';
+
+  // ===== 〇〇タイプ（事業上位2 ＋ 価値上位1）=====
+  const topBtags = ranked.slice(0,2).map(x=>x[0]);
+  const rcnt={}; picked.forEach(c=>(c.rtags||[]).forEach(t=>rcnt[t]=(rcnt[t]||0)+1));
+  const topRtag=(Object.entries(rcnt).sort((a,b)=>b[1]-a[1])[0]||[])[0];
+  const tb=document.getElementById('typeBox');
+  if(topBtags.length){
+    const typeName=topBtags.map(t=>TAG_LABEL[t]||t).join(' × ');
+    const phrases=topBtags.map(t=>BTAG_PHRASE[t]).filter(Boolean);
+    const rphrase=topRtag?RTAG_PHRASE[topRtag]:'';
+    const typeDesc=`あなたは、${phrases.join('、')}ことに惹かれ${rphrase?`、${rphrase}姿勢を大切にする`:''}タイプです。`;
+    tb.innerHTML=`<div class="tk">YOUR TYPE</div><div class="tn">「${esc(typeName)}」タイプ</div><div class="td">${esc(typeDesc)}</div>`;
+    tb.style.display='';
+  } else { tb.style.display='none'; }
+
+  // ===== 偶然の2人目（スワイプ傾向に合う、選んでいない別の経営層）=====
+  reco2Card=null;
+  const pickedIds=new Set(picked.map(c=>c.id));
+  if(reco && topBtags.length){
+    const cand=CARDS.filter(c=>!pickedIds.has(c.id) && c.companyId!==reco.companyId)
+      .map(c=>({c,score:(c.btags||[]).filter(t=>topBtags.includes(t)).length}))
+      .filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
+    reco2Card=cand.length?cand[0].c:null;
+  }
+  const r2=document.getElementById('reco2');
+  if(reco2Card){
+    const co2=COMPANIES_MAP[reco2Card.companyId]||{};
+    const ph2=co2.photoUrl||co2.heroUrl||'';
+    const av2=ph2?`<div class="r2av" style="background-image:url('${esc(ph2)}')"></div>`:`<div class="r2av recoAvFallback" style="width:46px;height:46px;font-size:18px;">${esc((reco2Card.company||'　').slice(0,1))}</div>`;
+    r2.innerHTML=`<div class="r2k">あなたの傾向に近い、もう一人</div>
+      <div class="r2row" style="cursor:pointer;" onclick="openRecoArticle(reco2Card)">
+        ${av2}
+        <div><div class="r2name">${esc(reco2Card.leader)}さん</div><div class="r2task">${esc(reco2Card.title)}</div></div>
+      </div>`;
+    r2.style.display='';
+  } else { r2.style.display='none'; }
+
+  // ===== 記事を読む予告（選んだ/見送った課題が診断に効く、を先に伝える）=====
+  document.getElementById('readTeaser').innerHTML =
+    `📩 このあと記事を読むと、あなたが<b>選んだ課題</b>と<b>見送った課題</b>をもとに、あなただけの「はたらくヒント」が届きます。`;
 }
 
 // ===== 続きの導線 =====
@@ -716,17 +774,18 @@ function buildDeck(){
 }
 
 // 既存の記事ページ（?cid=）へ。カード選択も渡し、Phase2の診断材料にする。
-function openRecoArticle(){
-  if(!recoCard){ return; }
+function openRecoArticle(card){
+  const target = card || recoCard;
+  if(!target){ return; }
   logUpdate({article_read:true});
   const cnt={}; picked.forEach(c=>(c.btags||[]).forEach(t=>cnt[t]=(cnt[t]||0)+1));
   const topTags=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([t])=>TAG_LABEL[t]||t);
   const sel=encodeURIComponent(JSON.stringify({
-    cid:recoCard.companyId, // どの経営層向けの選択かを明示（別経営層への混入を防ぐ）
+    cid:target.companyId, // どの経営層向けの選択かを明示（別経営層への混入を防ぐ）
     picked:picked.map(x=>x.title), dropped:dropped.map(x=>x.title),
     topTags, logId:logId||''
   }));
-  const url=`https://app.sokonara.co.jp/?cid=${encodeURIComponent(recoCard.companyId)}&from=cards&sel=${sel}`;
+  const url=`https://app.sokonara.co.jp/?cid=${encodeURIComponent(target.companyId)}&from=cards&sel=${sel}`;
   window.location.href=url;
 }
 
