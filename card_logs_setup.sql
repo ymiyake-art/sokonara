@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS card_logs (
   recommended_company text,                 -- レコメンドされた company_id
   recommended_card    text,                 -- レコメンドされた card_id
   q1_phrase     text DEFAULT '',            -- 刺さった言葉（記事のどの一文に反応したか）
+  reason        text DEFAULT '',            -- スワイプ後に選んだ「惹かれた理由」
   memo_chips    text[] DEFAULT '{}',        -- できそうなこと（チップ）
   memo_text     text DEFAULT '',            -- 自由記述（PIIマスク済み）
   article_read  boolean DEFAULT false,      -- 記事到達

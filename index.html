@@ -2727,6 +2727,7 @@ async function genFeedback() {
     type: 'cardfeedback',
     data: {
       picked: SN_CARDS.picked||[], dropped: SN_CARDS.dropped||[], topTags: SN_CARDS.topTags||[],
+      reason: SN_CARDS.reason||'',
       q1Phrase: S.q1||'', memoChips: S.memoChips||[], memoText: S.free||'',
       leader: ceoProfile ? {
         ceo: ceoProfile.ceo, company: ceoProfile.company,

@@ -289,6 +289,14 @@ body{
   </div>
   <div class="hint">ドラッグでもボタンでも選べます</div>
 
+  <!-- 理由1問（スワイプ後・結果前） -->
+  <div id="reasonStep" style="display:none;flex:1;flex-direction:column;padding:24px 24px 30px;overflow-y:auto;">
+    <h2 style="font-family:'Zen Kaku Gothic New',sans-serif;font-size:19px;font-weight:700;color:var(--navy);line-height:1.55;">気になる課題を選びましたね。<br>惹かれた理由に一番近いのは？</h2>
+    <div class="lead" style="font-size:13px;color:var(--text2);margin:8px 0 18px;line-height:1.7;">直感で1つ選んでください（任意）。診断の手がかりになります。</div>
+    <div class="chips q1chips" id="reasonChips"></div>
+    <button class="btn-text" style="margin-top:20px;" onclick="pickReason('')">スキップして結果を見る</button>
+  </div>
+
   <!-- RESULT -->
   <div id="result">
     <div id="typeBox"></div>
@@ -468,11 +476,30 @@ function recordChoice(dir){
   const c=deck[idx]; if(!c)return;
   if(dir==='right') picked.push(c); else dropped.push(c);
 }
+const REASONS=['社会課題に共感した','新規事業に興味がある','地域に貢献したい','自分の経験と重なった','経営層の考え方に興味'];
+let selectedReason='';
 function afterAdvance(){
   const total=deck.length;
-  // 仮結果: 3枚で出せる。5枚 or 全部で確定。ここでは全部めくったら結果へ。
-  if(idx>=total){ showResult(); return; }
+  if(idx>=total){ showReason(); return; }
   renderStack();
+}
+function showReason(){
+  // 「関わりたい」が1枚も無ければ理由を聞かずに結果へ
+  if(!picked.length){ showResult(); return; }
+  document.getElementById('stage').style.display='none';
+  document.getElementById('actions').style.display='none';
+  document.querySelector('.hint').style.display='none';
+  document.getElementById('prog').style.display='none';
+  document.querySelector('.head').style.display='none';
+  const box=document.getElementById('reasonChips');
+  box.innerHTML=REASONS.map(r=>`<span class="chip" data-r="${esc(r)}">${esc(r)}</span>`).join('');
+  box.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>pickReason(ch.dataset.r));
+  document.getElementById('reasonStep').style.display='flex';
+}
+function pickReason(r){
+  selectedReason=r||'';
+  document.getElementById('reasonStep').style.display='none';
+  showResult(); // reasonはshowResultのlogInsertに含める
 }
 
 function showResult(){
@@ -509,6 +536,7 @@ function showResult(){
   logInsert({
     picked_cards:picked.map(x=>x.id), dropped_cards:dropped.map(x=>x.id),
     top_tags:ranked.slice(0,3).map(x=>x[0]), rtags_hit:rtagsHit,
+    reason:selectedReason||'',
     recommended_company:reco?reco.companyId:null, recommended_card:reco?reco.id:null
   });
   const co = reco ? (COMPANIES_MAP[reco.companyId]||{}) : {};
@@ -584,12 +612,18 @@ function maskPII(s){
     .replace(/0\d{1,4}[-(\s]?\d{1,4}[-)\s]?\d{3,4}/g,'[電話]')
     .replace(/\d{6,}/g,'[番号]');
 }
+async function _postLog(body){
+  return fetch(`${SUPA_URL}/rest/v1/card_logs`,{method:'POST',
+    headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},
+    body:JSON.stringify(body)});
+}
 async function logInsert(row){
   try{
     logId=(crypto.randomUUID?crypto.randomUUID():'log_'+Date.now()+'_'+Math.random().toString(36).slice(2));
-    await fetch(`${SUPA_URL}/rest/v1/card_logs`,{method:'POST',
-      headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},
-      body:JSON.stringify({id:logId,...row})});
+    let res=await _postLog({id:logId,...row});
+    // reason列が未追加(400)の場合はreasonを外して再試行し、ログ自体は必ず残す
+    if(!res.ok && ('reason' in row)){ const {reason,...rest}=row; res=await _postLog({id:logId,...rest}); }
+    if(!res.ok){ logId=null; }
   }catch(e){ logId=null; }
 }
 async function logUpdate(fields){
@@ -783,7 +817,7 @@ function openRecoArticle(card){
   const sel=encodeURIComponent(JSON.stringify({
     cid:target.companyId, // どの経営層向けの選択かを明示（別経営層への混入を防ぐ）
     picked:picked.map(x=>x.title), dropped:dropped.map(x=>x.title),
-    topTags, logId:logId||''
+    topTags, reason:selectedReason||'', logId:logId||''
   }));
   const url=`https://app.sokonara.co.jp/?cid=${encodeURIComponent(target.companyId)}&from=cards&sel=${sel}`;
   window.location.href=url;
@@ -791,7 +825,7 @@ function openRecoArticle(card){
 
 function restart(){
   hideAllFs();
-  memoSelected=new Set(); fbData=null; selectedQ1=''; logId=null;
+  memoSelected=new Set(); fbData=null; selectedQ1=''; selectedReason=''; logId=null;
   localStorage.removeItem('pf_demo_line');
   const mc=document.getElementById('memoChips'); if(mc){mc.dataset.built='';mc.innerHTML='';}
   idx=0; picked=[]; dropped=[];
@@ -801,6 +835,7 @@ function restart(){
   document.querySelector('.hint').style.display='';
   document.getElementById('prog').style.display='flex';
   document.querySelector('.head').style.display='';
+  document.getElementById('reasonStep').style.display='none';
   document.getElementById('result').style.display='none';
   renderStack();
 }
