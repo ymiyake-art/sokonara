@@ -865,7 +865,8 @@ async function loadCards(){
   }catch(e){ /* フォールバックのCARDSを使用 */ }
 }
 
-(async function init(){ await Promise.all([loadCards(), loadCompaniesPf()]); restart(); })();
+// メインTOPが入口の役割を果たすので、/pf/ は説明画面(screenTop)を経由せず即スワイプ開始
+(async function init(){ await Promise.all([loadCards(), loadCompaniesPf()]); startCards(); })();
 </script>
 </body>
 </html>
