@@ -1232,8 +1232,8 @@ h1, h2, h3, h4,
 
 <!-- ===== MODE BAR ===== -->
 <div class="mode-bar" style="display:flex">
-  <div class="mode-brand" style="cursor:pointer;" onclick="switchMode('user',document.getElementById('mb-company'),'company')" title="経営層一覧へ"><img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ"></div>
-  <button class="mode-btn active" id="mb-company" onclick="switchMode('user',this,'company');showLeaderList();">経営層一覧</button>
+  <div class="mode-brand" style="cursor:pointer;" onclick="goHome()" title="TOPへ"><img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ"></div>
+  <button class="mode-btn active" id="mb-company" onclick="goHome()">TOP</button>
   <button class="mode-btn" id="mb-project" onclick="goCards()">課題から探す</button>
   <!-- 管理画面・リセットは admin.html から直接アクセス（公開ナビからは非表示） -->
 </div>
@@ -1274,8 +1274,8 @@ h1, h2, h3, h4,
       </div>
       <div class="hero-in" style="--hd:1.1s;font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:22px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">無料・約3分</div>
 
-      <button class="btn-primary hero-in" onclick="goCards()" style="--hd:1.2s;width:100%;max-width:320px;justify-content:center;margin-bottom:10px;background:var(--teal);">課題カードを選んでみる →</button>
-      <button class="btn-outline hero-in" onclick="showLeaderList()" style="--hd:1.28s;width:100%;max-width:320px;justify-content:center;background:transparent;color:rgba(255,255,255,0.8);border-color:rgba(255,255,255,0.35);">経営層の記事を一覧で見る</button>
+      <button class="btn-primary hero-in" onclick="goCards()" style="--hd:1.2s;width:100%;max-width:360px;justify-content:center;margin-bottom:12px;background:var(--teal);font-size:17px;font-weight:700;padding:18px 20px;border-radius:14px;box-shadow:0 8px 24px rgba(66,173,159,0.35);">課題カードを選んでみる →</button>
+      <button class="btn-outline hero-in" onclick="showLeaderList()" style="--hd:1.28s;width:100%;max-width:360px;justify-content:center;background:transparent;color:rgba(255,255,255,0.75);border-color:rgba(255,255,255,0.3);font-size:13px;">経営層の記事を一覧で見る</button>
       <!-- FEATURED LEADERS（顔写真）は廃止：課題から入る導線に集中 -->
       <div id="heroLeaders" style="display:none;"></div>
     </div>
@@ -1922,6 +1922,13 @@ function enterFromTop(target){
 
 // 「課題から探す」＝課題カードのスワイプ導線（pf）へ
 function goCards(){ window.location.href = '/pf/'; }
+
+// ロゴ/TOPタブ：TOP（ヒーロー）へ戻る。一覧は隠す
+function goHome(){
+  const s=document.getElementById('articlesSection'); if(s) s.style.display='none';
+  try{ switchMode('user',document.getElementById('mb-company'),'company'); }catch(e){}
+  window.scrollTo(0,0);
+}
 
 // 経営層一覧（サブ）を表示してスクロール
 function showLeaderList(){
@@ -2911,8 +2918,9 @@ function showFeedback(fb) {
   if(summaryEl) summaryEl.textContent = fb.summary || '';
 
   if(lineRegistered) {
-    // LINE登録済み：要約ブロック非表示・詳細フル表示
-    document.getElementById('fbSummary').style.display = 'none';
+    // LINE登録済み：登録前に見せた要約はそのまま残し（連続性）、その下に詳細フル表示
+    if(summaryEl) summaryEl.textContent = fb.summary || '';
+    document.getElementById('fbSummary').style.display = 'block';
     document.getElementById('fbLineCta').style.display = 'none';
     document.getElementById('fbDetail').style.display = 'block';
 
