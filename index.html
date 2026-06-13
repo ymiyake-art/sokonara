@@ -2818,6 +2818,8 @@ async function genFeedback() {
     _saveFbCache();
     showFeedback(fb);
     logResonance(); // 匿名の共感ログを記録（個人情報なし）
+    // カード経由：診断結果をサーバー(card_logs)へ匿名保存。ログイン往復で別ブラウザになっても同じ結果を復元できる
+    patchCardLog({ ai_summary: fb.summary||'', ai_message: fb.message||'', ai_bridge: fb.bridge||'' });
   } catch(e) {
     console.error('[feedback error]', e?.message || e);
     toast('AIエラー（詳細はコンソール確認）: ' + (e?.message || '不明'));
@@ -3470,7 +3472,7 @@ selectedCompanyId = null;
   }
 }
 
-Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
+Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(async ()=>{
   renderCompanyList();
   renderTopLeaders();
   renderHeroLeaders();
@@ -3532,12 +3534,22 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(()=>{
         selectedCompanyId = st.c || null;
         S.q1 = st.q1||''; S.q2 = st.q2||[]; S.about = st.a||[]; S.q3 = st.q3||''; S.free = st.free||'';
         goScreen('p3');
-        // ★ログイン前と同じレポートを見せる：まずsn_fb_cacheを再利用し、無い場合のみ再生成
+        // ★ログイン前と同じレポートを見せる：
+        //   (a) sn_fb_cache → (b) サーバー保存(card_logs/get) → (c) 最終手段で再生成
         let _cachedFb=null;
         try{ const _c=JSON.parse(localStorage.getItem('sn_fb_cache')||'null');
              if(_c && String(_c.companyId)===String(selectedCompanyId) && _c.fb) _cachedFb=_c.fb; }catch(e){}
-        if(_cachedFb){ S.fb=_cachedFb; showFeedback(_cachedFb); }
-        else { genFeedback(); } // キャッシュも無い場合のみ再生成
+        if(_cachedFb){ S.fb=_cachedFb; showFeedback(_cachedFb); return; }
+        // サーバーから取得（localStorageが別コンテキストで失われていても復元可能）
+        const _lid = (SN_CARDS && SN_CARDS.logId) ? SN_CARDS.logId : '';
+        if(_lid){
+          try{
+            const r=await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'get',id:_lid})});
+            const row=await r.json();
+            if(row && row.ai_message){ S.fb={summary:row.ai_summary||'',message:row.ai_message||'',bridge:row.ai_bridge||'',values:[]}; _saveFbCache(); showFeedback(S.fb); return; }
+          }catch(e){}
+        }
+        genFeedback(); // どこにも無い場合のみ再生成
         return;
       }
     }catch(e){ console.warn('restore failed:', e); }

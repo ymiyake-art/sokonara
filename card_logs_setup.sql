@@ -19,6 +19,9 @@ CREATE TABLE IF NOT EXISTS card_logs (
   ai_viewed     boolean DEFAULT false,      -- AI診断閲覧
   line_registered boolean DEFAULT false,    -- LINE登録（デモ含む）
   contact_cta   boolean DEFAULT false,      -- 接点CTAクリック
+  ai_summary    text DEFAULT '',            -- 診断結果(要約)。ログイン往復後の復元用に匿名保存
+  ai_message    text DEFAULT '',            -- 診断結果(本文)
+  ai_bridge     text DEFAULT '',            -- 診断結果(接点の一言)
   created_at    timestamptz DEFAULT now(),
   updated_at    timestamptz DEFAULT now()
 );
@@ -29,10 +32,9 @@ CREATE INDEX IF NOT EXISTS idx_card_logs_created ON card_logs(created_at);
 ALTER TABLE card_logs ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "anon insert logs" ON card_logs;
 DROP POLICY IF EXISTS "anon update logs" ON card_logs;
-DROP POLICY IF EXISTS "anon select logs" ON card_logs;
-DROP POLICY IF EXISTS "anon delete logs" ON card_logs;
--- pfが匿名でINSERT/UPDATE。管理画面の集計・削除用にSELECT/DELETEも許可（既存テーブルと同じ姿勢）。
+DROP POLICY IF EXISTS "anon select logs" ON card_logs;  -- 公開SELECTは閉じる（読み取りはreport.js=service_role経由）
+DROP POLICY IF EXISTS "anon delete logs" ON card_logs;  -- 削除もservice_role経由
+-- pfは匿名でINSERT/UPDATEのみ可。読み取り(集計/復元)・削除はサーバーAPI(report.js, service_role)に限定。
 CREATE POLICY "anon insert logs" ON card_logs FOR INSERT TO anon WITH CHECK (true);
 CREATE POLICY "anon update logs" ON card_logs FOR UPDATE TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "anon select logs" ON card_logs FOR SELECT TO anon USING (true);
-CREATE POLICY "anon delete logs" ON card_logs FOR DELETE TO anon USING (true);
+-- ※ SELECT / DELETE の anon ポリシーは作らない（RLSにより匿名読み取り・削除は不可になる）

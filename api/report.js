@@ -16,7 +16,26 @@ export default async function handler(req) {
 
   const { password, action, company_id, id, table } = await req.json();
   // 対象テーブル（ホワイトリスト）。指定なしは従来通りuser_sessions（診断ログ）
-  const TBL = table === 'empathy_logs' ? 'empathy_logs' : 'user_sessions';
+  const TBL = table === 'empathy_logs' ? 'empathy_logs'
+            : table === 'card_logs' ? 'card_logs'
+            : 'user_sessions';
+
+  // ---- 診断結果の復元（パスワード不要・id必須）。card_logsの1件だけを返す ----
+  // logIdは推測困難なuuidなので、これを知る本人のみ取得可能（公開SELECTは閉じる前提）。
+  if (action === 'get') {
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+    const jsonH = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+    if (!id || !SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+      return new Response(JSON.stringify({ error: 'bad request' }), { status: 400, headers: jsonH });
+    }
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/card_logs?id=eq.${encodeURIComponent(id)}&select=id,ai_summary,ai_message,ai_bridge,recommended_company`,
+      { headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` } }
+    );
+    const rows = await res.json();
+    return new Response(JSON.stringify(Array.isArray(rows) && rows[0] ? rows[0] : null), { status: 200, headers: jsonH });
+  }
 
   // 管理パスワード認証
   const correct = process.env.ADMIN_PASSWORD;

@@ -500,14 +500,17 @@ function escA(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g
 async function renderResonance(){
   const box=document.getElementById('adminContent');
   box.innerHTML=`<div style="padding:24px"><div style="color:var(--text3);font-size:13px">共鳴データを集計中…</div></div>`;
-  if(!supabaseClient){ box.innerHTML=`<div style="padding:24px;color:var(--hot)">Supabase未接続です。</div>`; return; }
-  const {data,error}=await supabaseClient.from('card_logs').select('*').order('created_at',{ascending:false});
-  if(error){
-    box.innerHTML=`<div style="padding:24px"><div style="color:var(--hot);font-weight:700;margin-bottom:8px">card_logs テーブルが見つかりません。</div>
-      <div style="font-size:13px;color:var(--text2)">SQL Editor で <code>card_logs_setup.sql</code> を実行してください。<br>${escA(error.message)}</div></div>`;
+  // card_logsは公開SELECTを閉じたため、service_role API(report.js)経由で取得
+  let logs=[];
+  try{
+    const r=await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw,action:'list',table:'card_logs'})});
+    if(!r.ok) throw new Error('API '+r.status);
+    logs=await r.json(); if(!Array.isArray(logs)) logs=[];
+  }catch(e){
+    box.innerHTML=`<div style="padding:24px"><div style="color:var(--hot);font-weight:700;margin-bottom:8px">共鳴データを取得できませんでした。</div>
+      <div style="font-size:13px;color:var(--text2)">card_logsテーブル未作成、または認証エラーの可能性。<br>${escA(e.message)}</div></div>`;
     return;
   }
-  const logs=data||[];
   // カードタイトル（カード別集計用）
   let cardTitle={};
   try{ const {data:cd}=await supabaseClient.from('challenge_cards').select('id,card_title,company'); (cd||[]).forEach(c=>{cardTitle[c.id]={t:c.card_title,co:c.company};}); }catch(e){}
@@ -642,15 +645,14 @@ async function renderResonance(){
 
 async function cardLogDelete(id){
   if(!confirm('このセッションログを削除しますか？')) return;
-  const {error}=await supabaseClient.from('card_logs').delete().eq('id',id);
-  if(error){ toast('削除失敗: '+error.message); return; }
+  const r=await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw,action:'delete',table:'card_logs',id})});
+  if(!r.ok){ toast('削除失敗: '+r.status); return; }
   toast('削除しました'); renderResonance();
 }
 async function cardLogDeleteAll(){
   if(!confirm('card_logs の全セッションを消去します。元に戻せません。よろしいですか？')) return;
-  // anonでの一括DELETEはWHERE必須。常に真の条件で全件削除。
-  const {error}=await supabaseClient.from('card_logs').delete().neq('id','__never__');
-  if(error){ toast('全消去失敗: '+error.message); return; }
+  const r=await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw,action:'clear',table:'card_logs'})});
+  if(!r.ok){ toast('全消去失敗: '+r.status); return; }
   toast('全セッションを消去しました'); renderResonance();
 }
 
