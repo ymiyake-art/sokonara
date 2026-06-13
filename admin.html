@@ -2338,6 +2338,10 @@ function renderArticleEditor(){
             <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">会社一言紹介</label>
             <textarea id="art-intro" rows="3" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
           </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 10px;padding:8px 10px;background:rgba(155,89,182,0.07);border:1px solid rgba(155,89,182,0.25);border-radius:6px;">
+            <span style="font-size:11px;color:#8e44ad;font-weight:700;">「ソコナラより」「こんな人と出会いたい」を記事本文からAI生成</span>
+            <button class="abtn" id="art-genmeta-btn" style="font-size:11px;padding:5px 12px;background:#9b59b6;color:#fff;border-color:#9b59b6;white-space:nowrap;" onclick="genArticleMeta(false)">✨ AIで自動生成</button>
+          </div>
           <div style="margin-bottom:14px">
             <label style="font-size:11px;color:var(--navy);display:block;margin-bottom:5px;font-weight:700">記事冒頭コメント（ソコナラ編集／こんな方におすすめ） <span style="font-size:10px;color:var(--text3);font-weight:400">※記事の一番上に「ソコナラより」として表示</span></label>
             <textarea id="art-summary-comment" rows="3" placeholder="例：変化の途中にある会社で、自分の手で形づくっていきたい方におすすめです。営業やカスタマーサクセスの経験が活きます。（※ソコナラ視点の第三者コメントで）" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
@@ -2413,9 +2417,33 @@ async function createNewCoFromArticleEditor(){
     opt.value=newId; opt.textContent=`${ceo}（${name}）`; opt.selected=true;
     sel.appendChild(opt);
   }
-  _articleCompanyId=newId;
   document.getElementById('art-new-co-form').style.display='none';
-  toast(`✓ ${ceo}（${name}）を登録しました`);
+  // 登録後はそのまま記事入力へ進む（基本情報パネルを表示）
+  if(sel) sel.value=newId;
+  onArtCompanyChange(newId);
+  toast(`✓ ${ceo}（${name}）を登録しました。記事を入力してください`);
+  setTimeout(()=>document.getElementById('art-basic-info')?.scrollIntoView({behavior:'smooth'}),100);
+}
+
+// 記事本文からAIで「ソコナラより」「こんな人と出会いたい」を生成
+async function genArticleMeta(silent){
+  if(!_articleSections || !_articleSections.length){ if(!silent) toast('先にNotion記事を解析してください'); return; }
+  const co=loadCompanies().find(c=>String(c.id)===String(_articleCompanyId))||{};
+  const articleText=_articleSections.map(s=>[s.heading,s.body,(s.items||[]).map(i=>(i.q||'')+' '+(i.a||'')).join(' ')].filter(Boolean).join('\n')).join('\n\n');
+  const btn=document.getElementById('art-genmeta-btn'); if(btn){ btn.disabled=true; btn.textContent='生成中…'; }
+  try{
+    const res=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({type:'articlemeta',data:{ceo:co.ceo||'',company:co.name||co.company||'',articleText}})});
+    if(!res.ok) throw new Error('API '+res.status);
+    const d=await res.json();
+    const txt=d.content?.[0]?.text||''; const m=txt.match(/\{[\s\S]*\}/);
+    const parsed=JSON.parse(m?m[0]:txt);
+    const sc=document.getElementById('art-summary-comment'), wp=document.getElementById('art-wanted');
+    if(sc && parsed.summaryComment) sc.value=parsed.summaryComment;
+    if(wp && parsed.wantedProfile) wp.value=parsed.wantedProfile;
+    if(!silent) toast('AIで生成しました（必要に応じて手直しを）');
+  }catch(e){ if(!silent) toast('生成失敗: '+(e.message||e)); }
+  finally{ if(btn){ btn.disabled=false; btn.textContent='✨ AIで自動生成'; } }
 }
 
 function onArtCompanyChange(id){
@@ -2481,6 +2509,10 @@ function parseNotionPaste(){
   renderSectionsList();
   fillMeta(result.meta);
   toast(`解析完了：セクション ${result.sections.length} 個`);
+  // Notionプロンプトが「ソコナラより/こんな人と出会いたい」を出さない場合、AIで自動生成
+  if(!((result.meta.summaryComment||'').trim()) || !((result.meta.wantedProfile||'').trim())){
+    genArticleMeta(true);
+  }
 }
 
 function parseNotion(text){
