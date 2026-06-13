@@ -1833,14 +1833,9 @@ function toggleMemo(el,val){
   else { S.memoChips=S.memoChips.filter(v=>v!==val); }
 }
 // カード経由はカードで「求めるもの/今の状況」を表現済みなので Q2/Q3 をスキップし Q1→仮想転職へ
-function goAfterQ1(){
-  if(SN_CARDS){ buildMemoChips(); hide('q1b'); show('q3b'); }
-  else { hide('q1b'); show('q2b'); }
-}
-function goBackFromMemo(){
-  if(SN_CARDS){ show('q1b'); hide('q3b'); }
-  else { show('qaboutb'); hide('q3b'); }
-}
+// 全導線でQ2(求めるもの)/Q3(今の状況)は廃止し、Q1(刺さった言葉)→仮想転職 の2問に統一
+function goAfterQ1(){ buildMemoChips(); hide('q1b'); show('q3b'); }
+function goBackFromMemo(){ show('q1b'); hide('q3b'); }
 let _suppressHistoryPush = false; // popstate（戻る）処理中はhistory.pushStateを抑止
 
 function isLineRegistered() {
@@ -2277,28 +2272,17 @@ function openCompanyArticle(id){
   updatePrevResultButton(id);
 }
 
-// 質問の進捗表示を、導線（カード経由=2問／直接=4問）に応じて更新。
-// 記事の開き方によらず常に正しく出るよう関数化（goScreen('p2')でも呼ぶ）。
+// 全導線2問に統一（Q1=刺さった言葉／Q2=仮想転職）。記事の開き方によらず正しく表示。
 function updateQProgress(){
-  const total = SN_CARDS ? 2 : 4;
-  const q1num = document.querySelector('#q1b .q-num'); if(q1num) q1num.textContent = `Q 1 / ${total}`;
-  const q4num = document.querySelector('#q3b .q-num'); if(q4num) q4num.textContent = SN_CARDS ? '仮想転職で深く考えてみる（Q2 / 2）' : '仮想転職で深く考えてみる';
+  const q1num = document.querySelector('#q1b .q-num'); if(q1num) q1num.textContent = 'Q 1 / 2';
+  const q4num = document.querySelector('#q3b .q-num'); if(q4num) q4num.textContent = '仮想転職で深く考えてみる（Q2 / 2）';
   const q1dots = document.querySelectorAll('#q1b .q-prog-step');
-  if(q1dots.length===4){
-    q1dots[2].style.display = SN_CARDS?'none':'';
-    q1dots[3].style.display = SN_CARDS?'none':'';
-  }
+  if(q1dots.length===4){ q1dots[2].style.display='none'; q1dots[3].style.display='none'; }
   const q4dots = document.querySelectorAll('#q3b .q-prog-step');
   if(q4dots.length===4){
-    if(SN_CARDS){
-      q4dots[0].className='q-prog-step done'; q4dots[0].style.display='';
-      q4dots[1].className='q-prog-step active'; q4dots[1].style.display='';
-      q4dots[2].style.display='none'; q4dots[3].style.display='none';
-    } else {
-      q4dots[0].className='q-prog-step done'; q4dots[1].className='q-prog-step done';
-      q4dots[2].className='q-prog-step done'; q4dots[3].className='q-prog-step active';
-      q4dots.forEach(d=>d.style.display='');
-    }
+    q4dots[0].className='q-prog-step done'; q4dots[0].style.display='';
+    q4dots[1].className='q-prog-step active'; q4dots[1].style.display='';
+    q4dots[2].style.display='none'; q4dots[3].style.display='none';
   }
 }
 
