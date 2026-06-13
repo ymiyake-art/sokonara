@@ -475,23 +475,33 @@ async function cardSave(editId){
     active:document.getElementById('f-active').checked
   };
   if(!row.card_title){ toast('課題（1行目）を入力してください'); return; }
-  const {error}=await supabaseClient.from('challenge_cards').upsert(row,{onConflict:'id'});
-  if(error){ toast('保存失敗: '+error.message); return; }
+  const r=await adminWrite('challenge_cards','upsert',{rows:[row]});
+  if(!r.ok){ toast('保存失敗: '+(r.error||r.status)); return; }
   toast('保存しました'); renderCardsAdmin();
 }
 
 async function cardToggle(id){
   const c=_cards.find(x=>x.id===id); if(!c)return;
-  const {error}=await supabaseClient.from('challenge_cards').update({active:!c.active}).eq('id',id);
-  if(error){ toast('更新失敗: '+error.message); return; }
+  const r=await adminWrite('challenge_cards','update',{id,patch:{active:!c.active}});
+  if(!r.ok){ toast('更新失敗: '+(r.error||r.status)); return; }
   renderCardsAdmin();
 }
 
 async function cardDelete(id){
   if(!confirm('このカードを削除しますか？')) return;
-  const {error}=await supabaseClient.from('challenge_cards').delete().eq('id',id);
-  if(error){ toast('削除失敗: '+error.message); return; }
+  const r=await adminWrite('challenge_cards','delete',{id});
+  if(!r.ok){ toast('削除失敗: '+(r.error||r.status)); return; }
   toast('削除しました'); renderCardsAdmin();
+}
+
+// 管理画面の書き込みは service_role API 経由（anon書込はDB側で禁止）
+async function adminWrite(table, action, body){
+  try{
+    const res=await fetch('/api/admin-data',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({password:_adminPw, table, action, ...body})});
+    const d=await res.json().catch(()=>({}));
+    return { ok:res.ok && d.ok!==false, status:res.status, error:d.error };
+  }catch(e){ return { ok:false, error:String(e&&e.message||e) }; }
 }
 
 function escA(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -1384,26 +1394,16 @@ async function loadCompaniesAsync(){
 async function saveCompanies(arr){
   companiesCache = Array.isArray(arr)?arr:[];
   localStorage.setItem('sn_companies',JSON.stringify(companiesCache));
-  if(!supabaseClient) return;
   const rows = companiesCache.map(toCompanyRow);
-  const {error} = await supabaseClient.from('companies').upsert(rows,{onConflict:'id'});
-  if(error){
-    console.warn('companies save error:', error.message);
-    // catchphraseカラム未追加の場合は除外して再試行
-    if(error.message.includes('catchphrase') || error.message.includes('cardLabel') || error.message.includes('card_label') || error.message.includes('wantedProfile') || error.message.includes('summaryComment') || error.message.includes('column')){
-      const minRows = rows.map(r=>{
-        const {catchphrase,cardLabel,heroUrl,wantedProfile,summaryComment,...rest}=r; return rest;
-      });
-      const {error:e2} = await supabaseClient.from('companies').upsert(minRows,{onConflict:'id'});
-      if(e2){
-        toast('⚠️ DB保存失敗。Supabase SQL Editorで supabase_setup.sql を実行してください。');
-        console.error('minimal save also failed:', e2.message);
-      } else {
-        toast('⚠️ 一部カラム未追加のため除外して保存。SQL Editorでカラム追加を推奨。');
-      }
-    } else {
-      toast('⚠️ DB保存失敗: ' + error.message.slice(0,80));
-    }
+  // service_role API経由で保存（anon書込はDB側で禁止）
+  let r=await adminWrite('companies','upsert',{rows});
+  if(!r.ok && r.error && /catchphrase|cardLabel|card_label|wantedProfile|summaryComment|column/.test(r.error)){
+    const minRows = rows.map(rw=>{ const {catchphrase,cardLabel,heroUrl,wantedProfile,summaryComment,...rest}=rw; return rest; });
+    const r2=await adminWrite('companies','upsert',{rows:minRows});
+    if(!r2.ok){ toast('⚠️ DB保存失敗。SQL Editorで supabase_setup.sql を実行してください。'); }
+    else { toast('⚠️ 一部カラム未追加のため除外して保存。SQL Editorでカラム追加を推奨。'); }
+  } else if(!r.ok){
+    toast('⚠️ DB保存失敗: ' + String(r.error||r.status).slice(0,80));
   }
 }
 function loadProjects(){
@@ -1441,11 +1441,8 @@ async function loadProjectsAsync(){
 function saveProjects(arr){
   projectsCache = Array.isArray(arr)?arr:[];
   localStorage.setItem('sn_projects',JSON.stringify(projectsCache));
-  if(!supabaseClient) return;
   const rows = projectsCache.map(toProjectRow);
-  supabaseClient.from('projects').upsert(rows,{onConflict:'id'}).then(({error})=>{
-    if(error) console.warn('projects save fallback:', error.message);
-  });
+  adminWrite('projects','upsert',{rows}).then(r=>{ if(!r.ok) console.warn('projects save fallback:', r.error); });
 }
 function openArticleEditor(companyId){
   window._initCompanyId = companyId;
