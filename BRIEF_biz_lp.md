@@ -97,9 +97,16 @@ LPは上記とは独立した静的ページとして追加するのが安全（
 
 ---
 
-## 7. 最初の一歩（新チャットでやること）
-1. このブリーフの「0. ゴール」をユーザーと確定。
-2. `/biz/index.html` を新規作成（headは index.html から流用、:rootトークン移植）。
-3. ヒーロー＋CTAから着手 → セクション順に肉付け。
-4. `python -m http.server`（launch.json: sokonara-static）でプレビュー確認。
-5. commit & push（PowerShell）→ `app.sokonara.co.jp/biz/` で確認。
+## 7. 進捗（✅ v1 制作・デプロイ済 2026-06-15）
+1. ✅ 「0. ゴール」確定。
+2. ✅ `/biz/index.html` 作成済（head/`:root`トークン/フッターを index.html から流用）。
+3. ✅ 全セクション実装：ヒーロー / 課題提起 / 提供価値（3点＋求人広告との対比表）/ 仕組み4ステップ / 実績・信頼（関電G）/ 対象（こんな経営者へ）/ 料金（ソフト＝無料相談誘導）/ FAQ / 問い合わせフォーム / フッター。reveal アニメ・スマホ追従CTA・FAQアコーディオン入り。
+4. ✅ `sokonara-static`（http.server）でプレビュー検証済（構造・スタイル・FAQ・フォームOK、コンソールエラーなし。※スクショは既知のタイムアウトで eval 検証に切替）。
+5. ✅ commit & push 済 → **`https://app.sokonara.co.jp/biz/`** で公開。
+
+### v1 の仕様・要確認（次チャット/ユーザー判断）
+- **問い合わせフォーム**：v1は **mailto方式**（送信でメールソフト起動＋本文下書き）。送信先は `biz/index.html` 内 `CONTACT_EMAIL = 'y.miyake@sokonara.co.jp'`（1箇所で変更可）。
+  - 将来：Supabase保存＋管理画面表示にするなら、`api/admin-data.js` 同様の service_role API か anon insert 用テーブル＋RLSが必要（S-1/S-2 のセキュリティ方針に合わせる）。
+- **料金**：確定値が無いため「無料相談へ」のソフト訴求で実装。具体プラン提示が必要なら料金セクションを差し替え。
+- **実績の数値**：定量実績（掲載企業数・マッチ数等）が出せれば proof セクションの3枠を実数に差し替えると説得力UP。
+- **独立ドメイン**：現状は `/biz/` パス。`biz.sokonara.co.jp` 化は vercel.json に host rewrite 追加＋Vercel/DNS設定（ユーザー操作）。

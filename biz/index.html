@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ソコナラ for Business｜課題と価値観でつながる、これからの採用</title>
+<meta name="description" content="求人広告では出会えなかった人材と。ソコナラは、経営者の『課題』への共感から、価値観の合う仲間と出会う採用・キャリア共創サービスです。地域企業の採用力を、想いから変えていきます。">
+
+<!-- OGP -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="ソコナラ for Business｜課題と価値観でつながる、これからの採用">
+<meta property="og:description" content="求人広告では出会えなかった人材と。経営者の『課題』への共感から、価値観の合う仲間と出会う採用・キャリア共創サービス。">
+<meta property="og:image" content="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/TOP.jpg">
+<meta name="theme-color" content="#1C2A54">
+<link rel="apple-touch-icon" href="/images/icon-192.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --teal:     #42AD9F;
+  --teal-d:   #2e8c7f;
+  --teal-bg:  rgba(66,173,159,0.08);
+  --teal-mid: rgba(66,173,159,0.16);
+  --navy:     #1C2A54;
+  --navy-bg:  rgba(28,42,84,0.06);
+  --navy-mid: rgba(28,42,84,0.12);
+  --gray:     #716C6B;
+  --light:    #E4E3E3;
+  --white:    #ffffff;
+  --bg:       #F5F5F5;
+  --text:     #1a1a1a;
+  --text2:    #716C6B;
+  --text3:    #aaa8a7;
+  --border:   #E4E3E3;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 15px;
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, .display {
+  font-family: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
+  line-height: 1.45;
+}
+
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--teal);
+  font-weight: 500;
+}
+
+a { color: inherit; }
+
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+.narrow { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+
+/* ===== HEADER ===== */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+  background: rgba(28,42,84,0.92);
+  backdrop-filter: blur(10px);
+  display: flex; align-items: center;
+  height: calc(58px + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) 24px 0;
+  transition: background .25s;
+}
+.nav .brand { display: flex; align-items: center; margin-right: auto; }
+.nav .brand img { height: 26px; width: auto; display: block; }
+.nav .brand .biztag {
+  margin-left: 10px; padding-left: 11px;
+  border-left: 1px solid rgba(255,255,255,0.25);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 2px; color: rgba(255,255,255,0.7);
+}
+.nav-links { display: flex; align-items: center; gap: 26px; }
+.nav-links a {
+  font-size: 12.5px; color: rgba(255,255,255,0.7);
+  text-decoration: none; transition: color .15s;
+}
+.nav-links a:hover { color: #fff; }
+.nav-cta {
+  background: var(--teal); color: #fff !important;
+  padding: 9px 18px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 700;
+  text-decoration: none; transition: background .15s, transform .15s;
+  white-space: nowrap;
+}
+.nav-cta:hover { background: var(--teal-d); transform: translateY(-1px); }
+@media (max-width: 720px){
+  .nav-links a:not(.nav-cta){ display:none; }
+  .nav { padding: env(safe-area-inset-top) 16px 0; }
+}
+
+/* ===== HERO ===== */
+.hero {
+  position: relative;
+  min-height: 92vh;
+  display: flex; align-items: center;
+  padding: calc(120px + env(safe-area-inset-top)) 0 80px;
+  color: #fff;
+  overflow: hidden;
+}
+.hero::before {
+  content:""; position:absolute; inset:0;
+  background:
+    linear-gradient(180deg, rgba(28,42,84,0.82) 0%, rgba(28,42,84,0.92) 100%),
+    url('/images/TOP.jpg') center/cover no-repeat;
+  z-index:0;
+}
+.hero .wrap { position: relative; z-index: 1; }
+.hero h1 {
+  font-size: clamp(30px, 5.6vw, 56px);
+  font-weight: 900; letter-spacing: -0.5px;
+  margin: 18px 0 22px;
+}
+.hero h1 .accent { color: var(--teal); }
+.hero .lead {
+  font-size: clamp(15px, 2.2vw, 19px);
+  color: rgba(255,255,255,0.82);
+  max-width: 600px; font-weight: 300;
+}
+.hero .lead strong { font-weight: 700; color:#fff; }
+.hero-cta { margin-top: 38px; display: flex; flex-wrap: wrap; gap: 14px; align-items:center; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 16px 34px; border-radius: 999px;
+  font-size: 15px; font-weight: 700; text-decoration: none;
+  cursor: pointer; border: none; transition: all .18s;
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+}
+.btn-primary { background: var(--teal); color: #fff; box-shadow: 0 8px 24px rgba(66,173,159,0.35); }
+.btn-primary:hover { background: var(--teal-d); transform: translateY(-2px); box-shadow: 0 12px 30px rgba(66,173,159,0.45); }
+.btn-ghost { background: rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.3); }
+.btn-ghost:hover { background: rgba(255,255,255,0.16); }
+.hero-note { margin-top: 18px; font-size: 12px; color: rgba(255,255,255,0.55); }
+
+/* trust strip */
+.trust-strip {
+  position: relative; z-index:1;
+  margin-top: 56px; padding-top: 26px;
+  border-top: 1px solid rgba(255,255,255,0.14);
+  display: flex; flex-wrap: wrap; align-items:center; gap: 14px 34px;
+}
+.trust-strip .label {
+  font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:2px;
+  color: rgba(255,255,255,0.45);
+}
+.trust-strip img { height: 34px; opacity: .9; }
+.trust-strip .tx { font-size: 12.5px; color: rgba(255,255,255,0.7); }
+
+/* ===== SECTION SHELL ===== */
+section { padding: 92px 0; }
+.sec-head { text-align: center; max-width: 720px; margin: 0 auto 56px; }
+.sec-head h2 {
+  font-size: clamp(24px, 3.6vw, 36px); font-weight: 900;
+  margin: 14px 0 16px; letter-spacing: -0.3px;
+}
+.sec-head p { color: var(--text2); font-size: 15px; }
+
+/* reveal */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+.reveal.in { opacity: 1; transform: none; }
+
+/* ===== PROBLEM ===== */
+.problem { background: var(--white); }
+.prob-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+.prob-card {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 16px; padding: 30px 26px;
+}
+.prob-card .qmark {
+  font-family:'JetBrains Mono',monospace; font-size: 30px; font-weight:500;
+  color: var(--navy-mid); line-height:1;
+}
+.prob-card h3 { font-size: 17px; font-weight: 700; margin: 14px 0 10px; color: var(--navy); }
+.prob-card p { font-size: 13.5px; color: var(--text2); }
+.prob-bridge {
+  text-align:center; margin-top: 50px;
+  font-size: clamp(18px,2.6vw,24px); font-weight:700; color: var(--navy);
+  font-family:'Zen Kaku Gothic New',sans-serif;
+}
+.prob-bridge .hl { color: var(--teal); }
+
+/* ===== VALUE ===== */
+.value { background: var(--bg); }
+.val-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+.val-card {
+  background: var(--white); border-radius: 18px; padding: 36px 30px;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 20px rgba(28,42,84,0.04);
+  transition: transform .2s, box-shadow .2s;
+}
+.val-card:hover { transform: translateY(-4px); box-shadow: 0 14px 34px rgba(28,42,84,0.08); }
+.val-num {
+  font-family:'JetBrains Mono',monospace; font-size: 12px; letter-spacing: 2px;
+  color: var(--teal); font-weight: 500;
+}
+.val-card h3 { font-size: 19px; font-weight:900; margin: 12px 0 12px; color: var(--navy); }
+.val-card p { font-size: 14px; color: var(--text2); }
+.val-card .k { color: var(--text); font-weight:700; }
+
+/* contrast row: 求人 vs ソコナラ */
+.contrast { margin-top: 60px; display:grid; grid-template-columns: 1fr 1fr; gap: 0;
+  border-radius:18px; overflow:hidden; border:1px solid var(--border); }
+.contrast .col { padding: 34px 30px; }
+.contrast .old { background: var(--white); }
+.contrast .new { background: var(--navy); color:#fff; }
+.contrast h4 { font-size: 15px; margin-bottom: 18px; font-weight:700; }
+.contrast .old h4 { color: var(--text2); }
+.contrast .new h4 { color: var(--teal); }
+.contrast ul { list-style:none; }
+.contrast li { font-size: 14px; padding: 9px 0 9px 26px; position:relative; border-top:1px solid rgba(0,0,0,0.06); }
+.contrast .new li { border-top-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.9); }
+.contrast li::before { position:absolute; left:0; top:9px; }
+.contrast .old li::before { content:"×"; color: var(--text3); font-weight:700; }
+.contrast .new li::before { content:"○"; color: var(--teal); font-weight:700; }
+@media (max-width:720px){ .contrast{ grid-template-columns:1fr; } }
+
+/* ===== HOW ===== */
+.how { background: var(--white); }
+.steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; counter-reset: step; }
+.step {
+  position: relative; padding: 30px 22px 26px;
+  background: var(--bg); border-radius: 16px; border:1px solid var(--border);
+}
+.step .n {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--navy); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'JetBrains Mono',monospace; font-weight:500; font-size:15px;
+  margin-bottom: 16px;
+}
+.step h3 { font-size: 15.5px; font-weight:700; color: var(--navy); margin-bottom: 8px; }
+.step p { font-size: 13px; color: var(--text2); }
+.step:not(:last-child)::after {
+  content:"→"; position:absolute; right:-13px; top:46px;
+  color: var(--teal); font-weight:700; z-index:2;
+}
+@media (max-width:860px){ .steps{ grid-template-columns:1fr 1fr; } .step:nth-child(2)::after{display:none;} }
+@media (max-width:480px){ .steps{ grid-template-columns:1fr; } .step::after{display:none!important;} }
+
+/* ===== TRUST / proof ===== */
+.proof { background: var(--navy); color:#fff; }
+.proof .sec-head h2 { color:#fff; }
+.proof .sec-head p { color: rgba(255,255,255,0.7); }
+.stat-grid { display:grid; grid-template-columns: repeat(3,1fr); gap: 24px; margin-bottom: 50px; }
+.stat { text-align:center; padding: 20px; }
+.stat .big {
+  font-family:'Zen Kaku Gothic New',sans-serif; font-weight:900;
+  font-size: clamp(32px,5vw,46px); color: var(--teal); line-height:1.1;
+}
+.stat .cap { font-size: 13px; color: rgba(255,255,255,0.65); margin-top: 8px; }
+.proof-foot {
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:center;
+  gap: 16px 32px; padding-top: 36px; border-top:1px solid rgba(255,255,255,0.14);
+}
+.proof-foot img { height: 40px; opacity:.92; }
+.proof-foot .tx { font-size: 13px; color: rgba(255,255,255,0.75); }
+@media (max-width:680px){ .stat-grid{ grid-template-columns:1fr; gap:8px; } }
+
+/* ===== FOR WHOM ===== */
+.whom { background: var(--bg); }
+.whom-list { display:grid; grid-template-columns:1fr 1fr; gap: 14px 28px; max-width:820px; margin:0 auto; }
+.whom-item {
+  display:flex; gap:14px; align-items:flex-start;
+  background: var(--white); border:1px solid var(--border);
+  border-radius: 14px; padding: 20px 22px;
+}
+.whom-item .ck {
+  flex:0 0 24px; width:24px; height:24px; border-radius:50%;
+  background: var(--teal-bg); color: var(--teal); font-weight:700;
+  display:flex; align-items:center; justify-content:center; font-size:13px; margin-top:2px;
+}
+.whom-item p { font-size: 14px; }
+.whom-item strong { color: var(--navy); }
+@media (max-width:680px){ .whom-list{ grid-template-columns:1fr; } }
+
+/* ===== PRICING / soft ===== */
+.pricing { background: var(--white); }
+.price-card {
+  max-width: 720px; margin: 0 auto;
+  background: linear-gradient(135deg, var(--navy) 0%, #243566 100%);
+  color:#fff; border-radius: 24px; padding: 50px 44px; text-align:center;
+}
+.price-card h3 { font-size: clamp(20px,3vw,26px); font-weight:900; margin-bottom: 14px; }
+.price-card p { color: rgba(255,255,255,0.78); font-size: 14.5px; max-width: 520px; margin: 0 auto 28px; }
+.price-card .mini { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 18px; }
+
+/* ===== FAQ ===== */
+.faq { background: var(--bg); }
+.faq-list { max-width: 760px; margin: 0 auto; }
+.faq-item { background: var(--white); border:1px solid var(--border); border-radius: 14px; margin-bottom: 12px; overflow:hidden; }
+.faq-q {
+  width:100%; text-align:left; background:none; border:none; cursor:pointer;
+  padding: 20px 24px; font-size: 15px; font-weight:700; color: var(--navy);
+  font-family:'Zen Kaku Gothic New',sans-serif;
+  display:flex; justify-content:space-between; align-items:center; gap:16px;
+}
+.faq-q .ic { color: var(--teal); font-size: 20px; transition: transform .2s; flex-shrink:0; }
+.faq-item.open .faq-q .ic { transform: rotate(45deg); }
+.faq-a { max-height:0; overflow:hidden; transition: max-height .3s ease; }
+.faq-a-inner { padding: 0 24px 22px; font-size: 14px; color: var(--text2); }
+
+/* ===== CONTACT / CTA ===== */
+.contact { background: var(--white); }
+.contact-box {
+  max-width: 720px; margin: 0 auto;
+  background: var(--bg); border:1px solid var(--border);
+  border-radius: 22px; padding: 46px 40px;
+}
+.form-row { margin-bottom: 18px; }
+.form-row.two { display:grid; grid-template-columns:1fr 1fr; gap: 18px; }
+.form-row label {
+  display:block; font-size: 12.5px; font-weight:700; color: var(--navy); margin-bottom: 7px;
+}
+.form-row label .req { color: var(--teal); font-size: 11px; margin-left: 4px; }
+.form-row input, .form-row select, .form-row textarea {
+  width:100%; padding: 13px 15px; border:1px solid var(--border); border-radius: 10px;
+  font-family:'Noto Sans JP',sans-serif; font-size: 14px; background:#fff; color: var(--text);
+  transition: border-color .15s, box-shadow .15s;
+}
+.form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+  outline:none; border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-bg);
+}
+.form-row textarea { resize: vertical; min-height: 120px; }
+.form-submit { text-align:center; margin-top: 28px; }
+.form-submit .btn-primary { width: 100%; max-width: 360px; justify-content:center; }
+.form-note { font-size: 11.5px; color: var(--text3); text-align:center; margin-top: 16px; }
+.form-note a { color: var(--teal); text-decoration:none; }
+@media (max-width:600px){ .form-row.two{ grid-template-columns:1fr; } .contact-box{ padding: 32px 22px; } }
+
+/* ===== STICKY MOBILE CTA ===== */
+.sticky-cta {
+  position: fixed; left:0; right:0; bottom:0; z-index: 250;
+  background: rgba(255,255,255,0.96); backdrop-filter: blur(8px);
+  border-top:1px solid var(--border); padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  display: none; transform: translateY(120%); transition: transform .3s;
+}
+.sticky-cta.show { transform: none; }
+.sticky-cta .btn-primary { width:100%; justify-content:center; padding: 14px; box-shadow:none; }
+@media (max-width:720px){ .sticky-cta{ display:block; } }
+
+/* ===== FOOTER ===== */
+footer.ft { background:var(--navy); padding:48px 24px 34px; }
+.ft-inner { max-width:760px; margin:0 auto; }
+</style>
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<header class="nav" id="nav">
+  <a class="brand" href="https://app.sokonara.co.jp" aria-label="ソコナラ">
+    <img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ">
+    <span class="biztag">for Business</span>
+  </a>
+  <nav class="nav-links">
+    <a href="#value">提供価値</a>
+    <a href="#how">仕組み</a>
+    <a href="#proof">実績・信頼</a>
+    <a href="#faq">FAQ</a>
+    <a class="nav-cta" href="#contact">お問い合わせ</a>
+  </nav>
+</header>
+
+<!-- ===== HERO ===== -->
+<section class="hero" id="top">
+  <div class="wrap">
+    <div class="eyebrow">SOKONARA for Business</div>
+    <h1>求人広告では出会えなかった、<br><span class="accent">あなたの課題に共感する</span>人材と。</h1>
+    <p class="lead">
+      条件で人を集める時代から、<strong>「想い」と「価値観」でつながる</strong>採用へ。<br>
+      ソコナラは、経営者の<strong>“課題”への共感</strong>を入り口に、
+      これから出会うべき仲間とつながる、地域企業のための採用・キャリア共創サービスです。
+    </p>
+    <div class="hero-cta">
+      <a class="btn btn-primary" href="#contact">無料で相談する →</a>
+      <a class="btn btn-ghost" href="#how">仕組みを見る</a>
+    </div>
+    <p class="hero-note">※ 掲載・お問い合わせは無料。まずは貴社の採用課題をお聞かせください。</p>
+
+    <div class="trust-strip">
+      <span class="label">BACKED BY</span>
+      <img src="/images/kanden-group-logo.png" alt="関西電力グループ">
+      <span class="tx">関西電力グループ ／ 福岡・天神発のキャリア共創サービス</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROBLEM ===== -->
+<section class="problem" id="problem">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="eyebrow">THE CHALLENGE</div>
+      <h2>「いい人が採れない」その原因は、<br>“条件”でしか伝えられないことかもしれません。</h2>
+      <p>地域企業の採用は、大手と同じ土俵で戦うほど不利になります。<br>でも、本当に伝えたい価値は、給与や福利厚生の欄には書ききれないはずです。</p>
+    </div>
+    <div class="prob-grid">
+      <div class="prob-card reveal">
+        <div class="qmark">01</div>
+        <h3>そもそも応募が来ない</h3>
+        <p>求人媒体に出しても、地方・中小というだけで埋もれてしまう。広告費をかけても母集団が形成できない。</p>
+      </div>
+      <div class="prob-card reveal">
+        <div class="qmark">02</div>
+        <h3>想いやビジョンが伝わらない</h3>
+        <p>経営者が本当に語りたい事業の課題や未来は、求人票の定型フォーマットでは1ミリも伝わらない。</p>
+      </div>
+      <div class="prob-card reveal">
+        <div class="qmark">03</div>
+        <h3>入っても、すぐ辞めてしまう</h3>
+        <p>条件で集めた人は、より良い条件で離れていく。カルチャーや価値観のミスマッチが定着しない原因に。</p>
+      </div>
+    </div>
+    <p class="prob-bridge reveal">
+      採用のはじまりを、「条件」から<span class="hl">「課題への共感」</span>へ。
+    </p>
+  </div>
+</section>
+
+<!-- ===== VALUE ===== -->
+<section class="value" id="value">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="eyebrow">WHY SOKONARA</div>
+      <h2>ソコナラが、採用を変える3つの理由</h2>
+      <p>ソコナラは求人広告ではありません。経営者が抱える“課題”そのものを起点に、価値観の合う人と出会う仕組みです。</p>
+    </div>
+    <div class="val-grid">
+      <div class="val-card reveal">
+        <div class="val-num">VALUE 01</div>
+        <h3>共感した人だけが、つながる</h3>
+        <p>ユーザーは経営者の<span class="k">課題カード</span>と偶然出会い、共感したものだけを選びます。だから集まるのは、<span class="k">条件ではなく想いに惹かれた人材</span>。熱量が高く、入社後も活躍・定着しやすい出会いが生まれます。</p>
+      </div>
+      <div class="val-card reveal">
+        <div class="val-num">VALUE 02</div>
+        <h3>転職顕在層の外にも届く</h3>
+        <p>「いま転職を考えている人」だけでなく、<span class="k">価値観の診断やキャリアの問い直し</span>を通じて出会う潜在層にもリーチ。求人媒体では絶対に出会えなかった層と接点を持てます。</p>
+      </div>
+      <div class="val-card reveal">
+        <div class="val-num">VALUE 03</div>
+        <h3>掲載が、採用ブランディングになる</h3>
+        <p>あなたの課題・想い・人柄を綴った記事が、そのまま<span class="k">企業の魅力を伝える資産</span>に。地域での認知向上にもつながり、応募が来るだけでなく「選ばれる会社」になっていきます。</p>
+      </div>
+    </div>
+
+    <div class="contrast reveal">
+      <div class="col old">
+        <h4>これまでの求人広告</h4>
+        <ul>
+          <li>給与・条件で母集団を集める</li>
+          <li>より良い条件で人が離れる</li>
+          <li>掲載期間が終われば資産は残らない</li>
+          <li>転職顕在層の奪い合い</li>
+        </ul>
+      </div>
+      <div class="col new">
+        <h4>ソコナラ</h4>
+        <ul>
+          <li>課題・価値観で共感した人と出会う</li>
+          <li>想いでつながるから定着・活躍する</li>
+          <li>記事が認知・採用ブランドの資産に</li>
+          <li>潜在層・共感層へ広くリーチ</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW ===== -->
+<section class="how" id="how">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="eyebrow">HOW IT WORKS</div>
+      <h2>出会いまでの、4つのステップ</h2>
+      <p>あなたの“課題”を掲載するだけ。あとは共感した人との出会いをお届けします。</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="n">1</div>
+        <h3>課題を掲載する</h3>
+        <p>事業の課題・想い・出会いたい人物像を、取材ベースで記事化。求人票では伝わらない背景まで届けます。</p>
+      </div>
+      <div class="step reveal">
+        <div class="n">2</div>
+        <h3>ユーザーが出会う</h3>
+        <p>ユーザーは課題カードをスワイプし、価値観に響いた課題と“偶然”出会います。共感が出会いの入り口に。</p>
+      </div>
+      <div class="step reveal">
+        <div class="n">3</div>
+        <h3>深く理解する</h3>
+        <p>記事とAIによる価値観診断を通じて、ユーザーは自分とあなたの会社の重なりを深く理解します。</p>
+      </div>
+      <div class="step reveal">
+        <div class="n">4</div>
+        <h3>つながる</h3>
+        <p>共感したユーザーがアクションし、あなたと接点を持ちます。条件ではなく想いから始まる関係です。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROOF ===== -->
+<section class="proof" id="proof">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="eyebrow">TRUST &amp; TRACK RECORD</div>
+      <h2>信頼できる基盤の上で。</h2>
+      <p>ソコナラは、地域に根ざしながら、確かな後ろ盾とともにサービスを運営しています。</p>
+    </div>
+    <div class="stat-grid">
+      <div class="stat reveal">
+        <div class="big">関西電力<br>グループ</div>
+        <div class="cap">大手インフラグループの一員として運営</div>
+      </div>
+      <div class="stat reveal">
+        <div class="big">福岡・天神</div>
+        <div class="cap">地域企業に寄り添う、九州発のサービス</div>
+      </div>
+      <div class="stat reveal">
+        <div class="big">価値観 × 課題</div>
+        <div class="cap">独自のマッチング設計で“共感”を可視化</div>
+      </div>
+    </div>
+    <div class="proof-foot reveal">
+      <img src="/images/kanden-group-logo.png" alt="関西電力グループ power with heart">
+      <span class="tx">株式会社ソコナラは、関西電力グループの一員です。</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOR WHOM ===== -->
+<section class="whom" id="whom">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="eyebrow">FOR YOU</div>
+      <h2>こんな経営者の方へ</h2>
+      <p>ひとつでも当てはまれば、ソコナラがお役に立てるはずです。</p>
+    </div>
+    <div class="whom-list">
+      <div class="whom-item reveal"><span class="ck">✓</span><p>求人媒体に出しても<strong>応募が集まらない</strong></p></div>
+      <div class="whom-item reveal"><span class="ck">✓</span><p>給与・条件ではなく<strong>想いに共感する人</strong>と働きたい</p></div>
+      <div class="whom-item reveal"><span class="ck">✓</span><p>採用してもすぐ辞めてしまい、<strong>定着に悩んでいる</strong></p></div>
+      <div class="whom-item reveal"><span class="ck">✓</span><p>事業の<strong>課題やビジョンを正しく伝えたい</strong></p></div>
+      <div class="whom-item reveal"><span class="ck">✓</span><p>地域での<strong>認知・採用ブランドを高めたい</strong></p></div>
+      <div class="whom-item reveal"><span class="ck">✓</span><p>転職顕在層だけでなく<strong>潜在層にも出会いたい</strong></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRICING (soft) ===== -->
+<section class="pricing" id="pricing">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="eyebrow">GET STARTED</div>
+      <h2>まずは、貴社の採用課題からお聞かせください</h2>
+      <p>掲載プラン・費用は、企業さまの状況に合わせてご提案します。無理な営業は一切いたしません。</p>
+    </div>
+    <div class="price-card reveal">
+      <h3>お問い合わせ・初回相談は無料です</h3>
+      <p>「どんな課題を掲載できる？」「うちでも合う？」といった段階のご相談から歓迎です。貴社の採用の悩みをお聞きしたうえで、最適な進め方とプランをご案内します。</p>
+      <a class="btn btn-primary" href="#contact" style="background:var(--teal);">無料で相談する →</a>
+      <p class="mini">通常2〜3営業日以内に担当者よりご連絡します。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section class="faq" id="faq">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="eyebrow">FAQ</div>
+      <h2>よくあるご質問</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item reveal">
+        <button class="faq-q">求人広告と何が違うのですか？<span class="ic">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">求人広告は「条件」で人を集めますが、ソコナラは経営者の「課題」への共感を入り口にします。集まるのは条件ではなく想いに惹かれた人材なので、入社後の定着・活躍につながりやすいのが大きな違いです。</div></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q">採用したい職種が決まっていなくても使えますか？<span class="ic">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">はい。明確な求人要件がなくても、「こんな課題に一緒に取り組む仲間がほしい」という段階からご活用いただけます。むしろ課題起点だからこそ、想定外の良い出会いが生まれます。</div></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q">掲載までにどれくらいかかりますか？<span class="ic">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">ヒアリングと取材を経て記事化します。内容にもよりますが、お問い合わせから掲載まで数週間程度を目安にご案内しています。詳細は初回相談でお伝えします。</div></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q">費用はどのくらいですか？<span class="ic">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">企業さまの課題や掲載内容に応じてご提案しております。初回のご相談・お見積りは無料ですので、まずはお気軽にお問い合わせください。</div></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q">福岡以外の企業でも掲載できますか？<span class="ic">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">福岡・九州を中心に展開していますが、地域外の企業さまもご相談いただけます。まずはお問い合わせフォームよりご連絡ください。</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CONTACT ===== -->
+<section class="contact" id="contact">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="eyebrow">CONTACT</div>
+      <h2>お問い合わせ</h2>
+      <p>下記フォームにご記入のうえ送信してください。担当者より2〜3営業日以内にご連絡します。</p>
+    </div>
+    <div class="contact-box reveal">
+      <form id="bizForm" novalidate>
+        <div class="form-row two">
+          <div>
+            <label for="f-company">会社名<span class="req">必須</span></label>
+            <input id="f-company" name="company" type="text" placeholder="株式会社○○" required>
+          </div>
+          <div>
+            <label for="f-name">お名前<span class="req">必須</span></label>
+            <input id="f-name" name="name" type="text" placeholder="山田 太郎" required>
+          </div>
+        </div>
+        <div class="form-row two">
+          <div>
+            <label for="f-email">メールアドレス<span class="req">必須</span></label>
+            <input id="f-email" name="email" type="email" placeholder="you@example.com" required>
+          </div>
+          <div>
+            <label for="f-tel">電話番号</label>
+            <input id="f-tel" name="tel" type="tel" placeholder="092-000-0000">
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="f-size">従業員規模</label>
+          <select id="f-size" name="size">
+            <option value="">選択してください</option>
+            <option>〜10名</option>
+            <option>11〜50名</option>
+            <option>51〜100名</option>
+            <option>101〜300名</option>
+            <option>301名以上</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label for="f-msg">採用のお悩み・ご相談内容<span class="req">必須</span></label>
+          <textarea id="f-msg" name="message" placeholder="例）地域で採用したいが応募が集まらない。想いに共感してくれる人と出会いたい。" required></textarea>
+        </div>
+        <div class="form-submit">
+          <button type="submit" class="btn btn-primary">この内容で問い合わせる →</button>
+        </div>
+        <p class="form-note">
+          送信するとメールソフトが起動し、入力内容が下書きされます。<br>
+          ご記入いただいた情報は<a href="/legal/privacy.pdf" target="_blank">プライバシーポリシー</a>に基づき取り扱います。
+        </p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="ft">
+  <div class="ft-inner">
+    <div style="display:flex;flex-wrap:wrap;gap:28px 48px;justify-content:space-between;align-items:flex-start;">
+      <div style="flex:0 0 auto;">
+        <img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ" style="height:26px;opacity:0.95;margin-bottom:10px;">
+        <div style="font-size:11.5px;color:rgba(255,255,255,0.45);line-height:1.8;max-width:260px;">課題との偶然の出会いから、<br>自分の価値観を発見するキャリア共創サービス。</div>
+        <img src="/images/kanden-group-logo.png" alt="関西電力グループ power with heart" style="height:38px;opacity:0.9;margin-top:18px;display:block;">
+      </div>
+      <div style="flex:1;min-width:240px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:12px;">運営会社</div>
+        <dl style="margin:0;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7;">
+          <div style="display:flex;gap:12px;margin-bottom:6px;"><dt style="flex:0 0 64px;color:rgba(255,255,255,0.4);">会社名</dt><dd style="margin:0;">株式会社ソコナラ</dd></div>
+          <div style="display:flex;gap:12px;margin-bottom:6px;"><dt style="flex:0 0 64px;color:rgba(255,255,255,0.4);">所在地</dt><dd style="margin:0;">〒810-0001 福岡市中央区天神2丁目5番28号 天神西通りセンタービル</dd></div>
+          <div style="display:flex;gap:12px;margin-bottom:6px;"><dt style="flex:0 0 64px;color:rgba(255,255,255,0.4);">代表者</dt><dd style="margin:0;">三宅 庸介</dd></div>
+          <div style="display:flex;gap:12px;"><dt style="flex:0 0 64px;color:rgba(255,255,255,0.4);">設立</dt><dd style="margin:0;">2024年7月1日</dd></div>
+        </dl>
+      </div>
+    </div>
+    <div style="margin-top:32px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.12);display:flex;flex-wrap:wrap;gap:10px 0;justify-content:space-between;align-items:center;">
+      <div>
+        <a href="/legal/terms.pdf" target="_blank" style="font-size:11px;color:rgba(255,255,255,0.6);font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-decoration:none;">利用規約</a>
+        <span style="color:rgba(255,255,255,0.25);margin:0 10px;">|</span>
+        <a href="/legal/privacy.pdf" target="_blank" style="font-size:11px;color:rgba(255,255,255,0.6);font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-decoration:none;">プライバシーポリシー</a>
+        <span style="color:rgba(255,255,255,0.25);margin:0 10px;">|</span>
+        <a href="https://app.sokonara.co.jp" style="font-size:11px;color:rgba(255,255,255,0.6);font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-decoration:none;">生活者向けサイト</a>
+      </div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.35);font-family:'JetBrains Mono',monospace;letter-spacing:1px;">© 2026 Sokonara, Inc.</div>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== STICKY MOBILE CTA ===== -->
+<div class="sticky-cta" id="stickyCta">
+  <a class="btn btn-primary" href="#contact">無料で採用の相談をする →</a>
+</div>
+
+<script>
+// ---- お問い合わせ先（変更はここ1箇所） ----
+var CONTACT_EMAIL = 'y.miyake@sokonara.co.jp';
+
+// ---- reveal on scroll ----
+(function(){
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+})();
+
+// ---- FAQ accordion ----
+document.querySelectorAll('.faq-q').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var item = btn.closest('.faq-item');
+    var a = item.querySelector('.faq-a');
+    var open = item.classList.toggle('open');
+    a.style.maxHeight = open ? (a.scrollHeight + 'px') : '0';
+  });
+});
+
+// ---- sticky mobile CTA (hide near top & when contact in view) ----
+(function(){
+  var sticky = document.getElementById('stickyCta');
+  var contact = document.getElementById('contact');
+  window.addEventListener('scroll', function(){
+    var past = window.scrollY > window.innerHeight * 0.6;
+    var cRect = contact.getBoundingClientRect();
+    var contactVisible = cRect.top < window.innerHeight && cRect.bottom > 0;
+    if (past && !contactVisible) sticky.classList.add('show');
+    else sticky.classList.remove('show');
+  }, { passive:true });
+})();
+
+// ---- form -> mailto ----
+document.getElementById('bizForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  var f = e.target;
+  var company = f.company.value.trim();
+  var name    = f.name.value.trim();
+  var email   = f.email.value.trim();
+  var tel     = f.tel.value.trim();
+  var size    = f.size.value;
+  var msg     = f.message.value.trim();
+
+  if(!company || !name || !email || !msg){
+    alert('会社名・お名前・メールアドレス・ご相談内容は必須です。');
+    return;
+  }
+
+  var subject = '【ソコナラ for Business】お問い合わせ（' + company + '）';
+  var body =
+    '株式会社ソコナラ 御中\n\n' +
+    'ソコナラ for Business のLPよりお問い合わせします。\n\n' +
+    '■会社名：' + company + '\n' +
+    '■お名前：' + name + '\n' +
+    '■メール：' + email + '\n' +
+    '■電話　：' + (tel || '（未記入）') + '\n' +
+    '■従業員規模：' + (size || '（未選択）') + '\n' +
+    '■ご相談内容：\n' + msg + '\n';
+
+  window.location.href = 'mailto:' + CONTACT_EMAIL +
+    '?subject=' + encodeURIComponent(subject) +
+    '&body=' + encodeURIComponent(body);
+});
+</script>
+</body>
+</html>
