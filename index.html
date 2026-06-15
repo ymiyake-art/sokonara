@@ -1263,7 +1263,10 @@ h1, h2, h3, h4,
         <span class="hero-pop" style="--hd:.12s;display:block;white-space:nowrap;">「自分なら力になれるかも」</span>
         <span class="hero-in" style="--hd:.5s;display:block;white-space:nowrap;">から始まる出会い</span>
       </div>
-      <div class="hero-in" style="--hd:.8s;max-width:360px;margin:0 auto 22px;font-size:15px;color:rgba(255,255,255,0.92);line-height:1.95;text-shadow:0 1px 10px rgba(0,0,0,0.45);">地域企業の課題を選ぶと、あなたに合う経営層の記事が届きます。</div>
+      <div class="hero-in" style="--hd:.8s;max-width:360px;margin:0 auto 22px;font-size:15px;color:rgba(255,255,255,0.92);line-height:1.95;text-shadow:0 1px 10px rgba(0,0,0,0.45);text-align:center;">
+        <span style="display:block;">気になる課題を選ぶと、</span>
+        <span style="display:block;">その挑戦に向き合う経営層と出会えます。</span>
+      </div>
 
       <!-- 4ステップ（右に流れる矢羽根ステッパー） -->
       <div class="hero-in" style="--hd:1s;max-width:372px;margin:0 auto 6px;display:flex;align-items:stretch;font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;">
@@ -1275,7 +1278,9 @@ h1, h2, h3, h4,
       <div class="hero-in" style="--hd:1.1s;font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:22px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">無料・約3分</div>
 
       <button class="btn-primary hero-in" onclick="goCards()" style="--hd:1.2s;width:100%;max-width:360px;justify-content:center;margin-bottom:12px;background:var(--teal);font-size:17px;font-weight:700;padding:18px 20px;border-radius:14px;box-shadow:0 8px 24px rgba(66,173,159,0.35);">課題カードを選んでみる →</button>
-      <button class="btn-outline hero-in" onclick="showLeaderList()" style="--hd:1.28s;width:100%;max-width:360px;justify-content:center;background:transparent;color:rgba(255,255,255,0.75);border-color:rgba(255,255,255,0.3);font-size:13px;">経営層の記事を一覧で見る</button>
+      <div class="hero-in" style="--hd:1.28s;margin-top:4px;">
+        <button onclick="showLeaderList()" style="background:none;border:none;cursor:pointer;font-size:12px;color:rgba(255,255,255,0.4);font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;padding:8px 0;letter-spacing:0.3px;">今すぐ会いたい方はコチラ →「経営層一覧を見る」</button>
+      </div>
       <!-- FEATURED LEADERS（顔写真）は廃止：課題から入る導線に集中 -->
       <div id="heroLeaders" style="display:none;"></div>
     </div>
@@ -1285,11 +1290,11 @@ h1, h2, h3, h4,
       <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:12px;">経営層一覧 — 気になる方の記事を読む</div>
       <div id="companyListBody"></div>
     </div>
-    <div style="text-align:center;padding:16px 0 32px;border-top:1px solid rgba(255,255,255,0.06);">
+    <div style="text-align:center;padding:10px 0 14px;border-top:1px solid rgba(255,255,255,0.06);">
       <a href="/legal/terms.pdf" target="_blank" style="font-size:11px;color:rgba(255,255,255,0.35);font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-decoration:none;">利用規約</a>
       <span style="color:rgba(255,255,255,0.2);margin:0 10px;">|</span>
       <a href="/legal/privacy.pdf" target="_blank" style="font-size:11px;color:rgba(255,255,255,0.35);font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-decoration:none;">プライバシーポリシー</a>
-      <div style="margin-top:10px;font-size:10px;color:rgba(255,255,255,0.2);font-family:'JetBrains Mono',monospace;letter-spacing:1px;">© 2026 Sokonara, Inc.</div>
+      <div style="margin-top:8px;font-size:10px;color:rgba(255,255,255,0.2);font-family:'JetBrains Mono',monospace;letter-spacing:1px;">© 2026 Sokonara, Inc.</div>
     </div>
   </div>
 
