@@ -1,0 +1,102 @@
+# 引き継ぎブリーフ：法人経営層向け LP 制作（新チャット用）
+
+> このファイルを新チャットの冒頭に貼れば、すぐ制作に入れます。**最新の全体引き継ぎは `HANDOFF_2026-06-12.md`** を参照。
+> 既存リポ（sokonara）を踏襲して制作する方針です。
+
+---
+
+## 0. ゴール（※ユーザー記入してから本制作へ）
+法人経営層（＝記事に登場してもらう企業の社長・役員）向けのランディングページを作る。
+- **ターゲット**：地域企業の経営層（掲載してもらう側／＝サービスの供給側）
+- **このLPの目的（要記入）**：例）掲載問い合わせ獲得 / サービス説明 / 資料請求 / 商談予約
+- **主要CTA（要記入）**：例）問い合わせフォーム / メール（info@sokonara.co.jp）/ 日程調整リンク
+- **訴求の核（要記入）**：経営層にとっての価値（採用・共創・認知・地域貢献 など何を一番打ち出すか）
+- **トーン**：既存の生活者向け（index.html）が「やわらかい発見体験」なら、法人向けは「信頼・実績・具体的メリット」寄り。
+
+> 上記が未確定なら、新チャットで最初に詰める。決まり次第このセクションを更新。
+
+---
+
+## 1. すぐ使う基本情報（HANDOFFから抜粋）
+| 項目 | 値 |
+|------|-----|
+| コード場所 | `C:\Users\User\AppData\Local\Temp\sokonara\` |
+| GitHub | `https://github.com/ymiyake-art/sokonara.git`（main） |
+| 本番URL | `https://app.sokonara.co.jp`（Vercel・main push で自動デプロイ・no-cache） |
+| git | user.email `ymiyake@sokonara.co.jp` / user.name `ymiyake-art` |
+
+### 運用注意
+- **tempは消えることがある**。消えたら `git clone` で再取得＋git config再設定。GitHubが正本。
+- **git push は PowerShellツール**で `Set-Location` 後に。コミットメッセージは1行 `-m`。
+- 全ページ **no-cache**（vercel.json）なので反映は即時。
+- 静的HTMLはローカルで `python -m http.server` でプレビュー可（`.claude/launch.json` に `sokonara-static` 定義あり）。
+
+---
+
+## 2. 既存サイト構造（流用元）
+- `index.html` … 生活者向けメインSPA（TOP/記事/Q1/AI診断/LINE/経営層一覧/admin）
+- `pf/index.html` … 課題カードスワイプ（マッチング入口）
+- `admin.html` … 管理画面
+- `api/*.js` … Vercel Edge Functions（OpenAI診断・集計・admin書込・LINE等）
+
+LPは上記とは独立した静的ページとして追加するのが安全（SPAロジックに干渉しない）。
+
+---
+
+## 3. 推奨実装方針（既存リポ踏襲）
+**`/biz/index.html` として静的HTMLで新規追加**し、同じVercelプロジェクトでデプロイ。
+- アクセスURL：`https://app.sokonara.co.jp/biz/`
+- 画像は `images/` に置いて `/images/xxx` 参照（既存と同様）。
+- 必要なら独立URL化：vercel.json に host ベースの rewrite を追加（既存の `pf.sokonara.co.jp` と同方式）。
+  例）`biz.sokonara.co.jp` → `/biz/index.html`。その場合はVercelでドメイン追加＋DNS(CNAME)設定がユーザー操作で必要。
+- まずは `/biz/` で作り、独立ドメインは後から判断でOK。
+
+---
+
+## 4. デザイン継承（ブランド統一用トークン）
+新LPでも同じ世界観に揃える。`index.html` の `<style>` 冒頭の `:root` からコピー可。
+
+```
+--navy:   #1C2A54;   /* メイン濃紺 */
+--teal:   #42AD9F;   /* アクセント（CTA等） rgb(66,173,159) */
+--teal-d: #2e8c7f;   /* CTA hover */
+--bg:     #F5F5F5;   /* 背景 */
+--text:   #1a1a1a;  --text2: #716C6B;  --text3: #aaa8a7;
+--border: #E4E3E3;
+```
+- フォント：`Zen Kaku Gothic New`（見出し900/700）, `Noto Sans JP`（本文）, `JetBrains Mono`（英字ラベル・行間広め）。Google Fonts読み込みは index.html の `<head>` を流用。
+- ロゴ：`https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png`
+- 既存フッター（濃紺・会社情報＋関西電力グループロゴ）を流用すると統一感が出る。
+
+---
+
+## 5. 会社情報（フッター素材・確定値）
+- 会社名：**株式会社ソコナラ**
+- 所在地：〒810-0001 福岡市中央区天神2丁目5番28号 天神西通りセンタービル
+- 代表者：三宅 庸介
+- 設立：2024年7月1日
+- 関西電力グループ（`/images/kanden-group-logo.png` 白ロゴ／濃紺背景で使用）
+- 利用規約：`/legal/terms.pdf`　プライバシー：`/legal/privacy.pdf`
+
+---
+
+## 6. 提案する初期セクション構成（叩き台・要調整）
+法人経営層向けB2B LPの典型構成。ゴール確定後に取捨選択。
+1. **ヒーロー**：一言価値訴求＋主CTA（例「あなたの『課題』が、次の仲間と出会う入口になる」）
+2. **共感（課題提起）**：採用難・後継・新規事業の担い手不足 など経営層の悩み
+3. **ソコナラの提供価値**：求人ではなく「課題起点の出会い」で何が変わるか（3点）
+4. **仕組み**：掲載〜出会いまでの流れ（生活者側の体験も簡潔に）
+5. **実績/信頼**：掲載企業例・関西電力グループ・福岡拠点 など信頼の担保
+6. **料金/プラン**（あれば。要記入）
+7. **FAQ**
+8. **CTA（問い合わせ/資料請求/商談予約）**
+9. **フッター**（既存流用）
+
+---
+
+## 7. 最初の一歩（新チャットでやること）
+1. このブリーフの「0. ゴール」をユーザーと確定。
+2. `/biz/index.html` を新規作成（headは index.html から流用、:rootトークン移植）。
+3. ヒーロー＋CTAから着手 → セクション順に肉付け。
+4. `python -m http.server`（launch.json: sokonara-static）でプレビュー確認。
+5. commit & push（PowerShell）→ `app.sokonara.co.jp/biz/` で確認。
