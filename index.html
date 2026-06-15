@@ -1334,10 +1334,9 @@ h1, h2, h3, h4,
             <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:12px;">運営会社</div>
             <dl style="margin:0;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7;">
               <div style="display:flex;gap:12px;margin-bottom:6px;"><dt style="flex:0 0 64px;color:rgba(255,255,255,0.4);">会社名</dt><dd style="margin:0;">ソコナラ株式会社</dd></div>
-              <div style="display:flex;gap:12px;margin-bottom:6px;"><dt style="flex:0 0 64px;color:rgba(255,255,255,0.4);">所在地</dt><dd style="margin:0;">〒810-0001<br>福岡市中央区天神2丁目5番28号<br>天神西通りセンタービル</dd></div>
+              <div style="display:flex;gap:12px;margin-bottom:6px;"><dt style="flex:0 0 64px;color:rgba(255,255,255,0.4);">所在地</dt><dd style="margin:0;">〒810-0001 福岡市中央区天神2丁目5番28号 天神西通りセンタービル</dd></div>
               <div style="display:flex;gap:12px;margin-bottom:6px;"><dt style="flex:0 0 64px;color:rgba(255,255,255,0.4);">代表者</dt><dd style="margin:0;">三宅 庸介</dd></div>
-              <div style="display:flex;gap:12px;margin-bottom:6px;"><dt style="flex:0 0 64px;color:rgba(255,255,255,0.4);">設立</dt><dd style="margin:0;">2024年7月1日</dd></div>
-              <div style="display:flex;gap:12px;"><dt style="flex:0 0 64px;color:rgba(255,255,255,0.4);">お問い合わせ</dt><dd style="margin:0;"><a href="mailto:info@sokonara.co.jp" style="color:rgba(255,255,255,0.7);text-decoration:underline;">info@sokonara.co.jp</a></dd></div>
+              <div style="display:flex;gap:12px;"><dt style="flex:0 0 64px;color:rgba(255,255,255,0.4);">設立</dt><dd style="margin:0;">2024年7月1日</dd></div>
             </dl>
           </div>
         </div>
@@ -3608,6 +3607,8 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(async ()=>{
     renderP1FromCompany();
   }else{
     goScreen('p-list');
+    // pfの「経営層一覧」リンク（/?view=leaders）から来たら一覧を開く
+    if(params.get('view')==='leaders'){ try{ showLeaderList(); }catch(e){} }
   }
   if(S.mode==='user' && document.getElementById('project')?.classList.contains('active')){
     renderPjList();
