@@ -431,6 +431,10 @@ function cardEdit(id){
     <input id="f-sub" style="${inp}" value="${escA(c.card_sub||'')}">
     <label style="${lbl}">紐づく経営層（記事レコメンド先）</label>
     <select id="f-co" style="${inp}" onchange="cardFillCo()"><option value="">— 選択 —</option>${coOpts}</select>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0 2px;padding:8px 10px;background:rgba(155,89,182,0.07);border:1px solid rgba(155,89,182,0.25);border-radius:6px;">
+      <span style="font-size:11px;color:#8e44ad;font-weight:700;">経営層を選んで、記事から課題カードをAI自動生成</span>
+      <button id="f-gencard-btn" onclick="genCardFromArticle()" style="font-size:11px;padding:5px 12px;background:#9b59b6;color:#fff;border:none;border-radius:4px;cursor:pointer;font-family:inherit;white-space:nowrap;">✨ 記事から自動生成</button>
+    </div>
     <div style="display:flex;gap:10px">
       <div style="flex:1"><label style="${lbl}">表示用 経営層名（敬称なし）</label><input id="f-leader" style="${inp}" value="${escA(c.leader||'')}"></div>
       <div style="flex:1"><label style="${lbl}">表示用 会社名</label><input id="f-company" style="${inp}" value="${escA(c.company||'')}"></div>
@@ -456,7 +460,42 @@ function cardFillCo(){
   if(co){
     const nm=(co.name||co.company||'');
     if(!document.getElementById('f-company').value) document.getElementById('f-company').value=nm;
+    if(!document.getElementById('f-leader').value) document.getElementById('f-leader').value=(co.ceo||'');
   }
+}
+
+// 選んだ経営層の記事から、課題カード(1行目/2行目/タグ)をAI自動生成
+async function genCardFromArticle(){
+  const id=document.getElementById('f-co').value;
+  const co=loadCompanies().find(c=>String(c.id)===String(id));
+  if(!co){ toast('先に経営層を選択してください'); return; }
+  // 記事本文を抽出
+  let articleText='';
+  try{
+    const b=co.body||'';
+    if(String(b).trimStart().startsWith('[')){
+      const secs=JSON.parse(b);
+      articleText=secs.map(s=>[s.heading,s.body,(s.items||[]).map(i=>(i.q||'')+' '+(i.a||'')).join(' ')].filter(Boolean).join('\n')).join('\n\n');
+    } else { articleText=String(b); }
+  }catch(e){ articleText=String(co.body||''); }
+  if(!articleText.trim()){ toast('この経営層には記事本文がありません'); return; }
+  const btn=document.getElementById('f-gencard-btn'); if(btn){ btn.disabled=true; btn.textContent='生成中…'; }
+  try{
+    const res=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({type:'cardgen',data:{ceo:co.ceo||'',company:co.name||co.company||'',articleText}})});
+    if(!res.ok) throw new Error('API '+res.status);
+    const d=await res.json(); const txt=d.content?.[0]?.text||''; const m=txt.match(/\{[\s\S]*\}/);
+    const p=JSON.parse(m?m[0]:txt);
+    if(p.card_title) document.getElementById('f-title').value=p.card_title;
+    if(p.card_sub) document.getElementById('f-sub').value=p.card_sub;
+    document.getElementById('f-company').value=co.name||co.company||'';
+    document.getElementById('f-leader').value=co.ceo||'';
+    // タグのチェックを反映
+    if(Array.isArray(p.btags)) document.querySelectorAll('.cb-bt').forEach(cb=>{ cb.checked=p.btags.includes(cb.value); });
+    if(Array.isArray(p.rtags)) document.querySelectorAll('.cb-rt').forEach(cb=>{ cb.checked=p.rtags.includes(cb.value); });
+    toast('AIで生成しました（必要に応じて手直しを）');
+  }catch(e){ toast('生成失敗: '+(e.message||e)); }
+  finally{ if(btn){ btn.disabled=false; btn.textContent='✨ 記事から自動生成'; } }
 }
 
 async function cardSave(editId){
@@ -1160,21 +1199,37 @@ async function renderEmpathyLog(){
           return `<tr style="border-bottom:1px solid rgba(228,227,227,0.5);">
             <td style="padding:8px 10px;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);">${dt}</td>
             <td style="padding:8px 10px;"><strong style="color:var(--navy)">${escapeHtmlA(r.ceo_name||'')}</strong><span style="color:var(--text3);"> / ${escapeHtmlA((r.company_name||'').replace(/株式会社|合同会社|有限会社/g,'').trim())}</span></td>
-            <td style="padding:8px 10px;text-align:right;"><button onclick="deleteEmpathyLog('${r.id}')" style="font-size:11px;color:var(--hot);background:none;border:none;cursor:pointer;">削除</button></td>
+            <td style="padding:8px 10px;text-align:right;"><button onclick="deleteEmpathyLog('${r.id}','${escapeHtmlA(r.company_id||'')}')" style="font-size:11px;color:var(--hot);background:none;border:none;cursor:pointer;">削除</button></td>
           </tr>`;
         }).join('')}
       </tbody>
     </table>`;
 }
-async function deleteEmpathyLog(id){
-  if(!confirm('この共感ログを削除しますか？')) return;
-  try { await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw, action:'delete', table:'empathy_logs', id})}); toast('削除しました'); renderEmpathyLog(); }
-  catch(e){ toast('削除失敗: '+e.message); }
+async function deleteEmpathyLog(id, companyId){
+  if(!confirm('この共感ログを削除しますか？（❤カウントも1減ります）')) return;
+  try {
+    await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw, action:'delete', table:'empathy_logs', id})});
+    // ❤カウント(companies.reactions)も1減らす（ログとカウントを同期）
+    if(companyId){
+      const co=loadCompanies().find(c=>String(c.id)===String(companyId));
+      if(co){
+        const next=Math.max(0,(parseInt(co.reactions,10)||0)-1);
+        await adminWrite('companies','update',{id:companyId,patch:{reactions:next}});
+        co.reactions=next; localStorage.setItem('sn_companies',JSON.stringify(companiesCache));
+      }
+    }
+    toast('削除しました'); renderEmpathyLog();
+  } catch(e){ toast('削除失敗: '+e.message); }
 }
 async function clearEmpathyLog(){
-  if(!confirm('共感ログを全て削除します（テストデータ消去）。よろしいですか？')) return;
-  try { await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw, action:'clear', table:'empathy_logs'})}); toast('全件削除しました'); renderEmpathyLog(); }
-  catch(e){ toast('削除失敗: '+e.message); }
+  if(!confirm('共感ログを全て削除し、全経営層の❤カウントを0にします（テストデータ消去）。よろしいですか？')) return;
+  try {
+    await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw, action:'clear', table:'empathy_logs'})});
+    // ❤カウントも全て0にリセット
+    const cos=loadCompanies().map(c=>({...c, reactions:0}));
+    await saveCompanies(cos);
+    toast('全件削除しました'); renderEmpathyLog();
+  } catch(e){ toast('削除失敗: '+e.message); }
 }
 
 // サマリー消去：1経営層（共感数リセット＋診断ログ削除）
