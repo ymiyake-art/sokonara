@@ -348,6 +348,18 @@ section { padding: 92px 0; }
 .form-submit .btn-primary { width: 100%; max-width: 360px; justify-content:center; }
 .form-note { font-size: 11.5px; color: var(--text3); text-align:center; margin-top: 16px; }
 .form-note a { color: var(--teal); text-decoration:none; }
+.hp { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+.consent label { display:flex; align-items:flex-start; gap:10px; font-size:12.5px; color:var(--text2); font-weight:400; cursor:pointer; }
+.consent input { width:18px; height:18px; flex:0 0 18px; margin-top:2px; accent-color:var(--teal); }
+.consent a { color:var(--teal); text-decoration:none; }
+.consent .req { color:var(--teal); font-size:11px; margin-left:4px; }
+.form-error { display:none; text-align:center; margin-top:16px; font-size:13px; color:#c0341a; font-weight:700; }
+.form-error.show { display:block; }
+#bizSubmit[disabled] { opacity:.6; cursor:not-allowed; transform:none !important; }
+.form-done { text-align:center; padding:20px 10px; }
+.form-done .done-ic { width:64px; height:64px; border-radius:50%; background:var(--teal-bg); color:var(--teal); font-size:32px; font-weight:700; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; }
+.form-done h3 { font-size:20px; font-weight:900; color:var(--navy); margin-bottom:12px; }
+.form-done p { font-size:14px; color:var(--text2); }
 @media (max-width:600px){ .form-row.two{ grid-template-columns:1fr; } .contact-box{ padding: 32px 22px; } }
 
 /* ===== STICKY MOBILE CTA ===== */
@@ -661,14 +673,29 @@ footer.ft { background:var(--navy); padding:48px 24px 34px; }
           <label for="f-msg">採用のお悩み・ご相談内容<span class="req">必須</span></label>
           <textarea id="f-msg" name="message" placeholder="例）地域で採用したいが応募が集まらない。想いに共感してくれる人と出会いたい。" required></textarea>
         </div>
-        <div class="form-submit">
-          <button type="submit" class="btn btn-primary">この内容で問い合わせる →</button>
+        <!-- ハニーポット（スパム対策・人間には非表示） -->
+        <div class="hp" aria-hidden="true">
+          <label for="f-website">ウェブサイト（入力不要）</label>
+          <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off">
         </div>
+        <div class="form-row consent">
+          <label><input type="checkbox" id="f-consent" name="consent" required>
+            <span><a href="/legal/privacy.pdf" target="_blank">プライバシーポリシー</a>に同意のうえ送信します<span class="req">必須</span></span>
+          </label>
+        </div>
+        <div class="form-submit">
+          <button type="submit" class="btn btn-primary" id="bizSubmit">この内容で問い合わせる →</button>
+        </div>
+        <p class="form-error" id="bizError" role="alert"></p>
         <p class="form-note">
-          送信するとメールソフトが起動し、入力内容が下書きされます。<br>
-          ご記入いただいた情報は<a href="/legal/privacy.pdf" target="_blank">プライバシーポリシー</a>に基づき取り扱います。
+          ご記入いただいた情報は、お問い合わせ対応の目的でのみ利用し、<a href="/legal/privacy.pdf" target="_blank">プライバシーポリシー</a>に基づいて安全に管理します。
         </p>
       </form>
+      <div class="form-done" id="bizDone" hidden>
+        <div class="done-ic">✓</div>
+        <h3>お問い合わせを受け付けました</h3>
+        <p>担当者より2〜3営業日以内にご連絡します。<br>今しばらくお待ちください。</p>
+      </div>
     </div>
   </div>
 </section>
@@ -711,8 +738,9 @@ footer.ft { background:var(--navy); padding:48px 24px 34px; }
 </div>
 
 <script>
-// ---- お問い合わせ先（変更はここ1箇所） ----
-var CONTACT_EMAIL = 'y.miyake@sokonara.co.jp';
+// ---- 送信先API & 障害時フォールバックのメール ----
+var INQUIRY_API   = '/api/biz-inquiry';
+var CONTACT_EMAIL = 'y.miyake@sokonara.co.jp'; // ネットワーク障害時のみmailtoで案内
 
 // ---- reveal on scroll ----
 (function(){
@@ -745,37 +773,71 @@ document.querySelectorAll('.faq-q').forEach(function(btn){
   }, { passive:true });
 })();
 
-// ---- form -> mailto ----
-document.getElementById('bizForm').addEventListener('submit', function(e){
-  e.preventDefault();
-  var f = e.target;
-  var company = f.company.value.trim();
-  var name    = f.name.value.trim();
-  var email   = f.email.value.trim();
-  var tel     = f.tel.value.trim();
-  var size    = f.size.value;
-  var msg     = f.message.value.trim();
+// ---- form -> Supabase (api/biz-inquiry) ----
+(function(){
+  var form   = document.getElementById('bizForm');
+  var btn    = document.getElementById('bizSubmit');
+  var errEl  = document.getElementById('bizError');
+  var doneEl = document.getElementById('bizDone');
 
-  if(!company || !name || !email || !msg){
-    alert('会社名・お名前・メールアドレス・ご相談内容は必須です。');
-    return;
-  }
+  function showError(msg){ errEl.textContent = msg; errEl.classList.add('show'); }
+  function clearError(){ errEl.textContent = ''; errEl.classList.remove('show'); }
 
-  var subject = '【ソコナラ for Business】お問い合わせ（' + company + '）';
-  var body =
-    '株式会社ソコナラ 御中\n\n' +
-    'ソコナラ for Business のLPよりお問い合わせします。\n\n' +
-    '■会社名：' + company + '\n' +
-    '■お名前：' + name + '\n' +
-    '■メール：' + email + '\n' +
-    '■電話　：' + (tel || '（未記入）') + '\n' +
-    '■従業員規模：' + (size || '（未選択）') + '\n' +
-    '■ご相談内容：\n' + msg + '\n';
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    clearError();
 
-  window.location.href = 'mailto:' + CONTACT_EMAIL +
-    '?subject=' + encodeURIComponent(subject) +
-    '&body=' + encodeURIComponent(body);
-});
+    var f = form;
+    var data = {
+      company: f.company.value.trim(),
+      name:    f.name.value.trim(),
+      email:   f.email.value.trim(),
+      tel:     f.tel.value.trim(),
+      size:    f.size.value,
+      message: f.message.value.trim(),
+      website: f.website.value.trim() // ハニーポット
+    };
+
+    if(!data.company || !data.name || !data.email || !data.message){
+      showError('会社名・お名前・メールアドレス・ご相談内容は必須です。');
+      return;
+    }
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email)){
+      showError('メールアドレスの形式をご確認ください。');
+      return;
+    }
+    if(!f.consent.checked){
+      showError('プライバシーポリシーへの同意が必要です。');
+      return;
+    }
+
+    btn.disabled = true;
+    var label = btn.textContent;
+    btn.textContent = '送信中…';
+
+    fetch(INQUIRY_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+    .then(function(res){ return res.json().then(function(j){ return { ok: res.ok, body: j }; }); })
+    .then(function(r){
+      if(r.ok && r.body && r.body.ok){
+        form.style.display = 'none';
+        doneEl.hidden = false;
+        doneEl.scrollIntoView({ behavior:'smooth', block:'center' });
+      } else {
+        showError((r.body && r.body.error) || '送信に失敗しました。お手数ですが時間をおいて再度お試しください。');
+        btn.disabled = false; btn.textContent = label;
+      }
+    })
+    .catch(function(){
+      // ネットワーク障害時：メールでの問い合わせを案内（フォールバック）
+      showError('通信に失敗しました。恐れ入りますが ' + CONTACT_EMAIL + ' 宛にメールでお問い合わせください。');
+      btn.disabled = false; btn.textContent = label;
+    });
+  });
+})();
 </script>
 </body>
 </html>

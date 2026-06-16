@@ -104,9 +104,17 @@ LPは上記とは独立した静的ページとして追加するのが安全（
 4. ✅ `sokonara-static`（http.server）でプレビュー検証済（構造・スタイル・FAQ・フォームOK、コンソールエラーなし。※スクショは既知のタイムアウトで eval 検証に切替）。
 5. ✅ commit & push 済 → **`https://app.sokonara.co.jp/biz/`** で公開。
 
-### v1 の仕様・要確認（次チャット/ユーザー判断）
-- **問い合わせフォーム**：v1は **mailto方式**（送信でメールソフト起動＋本文下書き）。送信先は `biz/index.html` 内 `CONTACT_EMAIL = 'y.miyake@sokonara.co.jp'`（1箇所で変更可）。
-  - 将来：Supabase保存＋管理画面表示にするなら、`api/admin-data.js` 同様の service_role API か anon insert 用テーブル＋RLSが必要（S-1/S-2 のセキュリティ方針に合わせる）。
+### 問い合わせフォーム（✅ Supabase保存・service_role API方式に変更 2026-06-16）
+- カスタムフォームの見た目はそのまま、送信は **`api/biz-inquiry.js`（service_role）経由で `biz_inquiries` テーブルに保存**。
+- **anon にはDB権限を一切与えない**設計（`biz_inquiries_setup.sql` で RLS有効化＋REVOKE）。→ 公開テーブルからの個人情報漏洩を構造的に防止。
+- スパム対策：ハニーポット(`website`)・必須/メール形式/文字数チェック（クライアント＋サーバー両方）。同意チェック必須。
+- ネットワーク障害時のみ `CONTACT_EMAIL`(y.miyake@sokonara.co.jp) へのメール案内にフォールバック。
+- **⚠️ 公開前に必須の手順**：
+  1. Supabase SQL Editor で **`biz_inquiries_setup.sql` を実行**（テーブル作成＋RLS）。
+  2. main へ push（Vercel自動デプロイ）。環境変数 `SUPABASE_URL/SUPABASE_SERVICE_KEY/ADMIN_PASSWORD` は設定済み。
+  3. 本番で実際に1件送信して `biz_inquiries` に入ること、anon SELECT が弾かれることを確認。
+- **未対応（次の候補）**：管理画面(admin.html)での問い合わせ一覧表示。API側に `action='list'/'count_unread'/'delete'/'mark'`（ADMIN_PASSWORD認証）は実装済みなので、UIを足すだけ。通知（LINE/メール）も将来候補。
+- **コンプラ補足**：個人情報をSupabaseに保存する点は既存アプリ(user_sessions等)と同方針だが、関電グループの個人情報取扱・委託先/データ保管リージョンの規程に適合するか要確認。
 - **料金**：確定値が無いため「無料相談へ」のソフト訴求で実装。具体プラン提示が必要なら料金セクションを差し替え。
 - **実績の数値**：定量実績（掲載企業数・マッチ数等）が出せれば proof セクションの3枠を実数に差し替えると説得力UP。
 - **独立ドメイン**：現状は `/biz/` パス。`biz.sokonara.co.jp` 化は vercel.json に host rewrite 追加＋Vercel/DNS設定（ユーザー操作）。
