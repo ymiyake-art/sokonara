@@ -201,6 +201,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
         <div class="nav-item active" id="ni-dash" onclick="switchTab('dash')"><div class="nav-dot" style="background:var(--teal)"></div>ダッシュボード</div>
         <div class="nav-item" id="ni-reactions" onclick="switchTab('reactions')"><div class="nav-dot" style="background:var(--hot)"></div>反応一覧</div>
         <div class="nav-item" id="ni-interests" onclick="switchTab('interests')"><div class="nav-dot" style="background:#e67e22"></div>興味通知フォーム<span class="nav-badge" id="interests-badge" data-count="0"></span></div>
+        <div class="nav-item" id="ni-biz" onclick="switchTab('biz')"><div class="nav-dot" style="background:var(--teal)"></div>🏢 法人問い合わせ<span class="nav-badge" id="biz-badge" data-count="0"></span></div>
         <div class="nav-item" id="ni-contacts" onclick="switchTab('contacts')"><div class="nav-dot" style="background:var(--warm)"></div>接点候補</div>
         <div class="nav-item" id="ni-report" onclick="switchTab('report')"><div class="nav-dot" style="background:var(--navy)"></div>AIレポート</div>
         <div class="nav-item" id="ni-broadcast" onclick="switchTab('broadcast')"><div class="nav-dot" style="background:#06c755"></div>LINE配信</div>
@@ -263,7 +264,7 @@ function getInitialTab(){
     const company = params.get('company');
     // ?company=ID → 記事管理タブを開き、企業を自動選択
     if(company){ window._initCompanyId = company; return 'article'; }
-    const valid = ['dash','reactions','interests','contacts','report','broadcast','article','addco','addpj','colist'];
+    const valid = ['dash','reactions','interests','biz','contacts','report','broadcast','article','addco','addpj','colist'];
     return valid.includes(tab) ? tab : 'dash';
   }catch{
     return 'dash';
@@ -323,6 +324,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     loadCompaniesAsync().finally(renderSidebarCompanies);
     loadProjectsAsync();
     refreshInterestBadge();
+    refreshBizBadge();
     switchTab(getInitialTab());
   } else {
     // セッション切れ or ブラウザ再起動 → 再ログイン
@@ -336,14 +338,18 @@ function switchTab(tab){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const ni=document.getElementById('ni-'+tab);
   if(ni) ni.classList.add('active');
-  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',article:'📝 記事管理',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧',cards:'🗂️ 課題カード(v2)',resonance:'📊 共鳴データ(v2)'};
+  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',biz:'🏢 法人問い合わせ',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',article:'📝 記事管理',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧',cards:'🗂️ 課題カード(v2)',resonance:'📊 共鳴データ(v2)'};
   document.getElementById('tabTitle').textContent=titles[tab]||tab;
   if(tab === 'interests'){
     // 既読としてマーク
     localStorage.setItem('snLastSeenInterests', new Date().toISOString());
     setInterestBadge(0);
   }
-  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,article:renderArticleEditor,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList,cards:renderCardsAdmin,resonance:renderResonance};
+  if(tab === 'biz'){
+    localStorage.setItem('snLastSeenBiz', new Date().toISOString());
+    setBizBadge(0);
+  }
+  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,biz:renderBiz,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,article:renderArticleEditor,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList,cards:renderCardsAdmin,resonance:renderResonance};
   fns[tab]?.();
 }
 
@@ -997,6 +1003,128 @@ async function deleteSelectedInterests(){
   const all = document.getElementById('ig-selall'); if(all) all.checked = false;
   updateInterestSelCount();
   toast(`${ok}件を削除しました`);
+}
+
+// ===== 🏢 法人問い合わせ（/biz/ → api/biz-inquiry → biz_inquiries） =====
+let _bizRows = [];
+
+function setBizBadge(count){
+  const el = document.getElementById('biz-badge');
+  if(!el) return;
+  if(count > 0){ el.textContent = count > 99 ? '99+' : String(count); el.dataset.count = String(count); el.style.display = ''; }
+  else { el.textContent = ''; el.dataset.count = '0'; el.style.display = 'none'; }
+}
+
+async function refreshBizBadge(){
+  if(!_adminPw) return;
+  const since = localStorage.getItem('snLastSeenBiz') || '';
+  try {
+    const res = await fetch('/api/biz-inquiry', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: _adminPw, action: 'count_unread', since })
+    });
+    if(res.ok){ const { count } = await res.json(); setBizBadge(count || 0); }
+  } catch(e){ /* サイレント失敗 */ }
+}
+
+async function renderBiz(){
+  const el = document.getElementById('adminContent');
+  el.innerHTML = `<div style="padding:24px"><div style="font-size:12px;color:var(--text2)">読み込み中...</div></div>`;
+  let rows = [];
+  try {
+    const res = await fetch('/api/biz-inquiry', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: _adminPw, action: 'list' })
+    });
+    if(res.ok){ rows = await res.json(); }
+    if(!Array.isArray(rows)) rows = [];
+  } catch(e){ rows = []; }
+  _bizRows = rows;
+
+  el.innerHTML = `<div style="padding:24px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <span style="font-size:12px;color:var(--text2)">${rows.length}件の法人問い合わせ</span>
+      ${rows.length>0?`<button onclick="downloadBizCsv()" style="margin-left:auto;padding:6px 14px;background:var(--navy);color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;border-radius:2px;font-family:inherit;display:flex;align-items:center;gap:6px">⬇ CSVダウンロード</button>`:''}
+    </div>
+    ${rows.length===0?`<div style="background:var(--white);border:1px solid var(--border);padding:40px;text-align:center;border-radius:2px;color:var(--text2);">まだ問い合わせがありません<div style="font-size:11px;margin-top:8px;color:var(--text3)">テーブル未作成の場合は <code>biz_inquiries_setup.sql</code> を実行してください。</div></div>`:''}
+    ${rows.map(r=>{
+      const rid = String(r.id||'');
+      const dt = r.created_at ? new Date(r.created_at).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+      const handled = !!r.handled;
+      return `<div id="brow-${rid}" style="background:var(--white);border:1px solid ${handled?'var(--border)':'rgba(66,173,159,0.5)'};border-radius:2px;padding:14px 16px;margin-bottom:8px;${handled?'opacity:.65;':''}">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
+          ${handled?`<span style="font-size:9px;padding:2px 8px;background:var(--bg);color:var(--text2);border-radius:2px;font-family:'JetBrains Mono',monospace;font-weight:700">対応済</span>`:`<span style="font-size:9px;padding:2px 8px;background:var(--teal-bg);color:var(--teal-d);border-radius:2px;font-family:'JetBrains Mono',monospace;font-weight:700">NEW</span>`}
+          <span style="font-size:13px;font-weight:700;color:var(--navy)">${escA(r.company)||'—'}</span>
+          <span style="font-size:12px;color:var(--text2)">${escA(r.name)||'—'}</span>
+          ${r.size?`<span style="font-size:9px;padding:2px 6px;background:var(--bg);color:var(--text2);border-radius:2px;font-family:'JetBrains Mono',monospace">${escA(r.size)}</span>`:''}
+          <span style="font-size:10px;color:var(--text3)">${dt}</span>
+          <button onclick="markBizHandled('${rid}',${handled?'false':'true'},this)" style="margin-left:auto;padding:3px 9px;background:none;border:1px solid var(--teal);color:var(--teal-d);font-size:10px;cursor:pointer;border-radius:2px;font-family:inherit;white-space:nowrap">${handled?'未対応に戻す':'✓ 対応済にする'}</button>
+          <button onclick="deleteBizRow('${rid}',this)" style="padding:3px 9px;background:none;border:1px solid rgba(192,52,26,0.3);color:var(--hot);font-size:10px;cursor:pointer;border-radius:2px;font-family:inherit;white-space:nowrap">🗑 削除</button>
+        </div>
+        <div style="font-size:12px;color:var(--text);white-space:pre-wrap;margin-bottom:8px;line-height:1.7">${escA(r.message)||''}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);word-break:break-all;">✉ ${escA(r.email)||'—'}</span>
+          ${r.email?`<button onclick="navigator.clipboard.writeText('${escA(r.email)}').then(()=>{this.textContent='✓ コピー済み';setTimeout(()=>{this.textContent='メアドをコピー'},1500)})" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border:1px solid var(--teal);background:var(--teal-bg);color:var(--teal-d);border-radius:2px;cursor:pointer;white-space:nowrap;">メアドをコピー</button>`:''}
+          ${r.tel?`<span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);">☎ ${escA(r.tel)}</span>`:''}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+async function markBizHandled(id, handled, btn){
+  if(!id) return;
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/biz-inquiry', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: _adminPw, action: 'mark', id, handled })
+    });
+    const data = await res.json();
+    if(data.ok || res.ok){
+      const r = _bizRows.find(x => String(x.id) === String(id));
+      if(r) r.handled = handled;
+      renderBiz();
+      toast(handled ? '対応済にしました' : '未対応に戻しました');
+    } else { btn.disabled = false; toast('更新に失敗しました'); }
+  } catch(e){ btn.disabled = false; toast('エラーが発生しました'); }
+}
+
+async function deleteBizRow(id, btn){
+  if(!id) return;
+  if(!confirm('この問い合わせを削除しますか？\n（この操作は取り消せません）')) return;
+  btn.disabled = true; btn.textContent = '削除中...';
+  try {
+    const res = await fetch('/api/biz-inquiry', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: _adminPw, action: 'delete', id })
+    });
+    const data = await res.json();
+    if(data.ok || res.ok){
+      const row = document.getElementById('brow-' + id);
+      if(row){ row.style.transition='opacity .3s'; row.style.opacity='0'; setTimeout(()=>row.remove(), 300); }
+      _bizRows = _bizRows.filter(r => String(r.id) !== String(id));
+      toast('削除しました');
+    } else { btn.disabled = false; btn.textContent = '🗑 削除'; toast('削除に失敗しました'); }
+  } catch(e){ btn.disabled = false; btn.textContent = '🗑 削除'; toast('エラーが発生しました'); }
+}
+
+function downloadBizCsv(){
+  const rows = _bizRows;
+  if(!rows || rows.length === 0){ toast('データがありません'); return; }
+  const headers = ['日時','会社名','お名前','メール','電話','従業員規模','ご相談内容','対応状況'];
+  const escape = v => `"${String(v==null?'':v).replace(/"/g,'""')}"`;
+  const lines = [headers.map(escape).join(',')];
+  rows.forEach(r => {
+    const dt = r.created_at ? new Date(r.created_at).toLocaleString('ja-JP') : '';
+    lines.push([dt, r.company, r.name, r.email, r.tel, r.size, r.message, r.handled?'対応済':'未対応'].map(escape).join(','));
+  });
+  const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `biz_inquiries_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 function downloadInterestsCsv(){
@@ -2290,6 +2418,17 @@ function renderArticleEditor(){
     <div class="panel" id="art-basic-info" style="margin-bottom:20px;display:none">
       <div class="phdr">基本情報</div>
       <div class="pbody">
+        <!-- 会社名・経営層名（編集可） -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div>
+            <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:6px">会社名</label>
+            <input id="art-co-name" type="text" placeholder="例：株式会社タナカ精工" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:13px;font-family:inherit">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:6px">経営層名</label>
+            <input id="art-co-ceo" type="text" placeholder="例：田中 誠一郎" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:13px;font-family:inherit">
+          </div>
+        </div>
         <!-- プロフィール写真 -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
           <!-- カード写真 -->
@@ -2559,6 +2698,8 @@ function onArtCompanyChange(id){
 
   // 基本情報フィールドを復元
   const setVal = (elId, val) => { const el=document.getElementById(elId); if(el) el.value=val||''; };
+  setVal('art-co-name', co.name||co.company||'');
+  setVal('art-co-ceo', co.ceo||'');
   setVal('art-profile-photo-url', co.photoUrl||'');
   setVal('art-hero-photo-url', co.heroUrl||'');
   updateHeroPhotoPreview();
@@ -3109,6 +3250,8 @@ async function saveArticle(){
   const q1=(document.getElementById('art-q1')?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
   const cardLabel=(document.getElementById('art-card-label-edit')?.value||document.getElementById('art-card-label')?.value||'').trim();
   // 基本情報
+  const coName=document.getElementById('art-co-name')?.value.trim()||'';
+  const coCeo=document.getElementById('art-co-ceo')?.value.trim()||'';
   const photoUrl=document.getElementById('art-profile-photo-url')?.value.trim()||'';
   const heroUrl=document.getElementById('art-hero-photo-url')?.value.trim()||'';
   const type=document.getElementById('art-type')?.value||'manager';
@@ -3121,6 +3264,8 @@ async function saveArticle(){
 
   companies[idx]={
     ...companies[idx],
+    name: coName||companies[idx].name, company: coName||companies[idx].company,
+    ceo: coCeo||companies[idx].ceo,
     title: _articleTitle||companies[idx].title,
     body: JSON.stringify(_articleSections),
     tags, catchphrase, quote,
