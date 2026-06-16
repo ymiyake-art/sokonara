@@ -66,6 +66,15 @@ a { color: inherit; }
 .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
 .narrow { max-width: 760px; margin: 0 auto; padding: 0 24px; }
 
+/* 日本語の折り返し制御：句の途中で切れないように（Chromium系は文節考慮、非対応ブラウザは自然折返し） */
+h1, h2, h3, .hero .lead, .sec-head p, .prob-bridge, .price-card p {
+  word-break: auto-phrase;
+  line-break: strict;
+}
+h1, h2, .prob-bridge { text-wrap: balance; }
+/* 強制改行せず句単位で折り返したい箇所用（display:inline-blockで句の内部分断を防ぐ） */
+.nb { display: inline-block; }
+
 /* ===== HEADER ===== */
 .nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 300;
@@ -378,11 +387,10 @@ footer.ft { background:var(--navy); padding:48px 24px 34px; }
 <section class="hero" id="top">
   <div class="wrap">
     <div class="eyebrow">SOKONARA for Business</div>
-    <h1>求人広告では出会えなかった、<br><span class="accent">あなたの課題に共感する</span>人材と。</h1>
+    <h1><span class="nb">求人広告では出会えなかった、</span><span class="nb"><span class="accent">あなたの課題に共感する</span>人材と。</span></h1>
     <p class="lead">
-      条件で人を集める時代から、<strong>「想い」と「価値観」でつながる</strong>採用へ。<br>
-      ソコナラは、経営者の<strong>“課題”への共感</strong>を入り口に、
-      これから出会うべき仲間とつながる、地域企業のための採用・キャリア共創サービスです。
+      条件で人を集める時代から、<strong>「想い」と「価値観」でつながる</strong>採用へ。
+      ソコナラは、経営者の<strong>“課題”への共感</strong>を入り口に、これから出会うべき仲間とつながる、地域企業のための採用・キャリア共創サービスです。
     </p>
     <div class="hero-cta">
       <a class="btn btn-primary" href="#contact">無料で相談する →</a>
@@ -403,8 +411,8 @@ footer.ft { background:var(--navy); padding:48px 24px 34px; }
   <div class="wrap">
     <div class="sec-head reveal">
       <div class="eyebrow">THE CHALLENGE</div>
-      <h2>「いい人が採れない」その原因は、<br>“条件”でしか伝えられないことかもしれません。</h2>
-      <p>地域企業の採用は、大手と同じ土俵で戦うほど不利になります。<br>でも、本当に伝えたい価値は、給与や福利厚生の欄には書ききれないはずです。</p>
+      <h2><span class="nb">「いい人が採れない」その原因は、</span><span class="nb">“条件”でしか伝えられないことかもしれません。</span></h2>
+      <p>地域企業の採用は、大手と同じ土俵で戦うほど不利になります。でも、本当に伝えたい価値は、給与や福利厚生の欄には書ききれないはずです。</p>
     </div>
     <div class="prob-grid">
       <div class="prob-card reveal">
