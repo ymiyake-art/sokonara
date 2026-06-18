@@ -1981,7 +1981,7 @@ function enterFromTop(target){
 function goCards(){
   // 保存済みUTMを /pf へ引き継ぐ（チャネル別計測を切らさない）
   let qs='';
-  try{ const u=JSON.parse(localStorage.getItem('sn_utm')||'null'); if(u && (u.source||u.medium||u.campaign)){ qs='?utm_source='+encodeURIComponent(u.source||'')+'&utm_medium='+encodeURIComponent(u.medium||'')+'&utm_campaign='+encodeURIComponent(u.campaign||''); } }catch(e){}
+  try{ const u=JSON.parse(localStorage.getItem('sn_utm')||'null'); if(u && (u.source||u.medium||u.campaign||u.content)){ qs='?utm_source='+encodeURIComponent(u.source||'')+'&utm_medium='+encodeURIComponent(u.medium||'')+'&utm_campaign='+encodeURIComponent(u.campaign||'')+'&utm_content='+encodeURIComponent(u.content||''); } }catch(e){}
   window.location.href = '/pf/'+qs;
 }
 
@@ -3468,7 +3468,7 @@ renderDash();
 // LINE OAuth callback（codeとstateの一致で検出）
 const urlParams = new URLSearchParams(location.search);
 // 流入元(UTM：広告/LINE/メール等)を保存。入口が「/」でも、/pf 等へ遷移したときにチャネルを引き継ぐ。
-try{ const _us=urlParams.get('utm_source'),_um=urlParams.get('utm_medium'),_uc=urlParams.get('utm_campaign'); if(_us||_um||_uc){ localStorage.setItem('sn_utm', JSON.stringify({source:_us||'',medium:_um||'',campaign:_uc||'',ts:Date.now()})); } }catch(e){}
+try{ const _us=urlParams.get('utm_source'),_um=urlParams.get('utm_medium'),_uc=urlParams.get('utm_campaign'),_uk=urlParams.get('utm_content'); if(_us||_um||_uc||_uk){ localStorage.setItem('sn_utm', JSON.stringify({source:_us||'',medium:_um||'',campaign:_uc||'',content:_uk||'',ts:Date.now()})); } }catch(e){}
 const _lineCode = urlParams.get('code');
 const _lineState = urlParams.get('state');
 const _savedState = localStorage.getItem('snLineState');

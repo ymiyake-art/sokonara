@@ -604,8 +604,10 @@ async function renderResonance(){
     const ai=arr.filter(l=>l.ai_viewed).length;
     const cta=arr.filter(l=>l.contact_cta).length;
     const camp=(arr.find(l=>l.utm_campaign)||{}).utm_campaign||'';
+    const contents=[...new Set(arr.map(l=>l.utm_content).filter(Boolean))];
+    const sub=[camp, contents.length?('content: '+contents.join(' / ')):''].filter(Boolean).join(' ／ ');
     return `<tr>
-      <td style="padding:8px 10px;border-bottom:1px solid var(--border);font-weight:700;color:var(--navy)">${escA(ch)}${camp?`<div style="font-weight:400;font-size:10px;color:var(--text3)">${escA(camp)}</div>`:''}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border);font-weight:700;color:var(--navy)">${escA(ch)}${sub?`<div style="font-weight:400;font-size:10px;color:var(--text3)">${escA(sub)}</div>`:''}</td>
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right">${n}</td>
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right">${a} <span style="color:var(--text3)">(${pct(a,n)}%)</span></td>
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right">${ai} <span style="color:var(--text3)">(${pct(ai,n)}%)</span></td>

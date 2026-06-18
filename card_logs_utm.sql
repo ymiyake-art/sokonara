@@ -4,9 +4,10 @@
 -- ============================================================
 
 ALTER TABLE card_logs
-  ADD COLUMN IF NOT EXISTS utm_source   text,   -- 流入元（例: line / email）
-  ADD COLUMN IF NOT EXISTS utm_medium   text,   -- 媒体（例: message / event_users）
-  ADD COLUMN IF NOT EXISTS utm_campaign text;   -- キャンペーン（例: app_test_202606）
+  ADD COLUMN IF NOT EXISTS utm_source   text,   -- 流入元（例: line / email / bank_article）
+  ADD COLUMN IF NOT EXISTS utm_medium   text,   -- 媒体（例: message / event_users / article）
+  ADD COLUMN IF NOT EXISTS utm_campaign text,   -- キャンペーン（例: app_test_202606）
+  ADD COLUMN IF NOT EXISTS utm_content  text;   -- 掲載位置・バリエーション（例: app_cta）
 
 -- 例）配布URL：
 --   LINE :  https://app.sokonara.co.jp/pf?utm_source=line&utm_medium=message&utm_campaign=app_test_202606

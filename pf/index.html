@@ -11,8 +11,8 @@
 :root{
   --teal:#42AD9F; --teal-d:#2e8c7f; --teal-bg:rgba(66,173,159,0.08); --teal-mid:rgba(66,173,159,0.16);
   --navy:#1C2A54; --navy-soft:rgba(28,42,84,0.06);
-  /* 背景は白ベタ禁止＝紙感オフホワイト。暖色(黄み)を避けnavy/tealと相性の良い極薄クールグレーに調整。面(surface)は白で階層化 */
-  --bg:#F2F3F5; --surface:#FFFFFF;
+  /* 背景は白ベタ禁止＝紙感オフホワイト（クールグレー）。課題カードは付箋風クリーム(--card)で背景から浮かせる。 */
+  --bg:#F2F3F5; --surface:#FFFFFF; --card:#FBEDC2;
   --text:#1C2A54; --text2:#716C6B; --text3:#A8A6A4; --border:#E4E3E3;
   --red:#E2725B; --red-bg:rgba(226,114,91,0.08);
   --shadow:0 8px 30px rgba(28,42,84,0.07);
@@ -67,7 +67,7 @@ body{
 .stage{ flex:1; position:relative; margin:8px 20px 0; }
 .card{
   position:absolute; inset:0;
-  background:var(--surface); border-radius:18px; border:1px solid var(--border);
+  background:var(--card); border-radius:18px; border:1px solid rgba(0,0,0,0.06);
   box-shadow:var(--shadow);
   display:flex; flex-direction:column; justify-content:space-between;
   padding:24px; cursor:grab;
@@ -403,9 +403,9 @@ let CARDS = [
 const SN_UTM=(function(){
   try{
     const q=new URLSearchParams(location.search);
-    let u={source:q.get('utm_source')||'', medium:q.get('utm_medium')||'', campaign:q.get('utm_campaign')||''};
-    if(u.source||u.medium||u.campaign){ localStorage.setItem('sn_utm', JSON.stringify({...u, ts:Date.now()})); }
-    else { const s=JSON.parse(localStorage.getItem('sn_utm')||'null'); if(s && (Date.now()-(s.ts||0) < 30*24*3600*1000)){ u={source:s.source||'', medium:s.medium||'', campaign:s.campaign||''}; } }
+    let u={source:q.get('utm_source')||'', medium:q.get('utm_medium')||'', campaign:q.get('utm_campaign')||'', content:q.get('utm_content')||''};
+    if(u.source||u.medium||u.campaign||u.content){ localStorage.setItem('sn_utm', JSON.stringify({...u, ts:Date.now()})); }
+    else { const s=JSON.parse(localStorage.getItem('sn_utm')||'null'); if(s && (Date.now()-(s.ts||0) < 30*24*3600*1000)){ u={source:s.source||'', medium:s.medium||'', campaign:s.campaign||'', content:s.content||''}; } }
     return u;
   }catch(e){ return {source:'',medium:'',campaign:''}; }
 })();
@@ -682,7 +682,7 @@ async function logStart(){
   try{
     logId=(crypto.randomUUID?crypto.randomUUID():'log_'+Date.now()+'_'+Math.random().toString(36).slice(2));
     const base={ id:logId, started:true, started_at:new Date().toISOString(), shown_cards:deck.map(c=>c.id) };
-    const withUtm={ ...base, utm_source:SN_UTM.source||null, utm_medium:SN_UTM.medium||null, utm_campaign:SN_UTM.campaign||null };
+    const withUtm={ ...base, utm_source:SN_UTM.source||null, utm_medium:SN_UTM.medium||null, utm_campaign:SN_UTM.campaign||null, utm_content:SN_UTM.content||null };
     let res=await _postLog(withUtm);
     if(!res.ok){ res=await _postLog(base); }   // utm列が未追加の場合
     if(!res.ok){ res=await _postLog({ id:logId }); } // started列も未追加の場合（最低限のログは残す）
