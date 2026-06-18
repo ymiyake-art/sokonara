@@ -214,6 +214,10 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
         <div class="nav-item" id="ni-cards" onclick="switchTab('cards')"><div class="nav-dot" style="background:#9b59b6"></div>🗂️ 課題カード(v2)</div>
         <div class="nav-item" id="ni-resonance" onclick="switchTab('resonance')"><div class="nav-dot" style="background:#8e44ad"></div>📊 共鳴データ(v2)</div>
       </div>
+      <div class="admin-nav" style="border-top:1px solid rgba(255,255,255,0.07);padding-top:12px;">
+        <div class="admin-nav-label">リファレンス</div>
+        <div class="nav-item" id="ni-philosophy" onclick="switchTab('philosophy')"><div class="nav-dot" style="background:var(--teal)"></div>🧭 設計思想</div>
+      </div>
       <div class="co-items" id="sidebarCompanies"></div>
       <div style="margin-top:auto;padding:14px 16px;border-top:1px solid rgba(255,255,255,0.07)">
         <a href="/" style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(255,255,255,0.07);border-radius:4px;color:rgba(255,255,255,0.6);font-size:12px;text-decoration:none;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,0.13)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
@@ -264,7 +268,7 @@ function getInitialTab(){
     const company = params.get('company');
     // ?company=ID → 記事管理タブを開き、企業を自動選択
     if(company){ window._initCompanyId = company; return 'article'; }
-    const valid = ['dash','reactions','interests','biz','contacts','report','broadcast','article','addco','addpj','colist'];
+    const valid = ['dash','reactions','interests','biz','contacts','report','broadcast','article','addco','addpj','colist','cards','resonance','philosophy'];
     return valid.includes(tab) ? tab : 'dash';
   }catch{
     return 'dash';
@@ -338,7 +342,7 @@ function switchTab(tab){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const ni=document.getElementById('ni-'+tab);
   if(ni) ni.classList.add('active');
-  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',biz:'🏢 法人問い合わせ',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',article:'📝 記事管理',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧',cards:'🗂️ 課題カード(v2)',resonance:'📊 共鳴データ(v2)'};
+  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',biz:'🏢 法人問い合わせ',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',article:'📝 記事管理',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧',cards:'🗂️ 課題カード(v2)',resonance:'📊 共鳴データ(v2)',philosophy:'🧭 設計思想'};
   document.getElementById('tabTitle').textContent=titles[tab]||tab;
   if(tab === 'interests'){
     // 既読としてマーク
@@ -349,7 +353,7 @@ function switchTab(tab){
     localStorage.setItem('snLastSeenBiz', new Date().toISOString());
     setBizBadge(0);
   }
-  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,biz:renderBiz,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,article:renderArticleEditor,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList,cards:renderCardsAdmin,resonance:renderResonance};
+  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,biz:renderBiz,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,article:renderArticleEditor,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList,cards:renderCardsAdmin,resonance:renderResonance,philosophy:renderPhilosophy};
   fns[tab]?.();
 }
 
@@ -1125,6 +1129,97 @@ function downloadBizCsv(){
   a.download = `biz_inquiries_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
   URL.revokeObjectURL(a.href);
+}
+
+// ===== 🧭 設計思想（リファレンス・静的） =====
+function renderPhilosophy(){
+  const box=document.getElementById('adminContent');
+  const card=(s)=>`background:var(--white);border:1px solid var(--border);border-radius:6px;padding:18px 20px;margin-bottom:14px;${s||''}`;
+  const h=(t,sub)=>`<div style="font-family:'Noto Serif JP',serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:6px">${t}</div>${sub?`<div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.7">${sub}</div>`:''}`;
+
+  const bt=Object.entries(CARD_BTAGS).map(([k,v])=>`<span style="display:inline-block;background:rgba(66,173,159,.1);color:#2e8c7f;font-size:12px;padding:4px 11px;border-radius:14px;margin:0 6px 6px 0">${v}</span>`).join('');
+
+  // 自己決定理論への対応づけ
+  const sdt=[
+    ['自律性 (Autonomy)','自分で選び・進められる','裁量'],
+    ['有能感 (Competence)','成長・手応えを感じられる','挑戦 / 探究'],
+    ['関係性 (Relatedness)','信頼できる仲間と共に','仲間 / 対話 / 信頼'],
+    ['目的・意味 (Purpose)','意義のある使命に向かう','使命'],
+  ];
+  const sdtRows=sdt.map(r=>`<tr>
+    <td style="padding:9px 12px;border-bottom:1px solid var(--border);font-weight:700;color:var(--navy);font-size:12.5px;white-space:nowrap">${r[0]}</td>
+    <td style="padding:9px 12px;border-bottom:1px solid var(--border);font-size:12.5px;color:var(--text2)">${r[1]}</td>
+    <td style="padding:9px 12px;border-bottom:1px solid var(--border)"><span style="background:rgba(226,114,91,.1);color:#c0341a;font-size:11.5px;padding:3px 9px;border-radius:12px">${r[2]}</span></td>
+  </tr>`).join('');
+
+  box.innerHTML=`<div style="padding:24px;max-width:860px">
+
+    <div style="${card('background:linear-gradient(135deg,var(--navy),#243566);color:#fff;border:none')}">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--teal);margin-bottom:8px">DESIGN PHILOSOPHY</div>
+      <div style="font-family:'Noto Serif JP',serif;font-size:18px;font-weight:700;margin-bottom:10px;line-height:1.6">「仕事を探す」のではなく、<br>課題との出会いから<strong style="color:var(--teal)">自分の価値観を発見する</strong></div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.82);line-height:1.9">ソコナラは求人・マッチングサービスではありません。求職前の生活者が、地域の経営者が抱える「課題」と偶然出会い、<b style="color:#fff">「この課題なら自分の出番があるかも」</b>という手応えから、自分の興味・価値観に気づいていく——そんなキャリア共創の体験を設計しています。条件提示を先に置かず、<b style="color:#fff">課題 → 人 → 接点</b>の順で温度を高めます。</div>
+    </div>
+
+    <div style="${card()}">
+      ${h('なぜこの設計か（背景）')}
+      <div style="font-size:13px;color:var(--text);line-height:1.95">
+        従来は「記事を読む→いきなり診断→LINE登録ゲート→接点」と、ユーザーの温度より先に“経営層と話す”を要求していました。人はいきなり転職・面談を望むわけではありません。まず<b>自分ごとに感じられる課題</b>に触れ、軽い反応（カード選択・記事・診断閲覧）を積み重ねてから、最後に接点へ。重い関門は最後だけに置く設計です。
+      </div>
+    </div>
+
+    <div style="${card()}">
+      ${h('2軸のタグ設計','課題カードと診断は「どんな領域に惹かれるか（事業テーマ）」×「何を大事に働きたいか（価値観）」の2軸で人を捉えます。')}
+      <div style="font-size:12.5px;font-weight:700;color:var(--navy);margin:6px 0 8px">① 事業テーマ（btags・8種）— 興味・関心の方向</div>
+      <div style="margin-bottom:16px">${bt}</div>
+      <div style="font-size:12.5px;font-weight:700;color:var(--navy);margin:6px 0 8px">② 価値観（rtags・7種）— 働く動機の核</div>
+      <div>${Object.values(CARD_RTAGS).map(v=>`<span style="display:inline-block;background:rgba(226,114,91,.1);color:#c0341a;font-size:12px;padding:4px 11px;border-radius:14px;margin:0 6px 6px 0">${v}</span>`).join('')}</div>
+    </div>
+
+    <div style="${card()}">
+      ${h('土台となるキャリア理論')}
+      <div style="margin-bottom:14px;padding-left:14px;border-left:3px solid var(--teal)">
+        <div style="font-weight:700;color:var(--navy);font-size:13.5px">RIASEC（ホランドの職業興味理論）</div>
+        <div style="font-size:12.5px;color:var(--text2);line-height:1.8">「人は自分の興味タイプに合った環境で力を発揮する」という考え方。<b>事業テーマ(btags)</b>で“どんな課題・領域に惹かれるか”を捉える発想の土台です。</div>
+      </div>
+      <div style="margin-bottom:14px;padding-left:14px;border-left:3px solid var(--teal)">
+        <div style="font-weight:700;color:var(--navy);font-size:13.5px">シャインのキャリア・アンカー</div>
+        <div style="font-size:12.5px;color:var(--text2);line-height:1.8">「人が仕事で手放したくない価値（錨）」の理論。<b>価値観(rtags)</b>で“何を大事に働きたいか”という譲れない軸を捉えます。</div>
+      </div>
+      <div style="padding-left:14px;border-left:3px solid var(--teal)">
+        <div style="font-weight:700;color:var(--navy);font-size:13.5px">自己決定理論（SDT・内発的動機づけ）</div>
+        <div style="font-size:12.5px;color:var(--text2);line-height:1.8">人の意欲は「自律性・有能感・関係性」が満たされると高まる、という理論。価値観タグはこの観点に対応づけています：</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-top:12px;background:var(--bg);border-radius:6px;overflow:hidden">
+        <thead><tr>
+          <th style="text-align:left;padding:8px 12px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace">SDTの3欲求</th>
+          <th style="text-align:left;padding:8px 12px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace">満たされる状態</th>
+          <th style="text-align:left;padding:8px 12px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace">対応する価値観タグ</th>
+        </tr></thead>
+        <tbody>${sdtRows}</tbody>
+      </table>
+    </div>
+
+    <div style="${card()}">
+      ${h('診断「○○タイプ」の生成ロジック')}
+      <div style="font-size:13px;color:var(--text);line-height:1.95">
+        スワイプで選ばれたカードのタグを集計し、<b>事業テーマ上位2 ×　価値観上位1</b>に定型句を組み合わせて「○○タイプ」を自動生成します（AI不要・再現性重視）。AI診断はその上で、選んだ/捨てた課題・メモを根拠に個別の気づきを言語化します。
+      </div>
+    </div>
+
+    <div style="${card()}">
+      ${h('体験設計の原則')}
+      <ul style="margin:0;padding-left:20px;font-size:13px;color:var(--text);line-height:2">
+        <li>カードでは<b>経営層名・社名は伏せる</b>（先入観なく“課題そのもの”で選んでもらう。人物は結果で開示）。</li>
+        <li><b>LINE登録は温まった後</b>：診断のフル詳細を見る手前まで遅らせ、ナーチャリング母数を確保。</li>
+        <li>占い的な決めつけを避け、<b>本人の言葉・選択を根拠</b>に返す（主語の取り違え厳禁）。</li>
+        <li>白ベタを避けた紙感の配色で、診断を“押し付け”でなく“発見”の体験に。</li>
+      </ul>
+    </div>
+
+    <div style="font-size:11px;color:var(--text3);line-height:1.7;margin-top:6px">
+      ※ 詳細設計は <code>DESIGN_v2_challenge_cards.md</code>、タグ語彙は pf/admin のラベル定義（CARD_BTAGS / CARD_RTAGS）が一次情報です。本ページはそれを要約した社内リファレンスです。
+    </div>
+  </div>`;
 }
 
 function downloadInterestsCsv(){

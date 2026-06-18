@@ -11,8 +11,8 @@
 :root{
   --teal:#42AD9F; --teal-d:#2e8c7f; --teal-bg:rgba(66,173,159,0.08); --teal-mid:rgba(66,173,159,0.16);
   --navy:#1C2A54; --navy-soft:rgba(28,42,84,0.06);
-  /* 背景は白ベタ禁止＝#E4E3E3ベースの紙感オフホワイト。面(surface)は白で階層化 */
-  --bg:#F3F2F0; --surface:#FFFFFF;
+  /* 背景は白ベタ禁止＝紙感オフホワイト。暖色(黄み)を避けnavy/tealと相性の良い極薄クールグレーに調整。面(surface)は白で階層化 */
+  --bg:#F2F3F5; --surface:#FFFFFF;
   --text:#1C2A54; --text2:#716C6B; --text3:#A8A6A4; --border:#E4E3E3;
   --red:#E2725B; --red-bg:rgba(226,114,91,0.08);
   --shadow:0 8px 30px rgba(28,42,84,0.07);
@@ -112,6 +112,9 @@ body{
 .abtn:active{ transform:scale(.9);}
 .abtn.nope{ color:var(--red);}
 .abtn.like{ color:var(--teal); width:70px;height:70px;font-size:30px;}
+.abtn.back{ color:var(--text3); width:50px;height:50px;font-size:20px; align-self:center;}
+.abtn.back:disabled{ opacity:.35; cursor:default; }
+.abtn.back:disabled:active{ transform:none; }
 .hint{ text-align:center; font-size:11px; color:var(--text3); padding-bottom:8px;}
 
 /* result */
@@ -284,10 +287,11 @@ body{
   <div class="stage" id="stage"></div>
 
   <div class="actions" id="actions">
+    <button class="abtn back" id="backBtn" onclick="goBack()" disabled aria-label="前のカードに戻る">↩</button>
     <button class="abtn nope" onclick="swipe('left')">✕</button>
     <button class="abtn like" onclick="swipe('right')">♥</button>
   </div>
-  <div class="hint">ドラッグでもボタンでも選べます</div>
+  <div class="hint">ドラッグでもボタンでも選べます ／ <span id="backHint">↩ で1枚戻れます</span></div>
 
   <!-- 理由1問（スワイプ後・結果前） -->
   <div id="reasonStep" style="display:none;flex:1;flex-direction:column;padding:24px 24px 30px;overflow-y:auto;">
@@ -396,7 +400,7 @@ const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 let recoCard=null; // 結果で選ばれたおすすめカード
 let reco2Card=null; // 偶然の2人目（傾向に近い別の経営層）
 
-let deck=[], idx=0, picked=[], dropped=[];
+let deck=[], idx=0, picked=[], dropped=[], history=[];
 
 function initProg(){
   const p=document.getElementById('prog'); p.innerHTML='';
@@ -423,6 +427,20 @@ function renderStack(){
     if(depth===0) attachDrag(el);
   }
   initProg();
+  updateBackBtn();
+}
+function updateBackBtn(){
+  const b=document.getElementById('backBtn');
+  if(b) b.disabled = (idx<=0 || !history.length);
+}
+function goBack(){
+  if(idx<=0 || !history.length) return;
+  // 進行中のドラッグがあれば破棄
+  drag.active=false; drag.el=null;
+  idx--;
+  const dir=history.pop();
+  if(dir==='right') picked.pop(); else dropped.pop();
+  renderStack();
 }
 
 // ドラッグ状態は単一オブジェクトで管理し、windowリスナーは一度だけ登録（蓄積バグ防止）
@@ -475,6 +493,7 @@ function swipe(dir){
 function recordChoice(dir){
   const c=deck[idx]; if(!c)return;
   if(dir==='right') picked.push(c); else dropped.push(c);
+  history.push(dir);
 }
 const REASONS=['社会課題に共感した','新規事業に興味がある','地域に貢献したい','自分の経験と重なった','経営層の考え方に興味'];
 let selectedReason='';
