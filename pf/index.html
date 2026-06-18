@@ -398,8 +398,17 @@ let CARDS = [
   {id:'card_ishikura', companyId:'co_ishikura_1777510220', title:'福岡発の遮熱シートで、建材の未来を変えたい', sub:'仲間を大切にしながら、地球を救う事業を全国へ広げる挑戦です。', leader:'石蔵', company:'石蔵商店 建材事業部', btags:['newbiz','growth'], rtags:['team','mission','challenge']},
   {id:'card_ad_koga', companyId:'co_import_1776760337434', title:'印刷会社を、地域企業の販促DXパートナーへ変えたい', sub:'働く人が自分らしく力を発揮できる会社づくりにも挑んでいます。', leader:'古賀', company:'アド印刷株式会社', btags:['dx','expertise'], rtags:['selfrealization','dialogue','local']},
 ];
-// 流入元(UTM)を取得。チャネル別(LINE配信/メール等)の効果比較に使う。
-const SN_UTM=(function(){ try{ const q=new URLSearchParams(location.search); return {source:q.get('utm_source')||'', medium:q.get('utm_medium')||'', campaign:q.get('utm_campaign')||''}; }catch(e){ return {source:'',medium:'',campaign:''}; } })();
+// 流入元(UTM)を取得。チャネル別(広告/LINE配信/メール等)の効果比較に使う。
+// 入口が「/」でも引き継げるよう、URLに無ければlocalStorage(sn_utm)から復元する。
+const SN_UTM=(function(){
+  try{
+    const q=new URLSearchParams(location.search);
+    let u={source:q.get('utm_source')||'', medium:q.get('utm_medium')||'', campaign:q.get('utm_campaign')||''};
+    if(u.source||u.medium||u.campaign){ localStorage.setItem('sn_utm', JSON.stringify({...u, ts:Date.now()})); }
+    else { const s=JSON.parse(localStorage.getItem('sn_utm')||'null'); if(s && (Date.now()-(s.ts||0) < 30*24*3600*1000)){ u={source:s.source||'', medium:s.medium||'', campaign:s.campaign||''}; } }
+    return u;
+  }catch(e){ return {source:'',medium:'',campaign:''}; }
+})();
 const SUPA_URL='https://ypwwuylcvjwcyazvpibd.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd3d1eWxjdmp3Y3lhenZwaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTY1MTMsImV4cCI6MjA5MjI3MjUxM30.7YseXt8libEzFsSAv4bI46l36kZ2lFz_jnh1JphVpvA';
 let recoCard=null; // 結果で選ばれたおすすめカード
