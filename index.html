@@ -2977,7 +2977,14 @@ function showFeedback(fb) {
     if(tags){ tags.innerHTML = ''; const sec = tags.closest('.values-section'); if(sec) sec.style.display = 'none'; }
     document.getElementById('msgText').textContent = String(fb.message||'').replace(/\\n/g,'\n');
     setTimeout(()=>document.getElementById('msgBlock').classList.add('show'), 550);
-    document.getElementById('bridgeText').textContent = fb.bridge||'';
+    // bridge(接点理由)はAI応答に含まれないことがあるため、空なら経営層名から補う（空欄の枠を出さない）
+    let _bridgeTxt = String(fb.bridge||'').trim();
+    if(!_bridgeTxt){
+      const _bco = selectedCompanyId ? loadCompanies().find(c=>String(c.id||'')===String(selectedCompanyId)) : null;
+      const _nm = (_bco && (_bco.ceo||'')) ? _bco.ceo : 'この経営層';
+      _bridgeTxt = `${_nm}さんと直接話すと、あなたがこの会社で何から関われそうかの輪郭が見えてきます。`;
+    }
+    document.getElementById('bridgeText').textContent = _bridgeTxt;
     setTimeout(()=>document.getElementById('bridgeBlock').classList.add('show'), 850);
 
     setTimeout(()=>{

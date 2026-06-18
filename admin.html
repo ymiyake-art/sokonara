@@ -433,8 +433,8 @@ function cardEdit(id){
       ・<b>求人票（職種・条件）にはしない</b>。あくまで課題と、それに向き合う想い。<br>
       ・2行目に <b>経営層の人柄・想いが伝わる一文</b>を添える（What70 / Why20 / Who10）。
     </div>
-    <label style="${lbl}">ID（半角英数字・編集不可）</label>
-    <input id="f-id" style="${inp}" value="${escA(c.id)}" ${id?'disabled':'placeholder="card_xxx_a"'}>
+    <label style="${lbl}">ID（空欄で自動発行・あとから編集不可）</label>
+    <input id="f-id" style="${inp}" value="${escA(c.id)}" ${id?'disabled':'placeholder="空欄のまま保存で自動発行されます"'}>
     <label style="${lbl}">1行目：課題（具体的に・出番が想像できる粒度で）</label>
     <input id="f-title" style="${inp}" value="${escA(c.card_title)}">
     <label style="${lbl}">2行目：経営層の想い・人柄が伝わる一文</label>
@@ -503,14 +503,18 @@ async function genCardFromArticle(){
     // タグのチェックを反映
     if(Array.isArray(p.btags)) document.querySelectorAll('.cb-bt').forEach(cb=>{ cb.checked=p.btags.includes(cb.value); });
     if(Array.isArray(p.rtags)) document.querySelectorAll('.cb-rt').forEach(cb=>{ cb.checked=p.rtags.includes(cb.value); });
+    // IDは自動発行（新規作成時、未入力なら埋める）
+    const idEl=document.getElementById('f-id'); if(idEl && !idEl.disabled && !idEl.value.trim()){ idEl.value=genCardId(); }
     toast('AIで生成しました（必要に応じて手直しを）');
   }catch(e){ toast('生成失敗: '+(e.message||e)); }
   finally{ if(btn){ btn.disabled=false; btn.textContent='✨ 記事から自動生成'; } }
 }
 
+// 課題カードIDを自動発行（手入力不要）
+function genCardId(){ return 'card_'+Date.now().toString(36)+Math.random().toString(36).slice(2,4); }
+
 async function cardSave(editId){
-  const id=editId||document.getElementById('f-id').value.trim();
-  if(!id){ toast('IDを入力してください'); return; }
+  const id=editId||document.getElementById('f-id').value.trim()||genCardId();
   const row={
     id,
     card_title:document.getElementById('f-title').value.trim(),
