@@ -440,6 +440,7 @@ function goBack(){
   idx--;
   const dir=history.pop();
   if(dir==='right') picked.pop(); else dropped.pop();
+  logProgress();
   renderStack();
 }
 
@@ -494,6 +495,7 @@ function recordChoice(dir){
   const c=deck[idx]; if(!c)return;
   if(dir==='right') picked.push(c); else dropped.push(c);
   history.push(dir);
+  logProgress();
 }
 const REASONS=['社会課題に共感した','新規事業に興味がある','地域に貢献したい','自分の経験と重なった','経営層の考え方に興味'];
 let selectedReason='';
@@ -550,14 +552,19 @@ function showResult(){
     )[0];
   }
   recoCard = reco || null;
-  // 匿名ログ: 結果到達時に1行作成（以後マイルストーンでPATCH）
+  // 匿名ログ: 結果到達。行は開始時(logStart)に作成済みのためPATCHで更新。
   const rtagsHit=[]; picked.forEach(c=>(c.rtags||[]).forEach(t=>{ if(!rtagsHit.includes(t)) rtagsHit.push(t); }));
-  logInsert({
+  // 開始ログが無い場合（直リンク等）の保険として、無ければ作成してから更新
+  if(!logId){ logInsert({ picked_cards:picked.map(x=>x.id), dropped_cards:dropped.map(x=>x.id) }); }
+  // 既存カラム（ALTER未実行でも保存される）
+  logUpdate({
     picked_cards:picked.map(x=>x.id), dropped_cards:dropped.map(x=>x.id),
     top_tags:ranked.slice(0,3).map(x=>x[0]), rtags_hit:rtagsHit,
     reason:selectedReason||'',
     recommended_company:reco?reco.companyId:null, recommended_card:reco?reco.id:null
   });
+  // 新カラム（reached_result）。未追加なら静かに無視される
+  logUpdate({ reached_result:true });
   const co = reco ? (COMPANIES_MAP[reco.companyId]||{}) : {};
   const photo = co.photoUrl||co.heroUrl||'';
   const catch_ = co.catchphrase||reco?.sub||'';
@@ -652,6 +659,21 @@ async function logUpdate(fields){
       headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},
       body:JSON.stringify({...fields,updated_at:new Date().toISOString()})});
   }catch(e){}
+}
+// KPI: カード開始時にログ行を作成（入口〜途中離脱を測るため、結果到達を待たずに記録）
+async function logStart(){
+  try{
+    logId=(crypto.randomUUID?crypto.randomUUID():'log_'+Date.now()+'_'+Math.random().toString(36).slice(2));
+    const full={ id:logId, started:true, started_at:new Date().toISOString(), shown_cards:deck.map(c=>c.id) };
+    let res=await _postLog(full);
+    // 新カラム未追加(ALTER未実行)でも最低限のログは残す（アプリは壊さない）
+    if(!res.ok){ res=await _postLog({ id:logId }); }
+    if(!res.ok){ logId=null; }
+  }catch(e){ logId=null; }
+}
+// KPI: スワイプの度に部分選択を記録（途中離脱でも picked/dropped から進捗が分かる）
+function logProgress(){
+  logUpdate({ picked_cards:picked.map(x=>x.id), dropped_cards:dropped.map(x=>x.id) });
 }
 
 function hideAllFs(){ document.querySelectorAll('.fs').forEach(e=>e.classList.remove('show')); }
@@ -847,8 +869,9 @@ function restart(){
   memoSelected=new Set(); fbData=null; selectedQ1=''; selectedReason=''; logId=null;
   localStorage.removeItem('pf_demo_line');
   const mc=document.getElementById('memoChips'); if(mc){mc.dataset.built='';mc.innerHTML='';}
-  idx=0; picked=[]; dropped=[];
+  idx=0; picked=[]; dropped=[]; history=[];
   deck=buildDeck();
+  logStart(); // KPI: カード開始でログ行を作成
   document.getElementById('stage').style.display='';
   document.getElementById('actions').style.display='flex';
   document.querySelector('.hint').style.display='';

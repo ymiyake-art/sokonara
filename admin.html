@@ -578,8 +578,12 @@ async function renderResonance(){
   const coCeo =id=>{ const c=cos.find(x=>String(x.id)===String(id)); return c?(c.ceo||''):''; };
   const pct=(n,d)=>d?Math.round(n/d*100):0;
 
-  // 全体ファネル
+  // 全体ファネル（行はカード開始時に作成されるため N=カード開始数）
   const N=logs.length;
+  const swiped=l=>((l.picked_cards||[]).length+(l.dropped_cards||[]).length);
+  const f3=logs.filter(l=>swiped(l)>=3).length;
+  // 到達：reached_result。旧データ(列なし)は top_tags 有無で後方互換判定
+  const fResult=logs.filter(l=>l.reached_result || (l.top_tags&&l.top_tags.length)).length;
   const fRead=logs.filter(l=>l.article_read).length;
   const fAi=logs.filter(l=>l.ai_viewed).length;
   const fLine=logs.filter(l=>l.line_registered).length;
@@ -607,15 +611,15 @@ async function renderResonance(){
   <div style="padding:24px;max-width:980px">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px;">
       <div style="font-size:13px;color:var(--text2);line-height:1.7">
-        課題カード経由（課題から探す）の匿名セッション <b>${N}</b>件。<br>
-        「どんなタイプが・どの言葉に反応し・どこまで進んだか」を経営層ごとに集計。個人情報は含みません。
+        課題カードを開始した匿名セッション <b>${N}</b>件（カード開始時に記録／途中離脱も含む）。<br>
+        「どんなタイプが・どの言葉に反応し・どこまで進んだか（離脱含む）」を経営層ごとに集計。個人情報は含みません。
       </div>
       ${N? `<button onclick="cardLogDeleteAll()" style="flex:0 0 auto;padding:8px 14px;background:none;border:1px solid var(--hot);color:var(--hot);border-radius:4px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">全セッション消去</button>`:''}
     </div>
 
     <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
-      <div style="font-weight:700;font-size:13px;margin-bottom:14px;">全体ファネル</div>
-      ${[['カード診断到達',N],['記事を読んだ',fRead],['AI診断を見た',fAi],['LINE登録',fLine],['面談CTA',fCta]].map(([lbl,n])=>
+      <div style="font-weight:700;font-size:13px;margin-bottom:14px;">全体ファネル <span style="font-weight:400;color:var(--text3);font-size:11px">（カード開始を100%とした到達率）</span></div>
+      ${[['カード開始',N],['3枚以上スワイプ',f3],['診断結果に到達',fResult],['記事を読んだ',fRead],['AI診断を見た',fAi],['LINE登録',fLine],['面談CTA',fCta]].map(([lbl,n])=>
         `<div style="display:flex;align-items:center;gap:12px;margin-bottom:9px;font-size:12px;">
           <div style="width:110px;color:var(--text2)">${lbl}</div>
           ${funnelBar(n)}

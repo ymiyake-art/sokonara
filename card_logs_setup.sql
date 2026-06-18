@@ -22,6 +22,10 @@ CREATE TABLE IF NOT EXISTS card_logs (
   ai_summary    text DEFAULT '',            -- 診断結果(要約)。ログイン往復後の復元用に匿名保存
   ai_message    text DEFAULT '',            -- 診断結果(本文)
   ai_bridge     text DEFAULT '',            -- 診断結果(接点の一言)
+  started        boolean DEFAULT false,     -- カードを開始した（KPI：入口）
+  started_at     timestamptz,               -- 開始時刻
+  shown_cards    text[] DEFAULT '{}',       -- その回に表示されたカードID（ランダム抽出のため記録）
+  reached_result boolean DEFAULT false,     -- 結果(診断)に到達した（完了）
   created_at    timestamptz DEFAULT now(),
   updated_at    timestamptz DEFAULT now()
 );
