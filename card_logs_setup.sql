@@ -26,6 +26,9 @@ CREATE TABLE IF NOT EXISTS card_logs (
   started_at     timestamptz,               -- 開始時刻
   shown_cards    text[] DEFAULT '{}',       -- その回に表示されたカードID（ランダム抽出のため記録）
   reached_result boolean DEFAULT false,     -- 結果(診断)に到達した（完了）
+  utm_source     text,                      -- 流入元（line / email 等・チャネル比較用）
+  utm_medium     text,                      -- 媒体
+  utm_campaign   text,                      -- キャンペーン
   created_at    timestamptz DEFAULT now(),
   updated_at    timestamptz DEFAULT now()
 );

@@ -398,6 +398,8 @@ let CARDS = [
   {id:'card_ishikura', companyId:'co_ishikura_1777510220', title:'福岡発の遮熱シートで、建材の未来を変えたい', sub:'仲間を大切にしながら、地球を救う事業を全国へ広げる挑戦です。', leader:'石蔵', company:'石蔵商店 建材事業部', btags:['newbiz','growth'], rtags:['team','mission','challenge']},
   {id:'card_ad_koga', companyId:'co_import_1776760337434', title:'印刷会社を、地域企業の販促DXパートナーへ変えたい', sub:'働く人が自分らしく力を発揮できる会社づくりにも挑んでいます。', leader:'古賀', company:'アド印刷株式会社', btags:['dx','expertise'], rtags:['selfrealization','dialogue','local']},
 ];
+// 流入元(UTM)を取得。チャネル別(LINE配信/メール等)の効果比較に使う。
+const SN_UTM=(function(){ try{ const q=new URLSearchParams(location.search); return {source:q.get('utm_source')||'', medium:q.get('utm_medium')||'', campaign:q.get('utm_campaign')||''}; }catch(e){ return {source:'',medium:'',campaign:''}; } })();
 const SUPA_URL='https://ypwwuylcvjwcyazvpibd.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd3d1eWxjdmp3Y3lhenZwaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTY1MTMsImV4cCI6MjA5MjI3MjUxM30.7YseXt8libEzFsSAv4bI46l36kZ2lFz_jnh1JphVpvA';
 let recoCard=null; // 結果で選ばれたおすすめカード
@@ -670,10 +672,11 @@ async function logUpdate(fields){
 async function logStart(){
   try{
     logId=(crypto.randomUUID?crypto.randomUUID():'log_'+Date.now()+'_'+Math.random().toString(36).slice(2));
-    const full={ id:logId, started:true, started_at:new Date().toISOString(), shown_cards:deck.map(c=>c.id) };
-    let res=await _postLog(full);
-    // 新カラム未追加(ALTER未実行)でも最低限のログは残す（アプリは壊さない）
-    if(!res.ok){ res=await _postLog({ id:logId }); }
+    const base={ id:logId, started:true, started_at:new Date().toISOString(), shown_cards:deck.map(c=>c.id) };
+    const withUtm={ ...base, utm_source:SN_UTM.source||null, utm_medium:SN_UTM.medium||null, utm_campaign:SN_UTM.campaign||null };
+    let res=await _postLog(withUtm);
+    if(!res.ok){ res=await _postLog(base); }   // utm列が未追加の場合
+    if(!res.ok){ res=await _postLog({ id:logId }); } // started列も未追加の場合（最低限のログは残す）
     if(!res.ok){ logId=null; }
   }catch(e){ logId=null; }
 }
