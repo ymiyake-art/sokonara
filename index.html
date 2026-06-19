@@ -2868,11 +2868,25 @@ async function genFeedback() {
       body:JSON.stringify(reqBody)
     });
     if(!res.ok) throw new Error('API error ' + res.status);
-    // 診断はストリーミング中継（text/plain）。全文を連結してからJSONを取り出す。
+    // 診断はストリーミング中継。届いた順にライブ表示（要約は常時／本文はLINE登録済みのみ＝未登録はゲート維持）。
     let raw = '';
     if(res.body && res.body.getReader){
+      const lineReg = isLineRegistered();
+      const _skel=document.getElementById('fbSkel'); if(_skel) _skel.style.display='none';
+      const _content=document.getElementById('fbContent'); if(_content) _content.style.display='block';
+      const _sumWrap=document.getElementById('fbSummary'); if(_sumWrap) _sumWrap.style.display='block';
+      const _sumEl=document.getElementById('fbSummaryText');
+      const _msgEl=document.getElementById('msgText');
+      const _detail=document.getElementById('fbDetail');
+      if(lineReg){ if(_detail) _detail.style.display='block'; const _mb=document.getElementById('msgBlock'); if(_mb) _mb.classList.add('show'); }
+      else if(_detail){ _detail.style.display='none'; }
       const reader = res.body.getReader(); const dec = new TextDecoder();
-      while(true){ const {done,value} = await reader.read(); if(done) break; raw += dec.decode(value,{stream:true}); }
+      while(true){
+        const {done,value} = await reader.read(); if(done) break;
+        raw += dec.decode(value,{stream:true});
+        const _s = partialJsonStr(raw,'summary'); if(_s!=null && _sumEl) _sumEl.textContent=_s;
+        if(lineReg){ const _mg = partialJsonStr(raw,'message'); if(_mg!=null && _msgEl) _msgEl.textContent=_mg; }
+      }
     } else { raw = await res.text(); }
     // 後方互換：旧JSON形式({content:[{text}]})が来ても拾えるように
     try { const _j = JSON.parse(raw); if(_j && _j.content && _j.content[0] && typeof _j.content[0].text==='string') raw = _j.content[0].text; } catch(e){}
@@ -2971,6 +2985,25 @@ function copyFeedback(){
   navigator.clipboard.writeText(text).then(()=>toast('診断結果をコピーしました')).catch(()=>{
     prompt('以下をコピーしてください', text);
   });
+}
+
+// ストリーミング途中の不完全なJSONから、指定キーの文字列値（途中まで）を取り出す。\n等はデコード。
+function partialJsonStr(raw, key){
+  const m = raw.match(new RegExp('"'+key+'"\\s*:\\s*"'));
+  if(!m) return null;
+  let i = m.index + m[0].length, out='';
+  for(; i<raw.length; i++){
+    const ch = raw[i];
+    if(ch === '\\'){
+      const n = raw[i+1];
+      if(n === undefined) break;          // エスケープ途中（次チャンク待ち）
+      if(n === 'n') out+='\n'; else if(n === 't') out+='\t'; else if(n === 'r') {} else out+=n;
+      i++; continue;
+    }
+    if(ch === '"') break;                  // 値の終端
+    out += ch;
+  }
+  return out;
 }
 
 function showFeedback(fb) {
