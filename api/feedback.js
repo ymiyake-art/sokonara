@@ -286,6 +286,9 @@ export default async function handler(req) {
 
   const allowOrigin = req.headers.get('origin') || '';
 
+  // ユーザー向け診断(values/cardfeedback)は品質優先で4o＋ストリーミング中継（Edge関数のタイムアウト504を回避）。
+  const isStream = (type === 'values' || type === 'cardfeedback');
+
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -293,12 +296,10 @@ export default async function handler(req) {
       'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
-      // ユーザー向けのAI診断(values/cardfeedback)は品質優先で4o、その他の軽い処理はminiでコスト抑制
-      model: (type === 'values' || type === 'cardfeedback') ? 'gpt-4o' : 'gpt-4o-mini',
-      // 生成時間がEdge関数の上限を超え504になるのを防ぐため、cardfeedbackは出力を抑えて応答を速く（密度はプロンプトで担保）
+      model: isStream ? 'gpt-4o' : 'gpt-4o-mini',
       max_tokens: type === 'cardfeedback' ? 1200 : (type === 'values' ? 1800 : 1000),
       // 本人の言葉を踏まえた固有性・毎回の新鮮さを出すため、診断系はやや高め。繰り返し同じ言い回しを避ける。
-      ...((type === 'values' || type === 'cardfeedback') ? { temperature: 0.85, presence_penalty: 0.3, frequency_penalty: 0.3 } : {}),
+      ...(isStream ? { temperature: 0.85, presence_penalty: 0.3, frequency_penalty: 0.3, stream: true } : {}),
       messages: [
         { role: 'system', content: prompt.system },
         { role: 'user',   content: prompt.user }
@@ -306,15 +307,58 @@ export default async function handler(req) {
     })
   });
 
-  const result = await res.json();
-
   if (!res.ok) {
-    return new Response(JSON.stringify(result), {
+    const errText = await res.text();
+    return new Response(errText, {
       status: res.status,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': allowOrigin }
     });
   }
 
+  // 診断はOpenAIのSSEから content デルタだけを抜き出し、本文テキストとして逐次中継。
+  // 接続が保たれるためEdge関数がタイムアウトしない。クライアントは全文を連結→JSONをパースする。
+  if (isStream) {
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        let buffer = '';
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            let nl;
+            while ((nl = buffer.indexOf('\n')) >= 0) {
+              const line = buffer.slice(0, nl).trim();
+              buffer = buffer.slice(nl + 1);
+              if (!line.startsWith('data:')) continue;
+              const payload = line.slice(5).trim();
+              if (payload === '[DONE]') { controller.close(); return; }
+              try {
+                const j = JSON.parse(payload);
+                const c = j.choices?.[0]?.delta?.content;
+                if (c) controller.enqueue(encoder.encode(c));
+              } catch (e) { /* 分割された行は無視 */ }
+            }
+          }
+        } catch (e) { /* 中断時はそのまま閉じる */ }
+        controller.close();
+      }
+    });
+    return new Response(stream, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-cache',
+        'Access-Control-Allow-Origin': allowOrigin
+      }
+    });
+  }
+
+  // それ以外（reco/insight/report/articlemeta 等）は従来どおりJSONで返す
+  const result = await res.json();
   const text = result.choices?.[0]?.message?.content ?? '';
   return new Response(JSON.stringify({ content: [{ text }] }), {
     status: 200,
