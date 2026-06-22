@@ -575,6 +575,8 @@ async function renderResonance(){
     const r=await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw,action:'list',table:'card_logs'})});
     if(!r.ok) throw new Error('API '+r.status);
     logs=await r.json(); if(!Array.isArray(logs)) logs=[];
+    // 直接導線(values)の復元専用行（started=false・カード操作なし）は、カード経由の共鳴データから除外
+    logs=logs.filter(l=> l.started===true || (Array.isArray(l.picked_cards)&&l.picked_cards.length) || (Array.isArray(l.dropped_cards)&&l.dropped_cards.length));
   }catch(e){
     box.innerHTML=`<div style="padding:24px"><div style="color:var(--hot);font-weight:700;margin-bottom:8px">共鳴データを取得できませんでした。</div>
       <div style="font-size:13px;color:var(--text2)">card_logsテーブル未作成、または認証エラーの可能性。<br>${escA(e.message)}</div></div>`;

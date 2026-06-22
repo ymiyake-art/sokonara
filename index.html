@@ -1955,7 +1955,7 @@ function beginLineLogin() {
   // stateに最小情報を埋め込む（localStorageが失われてもURL経由で持ち回せる。state長を抑えるため用途別に最小化）。
   // カード経由：logIdだけ載せれば、サーバ(card_logs)から"同じ診断"を確実に復元できる（登録前後で内容一致／再生成しない）。
   // 直接導線：card_logsが無いので、回答を載せて（最終手段の）再生成に備える。
-  const _lg = (typeof SN_CARDS!=='undefined' && SN_CARDS && SN_CARDS.logId) ? SN_CARDS.logId : '';
+  const _lg = _diagLogId || ((typeof SN_CARDS!=='undefined' && SN_CARDS && SN_CARDS.logId) ? SN_CARDS.logId : '');
   const payload = _lg
     ? _b64encUtf8({ c: selectedCompanyId||'', lg: _lg })
     : _b64encUtf8({ c: selectedCompanyId||'', q1: S.q1||'', q2: S.q2||[], a: S.about||[], q3: S.q3||'' });
@@ -2049,6 +2049,23 @@ async function patchCardLog(fields){
       body:JSON.stringify({ ...fields, updated_at:new Date().toISOString() })
     });
   }catch(e){}
+}
+
+// 復元用の診断保存ID（カード経由=SN_CARDS.logId／直接導線=新規生成）。LINE往復のstateに載せて、登録後に同じ診断を復元する。
+let _diagLogId = null;
+// 直接導線(values)はcard_logs行が無いので、復元用の行をcard_logsへ新規保存する。
+// started=false ＝「カード経由の共鳴データ集計」からは除外（復元専用の行）。
+async function saveDiagForRestore(fb){
+  const id = 'vs_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+  _diagLogId = id;
+  try{
+    await fetch(`${SUPABASE_URL}/rest/v1/card_logs`,{
+      method:'POST',
+      headers:{ apikey:SUPABASE_KEY, Authorization:'Bearer '+SUPABASE_KEY, 'Content-Type':'application/json', Prefer:'return=minimal' },
+      body:JSON.stringify({ id, started:false, recommended_company:selectedCompanyId||null,
+        ai_summary:fb.summary||'', ai_message:fb.message||'', ai_bridge:fb.bridge||'', updated_at:new Date().toISOString() })
+    });
+  }catch(e){ _diagLogId=null; }
 }
 
 function loadCompanies(){
@@ -2903,8 +2920,13 @@ async function genFeedback() {
     _saveFbCache();
     showFeedback(fb);
     logResonance(); // 匿名の共感ログを記録（個人情報なし）
-    // カード経由：診断結果をサーバー(card_logs)へ匿名保存。ログイン往復で別ブラウザになっても同じ結果を復元できる
-    patchCardLog({ ai_summary: fb.summary||'', ai_message: fb.message||'', ai_bridge: fb.bridge||'' });
+    // 診断結果をサーバー(card_logs)へ匿名保存。ログイン往復で別ブラウザになっても同じ結果を復元できる（登録前後で内容一致）
+    if(SN_CARDS && SN_CARDS.logId){
+      _diagLogId = SN_CARDS.logId;
+      patchCardLog({ ai_summary: fb.summary||'', ai_message: fb.message||'', ai_bridge: fb.bridge||'' });
+    } else {
+      saveDiagForRestore(fb); // 直接導線(values)：復元用にcard_logsへ保存（started=false）
+    }
   } catch(e) {
     console.error('[feedback error]', e?.message || e);
     toast('AIエラー（詳細はコンソール確認）: ' + (e?.message || '不明'));
