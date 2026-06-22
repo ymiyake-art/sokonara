@@ -2045,6 +2045,7 @@ async function patchCardLog(fields){
   try{
     await fetch(`${SUPABASE_URL}/rest/v1/card_logs?id=eq.${encodeURIComponent(SN_CARDS.logId)}`,{
       method:'PATCH',
+      keepalive:true, // 直後にLINE遷移等があってもPATCHを完走させる
       headers:{ apikey:SUPABASE_KEY, Authorization:'Bearer '+SUPABASE_KEY, 'Content-Type':'application/json', Prefer:'return=minimal' },
       body:JSON.stringify({ ...fields, updated_at:new Date().toISOString() })
     });
@@ -2061,6 +2062,7 @@ async function saveDiagForRestore(fb){
   try{
     await fetch(`${SUPABASE_URL}/rest/v1/card_logs`,{
       method:'POST',
+      keepalive:true,
       headers:{ apikey:SUPABASE_KEY, Authorization:'Bearer '+SUPABASE_KEY, 'Content-Type':'application/json', Prefer:'return=minimal' },
       body:JSON.stringify({ id, started:false, recommended_company:selectedCompanyId||null,
         ai_summary:fb.summary||'', ai_message:fb.message||'', ai_bridge:fb.bridge||'', updated_at:new Date().toISOString() })
@@ -2515,6 +2517,9 @@ function renderHeroLeaders(){
 }
 
 function renderP1FromCompany(){
+  // カード経由：記事を開いた＝結果画面を経て記事到達。article_read(③)＋reached_result(②)をindex.html側で確実に記録
+  // （pf遷移時の単発PATCHは速いタップで中断され得るため、遷移後の安定環境で押さえる）
+  try{ if(SN_CARDS && SN_CARDS.logId) patchCardLog({ article_read:true, reached_result:true }); }catch(e){}
   const list = loadCompanies();
   const co = selectedCompanyId
     ? list.find(c=>String(c.id||'')===String(selectedCompanyId)) || null

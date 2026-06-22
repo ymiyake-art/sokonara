@@ -658,6 +658,7 @@ function maskPII(s){
 }
 async function _postLog(body){
   return fetch(`${SUPA_URL}/rest/v1/card_logs`,{method:'POST',
+    keepalive:true,
     headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},
     body:JSON.stringify(body)});
 }
@@ -674,6 +675,7 @@ async function logUpdate(fields){
   if(!logId) return;
   try{
     await fetch(`${SUPA_URL}/rest/v1/card_logs?id=eq.${logId}`,{method:'PATCH',
+      keepalive:true, // 直後に画面遷移してもPATCHを完走させる（記事へ遷移時のarticle_read等が消えないように）
       headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},
       body:JSON.stringify({...fields,updated_at:new Date().toISOString()})});
   }catch(e){}
