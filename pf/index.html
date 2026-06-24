@@ -313,6 +313,14 @@ body{
   .leader-tag{ font-size:11px; padding:3px 11px; }
   .leader-cta{ font-size:14px; }
   #vsFinal{ max-width:420px; }
+  /* 偶然性TOPもPCでは主役級に */
+  body.vmode #screenTop{ max-width:680px; }
+  body.vmode .topKicker{ font-size:12px; letter-spacing:4px; }
+  body.vmode .topH{ font-size:36px; }
+  body.vmode .topLead{ font-size:16px; }
+  body.vmode .topStep .si{ font-size:30px; }
+  body.vmode .topStep .st{ font-size:12px; }
+  body.vmode .topCta{ font-size:18px; padding:20px; }
 }
 </style>
 <!-- Vercel Web Analytics（Cookie/PIIなし・訪問数/参照元計測） -->
@@ -322,32 +330,32 @@ body{
 <!-- ===== ヘッダー（TOPと同一・戻れるように） ===== -->
 <div class="pfhead">
   <img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ" onclick="location.href='/'">
+  <a class="active" href="/pf/">経営者と出会う</a>
   <a href="/?view=leaders">経営層一覧</a>
-  <a class="active" href="/pf/">課題から探す</a>
 </div>
 
-<!-- ===== TOP ENTRY ===== -->
-<div id="screenTop">
+<!-- ===== TOP ENTRY（偶然性の思想／人物版の入口。既定はhide→initでperson時に表示）===== -->
+<div id="screenTop" class="hide">
   <div class="topInner">
-    <div class="topKicker">SOKONARA</div>
-    <h1 class="topH">自分なら力になれるかも。<br>そう思える課題を、<br>経営層から直接聞いてみる。</h1>
+    <div class="topKicker">PLANNED HAPPENSTANCE</div>
+    <h1 class="topH">キャリアの転機は、<br>まだ出会っていない人にある。</h1>
     <div class="topLead">
-      気になる課題カードを選ぶと、その課題に向き合う経営層の記事が見つかります。<br>
-      読んだ後は、AIがあなたの「はたらくヒント」をレポート化。気になったら、その経営層と直接話せます。
+      これまで、出会いは“いつもの円”の中だけ——学校・職場・業界。<br>
+      でも人生を動かすきっかけは、たいてい“予想しなかった出会い”から生まれます。<br>
+      ソコナラは、地域で挑戦する経営者と、あなたを“偶然”つなぐ場所。<br>
+      まずは直感で、ピンとくる経営者を選んでみてください。
     </div>
     <div class="topSteps">
-      <div class="topStep"><div class="si">🗂️</div><div class="st">課題を<br>選ぶ</div></div>
+      <div class="topStep"><div class="si">✨</div><div class="st">直感で<br>選ぶ</div></div>
       <div class="topArrow">→</div>
-      <div class="topStep"><div class="si">📄</div><div class="st">記事を<br>読む</div></div>
+      <div class="topStep"><div class="si">📄</div><div class="st">想いを<br>読む</div></div>
       <div class="topArrow">→</div>
-      <div class="topStep"><div class="si">💡</div><div class="st">ヒントを<br>受け取る</div></div>
-      <div class="topArrow">→</div>
-      <div class="topStep"><div class="si">🤝</div><div class="st">経営層と<br>話す</div></div>
+      <div class="topStep"><div class="si">🤝</div><div class="st">話して<br>みる</div></div>
     </div>
   </div>
   <div class="topFoot">
-    <button class="topCta" onclick="startCards()">課題カードを選んでみる</button>
-    <div class="topNote">↑ ここから・無料・約3分</div>
+    <button class="topCta" onclick="startCards()">経営者と出会ってみる</button>
+    <div class="topNote">↑ 無料・約1分</div>
   </div>
 </div>
 
@@ -487,15 +495,15 @@ const SN_UTM=(function(){
     return u;
   }catch(e){ return {source:'',medium:'',campaign:''}; }
 })();
-// A/B：カード文言の出し分け。?v=person で人物版、それ以外は課題版(既定)。card_logsのvariantに記録。
+// 既定＝人物(偶然性)版。?v=challenge で旧課題版を温存(比較/テスト用)。card_logsのvariantに記録。
 // 回遊(index→/pf)でも維持できるよう localStorage(sn_variant) に保存・復元する。
 const SN_VARIANT=(function(){
   try{
     const v=new URLSearchParams(location.search).get('v');
     if(v==='person'||v==='challenge'){ localStorage.setItem('sn_variant',v); return v; }
     const s=localStorage.getItem('sn_variant'); if(s==='person'||s==='challenge') return s;
-    return 'challenge';
-  }catch(e){ return 'challenge'; }
+    return 'person'; // 既定＝偶然性(人物)版
+  }catch(e){ return 'person'; }
 })();
 const SUPA_URL='https://ypwwuylcvjwcyazvpibd.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd3d1eWxjdmp3Y3lhenZwaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTY1MTMsImV4cCI6MjA5MjI3MjUxM30.7YseXt8libEzFsSAv4bI46l36kZ2lFz_jnh1JphVpvA';
@@ -1114,8 +1122,16 @@ async function loadCards(){
   }catch(e){ /* フォールバックのCARDSを使用 */ }
 }
 
-// メインTOPが入口の役割を果たすので、/pf/ は説明画面(screenTop)を経由せず即スワイプ開始
-(async function init(){ await Promise.all([loadCards(), loadCompaniesPf()]); startCards(); })();
+// 既定(person)はマッチ前に偶然性TOPを表示。?v=challenge は従来通り即スワイプ開始。
+(async function init(){
+  await Promise.all([loadCards(), loadCompaniesPf()]);
+  if(SN_VARIANT==='person'){
+    document.body.classList.add('vmode'); // PC没入レイアウト(TOP/マッチ共通)
+    document.getElementById('screenTop').classList.remove('hide');
+  } else {
+    startCards();
+  }
+})();
 </script>
 </body>
 </html>
