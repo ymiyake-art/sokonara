@@ -2043,12 +2043,10 @@ function clearCardCtx(){ try{ localStorage.removeItem('sn_card_ctx'); }catch(e){
 async function patchCardLog(fields){
   if(!(SN_CARDS && SN_CARDS.logId)) return;
   try{
-    await fetch(`${SUPABASE_URL}/rest/v1/card_logs?id=eq.${encodeURIComponent(SN_CARDS.logId)}`,{
-      method:'PATCH',
-      keepalive:true, // 直後にLINE遷移等があってもPATCHを完走させる
-      headers:{ apikey:SUPABASE_KEY, Authorization:'Bearer '+SUPABASE_KEY, 'Content-Type':'application/json', Prefer:'return=minimal' },
-      body:JSON.stringify({ ...fields, updated_at:new Date().toISOString() })
-    });
+    // 保存はサーバーAPI(service_role)経由＝RLS非依存で確実に反映
+    await fetch('/api/card-log',{ method:'POST', keepalive:true,
+      headers:{ 'Content-Type':'application/json' },
+      body:JSON.stringify({ id:SN_CARDS.logId, set:fields||{} }) });
   }catch(e){}
 }
 
@@ -2060,13 +2058,11 @@ async function saveDiagForRestore(fb){
   const id = 'vs_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
   _diagLogId = id;
   try{
-    await fetch(`${SUPABASE_URL}/rest/v1/card_logs`,{
-      method:'POST',
-      keepalive:true,
-      headers:{ apikey:SUPABASE_KEY, Authorization:'Bearer '+SUPABASE_KEY, 'Content-Type':'application/json', Prefer:'return=minimal' },
-      body:JSON.stringify({ id, started:false, recommended_company:selectedCompanyId||null,
-        ai_summary:fb.summary||'', ai_message:fb.message||'', ai_bridge:fb.bridge||'', updated_at:new Date().toISOString() })
-    });
+    const res=await fetch('/api/card-log',{ method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body:JSON.stringify({ id, set:{ started:false, recommended_company:selectedCompanyId||null,
+        ai_summary:fb.summary||'', ai_message:fb.message||'', ai_bridge:fb.bridge||'' } }) });
+    const j=await res.json().catch(()=>({})); if(!(res.ok && j.ok!==false)) _diagLogId=null;
   }catch(e){ _diagLogId=null; }
 }
 

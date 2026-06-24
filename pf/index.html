@@ -656,41 +656,32 @@ function maskPII(s){
     .replace(/0\d{1,4}[-(\s]?\d{1,4}[-)\s]?\d{3,4}/g,'[電話]')
     .replace(/\d{6,}/g,'[番号]');
 }
-async function _postLog(body){
-  return fetch(`${SUPA_URL}/rest/v1/card_logs`,{method:'POST',
-    keepalive:true,
-    headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},
-    body:JSON.stringify(body)});
+// card_logsへの保存はすべてサーバーAPI(service_role)経由＝RLS非依存で確実に保存。upsertなので初回INSERT/以降UPDATE。
+async function _saveLog(set){
+  if(!logId) return false;
+  try{
+    const res=await fetch('/api/card-log',{method:'POST', keepalive:true,
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ id:logId, set:set||{} })});
+    const j=await res.json().catch(()=>({}));
+    return res.ok && j.ok!==false;
+  }catch(e){ return false; }
 }
 async function logInsert(row){
-  try{
-    logId=(crypto.randomUUID?crypto.randomUUID():'log_'+Date.now()+'_'+Math.random().toString(36).slice(2));
-    let res=await _postLog({id:logId,...row});
-    // reason列が未追加(400)の場合はreasonを外して再試行し、ログ自体は必ず残す
-    if(!res.ok && ('reason' in row)){ const {reason,...rest}=row; res=await _postLog({id:logId,...rest}); }
-    if(!res.ok){ logId=null; }
-  }catch(e){ logId=null; }
+  logId=(crypto.randomUUID?crypto.randomUUID():'log_'+Date.now()+'_'+Math.random().toString(36).slice(2));
+  const ok=await _saveLog(row||{});
+  if(!ok) logId=null;
 }
 async function logUpdate(fields){
   if(!logId) return;
-  try{
-    await fetch(`${SUPA_URL}/rest/v1/card_logs?id=eq.${logId}`,{method:'PATCH',
-      keepalive:true, // 直後に画面遷移してもPATCHを完走させる（記事へ遷移時のarticle_read等が消えないように）
-      headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},
-      body:JSON.stringify({...fields,updated_at:new Date().toISOString()})});
-  }catch(e){}
+  await _saveLog(fields||{});
 }
 // KPI: カード開始時にログ行を作成（入口〜途中離脱を測るため、結果到達を待たずに記録）
 async function logStart(){
-  try{
-    logId=(crypto.randomUUID?crypto.randomUUID():'log_'+Date.now()+'_'+Math.random().toString(36).slice(2));
-    const base={ id:logId, started:true, started_at:new Date().toISOString(), shown_cards:deck.map(c=>c.id) };
-    const withUtm={ ...base, utm_source:SN_UTM.source||null, utm_medium:SN_UTM.medium||null, utm_campaign:SN_UTM.campaign||null, utm_content:SN_UTM.content||null };
-    let res=await _postLog(withUtm);
-    if(!res.ok){ res=await _postLog(base); }   // utm列が未追加の場合
-    if(!res.ok){ res=await _postLog({ id:logId }); } // started列も未追加の場合（最低限のログは残す）
-    if(!res.ok){ logId=null; }
-  }catch(e){ logId=null; }
+  logId=(crypto.randomUUID?crypto.randomUUID():'log_'+Date.now()+'_'+Math.random().toString(36).slice(2));
+  const ok=await _saveLog({ started:true, started_at:new Date().toISOString(), shown_cards:deck.map(c=>c.id),
+    utm_source:SN_UTM.source||null, utm_medium:SN_UTM.medium||null, utm_campaign:SN_UTM.campaign||null, utm_content:SN_UTM.content||null });
+  if(!ok) logId=null;
 }
 // KPI: スワイプの度に部分選択を記録（途中離脱でも picked/dropped から進捗が分かる）
 function logProgress(){
