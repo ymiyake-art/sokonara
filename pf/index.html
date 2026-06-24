@@ -263,8 +263,13 @@ body{
 .leader-card:hover{ transform:translateY(-6px); box-shadow:0 18px 44px rgba(28,42,84,0.30); }
 .vsGrid:hover .leader-card:not(:hover){ opacity:.72; transform:scale(.99); }
 .leader-card:active{ transform:scale(.98); }
-.leader-card.vsEnter{ animation:vsEnter .34s cubic-bezier(.22,1,.36,1); }
-@keyframes vsEnter{ from{opacity:0;transform:translateY(16px) scale(.97);} to{opacity:1;transform:translateY(0) scale(1);} }
+.leader-card.vsEnter{ will-change:transform,opacity; }
+.leader-card.vsUp{ animation:vsUp .34s cubic-bezier(.22,1,.36,1); }
+.leader-card.vsFromL{ animation:vsFromL .38s cubic-bezier(.22,1,.36,1); }
+.leader-card.vsFromR{ animation:vsFromR .38s cubic-bezier(.22,1,.36,1); }
+@keyframes vsUp{ from{opacity:0;transform:translateY(16px) scale(.97);} to{opacity:1;transform:translateY(0) scale(1);} }
+@keyframes vsFromL{ from{opacity:0;transform:translateX(-52px);} to{opacity:1;transform:translateX(0);} }
+@keyframes vsFromR{ from{opacity:0;transform:translateX(52px);} to{opacity:1;transform:translateX(0);} }
 .leader-card-top{ position:relative; height:210px; overflow:hidden; background:var(--navy); flex-shrink:0; }
 .leader-card-photo-bg{ position:absolute; inset:0; background-size:cover; background-position:center top; transition:transform .4s; }
 .leader-card:hover .leader-card-photo-bg{ transform:scale(1.06); }
@@ -519,12 +524,12 @@ function leaderCardHTML(c, opts){
                 :`<div class="leader-photo">${esc((name||'経').charAt(0))}</div>`;
   const tags=Array.isArray(c.tags)?c.tags.filter(t=>t&&t.trim()!=='/').slice(0,3):[];
   const tagsHtml=tags.length?`<div class="leader-tags">${tags.map((t,i)=>`<span class="leader-tag leader-tag-${i}">${esc(t)}</span>`).join('')}</div>`:'';
-  return `<div class="leader-card${opts.enter?' vsEnter':''}" data-id="${esc(String(c.id||''))}">
+  const enterCls = opts.enter==='up'?' vsEnter vsUp':opts.enter==='fromL'?' vsEnter vsFromL':opts.enter==='fromR'?' vsEnter vsFromR':'';
+  return `<div class="leader-card${enterCls}" data-id="${esc(String(c.id||''))}">
     <div class="leader-card-top">${photoBg}<div class="leader-phrase">${phrase}</div></div>
     <div class="leader-card-bottom">
       <div class="leader-card-profile">${av}<div class="leader-meta"><div class="leader-name">${esc(name)}</div><div class="leader-company">${esc(company)}</div></div></div>
       ${tagsHtml}
-      <div class="leader-cta">この経営層の想いを読む →</div>
     </div></div>`;
 }
 function renderVersus(){
@@ -551,7 +556,8 @@ function renderVersus(){
 }
 function paintVersus(enterSide){
   const stage=document.getElementById('stage');
-  const le=(enterSide==='left'||enterSide==='both'), re=(enterSide==='right'||enterSide==='both');
+  const lt = (enterSide==='both')?'up':(enterSide==='left'?'fromL':'');
+  const rt = (enterSide==='both')?'up':(enterSide==='right'?'fromR':'');
   const pct=Math.round(((vsRound+1)/VS_ROUNDS)*100);
   stage.innerHTML=`
     <div class="vsArena">
@@ -562,9 +568,9 @@ function paintVersus(enterSide){
         <div class="vsProg">${vsRound+1} / ${VS_ROUNDS}</div>
       </div>
       <div class="vsGrid">
-        ${leaderCardHTML(vsLeft, {enter:le})}
+        ${leaderCardHTML(vsLeft, {enter:lt})}
         <div class="vsMedal">VS</div>
-        ${leaderCardHTML(vsRight, {enter:re})}
+        ${leaderCardHTML(vsRight, {enter:rt})}
       </div>
     </div>`;
   const cards=stage.querySelectorAll('.vsGrid .leader-card');
