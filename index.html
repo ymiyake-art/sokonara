@@ -1431,12 +1431,12 @@ h1, h2, h3, h4,
 
     <div class="cta-sticky" id="p1CtaSticky">
       <div class="cta-sticky-text">
-        <strong>まずは無料で、あなたへの「はたらくヒント」を</strong>
-        <span style="display:block;font-size:11px;color:var(--text2);margin-top:2px;font-weight:400;">かんたんな質問に答えるだけ（約3分）／気になったら経営層に直接つながれます</span>
+        <strong>気になったら、この経営層と話してみませんか？</strong>
+        <span style="display:block;font-size:11px;color:var(--text2);margin-top:2px;font-weight:400;">かんたんな入力だけ（約1分）。話したいと思ってもらえたら連絡が届きます</span>
       </div>
       <div class="cta-sticky-btns">
-        <button class="btn-outline" style="font-size:13px;padding:10px 16px;white-space:nowrap" onclick="requireLineForContact()" title="LINE登録のうえ、登録フォームに進みます">経営層とつながる</button>
-        <button class="btn-primary" style="font-size:13px;padding:10px 18px;white-space:nowrap" onclick="goScreen('p2')">はたらくヒント →</button>
+        <button class="btn-outline" style="font-size:13px;padding:10px 16px;white-space:nowrap" onclick="goCards()" title="他の経営者のカードを見る">他の経営者を見る</button>
+        <button class="btn-primary" style="font-size:13px;padding:10px 18px;white-space:nowrap" onclick="openEmpathyForm()">話してみる →</button>
       </div>
     </div>
   </div>
@@ -1686,6 +1686,15 @@ h1, h2, h3, h4,
       <div style="display:flex;flex-direction:column;gap:10px;">
         <button class="btn-primary" style="width:100%;justify-content:center;" onclick="window.open(WEBCAS_FORM_URL,'_blank')">登録フォームを開く →</button>
         <button class="btn-outline" style="color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.2);width:100%;justify-content:center;font-size:13px;" onclick="goScreen('p-list')">他の経営層の記事を読む →</button>
+      </div>
+      <!-- 診断のLINE特典化（BRIEF 3段階誘導①：フォーム完了後）。LINE未登録時のみ表示 -->
+      <div id="p5LineBonus" style="display:none;margin-top:22px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.12);text-align:left;">
+        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;color:var(--teal);margin-bottom:6px;">LINE限定 特典</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.85);line-height:1.8;margin-bottom:12px;">あなたに合う経営層を見つける<strong style="color:#fff;">「はたらくヒント（自己分析）」</strong>を、LINE登録で無料お届け。話した経営層の近況も届きます。</div>
+        <button class="btn-line-login" style="width:100%;justify-content:center;font-size:13px;" onclick="beginLineLogin()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.070 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+          LINEで「はたらくヒント」を受け取る（無料）
+        </button>
       </div>
     </div>
   </div>
@@ -1987,9 +1996,11 @@ function enterFromTop(target){
 // 「課題から探す」＝課題カードのスワイプ導線（pf）へ
 function goCards(){
   // 保存済みUTMを /pf へ引き継ぐ（チャネル別計測を切らさない）
-  let qs='';
-  try{ const u=JSON.parse(localStorage.getItem('sn_utm')||'null'); if(u && (u.source||u.medium||u.campaign||u.content)){ qs='?utm_source='+encodeURIComponent(u.source||'')+'&utm_medium='+encodeURIComponent(u.medium||'')+'&utm_campaign='+encodeURIComponent(u.campaign||'')+'&utm_content='+encodeURIComponent(u.content||''); } }catch(e){}
-  window.location.href = '/pf/'+qs;
+  const params=[];
+  try{ const u=JSON.parse(localStorage.getItem('sn_utm')||'null'); if(u && (u.source||u.medium||u.campaign||u.content)){ params.push('utm_source='+encodeURIComponent(u.source||''),'utm_medium='+encodeURIComponent(u.medium||''),'utm_campaign='+encodeURIComponent(u.campaign||''),'utm_content='+encodeURIComponent(u.content||'')); } }catch(e){}
+  // A/B variant（課題版/人物版）も引き継ぐ＝回遊しても同じ版を維持
+  try{ const v=localStorage.getItem('sn_variant'); if(v==='person'||v==='challenge'){ params.push('v='+v); } }catch(e){}
+  window.location.href = '/pf/'+(params.length?('?'+params.join('&')):'');
 }
 
 // ロゴ/TOPタブ：TOP（ヒーロー）へ戻る。一覧は隠す
@@ -3422,8 +3433,8 @@ function randomState(len=8){
 const WEBCAS_FORM_URL = 'https://www17.webcas.net/form/pub/sokonara/pf';
 
 async function openEmpathyForm() {
-  // 二重防御：LINE未登録なら接点フォームに進ませず、必ずLINEログインへ
-  if(!isLineRegistered()){ _startLineLoginForContact(); return; }
+  // 新導線：フォーム＝メインCV。LINE関門は撤去（WEBCASフォームで氏名・メール取得＝連絡可）。
+  // 診断はメイン導線から外しLINE登録後の特典に移したため、ここでLINEを要求しない。
   patchCardLog({ contact_cta:true }); // カード経由なら成果（面談CTA）をログに反映＝ファネル完結
   clearCardCtx(); // ジャーニー完了。以降の訪問に紐付かないようカード文脈を破棄
   const co = getCurrentCompany();
@@ -3455,6 +3466,9 @@ async function openEmpathyForm() {
     hintTxt.textContent = ceoName && coName ? `${ceoName}さん（${coName}）` : ceoName || coName;
     hintEl.style.display = (ceoName || coName) ? 'block' : 'none';
   }
+  // 診断のLINE特典CTAは未登録時のみ表示（登録済みなら不要）
+  const bonus = document.getElementById('p5LineBonus');
+  if(bonus) bonus.style.display = isLineRegistered() ? 'none' : 'block';
   // 自動ポップアップはしない（画面が散らかる＋ポップアップブロック対策）。
   // p5でユーザーがボタンをタップして開く（ユーザー操作なので確実に開く）
   goScreen('p5');

@@ -237,6 +237,22 @@ body{
 /* contact */
 .contactCard{ text-align:center;padding:30px 16px;}
 .contactCard .cig{ font-size:44px;}
+
+/* ===== 人物版（?v=person）：ランダムな経営者カードをタップで選ぶ ===== */
+#stage.personMode{ position:static; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:14px; }
+.personCard{ display:flex; align-items:center; gap:14px; background:var(--surface);
+  border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:12px;
+  box-shadow:var(--shadow); cursor:pointer; transition:transform .12s, border-color .12s; }
+.personCard:active{ transform:scale(.98); border-color:var(--teal); }
+.plAv{ width:60px;height:60px;border-radius:50%;background-size:cover;background-position:center;
+  border:2px solid var(--teal-mid);flex-shrink:0; }
+.plAvFallback{ display:flex;align-items:center;justify-content:center;background:var(--navy);color:#fff;
+  font-family:'Zen Kaku Gothic New',sans-serif;font-size:24px;font-weight:700; }
+.plBody{ flex:1; min-width:0; }
+.plName{ font-family:'Zen Kaku Gothic New',sans-serif;font-size:16px;font-weight:700;color:var(--navy);line-height:1.4; }
+.plName .plCo{ display:block;font-family:'Noto Sans JP',sans-serif;font-size:11.5px;font-weight:400;color:var(--text2);margin-top:2px; }
+.plCatch{ font-size:13px;color:var(--text);line-height:1.6;margin-top:7px;font-weight:500; }
+.plGo{ color:var(--teal);font-size:20px;font-weight:700;flex-shrink:0; }
 </style>
 <!-- Vercel Web Analytics（Cookie/PIIなし・訪問数/参照元計測） -->
 <script defer src="/_vercel/insights/script.js"></script>
@@ -410,6 +426,16 @@ const SN_UTM=(function(){
     return u;
   }catch(e){ return {source:'',medium:'',campaign:''}; }
 })();
+// A/B：カード文言の出し分け。?v=person で人物版、それ以外は課題版(既定)。card_logsのvariantに記録。
+// 回遊(index→/pf)でも維持できるよう localStorage(sn_variant) に保存・復元する。
+const SN_VARIANT=(function(){
+  try{
+    const v=new URLSearchParams(location.search).get('v');
+    if(v==='person'||v==='challenge'){ localStorage.setItem('sn_variant',v); return v; }
+    const s=localStorage.getItem('sn_variant'); if(s==='person'||s==='challenge') return s;
+    return 'challenge';
+  }catch(e){ return 'challenge'; }
+})();
 const SUPA_URL='https://ypwwuylcvjwcyazvpibd.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd3d1eWxjdmp3Y3lhenZwaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTY1MTMsImV4cCI6MjA5MjI3MjUxM30.7YseXt8libEzFsSAv4bI46l36kZ2lFz_jnh1JphVpvA';
 let recoCard=null; // 結果で選ばれたおすすめカード
@@ -421,7 +447,40 @@ function initProg(){
   const p=document.getElementById('prog'); p.innerHTML='';
   deck.forEach((_,i)=>{ const d=document.createElement('div'); d.className='pdot'+(i<idx?' done':i===idx?' active':''); p.appendChild(d);});
 }
+// 人物版：ランダムな経営者カードを一覧表示し、タップで記事へ直行（スワイプ集計・診断はスキップ）
+function renderPersonList(){
+  document.getElementById('actions').style.display='none';
+  document.querySelector('.hint').style.display='none';
+  document.getElementById('prog').style.display='none';
+  const sg=document.querySelector('.swipeGuide'); if(sg) sg.style.display='none';
+  const hTitle=document.getElementById('hTitle'); if(hTitle) hTitle.innerHTML='ピンときた経営者を、<br>選んでみよう。';
+  const stage=document.getElementById('stage'); stage.classList.add('personMode');
+  stage.innerHTML=deck.map(c=>{
+    const co=COMPANIES_MAP[c.companyId]||{};
+    const photo=co.photoUrl||co.heroUrl||'';
+    const catch_=co.catchphrase||c.sub||'';
+    const av=photo?`<div class="plAv" style="background-image:url('${esc(photo)}')"></div>`
+                  :`<div class="plAv plAvFallback">${esc((c.company||'　').slice(0,1))}</div>`;
+    return `<div class="personCard" data-id="${esc(c.id)}">
+      ${av}
+      <div class="plBody">
+        <div class="plName">${esc(c.leader)}さん<span class="plCo">${esc(c.company)}</span></div>
+        <div class="plCatch">${esc(catch_)}</div>
+      </div>
+      <div class="plGo">→</div>
+    </div>`;
+  }).join('');
+  stage.querySelectorAll('.personCard').forEach(el=>{
+    el.onclick=()=>{
+      const c=deck.find(x=>x.id===el.dataset.id); if(!c) return;
+      picked=[c]; // 選んだ経営者をファネルに記録
+      logUpdate({ picked_cards:[c.id] });
+      openRecoArticle(c);
+    };
+  });
+}
 function renderStack(){
+  if(SN_VARIANT==='person'){ renderPersonList(); return; }
   const stage=document.getElementById('stage'); stage.innerHTML='';
   // render up to 3 cards from top (idx) for depth
   for(let i=Math.min(idx+2, deck.length-1); i>=idx; i--){
@@ -680,6 +739,7 @@ async function logUpdate(fields){
 async function logStart(){
   logId=(crypto.randomUUID?crypto.randomUUID():'log_'+Date.now()+'_'+Math.random().toString(36).slice(2));
   const ok=await _saveLog({ started:true, started_at:new Date().toISOString(), shown_cards:deck.map(c=>c.id),
+    variant:SN_VARIANT,
     utm_source:SN_UTM.source||null, utm_medium:SN_UTM.medium||null, utm_campaign:SN_UTM.campaign||null, utm_content:SN_UTM.content||null });
   if(!ok) logId=null;
 }
