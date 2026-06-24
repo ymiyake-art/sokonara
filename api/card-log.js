@@ -49,22 +49,36 @@ export default async function handler(req) {
   const SK = process.env.SUPABASE_SERVICE_KEY;
   if (!SUPABASE_URL || !SK) return json({ error: 'Supabase not configured' }, 500);
 
+  const upsert = (r) => fetch(`${SUPABASE_URL}/rest/v1/card_logs?on_conflict=id`, {
+    method: 'POST',
+    headers: {
+      apikey: SK, Authorization: `Bearer ${SK}`,
+      'Content-Type': 'application/json',
+      Prefer: 'resolution=merge-duplicates,return=minimal',
+    },
+    body: JSON.stringify([r]),
+  });
+
   try {
     // upsert（merge-duplicates）：初回INSERT／以降は該当列のみUPDATE。service_roleなのでRLS非依存で必ず保存。
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/card_logs?on_conflict=id`, {
-      method: 'POST',
-      headers: {
-        apikey: SK, Authorization: `Bearer ${SK}`,
-        'Content-Type': 'application/json',
-        Prefer: 'resolution=merge-duplicates,return=minimal',
-      },
-      body: JSON.stringify([row]),
-    });
+    let res = await upsert(row);
+    // 未マイグレーションの列(PGRST204)があっても“ログ全体”を失わないよう、欠落列だけ外して再試行（最大4回）。
+    // 例: variant 列が未追加でも started/picked 等の本体は確実に保存する。
+    const dropped = [];
+    for (let i = 0; i < 4 && !res.ok && res.status === 400; i++) {
+      const t = await res.text();
+      const m = t.match(/Could not find the '([^']+)' column/);
+      if (!m || !(m[1] in row)) { return json({ ok: false, status: res.status, error: t.slice(0, 200) }, 200); }
+      delete row[m[1]];
+      dropped.push(m[1]);
+      res = await upsert(row);
+    }
     if (!res.ok) {
       const t = await res.text();
       return json({ ok: false, status: res.status, error: t.slice(0, 200) }, 200);
     }
-    return json({ ok: true });
+    // ok:true。欠落列を外して保存した場合は dropped を返す（呼び出し側は無視可・運用確認用）。
+    return json(dropped.length ? { ok: true, dropped } : { ok: true });
   } catch (e) {
     return json({ ok: false, error: String(e && e.message || e) }, 200);
   }
