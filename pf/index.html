@@ -6,7 +6,7 @@
 <title>ソコナラ｜課題から探す（v2プロトタイプ）</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --teal:#42AD9F; --teal-d:#2e8c7f; --teal-bg:rgba(66,173,159,0.08); --teal-mid:rgba(66,173,159,0.16);
@@ -238,47 +238,38 @@ body{
 .contactCard{ text-align:center;padding:30px 16px;}
 .contactCard .cig{ font-size:44px;}
 
-/* ===== 人物版（?v=person）：経営層カードを2枚比較→勝ち残り×5回 ===== */
+/* ===== 人物版（?v=person）：経営層カードを2枚“横並び”で比較→5回 ===== */
 #stage.versusMode{ position:static; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:14px; }
-.vsHead{ text-align:center; margin-bottom:10px; }
+.vsHead{ text-align:center; margin-bottom:12px; }
 .vsTitle{ font-family:'Zen Kaku Gothic New',sans-serif; font-size:16px; font-weight:700; color:var(--navy); line-height:1.5; }
 .vsProg{ font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:1px; color:var(--text3); margin-top:4px; }
-.vsDivider{ display:flex; align-items:center; justify-content:center; gap:10px; margin:10px 2px; color:var(--text3);
-  font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700; letter-spacing:2px; }
-.vsDivider::before,.vsDivider::after{ content:''; height:1px; flex:1; background:var(--border); }
-/* leader-card（index 経営層一覧から流用） */
-.leader-card{ background:transparent; border:none; border-radius:12px; overflow:hidden; cursor:pointer;
-  transition:transform .15s, box-shadow .2s; display:flex; flex-direction:column;
-  box-shadow:0 4px 16px rgba(28,42,84,0.16); position:relative; }
-.leader-card:active{ transform:scale(.985); }
-.leader-card.vsEnter{ animation:vsEnter .3s ease; }
-@keyframes vsEnter{ from{opacity:0;transform:translateY(14px);} to{opacity:1;transform:translateY(0);} }
-.leader-card-top{ position:relative; height:180px; overflow:hidden; background:var(--navy); flex-shrink:0; }
-.leader-card-photo-bg{ position:absolute; inset:0; background-size:cover; background-position:center top; }
-.leader-card-top::before{ content:''; position:absolute; inset:0; z-index:1;
-  background:linear-gradient(to top, rgba(10,18,48,0.88) 0%, rgba(10,18,48,0.55) 38%, transparent 62%),
-            linear-gradient(162deg, transparent 30%, rgba(28,42,84,0.45) 60%, rgba(14,22,50,0.65) 100%); }
-.leader-card-top::after{ content:''; position:absolute; z-index:2; bottom:44%; left:-8%; width:116%; height:2px;
-  background:var(--teal); transform:rotate(-8deg); opacity:.9; }
-.leader-phrase{ position:absolute; bottom:12px; left:12px; right:12px; z-index:3;
-  font-family:'Zen Kaku Gothic New',sans-serif; font-size:16px; font-weight:700; color:#fff; line-height:1.5; letter-spacing:.03em;
-  text-shadow:0 1px 4px rgba(0,0,0,0.9),0 2px 12px rgba(0,0,0,0.7);
-  display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:break-word; }
-.leader-card-bottom{ padding:12px 14px 14px; display:flex; flex-direction:column; gap:7px; flex:1; background:#E7EAEF; }
-.leader-card-profile{ display:flex; align-items:center; gap:10px; }
-.leader-photo{ width:44px; height:44px; border-radius:50%; background:var(--navy); display:flex; align-items:center; justify-content:center;
-  font-size:15px; font-weight:700; color:#fff; background-size:cover; background-position:center; flex-shrink:0; border:2px solid rgba(28,42,84,0.18); }
-.leader-meta{ flex:1; min-width:0; }
-.leader-name{ font-size:15px; font-weight:700; color:var(--navy); }
-.leader-company{ font-size:10px; color:#8a92a0; margin-top:2px; }
-.leader-tags{ display:flex; flex-wrap:wrap; gap:4px; }
-.leader-tag{ font-size:9px; padding:2px 7px; border-radius:20px; }
-.leader-tag-0{ background:rgba(66,173,159,0.12); color:var(--teal-d); border:1px solid rgba(66,173,159,0.35); }
-.leader-tag-1{ background:rgba(28,42,84,0.10); color:var(--navy); border:1px solid rgba(28,42,84,0.22); }
-.leader-tag-2{ background:rgba(176,120,24,0.10); color:#8a6010; border:1px solid rgba(176,120,24,0.30); }
-.leader-cta{ margin-top:auto; padding-top:8px; font-size:12px; color:var(--teal); font-weight:700; text-align:right; }
-.champBadge{ position:absolute; top:10px; left:10px; z-index:4; background:var(--teal); color:#fff; font-size:11px; font-weight:700;
-  padding:4px 10px; border-radius:20px; box-shadow:0 2px 8px rgba(0,0,0,0.3); }
+.vsGrid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+/* ↓ index.html「経営層一覧」と完全同一デザイン（フォント=Dela Gothic One 含む）。スマホでも2カラム横並び。 */
+.leader-card{background:transparent;border:none;border-radius:10px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column;box-shadow:0 2px 10px rgba(28,42,84,0.13);}
+.leader-card:active{transform:scale(.98);}
+.leader-card.vsEnter{animation:vsEnter .3s ease;}
+@keyframes vsEnter{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.leader-card-top{position:relative;height:210px;overflow:hidden;background:var(--navy);flex-shrink:0;}
+.leader-card-photo-bg{position:absolute;inset:0;background-size:cover;background-position:center top;transition:transform .3s;}
+.leader-card-top::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(to top, rgba(10,18,48,0.88) 0%, rgba(10,18,48,0.55) 38%, transparent 62%),linear-gradient(162deg, transparent 30%, rgba(28,42,84,0.45) 60%, rgba(14,22,50,0.65) 100%);}
+.leader-card-top::after{content:'';position:absolute;z-index:2;bottom:44%;left:-8%;width:116%;height:2px;background:var(--teal);transform:rotate(-8deg);opacity:0.9;}
+.leader-phrase{position:absolute;bottom:12px;left:12px;right:12px;z-index:3;font-family:'Dela Gothic One','Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:18px;color:#fff;line-height:1.55;letter-spacing:.03em;text-shadow:0 1px 4px rgba(0,0,0,0.9), 0 2px 12px rgba(0,0,0,0.7);display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;word-break:auto-phrase;line-break:strict;overflow-wrap:break-word;}
+@media(max-width:480px){.leader-phrase{font-size:16px;}}
+.leader-card-bottom{padding:12px 14px 14px;display:flex;flex-direction:column;gap:7px;flex:1;}
+.leader-card:nth-child(odd)  .leader-card-bottom{background:#E7EAEF;}
+.leader-card:nth-child(even) .leader-card-bottom{background:#D3D8E3;}
+.leader-card-profile{display:flex;align-items:center;gap:10px;}
+.leader-photo{width:44px;height:44px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;background-size:cover;background-position:center;flex-shrink:0;border:2px solid rgba(28,42,84,0.18);}
+.leader-meta{flex:1;min-width:0;}
+.leader-name{font-size:15px;font-weight:700;color:var(--navy);}
+.leader-company{font-size:10px;color:#8a92a0;margin-top:2px;}
+.leader-tags{display:flex;flex-wrap:wrap;gap:4px;}
+.leader-tag{font-size:9px;padding:2px 7px;border-radius:20px;}
+.leader-tag-0{background:rgba(66,173,159,0.12);color:var(--teal-d);border:1px solid rgba(66,173,159,0.35);}
+.leader-tag-1{background:rgba(28,42,84,0.10);color:var(--navy);border:1px solid rgba(28,42,84,0.22);}
+.leader-tag-2{background:rgba(176,120,24,0.10);color:#8a6010;border:1px solid rgba(176,120,24,0.30);}
+.leader-cta{margin-top:auto;padding-top:10px;font-size:12px;color:var(--teal);font-weight:700;text-align:right;letter-spacing:.02em;}
+#vsFinal{max-width:300px;margin:0 auto 16px;}
 </style>
 <!-- Vercel Web Analytics（Cookie/PIIなし・訪問数/参照元計測） -->
 <script defer src="/_vercel/insights/script.js"></script>
@@ -473,9 +464,9 @@ function initProg(){
   const p=document.getElementById('prog'); p.innerHTML='';
   deck.forEach((_,i)=>{ const d=document.createElement('div'); d.className='pdot'+(i<idx?' done':i===idx?' active':''); p.appendChild(d);});
 }
-// ===== 人物版（?v=person）：経営層カード2枚を比較→勝ち残り×5回→記事 =====
-// 「経営層一覧」と同じカードデザインを流用。2枚のうちピンとくる方をタップ→勝者は固定位置で残り、相手だけ新カードに入替。
-let vsPool=[], vsChamp=null, vsPtr=0, vsRound=0, VS_ROUNDS=5;
+// ===== 人物版（?v=person）：経営層カード2枚を“横並び”で比較→5回→記事 =====
+// 「経営層一覧」と完全同一のカードデザインを流用。気になる方をタップ→選んだ側は同位置で残り、相手側だけ新カードに入替（5回）。
+let vsPool=[], vsLeft=null, vsRight=null, vsPtr=0, vsRound=0, VS_ROUNDS=5;
 function shuffleArr(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function leaderCardHTML(c, opts){
   opts=opts||{};
@@ -489,14 +480,12 @@ function leaderCardHTML(c, opts){
                 :`<div class="leader-photo">${esc((name||'経').charAt(0))}</div>`;
   const tags=Array.isArray(c.tags)?c.tags.filter(t=>t&&t.trim()!=='/').slice(0,3):[];
   const tagsHtml=tags.length?`<div class="leader-tags">${tags.map((t,i)=>`<span class="leader-tag leader-tag-${i}">${esc(t)}</span>`).join('')}</div>`:'';
-  const badge=opts.champ?`<div class="champBadge">👑 勝ち残り</div>`:'';
   return `<div class="leader-card${opts.enter?' vsEnter':''}" data-id="${esc(String(c.id||''))}">
-    ${badge}
     <div class="leader-card-top">${photoBg}<div class="leader-phrase">${phrase}</div></div>
     <div class="leader-card-bottom">
       <div class="leader-card-profile">${av}<div class="leader-meta"><div class="leader-name">${esc(name)}</div><div class="leader-company">${esc(company)}</div></div></div>
       ${tagsHtml}
-      <div class="leader-cta">こっちが気になる →</div>
+      <div class="leader-cta">この経営層の想いを読む →</div>
     </div></div>`;
 }
 function renderVersus(){
@@ -514,32 +503,36 @@ function renderVersus(){
     renderChallengeStack(); return;
   }
   VS_ROUNDS=Math.min(5, vsPool.length-1);
-  vsChamp=null; vsRound=0; vsPtr=0;
+  vsRound=0; vsPtr=0;
   logUpdate({ shown_cards: vsPool.slice(0, Math.min(vsPool.length, VS_ROUNDS+1)).map(c=>String(c.id||'')) });
   document.getElementById('stage').classList.add('versusMode');
-  const a=vsPool[vsPtr++], b=vsPool[vsPtr++];
-  paintVersus(a, b, true);
+  vsLeft=vsPool[vsPtr++]; vsRight=vsPool[vsPtr++];
+  paintVersus(null);
 }
-function paintVersus(top, bottom, isFirst){
+function paintVersus(enterSide){
   const stage=document.getElementById('stage');
   stage.innerHTML=`
     <div class="vsHead">
-      <div class="vsTitle">${isFirst?'ピンとくる方を選んでください':'どちらに惹かれますか？'}</div>
+      <div class="vsTitle">気になる経営層を選んでください</div>
       <div class="vsProg">${vsRound+1} / ${VS_ROUNDS}</div>
     </div>
-    <div id="vsTop">${leaderCardHTML(top, isFirst?{}:{champ:true})}</div>
-    <div class="vsDivider">VS</div>
-    <div id="vsBottom">${leaderCardHTML(bottom, {enter:!isFirst})}</div>`;
-  stage.querySelector('#vsTop .leader-card').onclick=()=>pickVersus(top);
-  stage.querySelector('#vsBottom .leader-card').onclick=()=>pickVersus(bottom);
+    <div class="vsGrid">
+      ${leaderCardHTML(vsLeft, {enter:enterSide==='left'})}
+      ${leaderCardHTML(vsRight, {enter:enterSide==='right'})}
+    </div>`;
+  const cards=stage.querySelectorAll('.vsGrid .leader-card');
+  if(cards[0]) cards[0].onclick=()=>pickVersus('left');
+  if(cards[1]) cards[1].onclick=()=>pickVersus('right');
   stage.scrollTop=0;
 }
-function pickVersus(winner){
-  vsChamp=winner; vsRound++;
+function pickVersus(side){
+  const winner = side==='left' ? vsLeft : vsRight;
+  vsRound++;
   if(vsRound>=VS_ROUNDS){ finishVersus(winner); return; }
   let next=vsPool[vsPtr++];
   if(!next){ const rest=shuffleArr(vsPool.filter(c=>String(c.id)!==String(winner.id))); next=rest[0]; vsPool=[winner,...rest]; vsPtr=2; }
-  paintVersus(winner, next, false); // 勝者は常に上(固定位置)、相手だけ入替
+  if(side==='left'){ vsRight=next; paintVersus('right'); } // 選んだ左は同位置で残し、相手(右)だけ入替
+  else { vsLeft=next; paintVersus('left'); }
 }
 function finishVersus(champ){
   const stage=document.getElementById('stage');
@@ -547,7 +540,7 @@ function finishVersus(champ){
   logUpdate({ picked_cards:[String(champ.id||'')], recommended_company:String(champ.id||''), reached_result:true });
   stage.innerHTML=`
     <div class="vsHead"><div class="vsTitle">あなたが惹かれた経営層</div></div>
-    <div id="vsFinal">${leaderCardHTML(champ, {champ:true})}</div>
+    <div id="vsFinal">${leaderCardHTML(champ, {})}</div>
     <button class="btn-primary" onclick="openLeaderArticle('${esc(String(champ.id||''))}')">この経営層の記事を読む →</button>
     <button class="btn-text" onclick="restart()">もう一度選ぶ</button>`;
   stage.scrollTop=0;
