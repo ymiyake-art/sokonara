@@ -6,7 +6,7 @@
 <title>ソコナラ｜課題から探す（v2プロトタイプ）</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --teal:#42AD9F; --teal-d:#2e8c7f; --teal-bg:rgba(66,173,159,0.08); --teal-mid:rgba(66,173,159,0.16);
@@ -238,38 +238,77 @@ body{
 .contactCard{ text-align:center;padding:30px 16px;}
 .contactCard .cig{ font-size:44px;}
 
-/* ===== 人物版（?v=person）：経営層カードを2枚“横並び”で比較→5回 ===== */
-#stage.versusMode{ position:static; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:14px; }
-.vsHead{ text-align:center; margin-bottom:12px; }
-.vsTitle{ font-family:'Zen Kaku Gothic New',sans-serif; font-size:16px; font-weight:700; color:var(--navy); line-height:1.5; }
-.vsProg{ font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:1px; color:var(--text3); margin-top:4px; }
-.vsGrid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
-/* ↓ index.html「経営層一覧」と完全同一デザイン（フォント=Dela Gothic One 含む）。スマホでも2カラム横並び。 */
-.leader-card{background:transparent;border:none;border-radius:10px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column;box-shadow:0 2px 10px rgba(28,42,84,0.13);}
-.leader-card:active{transform:scale(.98);}
-.leader-card.vsEnter{animation:vsEnter .3s ease;}
-@keyframes vsEnter{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
-.leader-card-top{position:relative;height:210px;overflow:hidden;background:var(--navy);flex-shrink:0;}
-.leader-card-photo-bg{position:absolute;inset:0;background-size:cover;background-position:center top;transition:transform .3s;}
-.leader-card-top::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(to top, rgba(10,18,48,0.88) 0%, rgba(10,18,48,0.55) 38%, transparent 62%),linear-gradient(162deg, transparent 30%, rgba(28,42,84,0.45) 60%, rgba(14,22,50,0.65) 100%);}
-.leader-card-top::after{content:'';position:absolute;z-index:2;bottom:44%;left:-8%;width:116%;height:2px;background:var(--teal);transform:rotate(-8deg);opacity:0.9;}
-.leader-phrase{position:absolute;bottom:12px;left:12px;right:12px;z-index:3;font-family:'Dela Gothic One','Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:18px;color:#fff;line-height:1.55;letter-spacing:.03em;text-shadow:0 1px 4px rgba(0,0,0,0.9), 0 2px 12px rgba(0,0,0,0.7);display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;word-break:auto-phrase;line-break:strict;overflow-wrap:break-word;}
-@media(max-width:480px){.leader-phrase{font-size:16px;}}
-.leader-card-bottom{padding:12px 14px 14px;display:flex;flex-direction:column;gap:7px;flex:1;}
-.leader-card:nth-child(odd)  .leader-card-bottom{background:#E7EAEF;}
-.leader-card:nth-child(even) .leader-card-bottom{background:#D3D8E3;}
-.leader-card-profile{display:flex;align-items:center;gap:10px;}
-.leader-photo{width:44px;height:44px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;background-size:cover;background-position:center;flex-shrink:0;border:2px solid rgba(28,42,84,0.18);}
-.leader-meta{flex:1;min-width:0;}
-.leader-name{font-size:15px;font-weight:700;color:var(--navy);}
-.leader-company{font-size:10px;color:#8a92a0;margin-top:2px;}
-.leader-tags{display:flex;flex-wrap:wrap;gap:4px;}
-.leader-tag{font-size:9px;padding:2px 7px;border-radius:20px;}
-.leader-tag-0{background:rgba(66,173,159,0.12);color:var(--teal-d);border:1px solid rgba(66,173,159,0.35);}
-.leader-tag-1{background:rgba(28,42,84,0.10);color:var(--navy);border:1px solid rgba(28,42,84,0.22);}
-.leader-tag-2{background:rgba(176,120,24,0.10);color:#8a6010;border:1px solid rgba(176,120,24,0.30);}
-.leader-cta{margin-top:auto;padding-top:10px;font-size:12px;color:var(--teal);font-weight:700;text-align:right;letter-spacing:.02em;}
-#vsFinal{max-width:300px;margin:0 auto 16px;}
+/* ===== 人物版（?v=person）：経営層カード2枚で「ピンとくる方」を選ぶ（運命マッチ）===== */
+#stage.versusMode{ position:static; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:6px 0 22px; }
+.vsArena{ position:relative; width:100%; max-width:760px; margin:0 auto; padding:0 4px; }
+/* 背景の淡いグロー（選ぶワクワク感の下地） */
+.vsArena::before{ content:''; position:absolute; left:50%; top:40%; width:130%; height:64%; transform:translate(-50%,-50%);
+  background:radial-gradient(ellipse at center, rgba(66,173,159,0.20), rgba(66,173,159,0) 70%); z-index:0; pointer-events:none; }
+.vsHead{ position:relative; z-index:1; text-align:center; margin-bottom:16px; }
+.vsKicker{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:3px; color:var(--teal-d); text-transform:uppercase; margin-bottom:6px; }
+.vsTitle{ font-family:'Zen Kaku Gothic New',sans-serif; font-size:20px; font-weight:900; color:var(--navy); line-height:1.45; }
+.vsBar{ width:140px; height:5px; border-radius:99px; background:var(--border); margin:13px auto 6px; overflow:hidden; }
+.vsBar>span{ display:block; height:100%; background:linear-gradient(90deg,var(--teal),var(--navy)); border-radius:99px; transition:width .4s ease; }
+.vsProg{ font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:1px; color:var(--text3); }
+/* 2枚レイアウト＋中央VSメダル */
+.vsGrid{ position:relative; z-index:1; display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:stretch; }
+.vsMedal{ position:absolute; top:42%; left:50%; transform:translate(-50%,-50%); z-index:6;
+  width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:#fff; letter-spacing:.5px;
+  background:linear-gradient(135deg,var(--teal),var(--teal-d)); box-shadow:0 4px 14px rgba(28,42,84,0.35), 0 0 0 4px var(--bg); }
+/* ↓ index.html「経営層一覧」と同一構造。フォントは2枚目(Zen Kaku 900)。タップで選択。 */
+.leader-card{ background:transparent; border:none; border-radius:12px; overflow:hidden; cursor:pointer;
+  transition:transform .2s cubic-bezier(.22,1,.36,1), box-shadow .25s, opacity .25s; display:flex; flex-direction:column;
+  box-shadow:0 6px 22px rgba(28,42,84,0.16); }
+.leader-card:hover{ transform:translateY(-6px); box-shadow:0 18px 44px rgba(28,42,84,0.30); }
+.vsGrid:hover .leader-card:not(:hover){ opacity:.72; transform:scale(.99); }
+.leader-card:active{ transform:scale(.98); }
+.leader-card.vsEnter{ animation:vsEnter .34s cubic-bezier(.22,1,.36,1); }
+@keyframes vsEnter{ from{opacity:0;transform:translateY(16px) scale(.97);} to{opacity:1;transform:translateY(0) scale(1);} }
+.leader-card-top{ position:relative; height:210px; overflow:hidden; background:var(--navy); flex-shrink:0; }
+.leader-card-photo-bg{ position:absolute; inset:0; background-size:cover; background-position:center top; transition:transform .4s; }
+.leader-card:hover .leader-card-photo-bg{ transform:scale(1.06); }
+.leader-card-top::before{ content:''; position:absolute; inset:0; z-index:1; background:linear-gradient(to top, rgba(10,18,48,0.9) 0%, rgba(10,18,48,0.55) 40%, transparent 66%),linear-gradient(162deg, transparent 30%, rgba(28,42,84,0.45) 60%, rgba(14,22,50,0.65) 100%); }
+.leader-card-top::after{ content:''; position:absolute; z-index:2; bottom:44%; left:-8%; width:116%; height:2px; background:var(--teal); transform:rotate(-8deg); opacity:.9; }
+.leader-phrase{ position:absolute; bottom:12px; left:14px; right:14px; z-index:3; font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif; font-weight:900; font-size:17px; color:#fff; line-height:1.5; letter-spacing:.02em; text-shadow:0 1px 4px rgba(0,0,0,0.9),0 2px 12px rgba(0,0,0,0.7); display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; word-break:auto-phrase; line-break:strict; overflow-wrap:break-word; }
+.leader-card-bottom{ padding:13px 15px 15px; display:flex; flex-direction:column; gap:7px; flex:1; }
+.leader-card:nth-child(odd)  .leader-card-bottom{ background:#E7EAEF; }
+.leader-card:nth-child(even) .leader-card-bottom{ background:#D3D8E3; }
+.leader-card-profile{ display:flex; align-items:center; gap:10px; }
+.leader-photo{ width:44px; height:44px; border-radius:50%; background:var(--navy); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:#fff; background-size:cover; background-position:center; flex-shrink:0; border:2px solid rgba(28,42,84,0.18); }
+.leader-meta{ flex:1; min-width:0; }
+.leader-name{ font-size:15px; font-weight:700; color:var(--navy); }
+.leader-company{ font-size:10px; color:#8a92a0; margin-top:2px; }
+.leader-tags{ display:flex; flex-wrap:wrap; gap:4px; }
+.leader-tag{ font-size:9px; padding:2px 7px; border-radius:20px; }
+.leader-tag-0{ background:rgba(66,173,159,0.12); color:var(--teal-d); border:1px solid rgba(66,173,159,0.35); }
+.leader-tag-1{ background:rgba(28,42,84,0.10); color:var(--navy); border:1px solid rgba(28,42,84,0.22); }
+.leader-tag-2{ background:rgba(176,120,24,0.10); color:#8a6010; border:1px solid rgba(176,120,24,0.30); }
+.leader-cta{ margin-top:auto; padding-top:10px; font-size:12px; color:var(--teal); font-weight:700; text-align:right; letter-spacing:.02em; }
+/* 最終結果 */
+#vsFinal{ max-width:330px; margin:0 auto 4px; }
+@media(max-width:480px){ .leader-phrase{ font-size:15px; } .vsTitle{ font-size:18px; } }
+/* ===== デスクトップ：没入レイアウト（PCでも主役級） ===== */
+@media(min-width:760px){
+  body.vmode .wrap{ max-width:1040px; }
+  #stage.versusMode{ display:flex; flex-direction:column; justify-content:center; }
+  .vsArena{ max-width:900px; }
+  .vsKicker{ font-size:11px; letter-spacing:4px; }
+  .vsTitle{ font-size:30px; }
+  .vsBar{ width:220px; height:6px; }
+  .vsGrid{ gap:52px; }
+  .vsMedal{ width:66px; height:66px; font-size:19px; box-shadow:0 8px 22px rgba(28,42,84,0.42), 0 0 0 6px var(--bg); }
+  .leader-card{ border-radius:16px; }
+  .leader-card-top{ height:360px; }
+  .leader-phrase{ font-size:25px; left:22px; right:22px; bottom:18px; }
+  .leader-card-bottom{ padding:18px 22px 22px; gap:10px; }
+  .leader-photo{ width:56px; height:56px; font-size:18px; }
+  .leader-name{ font-size:19px; }
+  .leader-company{ font-size:13px; }
+  .leader-tag{ font-size:11px; padding:3px 11px; }
+  .leader-cta{ font-size:14px; }
+  #vsFinal{ max-width:420px; }
+}
 </style>
 <!-- Vercel Web Analytics（Cookie/PIIなし・訪問数/参照元計測） -->
 <script defer src="/_vercel/insights/script.js"></script>
@@ -505,20 +544,28 @@ function renderVersus(){
   VS_ROUNDS=Math.min(5, vsPool.length-1);
   vsRound=0; vsPtr=0;
   logUpdate({ shown_cards: vsPool.slice(0, Math.min(vsPool.length, VS_ROUNDS+1)).map(c=>String(c.id||'')) });
+  document.body.classList.add('vmode'); // PC没入レイアウト用
   document.getElementById('stage').classList.add('versusMode');
   vsLeft=vsPool[vsPtr++]; vsRight=vsPool[vsPtr++];
-  paintVersus(null);
+  paintVersus('both');
 }
 function paintVersus(enterSide){
   const stage=document.getElementById('stage');
+  const le=(enterSide==='left'||enterSide==='both'), re=(enterSide==='right'||enterSide==='both');
+  const pct=Math.round(((vsRound+1)/VS_ROUNDS)*100);
   stage.innerHTML=`
-    <div class="vsHead">
-      <div class="vsTitle">気になる経営層を選んでください</div>
-      <div class="vsProg">${vsRound+1} / ${VS_ROUNDS}</div>
-    </div>
-    <div class="vsGrid">
-      ${leaderCardHTML(vsLeft, {enter:enterSide==='left'})}
-      ${leaderCardHTML(vsRight, {enter:enterSide==='right'})}
+    <div class="vsArena">
+      <div class="vsHead">
+        <div class="vsKicker">SOKONARA MATCH</div>
+        <div class="vsTitle">ピンとくるのは、どっち？</div>
+        <div class="vsBar"><span style="width:${pct}%"></span></div>
+        <div class="vsProg">${vsRound+1} / ${VS_ROUNDS}</div>
+      </div>
+      <div class="vsGrid">
+        ${leaderCardHTML(vsLeft, {enter:le})}
+        <div class="vsMedal">VS</div>
+        ${leaderCardHTML(vsRight, {enter:re})}
+      </div>
     </div>`;
   const cards=stage.querySelectorAll('.vsGrid .leader-card');
   if(cards[0]) cards[0].onclick=()=>pickVersus('left');
@@ -539,10 +586,12 @@ function finishVersus(champ){
   picked=[]; // 人物版はスワイプ集計を使わない
   logUpdate({ picked_cards:[String(champ.id||'')], recommended_company:String(champ.id||''), reached_result:true });
   stage.innerHTML=`
-    <div class="vsHead"><div class="vsTitle">あなたが惹かれた経営層</div></div>
-    <div id="vsFinal">${leaderCardHTML(champ, {})}</div>
-    <button class="btn-primary" onclick="openLeaderArticle('${esc(String(champ.id||''))}')">この経営層の記事を読む →</button>
-    <button class="btn-text" onclick="restart()">もう一度選ぶ</button>`;
+    <div class="vsArena">
+      <div class="vsHead"><div class="vsKicker">YOUR CHOICE</div><div class="vsTitle">あなたが惹かれた経営層</div></div>
+      <div id="vsFinal">${leaderCardHTML(champ, {})}</div>
+      <button class="btn-primary" style="max-width:330px;margin:18px auto 0;display:block;" onclick="openLeaderArticle('${esc(String(champ.id||''))}')">この経営層の記事を読む →</button>
+      <button class="btn-text" style="display:block;margin:10px auto 0;background:none;border:none;color:var(--text3);font-size:12px;text-decoration:underline;cursor:pointer;" onclick="restart()">もう一度選ぶ</button>
+    </div>`;
   stage.scrollTop=0;
 }
 function openLeaderArticle(cid){
