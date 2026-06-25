@@ -637,6 +637,19 @@ async function renderResonance(){
     return `<tr><td style="padding:8px 10px;border-bottom:1px solid var(--border);font-weight:700;color:var(--navy)">${vLabel[k]}</td>${cell(n,null)}${cell(sel,pct(sel,n))}${cell(a,pct(a,n))}${cell(cta,pct(cta,n),true)}${cell(ai,pct(ai,n))}</tr>`;
   }).join('');
 
+  // カード文言アーム別（what=事業 / value=価値観・人 / life=転機）A/B比較。person のみ対象。
+  const aLabel={what:'What（事業）',value:'Why+Who（価値観）',life:'Life（転機）'};
+  const byArm={};
+  logs.filter(l=>l.variant==='person').forEach(l=>{ const k=(l.copy_arm==='what'||l.copy_arm==='value'||l.copy_arm==='life')?l.copy_arm:null; if(k)(byArm[k]=byArm[k]||[]).push(l); });
+  const armTable=['what','value','life'].filter(k=>byArm[k]).map(k=>{
+    const arr=byArm[k], n=arr.length;
+    const sel=arr.filter(l=>l.reached_result).length;
+    const a=arr.filter(l=>l.article_read).length;
+    const cta=arr.filter(l=>l.contact_cta).length;
+    const cell=(v,p,bold)=>`<td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;${bold?'font-weight:700;color:#2e8c7f':''}">${v}${p!=null?` <span style="color:var(--text3);font-weight:400">(${p}%)</span>`:''}</td>`;
+    return `<tr><td style="padding:8px 10px;border-bottom:1px solid var(--border);font-weight:700;color:var(--navy)">${aLabel[k]}</td>${cell(n,null)}${cell(sel,pct(sel,n))}${cell(a,pct(a,n))}${cell(cta,pct(cta,n),true)}</tr>`;
+  }).join('');
+
   // 集計ヘルパー
   const tally=(arr)=>{ const m={}; arr.forEach(v=>{ if(v) m[v]=(m[v]||0)+1; }); return Object.entries(m).sort((a,b)=>b[1]-a[1]); };
   const bLabel=t=>CARD_BTAGS[t]||t, rLabel=t=>CARD_RTAGS[t]||t;
@@ -695,6 +708,17 @@ async function renderResonance(){
           ${['版','開始','選択','記事','面談CTA','AI診断'].map((h,i)=>`<th style="text-align:${i?'right':'left'};padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">${h}</th>`).join('')}
         </tr></thead>
         <tbody>${varTable||`<tr><td colspan="6" style="padding:14px;text-align:center;color:var(--text3)">データがありません</td></tr>`}</tbody>
+      </table>
+    </div>
+
+    <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:4px;">カード文言A/B（人物版・What / Why+Who / Life）</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">どの惹かれ方が「選択→記事→面談CTA」に効くか。面談CTA到達率が勝ち筋。文言は各企業編集の「カードA/B文言」で変更可。</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr>
+          ${['アーム','開始','選択','記事','面談CTA'].map((h,i)=>`<th style="text-align:${i?'right':'left'};padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">${h}</th>`).join('')}
+        </tr></thead>
+        <tbody>${armTable||`<tr><td colspan="5" style="padding:14px;text-align:center;color:var(--text3)">データがありません</td></tr>`}</tbody>
       </table>
     </div>
 
@@ -1781,7 +1805,7 @@ function toCompanyRow(c){
     photoUrl:c.photoUrl||'',heroUrl:c.heroUrl||'',
     industry:c.industry||'',employeeSize:c.employeeSize||'',companyIntro:c.companyIntro||'',
     tags:c.tags||[],title:c.title||'',quote:c.quote||'',body:c.body||'',q1:c.q1||[],fee:c.fee||'',
-    catchphrase:c.catchphrase||'',cardLabel:c.cardLabel||'',wantedProfile:c.wantedProfile||'',summaryComment:c.summaryComment||'',
+    catchphrase:c.catchphrase||'',cc_what:c.cc_what||'',cc_value:c.cc_value||'',cc_life:c.cc_life||'',cardLabel:c.cardLabel||'',wantedProfile:c.wantedProfile||'',summaryComment:c.summaryComment||'',
     status:c.status||'active',created_at:c.created_at||new Date().toISOString(),reactions:c.reactions||0,cta:c.cta||0
   };
 }
@@ -1802,8 +1826,8 @@ async function saveCompanies(arr){
   const rows = companiesCache.map(toCompanyRow);
   // service_role API経由で保存（anon書込はDB側で禁止）
   let r=await adminWrite('companies','upsert',{rows});
-  if(!r.ok && r.error && /catchphrase|cardLabel|card_label|wantedProfile|summaryComment|column/.test(r.error)){
-    const minRows = rows.map(rw=>{ const {catchphrase,cardLabel,heroUrl,wantedProfile,summaryComment,...rest}=rw; return rest; });
+  if(!r.ok && r.error && /catchphrase|cardLabel|card_label|wantedProfile|summaryComment|cc_what|cc_value|cc_life|column/.test(r.error)){
+    const minRows = rows.map(rw=>{ const {catchphrase,cardLabel,heroUrl,wantedProfile,summaryComment,cc_what,cc_value,cc_life,...rest}=rw; return rest; });
     const r2=await adminWrite('companies','upsert',{rows:minRows});
     if(!r2.ok){ toast('⚠️ DB保存失敗。SQL Editorで supabase_setup.sql を実行してください。'); }
     else { toast('⚠️ 一部カラム未追加のため除外して保存。SQL Editorでカラム追加を推奨。'); }
@@ -2149,6 +2173,15 @@ function renderAddCo(){
             <div style="font-size:11px;color:var(--text2);margin-bottom:5px">キャッチフレーズ <span style="font-size:10px;color:var(--text3)">一覧カードに表示</span></div>
             <input type="text" class="form-input" id="coCatchphrase" placeholder="例：地域と共に挑戦を続けています" maxlength="50" style="${inp()}">
           </div>
+          <div style="margin-bottom:14px;border:1px solid var(--border);border-radius:6px;padding:12px;background:var(--bg);">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:8px;font-weight:700">カードA/B文言（人物マッチで出し分け・空欄ならキャッチフレーズを使用）</div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:4px">What（事業・役割で選ぶ）</div>
+            <input type="text" id="coCcWhat" maxlength="60" placeholder="例：紙の会社を、データで“勝てる”会社に変えたい人へ" style="${inp()}margin-bottom:8px">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:4px">Why+Who（価値観・人で共鳴）</div>
+            <input type="text" id="coCcValue" maxlength="60" placeholder="例：“◯◯”に共感して働きたい人へ" style="${inp()}margin-bottom:8px">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:4px">Life（転機スニペット・一人称／“〜な人へ”にしない）</div>
+            <input type="text" id="coCcLife" maxlength="60" placeholder="例：父の病をきっかけに、家業を継いだ。" style="${inp()}">
+          </div>
           <div style="margin-bottom:14px;position:relative">
             <div style="font-size:11px;color:var(--text2);margin-bottom:5px">記事本文<span style="color:var(--hot)">*</span></div>
             <textarea id="co-body" rows="12" placeholder="〜800字推奨" style="${inp()}resize:vertical;padding-bottom:24px;" oninput="updateBodyCounter()"></textarea>
@@ -2233,6 +2266,9 @@ function saveCo(){
   const title=document.getElementById('co-title').value.trim();
   const quote=document.getElementById('co-quote').value.trim();
   const catchphrase=(document.getElementById('coCatchphrase')?.value||'').trim();
+  const cc_what=(document.getElementById('coCcWhat')?.value||'').trim();
+  const cc_value=(document.getElementById('coCcValue')?.value||'').trim();
+  const cc_life=(document.getElementById('coCcLife')?.value||'').trim();
   const body=document.getElementById('co-body').value.trim();
   if(!name||!ceo||!title||!body){ toast('必須項目を入力してください'); return; }
   const q1=[1,2,3,4].map(i=>document.getElementById('co-q'+i).value.trim()).filter(Boolean);
@@ -2254,7 +2290,7 @@ function saveCo(){
     intro:document.getElementById('co-intro').value.trim(),
     tags:document.getElementById('co-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
     wantedProfile:(document.getElementById('co-wanted')?.value||'').trim(),
-    title,quote,catchphrase,body,q1,
+    title,quote,catchphrase,cc_what,cc_value,cc_life,body,q1,
     fee:document.getElementById('co-fee').value||'',
     status:'active',
     created:existingCo.created||new Date().toLocaleDateString('ja-JP'),
@@ -2288,6 +2324,7 @@ function editCo(id){
     set('co-intro',co.companyIntro||co.intro); set('co-tags',(co.tags||[]).join(', '));
     set('co-title',co.title); set('co-quote',co.quote); set('co-body',co.body); set('co-fee',co.fee);
     if(document.getElementById('coCatchphrase')) document.getElementById('coCatchphrase').value=co.catchphrase||'';
+    set('coCcWhat', co.cc_what); set('coCcValue', co.cc_value); set('coCcLife', co.cc_life);
     set('co-wanted', co.wantedProfile||'');
     [1,2,3,4].forEach((i,idx)=>set('co-q'+i,(co.q1||[])[idx]||''));
     updateBodyCounter();
