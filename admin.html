@@ -623,6 +623,20 @@ async function renderResonance(){
     </tr>`;
   }).join('');
 
+  // 版別（人物=person / 課題=challenge / 旧=不明）A/B比較
+  const vLabel={person:'人物(偶然性)',challenge:'課題',_:'（旧/不明）'};
+  const byVar={};
+  logs.forEach(l=>{ const k=(l.variant==='person'||l.variant==='challenge')?l.variant:'_'; (byVar[k]=byVar[k]||[]).push(l); });
+  const varTable=['person','challenge','_'].filter(k=>byVar[k]).map(k=>{
+    const arr=byVar[k], n=arr.length;
+    const sel=arr.filter(l=>l.reached_result||(l.top_tags&&l.top_tags.length)).length;
+    const a=arr.filter(l=>l.article_read).length;
+    const cta=arr.filter(l=>l.contact_cta).length;
+    const ai=arr.filter(l=>l.ai_viewed).length;
+    const cell=(v,p,bold)=>`<td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;${bold?'font-weight:700;color:#2e8c7f':''}">${v}${p!=null?` <span style="color:var(--text3);font-weight:400">(${p}%)</span>`:''}</td>`;
+    return `<tr><td style="padding:8px 10px;border-bottom:1px solid var(--border);font-weight:700;color:var(--navy)">${vLabel[k]}</td>${cell(n,null)}${cell(sel,pct(sel,n))}${cell(a,pct(a,n))}${cell(cta,pct(cta,n),true)}${cell(ai,pct(ai,n))}</tr>`;
+  }).join('');
+
   // 集計ヘルパー
   const tally=(arr)=>{ const m={}; arr.forEach(v=>{ if(v) m[v]=(m[v]||0)+1; }); return Object.entries(m).sort((a,b)=>b[1]-a[1]); };
   const bLabel=t=>CARD_BTAGS[t]||t, rLabel=t=>CARD_RTAGS[t]||t;
@@ -645,20 +659,43 @@ async function renderResonance(){
   <div style="padding:24px;max-width:980px">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px;">
       <div style="font-size:13px;color:var(--text2);line-height:1.7">
-        課題カードを開始した匿名セッション <b>${N}</b>件（カード開始時に記録／途中離脱も含む）。<br>
-        「どんなタイプが・どの言葉に反応し・どこまで進んだか（離脱含む）」を経営層ごとに集計。個人情報は含みません。
+        経営者マッチを開始した匿名セッション <b>${N}</b>件（開始時に記録／途中離脱も含む）。<br>
+        新導線（経営者を選ぶ→記事→面談）の到達と、診断/LINE特典の件数を集計。版別（人物/課題）の比較も。個人情報は含みません。
       </div>
       ${N? `<button onclick="cardLogDeleteAll()" style="flex:0 0 auto;padding:8px 14px;background:none;border:1px solid var(--hot);color:var(--hot);border-radius:4px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">全セッション消去</button>`:''}
     </div>
 
     <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
-      <div style="font-weight:700;font-size:13px;margin-bottom:14px;">全体ファネル <span style="font-weight:400;color:var(--text3);font-size:11px">（カード開始を100%とした到達率）</span></div>
-      ${[['カード開始',N],['3枚以上スワイプ',f3],['診断結果に到達',fResult],['記事を読んだ',fRead],['AI診断を見た',fAi],['LINE登録',fLine],['面談CTA',fCta]].map(([lbl,n])=>
+      <div style="font-weight:700;font-size:13px;margin-bottom:14px;">新導線ファネル <span style="font-weight:400;color:var(--text3);font-size:11px">（開始を100%とした到達率／面談CTAがメインCV）</span></div>
+      ${[['カード開始',N],['経営者を選んだ',fResult],['記事を読んだ',fRead],['面談CTA（面談希望＝CV）',fCta]].map(([lbl,n],i)=>
         `<div style="display:flex;align-items:center;gap:12px;margin-bottom:9px;font-size:12px;">
-          <div style="width:110px;color:var(--text2)">${lbl}</div>
+          <div style="width:160px;color:${i===3?'#2e8c7f':'var(--text2)'};font-weight:${i===3?'700':'400'}">${lbl}</div>
           ${funnelBar(n)}
           <div style="width:70px;text-align:right"><b>${n}</b> <span style="color:var(--text3)">(${pct(n,N)}%)</span></div>
         </div>`).join('')}
+    </div>
+
+    <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:4px;">補助指標（LINE特典・先方フィードバック用）</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">診断(AIレポート)とLINE登録は新導線では任意（メインCVは面談CTA）。経営層への報告用に件数を継続取得します。</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;">
+        ${[['AI診断(レポート)を見た',fAi],['LINE登録',fLine],['3枚以上スワイプ ※課題版',f3]].map(([lbl,n])=>
+          `<div style="flex:1;min-width:150px;background:var(--bg);border-radius:8px;padding:12px 14px;">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:4px;">${lbl}</div>
+            <div style="font-size:20px;font-weight:700;color:var(--navy)">${n} <span style="font-size:12px;color:var(--text3);font-weight:400">(${pct(n,N)}%)</span></div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:4px;">版別 A/B（人物 vs 課題）</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">?v=person（人物・偶然性／既定）と ?v=challenge（課題）の比較。面談CTA到達率が勝ち筋判定。</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr>
+          ${['版','開始','選択','記事','面談CTA','AI診断'].map((h,i)=>`<th style="text-align:${i?'right':'left'};padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">${h}</th>`).join('')}
+        </tr></thead>
+        <tbody>${varTable||`<tr><td colspan="6" style="padding:14px;text-align:center;color:var(--text3)">データがありません</td></tr>`}</tbody>
+      </table>
     </div>
 
     <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
