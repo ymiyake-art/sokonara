@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ソコナラ</title>
+<!-- 記事直リンク(?cid/company)時のホーム一瞬表示(フラッシュ)を防ぐ：描画前にホームを隠す -->
+<script>try{var _p=new URLSearchParams(location.search);if(_p.get('cid')||_p.get('company'))document.documentElement.classList.add('route-article');}catch(e){}</script>
+<style>html.route-article #p-list,html.route-article #topPage{display:none!important;}</style>
 <!-- PWA / ホーム画面追加 -->
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#1C2A54">
@@ -1268,18 +1271,18 @@ h1, h2, h3, h4,
         <span class="hero-in" style="--hd:.5s;display:block;white-space:nowrap;">から始まる出会い</span>
       </div>
       <div class="hero-in" style="--hd:.8s;max-width:360px;margin:0 auto 22px;font-size:15px;color:rgba(255,255,255,0.92);line-height:1.95;text-shadow:0 1px 10px rgba(0,0,0,0.45);text-align:center;">
-        <span style="display:block;">気になる課題を選ぶと、</span>
-        <span style="display:block;">その挑戦に向き合う経営層と出会えます。</span>
+        <span style="display:block;">直感でピンとくる経営者を選ぶと、</span>
+        <span style="display:block;">その人の挑戦と想いに出会えます。</span>
       </div>
 
       <!-- 4ステップ（右に流れる矢羽根ステッパー） -->
       <div class="hero-in" style="--hd:1s;max-width:372px;margin:0 auto 6px;display:flex;align-items:stretch;font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;">
-        <div style="flex:1;min-height:48px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(9.5px,2.9vw,11.5px);line-height:1.35;white-space:nowrap;color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.10);padding:6px 9px 6px 8px;clip-path:polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%);">①課題に<br>触れる</div>
+        <div style="flex:1;min-height:48px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(9.5px,2.9vw,11.5px);line-height:1.35;white-space:nowrap;color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.10);padding:6px 9px 6px 8px;clip-path:polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%);">①直感で<br>選ぶ</div>
         <div style="flex:1;min-height:48px;margin-left:-8px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(9.5px,2.9vw,11.5px);line-height:1.35;white-space:nowrap;color:rgba(255,255,255,0.9);background:rgba(66,173,159,0.30);padding:6px 9px 6px 15px;clip-path:polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%);">②記事を<br>読む</div>
-        <div style="flex:1;min-height:48px;margin-left:-8px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(9.5px,2.9vw,11.5px);line-height:1.35;white-space:nowrap;color:#fff;background:rgba(66,173,159,0.48);padding:6px 9px 6px 15px;clip-path:polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%);">③はたらく<br>ヒント</div>
-        <div style="flex:1.1;min-height:48px;margin-left:-8px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(9.5px,2.9vw,11.5px);line-height:1.35;white-space:nowrap;font-weight:700;color:#fff;background:var(--teal);padding:6px 9px 6px 15px;box-shadow:0 0 14px rgba(66,173,159,0.5);clip-path:polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%);">④経営層と<br>つながる</div>
+        <div style="flex:1;min-height:48px;margin-left:-8px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(9.5px,2.9vw,11.5px);line-height:1.35;white-space:nowrap;color:#fff;background:rgba(66,173,159,0.48);padding:6px 9px 6px 15px;clip-path:polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%);">③話して<br>みる</div>
+        <div style="flex:1.1;min-height:48px;margin-left:-8px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(9.5px,2.9vw,11.5px);line-height:1.35;white-space:nowrap;font-weight:700;color:#fff;background:var(--teal);padding:6px 9px 6px 15px;box-shadow:0 0 14px rgba(66,173,159,0.5);clip-path:polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%);">④経営者と<br>話す</div>
       </div>
-      <div class="hero-in" style="--hd:1.1s;font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:22px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">無料・約3分</div>
+      <div class="hero-in" style="--hd:1.1s;font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:22px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">無料・約1分</div>
 
       <button class="btn-primary hero-in" onclick="goCards()" style="--hd:1.2s;width:100%;max-width:360px;justify-content:center;margin-bottom:12px;background:var(--teal);font-size:17px;font-weight:700;padding:18px 20px;border-radius:14px;box-shadow:0 8px 24px rgba(66,173,159,0.35);">経営者と出会ってみる →</button>
       <div class="hero-in" style="--hd:1.28s;margin-top:4px;">
@@ -1295,15 +1298,15 @@ h1, h2, h3, h4,
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:14px;">About</div>
         <h2 style="font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:clamp(19px,4.5vw,24px);font-weight:900;color:var(--navy);line-height:1.55;margin:0 0 18px;">ソコナラとは？</h2>
         <p style="font-size:14px;color:var(--text2);line-height:2;max-width:540px;margin:0 auto 36px;">
-          求人サイトでも、経営者を探す場でもありません。<br>
-          地域企業の「課題」との<strong style="color:var(--navy);">偶然の出会い</strong>を通じて、<br>
-          自分の価値観や興味を見つけるサービスです。
+          求人サイトでも、条件で経営者を探す場でもありません。<br>
+          地域で挑戦する経営者との<strong style="color:var(--navy);">偶然の出会い</strong>を通じて、<br>
+          自分の価値観や次の一歩を見つけるサービスです。
         </p>
         <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
           <div style="flex:1;min-width:200px;max-width:240px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px 18px;text-align:left;">
             <div style="font-size:22px;margin-bottom:10px;">🧭</div>
-            <div style="font-weight:800;color:var(--navy);font-size:15px;margin-bottom:8px;">課題から始まる</div>
-            <div style="font-size:12.5px;color:var(--text2);line-height:1.85;">肩書きや条件ではなく、心が動いた「課題」を入口に。</div>
+            <div style="font-weight:800;color:var(--navy);font-size:15px;margin-bottom:8px;">人から始まる</div>
+            <div style="font-size:12.5px;color:var(--text2);line-height:1.85;">肩書きや条件ではなく、ピンときた“経営者”を入口に。</div>
           </div>
           <div style="flex:1;min-width:200px;max-width:240px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px 18px;text-align:left;">
             <div style="font-size:22px;margin-bottom:10px;">✨</div>
@@ -1330,7 +1333,7 @@ h1, h2, h3, h4,
         <div style="display:flex;flex-wrap:wrap;gap:28px 48px;justify-content:space-between;align-items:flex-start;">
           <div style="flex:0 0 auto;">
             <img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ" style="height:26px;opacity:0.95;margin-bottom:10px;">
-            <div style="font-size:11.5px;color:rgba(255,255,255,0.45);line-height:1.8;max-width:260px;">課題との偶然の出会いから、<br>自分の価値観を発見するキャリア共創サービス。</div>
+            <div style="font-size:11.5px;color:rgba(255,255,255,0.45);line-height:1.8;max-width:260px;">経営者との偶然の出会いから、<br>自分の価値観を発見するキャリア共創サービス。</div>
             <img src="/images/kanden-group-logo.png" alt="関西電力グループ power with heart" style="height:38px;opacity:0.9;margin-top:18px;display:block;">
           </div>
           <!-- 運営会社情報（※正確な値は要差し込み） -->
@@ -3718,6 +3721,8 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(async ()=>{
     // pfの「経営層一覧」リンク（/?view=leaders）から来たら一覧を開く
     if(params.get('view')==='leaders'){ try{ showLeaderList(); }catch(e){} }
   }
+  // フラッシュ防止クラスを解除（以降のSPA内ナビでホーム表示を妨げない）
+  try{ document.documentElement.classList.remove('route-article'); }catch(e){}
   if(S.mode==='user' && document.getElementById('project')?.classList.contains('active')){
     renderPjList();
   }
