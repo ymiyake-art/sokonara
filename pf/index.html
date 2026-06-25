@@ -243,7 +243,7 @@ body{
 .vsArena{ position:relative; width:100%; max-width:760px; margin:0 auto; padding:0 4px; }
 /* 背景の淡いグロー（選ぶワクワク感の下地） */
 .vsArena::before{ content:''; position:absolute; left:50%; top:40%; width:130%; height:64%; transform:translate(-50%,-50%);
-  background:radial-gradient(ellipse at center, rgba(66,173,159,0.20), rgba(66,173,159,0) 70%); z-index:0; pointer-events:none; }
+  background:radial-gradient(ellipse at center, rgba(66,173,159,0.26), rgba(66,173,159,0) 72%); z-index:0; pointer-events:none; }
 .vsHead{ position:relative; z-index:1; text-align:center; margin-bottom:16px; }
 .vsKicker{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:3px; color:var(--teal-d); text-transform:uppercase; margin-bottom:6px; }
 .vsTitle{ font-family:'Zen Kaku Gothic New',sans-serif; font-size:20px; font-weight:900; color:var(--navy); line-height:1.45; }
@@ -251,11 +251,15 @@ body{
 .vsBar>span{ display:block; height:100%; background:linear-gradient(90deg,var(--teal),var(--navy)); border-radius:99px; transition:width .4s ease; }
 .vsProg{ font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:1px; color:var(--text3); }
 /* 2枚レイアウト＋中央VSメダル */
-.vsGrid{ position:relative; z-index:1; display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:stretch; }
-.vsMedal{ position:absolute; top:42%; left:50%; transform:translate(-50%,-50%); z-index:6;
-  width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-  font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:#fff; letter-spacing:.5px;
-  background:linear-gradient(135deg,var(--teal),var(--teal-d)); box-shadow:0 4px 14px rgba(28,42,84,0.35), 0 0 0 4px var(--bg); }
+.vsGrid{ position:relative; z-index:1; display:grid; grid-template-columns:1fr 1fr; gap:38px; align-items:stretch; }
+/* VSメダルはカード間の“隙間内”に収める（文字に被らない）＋脈動でワクワク感 */
+.vsMedal{ position:absolute; top:38%; left:50%; transform:translate(-50%,-50%); z-index:6;
+  width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700; color:#fff; letter-spacing:.5px;
+  background:linear-gradient(135deg,var(--teal),var(--teal-d)); box-shadow:0 4px 14px rgba(28,42,84,0.35), 0 0 0 4px var(--bg);
+  animation:vsPulse 2.2s ease-in-out infinite; }
+@keyframes vsPulse{ 0%,100%{ box-shadow:0 4px 14px rgba(28,42,84,0.35), 0 0 0 4px var(--bg); } 50%{ box-shadow:0 6px 20px rgba(66,173,159,0.55), 0 0 0 4px var(--bg); } }
+.vsSub{ font-family:'Noto Sans JP',sans-serif; font-size:11.5px; color:var(--text2); margin-top:8px; line-height:1.6; }
 /* ↓ index.html「経営層一覧」と同一構造。フォントは2枚目(Zen Kaku 900)。タップで選択。 */
 .leader-card{ background:transparent; border:none; border-radius:12px; overflow:hidden; cursor:pointer;
   transition:transform .2s cubic-bezier(.22,1,.36,1), box-shadow .25s, opacity .25s; display:flex; flex-direction:column;
@@ -301,8 +305,9 @@ body{
   .vsKicker{ font-size:11px; letter-spacing:4px; }
   .vsTitle{ font-size:30px; }
   .vsBar{ width:220px; height:6px; }
-  .vsGrid{ gap:52px; }
-  .vsMedal{ width:66px; height:66px; font-size:19px; box-shadow:0 8px 22px rgba(28,42,84,0.42), 0 0 0 6px var(--bg); }
+  .vsGrid{ gap:60px; }
+  .vsMedal{ width:52px; height:52px; font-size:17px; }
+  .vsSub{ font-size:13px; }
   .leader-card{ border-radius:16px; }
   .leader-card-top{ height:360px; }
   .leader-phrase{ font-size:25px; left:22px; right:22px; bottom:18px; }
@@ -582,6 +587,7 @@ function paintVersus(enterSide){
       <div class="vsHead">
         <div class="vsKicker">SOKONARA MATCH</div>
         <div class="vsTitle">ピンとくるのは、どっち？</div>
+        <div class="vsSub">直感でOK。選ぶほど、あなたの“惹かれ方”が見えてきます。</div>
         <div class="vsBar"><span style="width:${pct}%"></span></div>
         <div class="vsProg">${vsRound+1} / ${VS_ROUNDS}</div>
       </div>
