@@ -1411,13 +1411,21 @@ h1, h2, h3, h4,
       </div>
     </div>
 
-    <!-- 共感ボタン -->
+    <!-- 共感ボタン → 2段階で「話を聞いてみる」へ -->
     <div class="empathy-section" id="empathySection" style="display:none">
       <button class="empathy-btn" id="empathyBtnEl" onclick="handleEmpathy()">
         <span id="empathyIcon">♡</span>
-        <span id="empathyLabel">この記事に共感した</span>
+        <span id="empathyLabel">この経営層に共感した</span>
       </button>
-      <div style="font-size:11px;color:var(--text3);margin-top:8px">共感は経営層に届きます（匿名・1回）</div>
+      <div id="empathyNote" style="font-size:11px;color:var(--text3);margin-top:8px">共感は経営層に届きます（匿名・ワンタップ）</div>
+      <!-- 共感後に出る温かい一段階目→二段階目 -->
+      <div id="empathyEscalate" style="display:none;margin-top:18px;background:var(--teal-bg);border:1px solid var(--teal-mid);border-radius:12px;padding:18px 16px;text-align:center;">
+        <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:6px;">気持ちが届きました 🙌</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:14px;"><span id="escalateName"></span>の話を、聞いてみませんか？</div>
+        <button class="btn-primary" style="width:100%;justify-content:center;" onclick="openEmpathyForm()">話を聞いてみる →</button>
+        <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.6;">※ カジュアルに話を聞く場です。応募・選考ではありません。</div>
+        <button class="btn-outline" style="width:100%;justify-content:center;font-size:13px;margin-top:10px;" onclick="goCards()">他の経営層を見る</button>
+      </div>
     </div>
 
     <!-- 関連経営層 -->
@@ -1433,12 +1441,12 @@ h1, h2, h3, h4,
 
     <div class="cta-sticky" id="p1CtaSticky">
       <div class="cta-sticky-text">
-        <strong>気になったら、この経営層と話してみませんか？</strong>
-        <span style="display:block;font-size:11px;color:var(--text2);margin-top:2px;font-weight:400;">かんたんな入力だけ（約1分）。話したいと思ってもらえたら連絡が届きます</span>
+        <strong>気になったら、まず話を聞いてみませんか？</strong>
+        <span style="display:block;font-size:11px;color:var(--text2);margin-top:2px;font-weight:400;">カジュアルに話を聞く場です（応募・選考ではありません）</span>
       </div>
       <div class="cta-sticky-btns">
         <button class="btn-outline" style="font-size:13px;padding:10px 16px;white-space:nowrap" onclick="goCards()" title="他の経営層のカードを見る">他の経営層を見る</button>
-        <button class="btn-primary" style="font-size:13px;padding:10px 18px;white-space:nowrap" onclick="openEmpathyForm()">話してみる →</button>
+        <button class="btn-primary" style="font-size:13px;padding:10px 18px;white-space:nowrap" onclick="openEmpathyForm()">話を聞いてみる →</button>
       </div>
     </div>
   </div>
@@ -2276,12 +2284,12 @@ function handleEmpathy() {
   btn.classList.add('pop');
   setTimeout(() => btn.classList.remove('pop'), 220);
   setTimeout(() => { btn.classList.add('done'); icon.textContent = '♥'; label.textContent = '共感しました！'; }, 100);
-  // 共感後にCTAバーを強調
+  // 共感（小さなYES）の直後に「話を聞いてみる」を温かく提示＝2段階エスカレーション
   setTimeout(() => {
-    const cta = document.getElementById('p1CtaSticky');
-    const primaryBtn = cta && cta.querySelector('.btn-primary');
-    if (cta) { cta.classList.add('cta-highlight'); setTimeout(()=>cta.classList.remove('cta-highlight'), 2200); }
-    if (primaryBtn) { primaryBtn.classList.add('cta-bounce'); setTimeout(()=>primaryBtn.classList.remove('cta-bounce'), 2200); }
+    const esc = document.getElementById('empathyEscalate');
+    const nm = document.getElementById('escalateName');
+    if (nm) { const co = getCurrentCompany(); const ceo = co?.ceo || ''; nm.textContent = ceo ? (ceo + 'さん') : 'この経営層'; }
+    if (esc) { esc.style.display = 'block'; esc.scrollIntoView({behavior:'smooth', block:'center'}); }
   }, 400);
   // Supabase increment (best-effort)
   if (supabaseClient && selectedCompanyId) {
@@ -2668,7 +2676,9 @@ function renderP1FromCompany(){
   if(empSec) empSec.style.display = '';
   if(empBtn){ empBtn.classList.remove('done','pop'); }
   if(empIcon) empIcon.textContent = '♡';
-  if(empLabel) empLabel.textContent = 'この記事に共感した';
+  if(empLabel) empLabel.textContent = 'この経営層に共感した';
+  // 2段階エスカレーションは記事切替時に隠す（前記事の残留防止）
+  const empEsc = document.getElementById('empathyEscalate'); if(empEsc) empEsc.style.display = 'none';
   // 関連経営層レンダリング
   if(co) renderRelatedCeos(co.id);
 
