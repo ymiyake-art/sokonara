@@ -1140,12 +1140,9 @@ async function loadCards(){
 // 既定(person)はマッチ前に偶然性TOPを表示。?v=challenge は従来通り即スワイプ開始。
 (async function init(){
   await Promise.all([loadCards(), loadCompaniesPf()]);
-  if(SN_VARIANT==='person'){
-    document.body.classList.add('vmode'); // PC没入レイアウト(TOP/マッチ共通)
-    document.getElementById('screenTop').classList.remove('hide');
-  } else {
-    startCards();
-  }
+  // 入口の思想ページは「/」(ホーム)に集約。/pf はマッチ直行（二重TOPを解消）。
+  if(SN_VARIANT==='person'){ document.body.classList.add('vmode'); } // PC没入レイアウト
+  startCards();
 })();
 </script>
 </body>
