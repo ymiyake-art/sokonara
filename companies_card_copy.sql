@@ -5,6 +5,8 @@ ALTER TABLE companies ADD COLUMN IF NOT EXISTS cc_what  text;
 ALTER TABLE companies ADD COLUMN IF NOT EXISTS cc_value text;
 ALTER TABLE companies ADD COLUMN IF NOT EXISTS cc_life  text;
 ALTER TABLE card_logs ADD COLUMN IF NOT EXISTS copy_arm text;
+-- カード勝敗A/B（カード1枚ごとにアーム割当→対決の勝/負を配列で記録）
+ALTER TABLE card_logs ADD COLUMN IF NOT EXISTS arm_events jsonb;
 
 -- 初期投入（2026-06-25 確定の赤入れ版）。以降は admin の企業編集で上書き可。
 UPDATE companies SET

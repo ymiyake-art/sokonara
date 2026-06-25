@@ -20,7 +20,7 @@ const ALLOWED = new Set([
   'article_read', 'ai_viewed', 'line_registered', 'contact_cta',
   'ai_summary', 'ai_message', 'ai_bridge',
   'reached_result', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content',
-  'variant', 'copy_arm',
+  'variant', 'copy_arm', 'arm_events',
 ]);
 
 export default async function handler(req) {

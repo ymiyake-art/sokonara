@@ -506,15 +506,14 @@ const SN_VARIANT=(function(){
   }catch(e){ return 'person'; }
 })();
 // カード文言A/B（what=事業 / value=価値観 / life=転機）。セッションごとにランダム選択し card_logs.copy_arm に記録。
-// ?arm= で固定可（テスト用）。localStorageで同一セッション内固定。
-const SN_ARM=(function(){
-  try{
-    const q=new URLSearchParams(location.search).get('arm');
-    if(q==='what'||q==='value'||q==='life'){ localStorage.setItem('sn_arm',q); return q; }
-    const s=localStorage.getItem('sn_arm'); if(s==='what'||s==='value'||s==='life') return s;
-    const pick=['what','value','life'][Math.floor(Math.random()*3)]; localStorage.setItem('sn_arm',pick); return pick;
-  }catch(e){ return 'what'; }
+// アームは「カード1枚ごと」にランダム割当（勝敗で勝率を測る＝CVより早く大量データが取れる）。
+// ?arm=what|value|life を付けると全カードをそのアームに固定（テスト用）。
+const SN_ARM_PARAM=(function(){
+  try{ const q=new URLSearchParams(location.search).get('arm'); return (q==='what'||q==='value'||q==='life')?q:null; }
+  catch(e){ return null; }
 })();
+function randArm(){ return SN_ARM_PARAM || ['what','value','life'][Math.floor(Math.random()*3)]; }
+const SN_ARM = SN_ARM_PARAM || 'percard'; // logStart用のラベル（実際の出し分けはカード単位）
 const SUPA_URL='https://ypwwuylcvjwcyazvpibd.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd3d1eWxjdmp3Y3lhenZwaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTY1MTMsImV4cCI6MjA5MjI3MjUxM30.7YseXt8libEzFsSAv4bI46l36kZ2lFz_jnh1JphVpvA';
 let recoCard=null; // 結果で選ばれたおすすめカード
@@ -528,13 +527,13 @@ function initProg(){
 }
 // ===== 人物版（?v=person）：経営層カード2枚を“横並び”で比較→5回→記事 =====
 // 「経営層一覧」と完全同一のカードデザインを流用。気になる方をタップ→選んだ側は同位置で残り、相手側だけ新カードに入替（5回）。
-let vsPool=[], vsLeft=null, vsRight=null, vsPtr=0, vsRound=0, VS_ROUNDS=5;
+let vsPool=[], vsLeft=null, vsRight=null, vsLeftArm='what', vsRightArm='what', armEvents=[], vsPtr=0, vsRound=0, VS_ROUNDS=5;
 function shuffleArr(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function leaderCardHTML(c, opts){
   opts=opts||{};
   const name=c.ceo||'経営層';
   const company=c.name||c.company||'';
-  const armField={what:'cc_what',value:'cc_value',life:'cc_life'}[SN_ARM];
+  const armField={what:'cc_what',value:'cc_value',life:'cc_life'}[opts.arm||'what'];
   const phrase=String((armField&&c[armField])||c.catchphrase||c.quote||name||'').split('\n').map(esc).join('<br>');
   const photo=c.photoUrl||'';
   const photoBg=photo?`<div class="leader-card-photo-bg" style="background-image:url('${esc(photo)}')"></div>`
@@ -566,11 +565,11 @@ function renderVersus(){
     renderChallengeStack(); return;
   }
   VS_ROUNDS=Math.min(5, vsPool.length-1);
-  vsRound=0; vsPtr=0;
+  vsRound=0; vsPtr=0; armEvents=[];
   logUpdate({ shown_cards: vsPool.slice(0, Math.min(vsPool.length, VS_ROUNDS+1)).map(c=>String(c.id||'')) });
   document.body.classList.add('vmode'); // PC没入レイアウト用
   document.getElementById('stage').classList.add('versusMode');
-  vsLeft=vsPool[vsPtr++]; vsRight=vsPool[vsPtr++];
+  vsLeft=vsPool[vsPtr++]; vsLeftArm=randArm(); vsRight=vsPool[vsPtr++]; vsRightArm=randArm();
   paintVersus('both');
 }
 function paintVersus(enterSide){
@@ -587,9 +586,9 @@ function paintVersus(enterSide){
         <div class="vsProg">${vsRound+1} / ${VS_ROUNDS}</div>
       </div>
       <div class="vsGrid">
-        ${leaderCardHTML(vsLeft, {enter:lt})}
+        ${leaderCardHTML(vsLeft, {enter:lt, arm:vsLeftArm})}
         <div class="vsMedal">VS</div>
-        ${leaderCardHTML(vsRight, {enter:rt})}
+        ${leaderCardHTML(vsRight, {enter:rt, arm:vsRightArm})}
       </div>
     </div>`;
   const cards=stage.querySelectorAll('.vsGrid .leader-card');
@@ -599,21 +598,26 @@ function paintVersus(enterSide){
 }
 function pickVersus(side){
   const winner = side==='left' ? vsLeft : vsRight;
+  const winnerArm = side==='left' ? vsLeftArm : vsRightArm;
+  const loserArm  = side==='left' ? vsRightArm : vsLeftArm;
+  // 勝ったアーム／負けたアームを記録（カード勝敗でA/B＝CVより早く貯まる）
+  armEvents.push({ w:winnerArm, l:loserArm });
+  logUpdate({ arm_events: armEvents });
   vsRound++;
-  if(vsRound>=VS_ROUNDS){ finishVersus(winner); return; }
+  if(vsRound>=VS_ROUNDS){ finishVersus(winner, winnerArm); return; }
   let next=vsPool[vsPtr++];
   if(!next){ const rest=shuffleArr(vsPool.filter(c=>String(c.id)!==String(winner.id))); next=rest[0]; vsPool=[winner,...rest]; vsPtr=2; }
-  if(side==='left'){ vsRight=next; paintVersus('right'); } // 選んだ左は同位置で残し、相手(右)だけ入替
-  else { vsLeft=next; paintVersus('left'); }
+  if(side==='left'){ vsRight=next; vsRightArm=randArm(); paintVersus('right'); } // 選んだ左は同位置＆同アームで残し、相手(右)だけ新カード＋新アーム
+  else { vsLeft=next; vsLeftArm=randArm(); paintVersus('left'); }
 }
-function finishVersus(champ){
+function finishVersus(champ, champArm){
   const stage=document.getElementById('stage');
   picked=[]; // 人物版はスワイプ集計を使わない
   logUpdate({ picked_cards:[String(champ.id||'')], recommended_company:String(champ.id||''), reached_result:true });
   stage.innerHTML=`
     <div class="vsArena">
       <div class="vsHead"><div class="vsKicker">YOUR CHOICE</div><div class="vsTitle">あなたが惹かれた経営層</div></div>
-      <div id="vsFinal">${leaderCardHTML(champ, {})}</div>
+      <div id="vsFinal">${leaderCardHTML(champ, {arm:champArm||'what'})}</div>
       <button class="btn-primary" style="max-width:330px;margin:18px auto 0;display:block;" onclick="openLeaderArticle('${esc(String(champ.id||''))}')">この経営層の記事を読む →</button>
       <button class="btn-text" style="display:block;margin:10px auto 0;background:none;border:none;color:var(--text3);font-size:12px;text-decoration:underline;cursor:pointer;" onclick="restart()">もう一度選ぶ</button>
     </div>`;
