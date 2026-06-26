@@ -3,7 +3,7 @@ export const config = { runtime: 'edge' };
 // 管理画面の書き込み専用API（service_role）。
 // companies/challenge_cards/projects への upsert/update/delete を ADMIN_PASSWORD 認証で実行。
 // これにより anon の書き込み権限をDBから剥がせる（改竄・削除の穴を塞ぐ）。
-const TABLES = ['companies', 'challenge_cards', 'projects'];
+const TABLES = ['companies', 'challenge_cards', 'projects', 'cases'];
 
 export default async function handler(req) {
   const cors = {
