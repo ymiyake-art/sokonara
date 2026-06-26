@@ -213,6 +213,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
         <div class="nav-item" id="ni-colist" onclick="switchTab('colist')"><div class="nav-dot" style="background:var(--teal)"></div>掲載企業一覧</div>
         <div class="nav-item" id="ni-cards" onclick="switchTab('cards')"><div class="nav-dot" style="background:#9b59b6"></div>🗂️ 課題カード(v2)</div>
         <div class="nav-item" id="ni-resonance" onclick="switchTab('resonance')"><div class="nav-dot" style="background:#8e44ad"></div>📊 共鳴データ(v2)</div>
+        <div class="nav-item" id="ni-utmlinks" onclick="switchTab('utmlinks')"><div class="nav-dot" style="background:#16a085"></div>🔗 配信リンク・UTM</div>
       </div>
       <div class="admin-nav" style="border-top:1px solid rgba(255,255,255,0.07);padding-top:12px;">
         <div class="admin-nav-label">リファレンス</div>
@@ -348,7 +349,7 @@ function switchTab(tab){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const ni=document.getElementById('ni-'+tab);
   if(ni) ni.classList.add('active');
-  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',biz:'🏢 法人問い合わせ',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',article:'📝 記事管理',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧',cards:'🗂️ 課題カード(v2)',resonance:'📊 共鳴データ(v2)',philosophy:'🧭 設計思想'};
+  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',biz:'🏢 法人問い合わせ',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',article:'📝 記事管理',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧',cards:'🗂️ 課題カード(v2)',resonance:'📊 共鳴データ(v2)',utmlinks:'🔗 配信リンク・UTM',philosophy:'🧭 設計思想'};
   document.getElementById('tabTitle').textContent=titles[tab]||tab;
   if(tab === 'interests'){
     // 既読としてマーク
@@ -359,7 +360,7 @@ function switchTab(tab){
     localStorage.setItem('snLastSeenBiz', new Date().toISOString());
     setBizBadge(0);
   }
-  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,biz:renderBiz,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,article:renderArticleEditor,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList,cards:renderCardsAdmin,resonance:renderResonance,philosophy:renderPhilosophy};
+  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,biz:renderBiz,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,article:renderArticleEditor,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList,cards:renderCardsAdmin,resonance:renderResonance,utmlinks:renderUtmLinks,philosophy:renderPhilosophy};
   fns[tab]?.();
 }
 
@@ -1243,6 +1244,61 @@ function downloadBizCsv(){
 }
 
 // ===== 🧭 設計思想（リファレンス・静的） =====
+// ===== 🔗 配信リンク・UTM（生成＋一覧。保存はlocalStorage） =====
+function getUtmLinks(){ try{ return JSON.parse(localStorage.getItem('sn_utm_links')||'[]'); }catch{ return []; } }
+function setUtmLinks(a){ try{ localStorage.setItem('sn_utm_links', JSON.stringify(a||[])); }catch{} }
+function utmBuildUrl(){
+  const base=document.getElementById('utm-dest')?.value||''; if(!base) return '';
+  const g=id=>(document.getElementById(id)?.value||'').trim();
+  let u; try{ u=new URL(base); }catch{ return ''; }
+  const s=g('utm-s'),m=g('utm-m'),c=g('utm-c'),ct=g('utm-ct');
+  if(s)u.searchParams.set('utm_source',s); if(m)u.searchParams.set('utm_medium',m); if(c)u.searchParams.set('utm_campaign',c); if(ct)u.searchParams.set('utm_content',ct);
+  return u.toString();
+}
+function utmPreview(){ const el=document.getElementById('utm-out'); if(el) el.value=utmBuildUrl(); }
+function utmSave(){
+  const url=utmBuildUrl(); if(!url){ toast('宛先を選んでください'); return; }
+  const dest=document.getElementById('utm-dest'); const g=id=>(document.getElementById(id)?.value||'').trim();
+  const label=g('utm-label')||(dest?.selectedOptions[0]?.textContent||'リンク');
+  const arr=getUtmLinks(); arr.unshift({id:'lk_'+Date.now(),label,url,s:g('utm-s'),m:g('utm-m'),c:g('utm-c'),ct:g('utm-ct'),ts:new Date().toISOString()});
+  setUtmLinks(arr); toast('一覧に保存しました'); renderUtmLinks();
+}
+function utmDel(id){ setUtmLinks(getUtmLinks().filter(x=>x.id!==id)); toast('削除しました'); renderUtmLinks(); }
+function utmCopy(text,btn){ if(!text){toast('URLが空です');return;} navigator.clipboard.writeText(text).then(()=>{ const o=btn.textContent; btn.textContent='✓ コピー'; setTimeout(()=>btn.textContent=o,1200); }); }
+function renderUtmLinks(){
+  const box=document.getElementById('adminContent'); const cos=loadCompanies();
+  const dests=[{l:'アプリTOP（/）',u:'https://app.sokonara.co.jp/'},{l:'経営層マッチ（/pf/）',u:'https://app.sokonara.co.jp/pf/'},{l:'個人LP（/personal/）',u:'https://app.sokonara.co.jp/personal/'},{l:'法人LP（/biz/）',u:'https://app.sokonara.co.jp/biz/'}].concat(cos.map(c=>({l:'記事：'+(c.ceo||c.name||c.id),u:'https://app.sokonara.co.jp/?cid='+c.id})));
+  const dl=(id,vals)=>`<datalist id="${id}">${vals.map(v=>`<option value="${v}">`).join('')}</datalist>`;
+  const inp='width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;';
+  const lb='font-size:11px;color:var(--text2);margin-bottom:4px;';
+  const links=getUtmLinks();
+  box.innerHTML=`<div style="padding:24px;max-width:880px">
+    <div style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.7">配信リンクをUTM付きで生成・保存。命名規約を揃えて、LINE/メール/広告のチャネル別効果を比較できます。<br><span style="color:var(--text3);font-size:12px">※保存はこのブラウザ内。共有が必要ならDB化も可。</span></div>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:22px;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:12px;">リンクを作る</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;">
+        <div style="grid-column:1/3"><div style="${lb}">宛先（記事/ページ）</div><select id="utm-dest" onchange="utmPreview()" style="${inp}">${dests.map(d=>`<option value="${escA(d.u)}">${escA(d.l)}</option>`).join('')}</select></div>
+        <div><div style="${lb}">utm_source（流入元）</div><input id="utm-s" list="dl-s" oninput="utmPreview()" placeholder="line" style="${inp}">${dl('dl-s',['line','meta_ads','instagram','email','personal_lp','bank_article'])}</div>
+        <div><div style="${lb}">utm_medium（種別）</div><input id="utm-m" list="dl-m" oninput="utmPreview()" placeholder="message" style="${inp}">${dl('dl-m',['message','cpc','social','email','article','lp'])}</div>
+        <div><div style="${lb}">utm_campaign（施策・時期）</div><input id="utm-c" oninput="utmPreview()" placeholder="202607_line_event" style="${inp}"></div>
+        <div><div style="${lb}">utm_content（位置/AB）</div><input id="utm-ct" oninput="utmPreview()" placeholder="nakashima" style="${inp}"></div>
+        <div style="grid-column:1/3"><div style="${lb}">メモ（一覧の名前）</div><input id="utm-label" placeholder="例：7月LINE 中嶋さん記事" style="${inp}"></div>
+        <div style="grid-column:1/3"><div style="${lb}">生成されたURL</div><textarea id="utm-out" readonly rows="2" style="${inp}resize:vertical;background:var(--bg);"></textarea></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px;">
+        <button onclick="utmCopy(document.getElementById('utm-out').value,this)" style="padding:9px 16px;background:var(--navy);color:#fff;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px">URLをコピー</button>
+        <button onclick="utmSave()" style="padding:9px 16px;background:#16a085;color:#fff;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px">一覧に保存</button>
+      </div>
+    </div>
+    <div style="font-weight:700;font-size:13px;margin-bottom:10px;">保存したリンク（${links.length}）</div>
+    <div>${links.length?links.map(k=>`<div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div style="font-weight:700;font-size:13px;color:var(--navy)">${escA(k.label)}</div><button onclick="utmDel('${k.id}')" style="border:none;background:none;color:var(--hot);cursor:pointer;font-size:11px">削除</button></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);word-break:break-all;margin:6px 0">${escA(k.url)}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span style="font-size:10px;color:var(--text3)">${[k.s&&'src:'+k.s,k.m&&'med:'+k.m,k.c&&'cmp:'+k.c,k.ct&&'cnt:'+k.ct].filter(Boolean).map(escA).join(' / ')}</span><button onclick="utmCopy('${escA(k.url)}',this)" style="margin-left:auto;padding:4px 12px;border:1px solid var(--teal);background:var(--teal-bg);color:var(--teal-d);border-radius:4px;cursor:pointer;font-size:11px">コピー</button></div>
+      </div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:14px">まだありません。上で作成して「一覧に保存」。</div>'}</div>
+  </div>`;
+  utmPreview();
+}
 function renderPhilosophy(){
   const box=document.getElementById('adminContent');
   const card=(s)=>`background:var(--white);border:1px solid var(--border);border-radius:6px;padding:18px 20px;margin-bottom:14px;${s||''}`;
