@@ -608,7 +608,8 @@ function pickVersus(side){
   const loserArm  = side==='left' ? vsRightArm : vsLeftArm;
   // 勝ったアーム／負けたアームを記録（カード勝敗でA/B＝CVより早く貯まる）
   armEvents.push({ w:winnerArm, l:loserArm });
-  logUpdate({ arm_events: armEvents });
+  // ＋途中離脱でも「最後に選んだ経営層」を残す（不明を減らす）。1回選べば選択到達とみなす。
+  logUpdate({ arm_events: armEvents, recommended_company:String(winner.id||''), reached_result:true });
   vsRound++;
   if(vsRound>=VS_ROUNDS){ finishVersus(winner, winnerArm); return; }
   let next=vsPool[vsPtr++];
