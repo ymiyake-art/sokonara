@@ -2386,6 +2386,8 @@ function openCompanyArticle(id){
   goScreen('p1');
   renderP1FromCompany();
   updatePrevResultButton(id);
+  // URLバーに ?cid= を反映（記事URLをコピー/共有できるように。他パラメータは保持）
+  try{ const u=new URL(location.href); u.searchParams.set('cid', selectedCompanyId); history.replaceState({ sn:'p1' }, '', u.pathname + u.search); }catch(e){}
 }
 
 // 全導線2問に統一（Q1=刺さった言葉／Q2=仮想転職）。記事の開き方によらず正しく表示。
