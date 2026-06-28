@@ -2066,6 +2066,19 @@ function clearCardCtx(){ try{ localStorage.removeItem('sn_card_ctx'); }catch(e){
 
 // カード経由のセッションは pf で作成済みの card_logs 行(logId)をPATCHして、
 // 「どんな人(カード)が・どの言葉(Q1)に反応し・どこまで進んだか」を1行に統合する。
+// 記事直リンク(?cid)の訪問を card_logs に記録（LINE/メール配信→記事 を共鳴データ/チャネル別で追えるように）。
+// variant='direct'。1ページロード1回。started:true で集計対象に含める。
+function logDirectArticle(cid){
+  try{
+    if(window._directLogged) return; window._directLogged=true;
+    const q=new URLSearchParams(location.search);
+    const id='art_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+    fetch('/api/card-log',{method:'POST', keepalive:true, headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ id, set:{ started:true, variant:'direct', started_at:new Date().toISOString(),
+        recommended_company:String(cid||''), article_read:true, reached_result:true,
+        utm_source:q.get('utm_source')||null, utm_medium:q.get('utm_medium')||null, utm_campaign:q.get('utm_campaign')||null, utm_content:q.get('utm_content')||null }})});
+  }catch(e){}
+}
 async function patchCardLog(fields){
   if(!(SN_CARDS && SN_CARDS.logId)) return;
   try{
@@ -3732,6 +3745,8 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(async ()=>{
     selectedCompanyId = matched.id || null;
     goScreen('p1');
     renderP1FromCompany();
+    // 記事直リンク(?cid 直入＝LINE/メール配信等)を計測。マッチ経由(from=cards)は既存ログがあるので除外。
+    if(!(SN_CARDS && SN_CARDS.logId)) logDirectArticle(matched.id);
   }else{
     goScreen('p-list');
     // pfの「経営層一覧」リンク（/?view=leaders）から来たら一覧を開く

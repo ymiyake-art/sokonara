@@ -198,11 +198,9 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
       </div>
       <div class="admin-nav">
         <div class="admin-nav-label">メニュー</div>
-        <div class="nav-item active" id="ni-dash" onclick="switchTab('dash')"><div class="nav-dot" style="background:var(--teal)"></div>ダッシュボード</div>
-        <div class="nav-item" id="ni-reactions" onclick="switchTab('reactions')"><div class="nav-dot" style="background:var(--hot)"></div>反応一覧</div>
+        <div class="nav-item active" id="ni-resonance" onclick="switchTab('resonance')"><div class="nav-dot" style="background:#8e44ad"></div>📊 共鳴データ</div>
         <div class="nav-item" id="ni-interests" onclick="switchTab('interests')"><div class="nav-dot" style="background:#e67e22"></div>興味通知フォーム<span class="nav-badge" id="interests-badge" data-count="0"></span></div>
         <div class="nav-item" id="ni-biz" onclick="switchTab('biz')"><div class="nav-dot" style="background:var(--teal)"></div>🏢 法人問い合わせ<span class="nav-badge" id="biz-badge" data-count="0"></span></div>
-        <div class="nav-item" id="ni-contacts" onclick="switchTab('contacts')"><div class="nav-dot" style="background:var(--warm)"></div>接点候補</div>
         <div class="nav-item" id="ni-report" onclick="switchTab('report')"><div class="nav-dot" style="background:var(--navy)"></div>AIレポート</div>
         <div class="nav-item" id="ni-broadcast" onclick="switchTab('broadcast')"><div class="nav-dot" style="background:#06c755"></div>LINE配信</div>
       </div>
@@ -212,7 +210,6 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
         <div class="nav-item" id="ni-addpj" onclick="switchTab('addpj')"><div class="nav-dot" style="background:#27ae60"></div>共創テーマ登録</div>
         <div class="nav-item" id="ni-colist" onclick="switchTab('colist')"><div class="nav-dot" style="background:var(--teal)"></div>掲載企業一覧</div>
         <div class="nav-item" id="ni-cards" onclick="switchTab('cards')"><div class="nav-dot" style="background:#9b59b6"></div>🗂️ 課題カード(v2)</div>
-        <div class="nav-item" id="ni-resonance" onclick="switchTab('resonance')"><div class="nav-dot" style="background:#8e44ad"></div>📊 共鳴データ(v2)</div>
         <div class="nav-item" id="ni-utmlinks" onclick="switchTab('utmlinks')"><div class="nav-dot" style="background:#16a085"></div>🔗 配信リンク・UTM</div>
         <div class="nav-item" id="ni-cases" onclick="switchTab('cases')"><div class="nav-dot" style="background:#e74c3c"></div>✨ 出会いの実例(LP)</div>
       </div>
@@ -276,10 +273,10 @@ function getInitialTab(){
     const company = params.get('company');
     // ?company=ID → 記事管理タブを開き、企業を自動選択
     if(company){ window._initCompanyId = company; return 'article'; }
-    const valid = ['dash','reactions','interests','biz','contacts','report','broadcast','article','addco','addpj','colist','cards','resonance','philosophy'];
-    return valid.includes(tab) ? tab : 'dash';
+    const valid = ['resonance','interests','biz','report','broadcast','article','addco','addpj','colist','cards','utmlinks','cases','philosophy'];
+    return valid.includes(tab) ? tab : 'resonance';
   }catch{
-    return 'dash';
+    return 'resonance';
   }
 }
 
