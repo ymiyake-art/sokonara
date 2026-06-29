@@ -1694,7 +1694,7 @@ h1, h2, h3, h4,
       <!-- STEP 2：フォームに貼り付け -->
       <div style="text-align:left;margin-bottom:20px;">
         <div style="font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:1.5px;color:var(--teal);margin-bottom:8px;">STEP 2 ── フォームに貼り付けて送信</div>
-        <button class="btn-primary" style="width:100%;justify-content:center;" onclick="window.open(WEBCAS_FORM_URL,'_blank')">フォームを開く →</button>
+        <button class="btn-primary" style="width:100%;justify-content:center;" onclick="logFormOpen()">フォームを開く →</button>
         <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:8px;line-height:1.7;">「関心をお持ちの経営層」欄に貼り付け、氏名・メールをご記入のうえ送信してください。<br>※ 応募・選考ではありません。経営層が話したいと思えばご連絡します。</div>
       </div>
 
@@ -2061,6 +2061,8 @@ let SN_CARDS = null;
 })();
 // 直接導線（経営層から探す）に切り替わったらカード文脈を破棄（誤った紐付け防止）
 function clearCardCtx(){ try{ localStorage.removeItem('sn_card_ctx'); }catch(e){} SN_CARDS = null; }
+// P5「フォームを開く」でform_open(CV)を送るためのlogId退避先。clearCardCtxでSN_CARDS=nullになる前に保持する。
+let _formOpenLogId = null;
 
 // カード経由のセッションは pf で作成済みの card_logs 行(logId)をPATCHして、
 // 「どんな人(カード)が・どの言葉(Q1)に反応し・どこまで進んだか」を1行に統合する。
@@ -3460,7 +3462,8 @@ const WEBCAS_FORM_URL = 'https://www17.webcas.net/form/pub/sokonara/pf';
 async function openEmpathyForm() {
   // 新導線：フォーム＝メインCV。LINE関門は撤去（WEBCASフォームで氏名・メール取得＝連絡可）。
   // 診断はメイン導線から外しLINE登録後の特典に移したため、ここでLINEを要求しない。
-  patchCardLog({ contact_cta:true }); // カード経由なら成果（面談CTA）をログに反映＝ファネル完結
+  patchCardLog({ contact_cta:true }); // 興味（共感→P5到達）をログ＝ファネルの中間指標
+  _formOpenLogId = (SN_CARDS && SN_CARDS.logId) ? SN_CARDS.logId : null; // P5「フォームを開く」でform_openを送るためlogIdを退避
   clearCardCtx(); // ジャーニー完了。以降の訪問に紐付かないようカード文脈を破棄
   const co = getCurrentCompany();
   // Supabaseに匿名の関心ログのみ保存（個人情報なし・ノンブロッキング）
@@ -3510,6 +3513,17 @@ async function saveSession(){
 }
 
 
+// P5 STEP2：WEBCASフォームを開く＝CV直結。form_open(true)を退避logIdで記録してから同期的にopen。
+function logFormOpen(){
+  try{
+    if(_formOpenLogId){
+      fetch('/api/card-log',{ method:'POST', keepalive:true,
+        headers:{ 'Content-Type':'application/json' },
+        body:JSON.stringify({ id:_formOpenLogId, set:{ form_open:true } }) });
+    }
+  }catch(e){}
+  window.open(WEBCAS_FORM_URL,'_blank'); // ユーザー操作内で同期的に開く（ポップアップブロック回避）
+}
 async function copyCeoName(){
   const txt = window.__p5CeoCopy || '';
   if(!txt){ toast('経営層名が取得できませんでした'); return; }
