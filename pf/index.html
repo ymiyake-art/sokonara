@@ -569,7 +569,7 @@ function renderVersus(){
     document.getElementById('prog').style.display='flex';
     renderChallengeStack(); return;
   }
-  VS_ROUNDS=Math.min(5, vsPool.length-1);
+  VS_ROUNDS=Math.min(3, vsPool.length-1);
   vsRound=0; vsPtr=0; armEvents=[];
   logUpdate({ shown_cards: vsPool.slice(0, Math.min(vsPool.length, VS_ROUNDS+1)).map(c=>String(c.id||'')) });
   document.body.classList.add('vmode'); // PC没入レイアウト用

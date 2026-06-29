@@ -1422,7 +1422,7 @@ h1, h2, h3, h4,
         <span id="empathyIcon">♡</span>
         <span id="empathyLabel">この経営層に共感した</span>
       </button>
-      <div id="empathyNote" style="font-size:11px;color:var(--text3);margin-top:8px">共感は経営層に届きます（匿名・ワンタップ）</div>
+      <div id="empathyNote" style="font-size:11px;color:var(--text3);margin-top:8px">共感は経営層に届きます（匿名）。続けて“あなたの可能性”を読み解きます。</div>
       <!-- 共感したら handleEmpathy() が即P5（コピー→フォーム）へ遷移。中間の箱は廃止＝導線最小化。 -->
     </div>
 
@@ -1439,12 +1439,12 @@ h1, h2, h3, h4,
 
     <div class="cta-sticky" id="p1CtaSticky">
       <div class="cta-sticky-text">
-        <strong>気になったら、経営層に興味を伝えてみませんか？</strong>
-        <span style="display:block;font-size:11px;color:var(--text2);margin-top:2px;font-weight:400;">あなたの興味が経営層に届きます（応募・選考ではありません）</span>
+        <strong>あなたの反応から、可能性のヒントが見えます</strong>
+        <span style="display:block;font-size:11px;color:var(--text2);margin-top:2px;font-weight:400;">2つの質問に答えると、AIがあなたへのヒントを返します（無料）</span>
       </div>
       <div class="cta-sticky-btns">
         <button class="btn-outline" style="font-size:13px;padding:10px 16px;white-space:nowrap" onclick="goLeaders()" title="経営層一覧を見る">他の経営層を見る</button>
-        <button class="btn-primary" style="font-size:13px;padding:10px 18px;white-space:nowrap" onclick="openEmpathyForm()">興味を伝える →</button>
+        <button class="btn-primary" style="font-size:13px;padding:10px 18px;white-space:nowrap" onclick="goScreen('p2')">あなたの可能性を見る →</button>
       </div>
     </div>
   </div>
@@ -1460,9 +1460,9 @@ h1, h2, h3, h4,
           <path d="M28 38c0-3 1.8-4.5 4-6.5 2.2 2 4 3.5 4 6.5M32 26v6" stroke="#1C2A54" stroke-width="2.2" stroke-linecap="round"/>
           <path d="M54 18l4-2M53 27l4 0M10 18l-4-2M11 27l-4 0M32 4V1" stroke="#42AD9F" stroke-width="2.2" stroke-linecap="round"/>
         </svg>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--teal);margin-bottom:6px;">WORKING HINT — 無料・約3分</div>
-        <div style="font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:18px;font-weight:900;color:var(--navy);line-height:1.5;">はたらくヒント診断</div>
-        <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.7;">かんたんな質問に答えると、AIがあなたへの<br>「はたらくヒント」を読み解いてお届けします。</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--teal);margin-bottom:6px;">WORKING HINT — 無料・約2分</div>
+        <div style="font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:18px;font-weight:900;color:var(--navy);line-height:1.5;">あなたの可能性を読み解く</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.7;">この経営層への“あなたの反応”から、AIが<br>「はたらくヒント」を読み解いてお届けします。</div>
       </div>
       <!-- Q1 -->
       <div id="q1b">
@@ -1554,7 +1554,7 @@ h1, h2, h3, h4,
         <div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.6;">📱 スマホなら、キーボードの音声入力（マイク🎤）で話すと楽に書けます</div>
         <div class="q-nav" style="margin-top:18px">
           <button class="btn-outline" onclick="goBackFromMemo()">← 戻る</button>
-          <button class="btn-primary" id="submitBtn" onclick="submitEmpathy()">診断結果を見る →</button>
+          <button class="btn-primary" id="submitBtn" onclick="submitEmpathy()">あなたの可能性を見る →</button>
         </div>
       </div>
     </div>
@@ -1573,7 +1573,7 @@ h1, h2, h3, h4,
         </svg>
         <div>
           <div class="fb-eyebrow" style="margin-bottom:2px;">Working Hint</div>
-          <div class="fb-heading" id="fbSub" style="margin-bottom:0;">あなたへの、はたらくヒント</div>
+          <div class="fb-heading" id="fbSub" style="margin-bottom:0;">あなたの反応が語る、はたらくヒント</div>
         </div>
       </div>
 
@@ -1597,20 +1597,7 @@ h1, h2, h3, h4,
           <div id="fbSummaryText" style="font-size:14px;line-height:1.9;color:rgba(255,255,255,0.9);white-space:pre-line;"></div>
         </div>
 
-        <!-- 公式LINE未登録時のCTA -->
-        <div id="fbLineCta" style="display:none;margin-bottom:20px;">
-          <div style="background:rgba(255,255,255,0.06);border-radius:4px;padding:20px;text-align:center;">
-            <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:8px;">続きを読んで、経営層とつながろう</div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:14px;line-height:1.8;">「あなたの役割」「面談で聞くと良い問い」まで全文が読めます。価値観の近い経営層や面談のご案内もお届けします。<br><span style="color:var(--teal);">登録は無料・ワンタップ。いつでも解除できます。</span></div>
-            <div style="display:flex;flex-direction:column;gap:10px;max-width:300px;margin:0 auto;">
-              <button class="btn-line-login" onclick="beginLineLogin()" style="width:100%;justify-content:center;font-size:13px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.070 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
-                LINEで続きを読む（無料）
-              </button>
-            </div>
-            <div style="font-size:11px;color:var(--teal);margin-top:10px;">※ 認証後、このブラウザ画面に戻ってください</div>
-          </div>
-        </div>
+        <!-- LINE任意CTAは自己発見レポートの最下部へ移動（ゲートではなく“詳細版・近況”の任意導線） -->
 
         <!-- LINE登録後の詳細フィードバック -->
         <div id="fbDetail" style="display:none">
@@ -1634,6 +1621,17 @@ h1, h2, h3, h4,
             <button class="btn-primary" style="width:100%;justify-content:center;" onclick="openEmpathyForm()">この経営層に興味を伝える →</button>
             <button class="btn-outline" style="width:100%;justify-content:center;font-size:13px;" onclick="goScreen('p4')">他の経営層のはたらくヒントを見る</button>
           </div>
+        </div>
+
+        <!-- LINE：未登録時のみ “さらに詳しい自己分析・経営層の近況” の任意導線（ゲートではない） -->
+        <div id="fbLineCta" style="display:none;margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.12);">
+          <div style="font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;color:var(--teal);margin-bottom:6px;">LINE限定</div>
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">もっと深く、自分を知る</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:14px;line-height:1.8;">あなたの価値観をさらに深掘りした「詳しい自己分析」と、気になる経営層の近況をLINEでお届けします。<span style="color:var(--teal);">無料・ワンタップ／いつでも解除可。</span></div>
+          <button class="btn-line-login" onclick="beginLineLogin()" style="width:100%;justify-content:center;font-size:13px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.070 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+            LINEで詳しい自己分析を受け取る（無料）
+          </button>
         </div>
       </div>
     </div>
@@ -2302,8 +2300,8 @@ function handleEmpathy() {
   btn.classList.add('pop');
   setTimeout(() => btn.classList.remove('pop'), 220);
   setTimeout(() => { btn.classList.add('done'); icon.textContent = '♥'; label.textContent = '共感しました！'; }, 100);
-  // 共感（小さなYES）したら最短でP5（コピー→フォーム）へ。導線を最小化しCVへ直結。
-  setTimeout(() => { openEmpathyForm(); }, 450);
+  // 共感（小さなYES）したら、その反応から「あなたの可能性」を読み解くレポート(p2→p3)へ。
+  setTimeout(() => { goScreen('p2'); }, 450);
   // Supabase increment (best-effort)
   if (supabaseClient && selectedCompanyId) {
     const cos = loadCompanies();
@@ -2940,14 +2938,15 @@ async function genFeedback() {
       const _sumEl=document.getElementById('fbSummaryText');
       const _msgEl=document.getElementById('msgText');
       const _detail=document.getElementById('fbDetail');
-      if(lineReg){ if(_detail) _detail.style.display='block'; const _mb=document.getElementById('msgBlock'); if(_mb) _mb.classList.add('show'); }
-      else if(_detail){ _detail.style.display='none'; }
+      // 自己発見レポートは全員に全文表示（LINEゲート撤廃）。本文もライブ表示。
+      if(_detail) _detail.style.display='block';
+      { const _mb=document.getElementById('msgBlock'); if(_mb) _mb.classList.add('show'); }
       const reader = res.body.getReader(); const dec = new TextDecoder();
       while(true){
         const {done,value} = await reader.read(); if(done) break;
         raw += dec.decode(value,{stream:true});
         const _s = partialJsonStr(raw,'summary'); if(_s!=null && _sumEl) _sumEl.textContent=_s;
-        if(lineReg){ const _mg = partialJsonStr(raw,'message'); if(_mg!=null && _msgEl) _msgEl.textContent=_mg; }
+        const _mg = partialJsonStr(raw,'message'); if(_mg!=null && _msgEl) _msgEl.textContent=_mg;
       }
     } else { raw = await res.text(); }
     // 後方互換：旧JSON形式({content:[{text}]})が来ても拾えるように
@@ -3077,65 +3076,43 @@ function showFeedback(fb) {
   document.getElementById('fbSkel').style.display = 'none';
   document.getElementById('fbContent').style.display = 'block';
 
-  // LINE登録済みかどうかで詳細表示を切り替え（フレンドチェックではなくログイン状態で判定）
-  const lineRegistered = isLineRegistered();
-
-  // 簡易フィードバックテキスト
+  // 自己発見レポートは全員に全文表示（LINEゲート撤廃）。LINEは“詳細版・近況”の任意導線に降格。
   const summaryEl = document.getElementById('fbSummaryText');
   if(summaryEl) summaryEl.textContent = fb.summary || '';
+  document.getElementById('fbSummary').style.display = 'block';
+  document.getElementById('fbDetail').style.display = 'block';
 
-  if(lineRegistered) {
-    // LINE登録済み：登録前に見せた要約はそのまま残し（連続性）、その下に詳細フル表示
-    if(summaryEl) summaryEl.textContent = fb.summary || '';
-    document.getElementById('fbSummary').style.display = 'block';
-    document.getElementById('fbLineCta').style.display = 'none';
-    document.getElementById('fbDetail').style.display = 'block';
-
-    // 価値観キーワード表示は廃止（記事の抜粋に見えてピンと来ないため）
-    const tags = document.getElementById('valueTags');
-    if(tags){ tags.innerHTML = ''; const sec = tags.closest('.values-section'); if(sec) sec.style.display = 'none'; }
-    document.getElementById('msgText').textContent = String(fb.message||'').replace(/\\n/g,'\n');
-    setTimeout(()=>document.getElementById('msgBlock').classList.add('show'), 550);
-    // bridge(接点理由)はAI応答に含まれないことがあるため、空なら経営層名から補う（空欄の枠を出さない）
-    let _bridgeTxt = String(fb.bridge||'').trim();
-    if(!_bridgeTxt){
-      const _bco = selectedCompanyId ? loadCompanies().find(c=>String(c.id||'')===String(selectedCompanyId)) : null;
-      const _nm = (_bco && (_bco.ceo||'')) ? _bco.ceo : 'この経営層';
-      _bridgeTxt = `${_nm}さんと直接話すと、あなたがこの会社で何から関われそうかの輪郭が見えてきます。`;
-    }
-    document.getElementById('bridgeText').textContent = _bridgeTxt;
-    setTimeout(()=>document.getElementById('bridgeBlock').classList.add('show'), 850);
-
-    setTimeout(()=>{
-      const cta = document.getElementById('fbCta');
-      if(cta){ cta.style.display = 'block'; setTimeout(()=>cta.classList.add('show'), 50); }
-      const _co = selectedCompanyId ? loadCompanies().find(c=>String(c.id||'')===String(selectedCompanyId)) : null;
-      const ceoLbl = (_co?.ceo||'') + (_co ? `（${_co.name||_co.company||''}）` : '');
-      const lbl = document.getElementById('fbCtaLabel');
-      if(lbl && ceoLbl) lbl.textContent = ceoLbl + ' に共感を伝えますか？';
-      const _rs = document.getElementById('recoSub'); if(_rs) _rs.textContent = 'あなたの反応に近い経営層をピックアップしました';
-      genReco(fb);
-      saveSession();
-    }, 1100);
-  } else {
-    // LINE未登録：summaryは全文見せ、本文(message)の冒頭をチラ見せして途中でカット（pf版の分量）
-    if(summaryEl) {
-      const summaryText = (fb.summary || '').trim();
-      const msgText = String(fb.message || '').replace(/\\n/g,'\n').trim();
-      // 本文の冒頭を70字ほど見せて途中で切る
-      let teaser = msgText.slice(0, 70).replace(/[。、！？\s]+$/,'');
-      const teaserHtml = teaser
-        ? `<span style="display:block;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);color:var(--text2);line-height:1.9;">${escapeHtml(teaser)}<span style="opacity:0.55">…</span></span>`
-        : '';
-      summaryEl.innerHTML = escapeHtml(summaryText)
-        + teaserHtml
-        + '<span style="display:block;margin-top:14px;font-size:12px;color:var(--teal);font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">▼ 続き（あなたの役割・面談で聞くと良い問い）はLINE登録で読めます</span>';
-    }
-    document.getElementById('fbLineCta').style.display = 'block';
-    document.getElementById('fbDetail').style.display = 'none';
-    const cta = document.getElementById('fbCta');
-    if(cta) cta.style.display = 'none';
+  // 価値観キーワード表示は廃止（記事の抜粋に見えてピンと来ないため）
+  const tags = document.getElementById('valueTags');
+  if(tags){ tags.innerHTML = ''; const sec = tags.closest('.values-section'); if(sec) sec.style.display = 'none'; }
+  document.getElementById('msgText').textContent = String(fb.message||'').replace(/\\n/g,'\n');
+  setTimeout(()=>document.getElementById('msgBlock').classList.add('show'), 400);
+  // bridge(接点理由)はAI応答に含まれないことがあるため、空なら経営層名から補う（空欄の枠を出さない）
+  let _bridgeTxt = String(fb.bridge||'').trim();
+  if(!_bridgeTxt){
+    const _bco = selectedCompanyId ? loadCompanies().find(c=>String(c.id||'')===String(selectedCompanyId)) : null;
+    const _nm = (_bco && (_bco.ceo||'')) ? _bco.ceo : 'この経営層';
+    _bridgeTxt = `${_nm}さんと直接話すと、あなたがこの会社で何から関われそうかの輪郭が見えてきます。`;
   }
+  document.getElementById('bridgeText').textContent = _bridgeTxt;
+  setTimeout(()=>document.getElementById('bridgeBlock').classList.add('show'), 650);
+
+  // 紹介CTA（=この経営層に興味を伝える）を即表示＝紹介を近くに保つ（紹介が第1優先）
+  setTimeout(()=>{
+    const cta = document.getElementById('fbCta');
+    if(cta){ cta.style.display = 'block'; setTimeout(()=>cta.classList.add('show'), 50); }
+    const _co = selectedCompanyId ? loadCompanies().find(c=>String(c.id||'')===String(selectedCompanyId)) : null;
+    const ceoLbl = (_co?.ceo||'') + (_co ? `（${_co.name||_co.company||''}）` : '');
+    const lbl = document.getElementById('fbCtaLabel');
+    if(lbl && ceoLbl) lbl.textContent = ceoLbl + ' に興味を伝えますか？';
+    const _rs = document.getElementById('recoSub'); if(_rs) _rs.textContent = 'あなたの反応に近い経営層をピックアップしました';
+    genReco(fb);
+    saveSession();
+  }, 900);
+
+  // LINEは未登録時のみ“さらに詳しい自己分析・経営層の近況”の任意CTAとして下に表示（ゲートではない）
+  const lineCta = document.getElementById('fbLineCta');
+  if(lineCta) lineCta.style.display = isLineRegistered() ? 'none' : 'block';
 }
 
 // ===== RECO =====
