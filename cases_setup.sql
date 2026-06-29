@@ -11,6 +11,9 @@ create table if not exists cases (
   active      boolean default true,
   created_at  timestamptz default now()
 );
+-- 写真の視覚調整（左右%・拡大%）。既存テーブルにも追加。
+alter table cases add column if not exists pos_x int default 50;
+alter table cases add column if not exists zoom  int default 100;
 alter table cases enable row level security;
 drop policy if exists "cases public read" on cases;
 create policy "cases public read" on cases for select using (true);
