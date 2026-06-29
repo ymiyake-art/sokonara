@@ -1423,14 +1423,7 @@ h1, h2, h3, h4,
         <span id="empathyLabel">この経営層に共感した</span>
       </button>
       <div id="empathyNote" style="font-size:11px;color:var(--text3);margin-top:8px">共感は経営層に届きます（匿名・ワンタップ）</div>
-      <!-- 共感後に出る温かい一段階目→二段階目 -->
-      <div id="empathyEscalate" style="display:none;margin-top:18px;background:var(--teal-bg);border:1px solid var(--teal-mid);border-radius:12px;padding:18px 16px;text-align:center;">
-        <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:6px;">気持ちが届きました 🙌</div>
-        <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:14px;"><span id="escalateName"></span>に、あなたの興味を伝えてみませんか？</div>
-        <button class="btn-primary" style="width:100%;justify-content:center;" onclick="openEmpathyForm()">この経営層に興味を伝える →</button>
-        <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.6;">あなたの興味を経営層へお届けします。反応があれば、ソコナラからご連絡します（応募・選考ではありません）。</div>
-        <button class="btn-outline" style="width:100%;justify-content:center;font-size:13px;margin-top:10px;" onclick="goLeaders()">他の経営層を見る</button>
-      </div>
+      <!-- 共感したら handleEmpathy() が即P5（コピー→フォーム）へ遷移。中間の箱は廃止＝導線最小化。 -->
     </div>
 
     <!-- 関連経営層 -->
@@ -1685,23 +1678,28 @@ h1, h2, h3, h4,
         <path d="M52 32c3 3 5 4 8 4s5-1 8-4" stroke="#42AD9F" stroke-width="3" stroke-linecap="round"/>
         <path d="M60 18l-3.5 5h7L60 28" stroke="#42AD9F" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <div class="complete-title">あなたの興味を、経営層へ</div>
-      <div style="font-size:14px;color:rgba(255,255,255,0.9);line-height:2;margin:24px 0 16px;text-align:left;background:rgba(66,173,159,0.15);border-left:3px solid var(--teal);padding:14px 16px;border-radius:0 4px 4px 0;">
-        下のフォームに氏名・メールアドレスなどをご記入のうえ送信いただくと、<br>あなたの興味を経営層へお届けします。
+      <div class="complete-title">共感が届きました 🙌</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.82);line-height:1.85;margin:14px 0 26px;">
+        あと2ステップで、<span id="p5CeoName" style="color:var(--teal);font-weight:700;">この経営層</span>に<br>あなたの興味を伝えられます。
       </div>
-      <!-- 経営層名ヒント -->
-      <div id="p5CeoHint" style="display:none;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:14px 16px;margin-bottom:16px;text-align:left;">
-        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;color:var(--teal);margin-bottom:6px;">フォームへの記入メモ</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px;">「関心をお持ちの経営層」欄に：</div>
-        <div id="p5CeoHintText" style="font-size:14px;font-weight:700;color:#fff;line-height:1.6;"></div>
+
+      <!-- STEP 1：経営層名をコピー -->
+      <div style="text-align:left;margin-bottom:18px;">
+        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:1.5px;color:var(--teal);margin-bottom:8px;">STEP 1 ── 経営層名をコピー</div>
+        <button id="copyCeoBtn" onclick="copyCeoName()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.28);color:#fff;border-radius:12px;padding:15px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">
+          <span id="copyCeoLabel">📋 経営層名をコピー</span>
+        </button>
       </div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.55);line-height:2;margin-bottom:28px;text-align:left;">
-        ご記入いただいた内容を、あなたの興味として経営層へ直接お伝えします。<br>経営層が「話してみたい」と思った場合に、ソコナラからメールでご連絡が届きます。
+
+      <!-- STEP 2：フォームに貼り付け -->
+      <div style="text-align:left;margin-bottom:20px;">
+        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:1.5px;color:var(--teal);margin-bottom:8px;">STEP 2 ── フォームに貼り付けて送信</div>
+        <button class="btn-primary" style="width:100%;justify-content:center;" onclick="window.open(WEBCAS_FORM_URL,'_blank')">フォームを開く →</button>
+        <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:8px;line-height:1.7;">「関心をお持ちの経営層」欄に貼り付け、氏名・メールをご記入のうえ送信してください。<br>※ 応募・選考ではありません。経営層が話したいと思えばご連絡します。</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <button class="btn-primary" style="width:100%;justify-content:center;" onclick="window.open(WEBCAS_FORM_URL,'_blank')">興味を伝えるフォームを開く →</button>
-        <button class="btn-outline" style="color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.2);width:100%;justify-content:center;font-size:13px;" onclick="goScreen('p-list')">他の経営層の記事を読む →</button>
-      </div>
+
+      <!-- 他の経営層を見る（小さく） -->
+      <button onclick="goScreen('p-list')" style="background:none;border:none;cursor:pointer;font-size:12px;color:rgba(255,255,255,0.4);text-decoration:underline;padding:6px;font-family:inherit;">他の経営層を見る →</button>
       <!-- 診断のLINE特典化（BRIEF 3段階誘導①：フォーム完了後）。LINE未登録時のみ表示 -->
       <div id="p5LineBonus" style="display:none;margin-top:22px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.12);text-align:left;">
         <div style="font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;color:var(--teal);margin-bottom:6px;">LINE限定 特典</div>
@@ -2302,13 +2300,8 @@ function handleEmpathy() {
   btn.classList.add('pop');
   setTimeout(() => btn.classList.remove('pop'), 220);
   setTimeout(() => { btn.classList.add('done'); icon.textContent = '♥'; label.textContent = '共感しました！'; }, 100);
-  // 共感（小さなYES）の直後に「話を聞いてみる」を温かく提示＝2段階エスカレーション
-  setTimeout(() => {
-    const esc = document.getElementById('empathyEscalate');
-    const nm = document.getElementById('escalateName');
-    if (nm) { const co = getCurrentCompany(); const ceo = co?.ceo || ''; nm.textContent = ceo ? (ceo + 'さん') : 'この経営層'; }
-    if (esc) { esc.style.display = 'block'; esc.scrollIntoView({behavior:'smooth', block:'center'}); }
-  }, 400);
+  // 共感（小さなYES）したら最短でP5（コピー→フォーム）へ。導線を最小化しCVへ直結。
+  setTimeout(() => { openEmpathyForm(); }, 450);
   // Supabase increment (best-effort)
   if (supabaseClient && selectedCompanyId) {
     const cos = loadCompanies();
@@ -3489,14 +3482,16 @@ async function openEmpathyForm() {
     console.warn('intent log failed (non-blocking):', e?.message || e);
   }
   localStorage.removeItem('sn_fb_cache');
-  // p5のヒントに経営層名をセット
-  const hintEl  = document.getElementById('p5CeoHint');
-  const hintTxt = document.getElementById('p5CeoHintText');
-  if(hintEl && hintTxt && co) {
-    const ceoName = co.ceo || '';
-    const coName  = co.name || co.company || '';
-    hintTxt.textContent = ceoName && coName ? `${ceoName}さん（${coName}）` : ceoName || coName;
-    hintEl.style.display = (ceoName || coName) ? 'block' : 'none';
+  // p5：コピー用に経営層名をセット（コピー→フォーム貼付の2アクション導線）
+  {
+    const ceoName = co?.ceo || '';
+    const coName  = co?.name || co?.company || '';
+    const copyTxt = ceoName && coName ? `${ceoName}さん（${coName}）` : (ceoName || coName || '');
+    window.__p5CeoCopy = copyTxt;
+    const lbl = document.getElementById('copyCeoLabel');
+    if(lbl) lbl.textContent = copyTxt ? `📋 ${copyTxt} をコピー` : '📋 経営層名をコピー';
+    const sub = document.getElementById('p5CeoName');
+    if(sub) sub.textContent = ceoName ? `${ceoName}さん` : (coName || 'この経営層');
   }
   // 診断のLINE特典CTAは未登録時のみ表示（登録済みなら不要）
   const bonus = document.getElementById('p5LineBonus');
@@ -3515,6 +3510,17 @@ async function saveSession(){
 }
 
 
+async function copyCeoName(){
+  const txt = window.__p5CeoCopy || '';
+  if(!txt){ toast('経営層名が取得できませんでした'); return; }
+  try{
+    await navigator.clipboard.writeText(txt);
+    const lbl = document.getElementById('copyCeoLabel');
+    if(lbl){ lbl.textContent = 'コピーしました ✓　次はフォームへ'; setTimeout(()=>{ lbl.textContent = `📋 ${txt} をコピー`; }, 2200); }
+  }catch{
+    toast('コピーに失敗しました');
+  }
+}
 async function copyLineMessage(){
   const fallback = ['あなたらしさ','誠実さ','行動力'];
   const vals = (Array.isArray(S.fb?.values) && S.fb.values.length >= 3) ? S.fb.values : fallback;
