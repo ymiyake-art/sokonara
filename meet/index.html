@@ -3,361 +3,411 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>【7/30(木)】ソコナラMEET｜地域企業の経営層と交流してキャリアの気付きを</title>
-  <meta name="description" content="求人票では分からない会社のリアルが分かるキャリアイベント。福岡・大名で7/30(木)夜、地域企業の経営層7名と直接対話。参加無料・先着。">
-  <meta property="og:title" content="ソコナラMEET｜経営層と直接話せるキャリアイベント（7/30 福岡）">
-  <meta property="og:description" content="経営層の想いに触れ、「自分でも力になれるかも」を発見する夜。参加無料・先着。">
+  <title>ソコナラMEET｜経営層と直接話せるキャリアイベント（福岡）</title>
+  <meta name="description" content="求人票では分からない会社のリアルと、経営層の想い。福岡・大名で開催する、地域企業の経営層と出会うキャリアイベント。参加無料・先着。">
+  <meta property="og:title" content="ソコナラMEET｜経営者の本音に触れる、福岡の夜。">
+  <meta property="og:description" content="地域企業の経営層と直接話して、「自分でも力になれるかも」に出会う。参加無料・先着。">
   <meta property="og:image" content="https://app.sokonara.co.jp/images/OGP.png">
   <meta property="og:type" content="website">
-  <meta name="theme-color" content="#1C2A54">
+  <meta name="theme-color" content="#16223f">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;700;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
   <script defer src="/_vercel/insights/script.js"></script>
   <style>
     :root{
-      --teal:#42AD9F; --teal-d:#2e8c7f; --teal-bg:rgba(66,173,159,0.08);
-      --navy:#1C2A54; --bg:#F5F5F5; --text:#1a1a1a; --text2:#716C6B;
-      --white:#fff; --border:rgba(0,0,0,0.1); --line:#06C755;
+      --paper:#FAF8F4; --ink:#20242b; --navy:#16223f; --navy2:#23335c;
+      --teal:#2f9c8d; --teal-d:#247c70; --teal-soft:#eaf4f1;
+      --muted:#6b6f78; --line:rgba(22,34,63,0.12); --gold:#c9a24a;
+      --mincho:'Shippori Mincho',serif; --gothic:'Zen Kaku Gothic New',sans-serif;
+      --sans:'Noto Sans JP',sans-serif; --mono:'JetBrains Mono',monospace;
     }
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
     html{scroll-behavior:smooth;}
-    body{font-family:'Noto Sans JP','Zen Kaku Gothic New',sans-serif;background:var(--bg);color:var(--text);line-height:1.8;overflow-x:hidden;-webkit-text-size-adjust:100%;padding-bottom:84px;}
-    .serif{font-family:'Zen Kaku Gothic New',sans-serif;}
-    .container{max-width:760px;margin:0 auto;padding:0 20px;}
-    .section{padding:54px 0;}
-    .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--teal-d);text-transform:uppercase;margin-bottom:10px;text-align:center;}
-    .sec-title{font-family:'Zen Kaku Gothic New',sans-serif;font-weight:900;font-size:clamp(20px,5.4vw,26px);color:var(--navy);line-height:1.5;text-align:center;margin-bottom:28px;}
-    .fade{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease;}
+    body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.9;-webkit-text-size-adjust:100%;padding-bottom:78px;overflow-x:hidden;}
+    .wrap{max-width:680px;margin:0 auto;padding:0 22px;}
+    .sec{padding:58px 0;}
+    a{color:inherit;}
+    em{font-style:normal;color:var(--teal);}
+
+    /* kicker */
+    .kicker{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--teal-d);text-transform:uppercase;margin-bottom:16px;}
+    .kicker::before{content:'';width:26px;height:1px;background:var(--teal);}
+    .kicker.cen{justify-content:center;}
+    .h2{font-family:var(--mincho);font-weight:800;font-size:clamp(22px,6vw,30px);color:var(--navy);line-height:1.5;letter-spacing:.01em;margin-bottom:8px;}
+    .lead{color:var(--muted);font-size:14.5px;line-height:1.95;}
+
+    .fade{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease;}
     .fade.vis{opacity:1;transform:translateY(0);}
 
     /* NAV */
-    nav{position:fixed;top:0;left:0;right:0;z-index:900;background:rgba(28,42,84,0.96);backdrop-filter:blur(10px);height:54px;display:flex;align-items:center;}
-    .nav-inner{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:760px;margin:0 auto;padding:0 16px;}
-    .nav-logo img{height:22px;display:block;}
-    .nav-cta{background:var(--teal);color:#fff!important;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;}
+    nav{position:fixed;top:0;left:0;right:0;z-index:900;height:56px;display:flex;align-items:center;background:transparent;transition:background .3s,box-shadow .3s;}
+    nav.solid{background:rgba(22,34,63,0.96);backdrop-filter:blur(10px);box-shadow:0 2px 18px rgba(0,0,0,0.18);}
+    .nav-in{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:680px;margin:0 auto;padding:0 18px;}
+    .nav-in img{height:22px;display:block;}
+    .nav-apply{font-family:var(--gothic);font-weight:700;font-size:12.5px;color:#fff;background:var(--teal);padding:8px 16px;border-radius:30px;text-decoration:none;white-space:nowrap;}
 
     /* HERO */
-    #hero{position:relative;padding:96px 0 40px;background:linear-gradient(rgba(20,30,60,0.62),rgba(20,30,60,0.82) 60%,rgba(20,30,60,0.92)),url('/images/TOP.jpg') center top/cover no-repeat;text-align:center;}
-    .hero-eyebrow{display:inline-block;background:rgba(66,173,159,0.18);border:1px solid var(--teal);color:#9fe7dc;font-size:11px;letter-spacing:.12em;padding:4px 14px;border-radius:20px;margin-bottom:18px;font-family:'JetBrains Mono',monospace;}
-    .hero-title{font-family:'Zen Kaku Gothic New',sans-serif;font-weight:900;font-size:clamp(24px,7vw,36px);color:#fff;line-height:1.45;margin-bottom:14px;text-shadow:0 2px 14px rgba(0,0,0,0.5);}
-    .hero-title em{color:var(--teal);font-style:normal;}
-    .hero-sub{color:rgba(255,255,255,0.92);font-size:14px;line-height:1.9;margin:0 auto 22px;max-width:460px;text-shadow:0 1px 8px rgba(0,0,0,0.5);}
-    .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.28);border-radius:12px;padding:10px 16px;color:#fff;font-weight:700;font-size:15px;margin-bottom:22px;}
-    .hero-badge .free{background:var(--teal);color:#fff;font-size:11px;padding:2px 8px;border-radius:6px;}
+    #hero{position:relative;min-height:96vh;display:flex;align-items:flex-end;color:#fff;background:#16223f;overflow:hidden;}
+    #hero .bg{position:absolute;inset:0;background-size:cover;background-position:center 28%;}
+    #hero .ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(16,22,40,0.55) 0%,rgba(16,22,40,0.25) 34%,rgba(16,22,40,0.72) 74%,rgba(16,22,40,0.95) 100%);}
+    .hero-in{position:relative;z-index:2;width:100%;max-width:680px;margin:0 auto;padding:0 22px 46px;}
+    .hero-kick{font-family:var(--mono);font-size:11px;letter-spacing:.24em;color:#9fe7dc;text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+    .hero-kick::before{content:'';width:26px;height:1px;background:#9fe7dc;}
+    .hero-h1{font-family:var(--mincho);font-weight:800;font-size:clamp(30px,9vw,46px);line-height:1.34;letter-spacing:.01em;margin-bottom:18px;text-shadow:0 2px 22px rgba(0,0,0,0.4);}
+    .hero-h1 em{color:#5fd3c2;}
+    .hero-lead{font-size:14px;line-height:1.95;color:rgba(255,255,255,0.9);max-width:430px;margin-bottom:26px;text-shadow:0 1px 10px rgba(0,0,0,0.5);}
 
-    /* CTA buttons */
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;text-decoration:none;border-radius:40px;transition:transform .15s,background .2s;cursor:pointer;border:none;}
-    .btn-apply{background:var(--teal);color:#fff;font-size:17px;padding:17px 28px;box-shadow:0 8px 24px rgba(66,173,159,0.4);width:100%;max-width:380px;}
+    /* date lockup */
+    .datebox{display:inline-flex;align-items:stretch;border:1px solid rgba(255,255,255,0.32);border-radius:14px;overflow:hidden;margin-bottom:26px;backdrop-filter:blur(4px);background:rgba(255,255,255,0.06);}
+    .datebox .d{padding:12px 18px;text-align:center;border-right:1px solid rgba(255,255,255,0.22);}
+    .datebox .d .big{font-family:var(--mincho);font-weight:800;font-size:32px;line-height:1;color:#fff;}
+    .datebox .d .dow{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:#9fe7dc;margin-top:4px;}
+    .datebox .meta{padding:12px 18px;display:flex;flex-direction:column;justify-content:center;gap:3px;font-size:12.5px;}
+    .datebox .meta b{font-weight:700;}
+    .datebox .meta .free{color:#5fd3c2;font-weight:700;}
+
+    /* buttons */
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--gothic);font-weight:700;text-decoration:none;border-radius:12px;border:none;cursor:pointer;transition:transform .15s ease,background .2s,box-shadow .2s;}
+    .btn-apply{background:var(--teal);color:#fff;font-size:16px;padding:16px 30px;box-shadow:0 10px 26px rgba(47,156,141,0.4);width:100%;max-width:360px;}
     .btn-apply:hover{background:var(--teal-d);transform:translateY(-2px);}
-    .btn-line{background:var(--line);color:#fff;font-size:14px;padding:13px 24px;width:100%;max-width:380px;}
-    .btn-line:hover{filter:brightness(0.95);}
-    .hero-cta{display:flex;flex-direction:column;align-items:center;gap:10px;}
-    .hero-note{margin-top:14px;color:rgba(255,255,255,0.6);font-size:12px;}
+    .btn-line{color:#fff;font-size:13px;text-decoration:underline;text-underline-offset:3px;opacity:.85;padding:6px;}
+    .btn-line:hover{opacity:1;}
+    .hero-cta{display:flex;flex-direction:column;align-items:flex-start;gap:6px;}
+    .hero-proof{margin-top:16px;font-size:11.5px;color:rgba(255,255,255,0.62);font-family:var(--mono);letter-spacing:.04em;}
 
-    /* INFO CHIPS */
-    .infobar{background:var(--navy);padding:18px 0;}
-    .chips{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;}
-    .chip{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:13px;font-weight:700;padding:9px 14px;border-radius:10px;}
-    .chip b{color:var(--teal);font-family:'JetBrains Mono',monospace;}
+    /* trust strip */
+    .trust{background:var(--navy);color:#fff;}
+    .trust .wrap{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 26px;padding:16px 22px;}
+    .trust span{font-size:12.5px;color:rgba(255,255,255,0.82);position:relative;padding-left:18px;}
+    .trust span::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:7px;height:7px;border-radius:50%;background:var(--teal);}
 
-    /* generic card */
-    .card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 22px;box-shadow:0 4px 16px rgba(28,42,84,0.05);}
-    .stack{display:flex;flex-direction:column;gap:14px;}
+    /* fact sheet */
+    .facts{border-top:1px solid var(--line);}
+    .facts .row{display:flex;gap:16px;padding:15px 0;border-bottom:1px solid var(--line);align-items:baseline;}
+    .facts .k{flex:0 0 86px;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--teal-d);text-transform:uppercase;padding-top:3px;}
+    .facts .v{flex:1;font-size:14.5px;line-height:1.7;color:var(--ink);}
+    .facts .v b{font-weight:700;}
+    .facts .v .free{color:var(--teal-d);font-weight:700;}
 
-    /* benefit checklist */
-    .check-row{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
-    .check-row .ic{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--teal-bg);color:var(--teal-d);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;}
-    .check-row p{font-size:14.5px;line-height:1.7;}
+    /* audience */
+    .aud{list-style:none;display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+    .aud li{background:#fff;display:flex;gap:14px;align-items:flex-start;padding:18px 20px;font-size:14.5px;line-height:1.7;}
+    .aud li .ck{flex-shrink:0;color:var(--teal);font-weight:700;font-family:var(--mincho);font-size:17px;line-height:1.5;}
 
-    /* speaker cards */
-    .spk{background:#fff;border:1px solid var(--border);border-left:4px solid var(--teal);border-radius:0 12px 12px 0;padding:16px 18px;}
-    .spk h3{font-family:'Zen Kaku Gothic New',sans-serif;font-size:15px;font-weight:700;color:var(--navy);line-height:1.5;margin-bottom:7px;}
-    .spk p{font-size:13.5px;color:var(--text2);line-height:1.8;}
+    /* speakers */
+    .spk-intro{font-size:14px;color:var(--muted);margin-bottom:26px;line-height:1.9;}
+    .spk{display:flex;gap:16px;padding:20px 0;border-top:1px solid var(--line);}
+    .spk:last-child{border-bottom:1px solid var(--line);}
+    .spk .no{flex:0 0 auto;font-family:var(--mincho);font-weight:700;font-size:20px;color:var(--teal);width:30px;line-height:1.4;}
+    .spk .tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--teal-d);background:var(--teal-soft);padding:3px 9px;border-radius:5px;margin-bottom:7px;}
+    .spk h3{font-family:var(--gothic);font-weight:700;font-size:15.5px;color:var(--navy);line-height:1.55;margin-bottom:6px;}
+    .spk p{font-size:13.5px;color:var(--muted);line-height:1.85;}
 
-    /* position tags */
-    .tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
-    .tag{background:#fff;border:1px solid var(--teal-mid,rgba(66,173,159,0.4));color:var(--teal-d);font-size:13px;font-weight:700;padding:8px 14px;border-radius:20px;}
+    /* positions */
+    .poscloud{display:flex;flex-wrap:wrap;gap:9px;}
+    .pos{font-family:var(--gothic);font-size:13px;font-weight:500;color:var(--navy);border:1px solid var(--line);background:#fff;padding:8px 14px;border-radius:30px;}
+    .pos::before{content:'#';color:var(--teal);margin-right:2px;font-weight:700;}
 
-    /* timetable */
-    .tt{position:relative;padding-left:8px;}
-    .tt-row{display:flex;gap:16px;padding:14px 0;border-bottom:1px dashed var(--border);}
-    .tt-row:last-child{border-bottom:none;}
-    .tt-time{flex-shrink:0;width:64px;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--teal-d);font-size:15px;}
-    .tt-body h4{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:2px;}
-    .tt-body p{font-size:13px;color:var(--text2);}
+    /* timeline */
+    .tl{position:relative;margin-left:6px;padding-left:26px;}
+    .tl::before{content:'';position:absolute;left:5px;top:8px;bottom:8px;width:2px;background:linear-gradient(var(--teal),var(--line));}
+    .tl .it{position:relative;padding:0 0 24px;}
+    .tl .it:last-child{padding-bottom:0;}
+    .tl .it::before{content:'';position:absolute;left:-26px;top:5px;width:12px;height:12px;border-radius:50%;background:#fff;border:2.5px solid var(--teal);}
+    .tl .t{font-family:var(--mono);font-weight:500;font-size:13px;color:var(--teal-d);}
+    .tl h4{font-family:var(--gothic);font-weight:700;font-size:15px;color:var(--navy);margin:1px 0 2px;}
+    .tl p{font-size:13px;color:var(--muted);}
 
-    /* overview table */
-    .ov{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;border:1px solid var(--border);}
-    .ov th,.ov td{text-align:left;padding:13px 16px;font-size:14px;border-bottom:1px solid var(--border);}
-    .ov tr:last-child th,.ov tr:last-child td{border-bottom:none;}
-    .ov th{background:var(--navy);color:#fff;font-weight:700;width:34%;white-space:nowrap;vertical-align:top;}
-    .ov td{color:var(--text);line-height:1.7;}
-    .ov .free{color:var(--teal-d);font-weight:900;}
+    /* voices */
+    .voice{padding:26px 0;border-top:1px solid var(--line);}
+    .voice:first-child{border-top:none;}
+    .voice .q{font-family:var(--mincho);font-weight:700;font-size:18px;line-height:1.6;color:var(--navy);margin-bottom:6px;position:relative;}
+    .voice .q::before{content:'“';font-family:var(--mincho);color:var(--teal);font-size:30px;line-height:0;position:relative;top:8px;margin-right:2px;}
+    .voice .who{font-family:var(--mono);font-size:11px;color:var(--teal-d);letter-spacing:.04em;margin-bottom:12px;}
+    .voice .body{font-size:13.5px;color:var(--muted);line-height:1.95;}
 
-    /* testimonial */
-    .voice{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 22px;}
-    .voice .q{font-family:'Zen Kaku Gothic New',sans-serif;font-weight:700;color:var(--navy);font-size:15px;line-height:1.6;margin-bottom:8px;}
-    .voice .who{font-size:12px;color:var(--teal-d);font-weight:700;margin-bottom:12px;font-family:'JetBrains Mono',monospace;}
-    .voice .body{font-size:13.5px;color:var(--text2);line-height:1.85;}
+    /* why */
+    .why{display:flex;flex-direction:column;gap:0;}
+    .why .it{padding:22px 0;border-top:1px solid var(--line);}
+    .why .it:last-child{border-bottom:1px solid var(--line);}
+    .why .it h4{font-family:var(--mincho);font-weight:700;font-size:18px;color:var(--navy);margin-bottom:6px;}
+    .why .it p{font-size:13.5px;color:var(--muted);line-height:1.9;}
 
-    /* value blocks */
-    .val{display:flex;gap:14px;align-items:flex-start;}
-    .val .n{flex-shrink:0;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--teal);font-size:22px;line-height:1;}
-    .val h4{font-size:15.5px;font-weight:700;color:var(--navy);margin-bottom:4px;}
-    .val p{font-size:13.5px;color:var(--text2);line-height:1.8;}
+    /* faq */
+    .faq{border-top:1px solid var(--line);}
+    .faq .it{border-bottom:1px solid var(--line);}
+    .faq .q{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:18px 2px;cursor:pointer;font-family:var(--gothic);font-weight:700;font-size:14.5px;color:var(--navy);line-height:1.6;}
+    .faq .q .pm{flex-shrink:0;font-size:20px;color:var(--teal);line-height:1.4;transition:transform .25s;font-weight:400;}
+    .faq .it.open .q .pm{transform:rotate(45deg);}
+    .faq .a{max-height:0;overflow:hidden;transition:max-height .3s ease;}
+    .faq .a .in{padding:0 2px 18px;font-size:13.5px;color:var(--muted);line-height:1.95;}
+    .faq .a .in a{color:var(--teal-d);word-break:break-all;}
 
-    /* FAQ accordion */
-    .faq-item{background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;}
-    .faq-q{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 18px;cursor:pointer;font-weight:700;font-size:14.5px;color:var(--navy);line-height:1.6;}
-    .faq-q .pm{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--teal-bg);color:var(--teal-d);display:flex;align-items:center;justify-content:center;font-size:18px;transition:transform .2s;}
-    .faq-item.open .faq-q .pm{transform:rotate(45deg);}
-    .faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease;}
-    .faq-a-inner{padding:0 18px 16px;font-size:13.5px;color:var(--text2);line-height:1.85;}
-    .faq-a-inner a{color:var(--teal-d);word-break:break-all;}
+    /* closing */
+    .closing{position:relative;background:var(--navy);color:#fff;text-align:center;padding:64px 22px;overflow:hidden;}
+    .closing::after{content:'';position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 0%,rgba(47,156,141,0.28),transparent 60%);}
+    .closing .in{position:relative;z-index:1;max-width:520px;margin:0 auto;}
+    .closing h2{font-family:var(--mincho);font-weight:800;font-size:clamp(23px,6.4vw,32px);line-height:1.5;margin-bottom:14px;}
+    .closing h2 em{color:#5fd3c2;}
+    .closing .sub{font-size:13.5px;color:rgba(255,255,255,0.8);margin-bottom:8px;}
+    .closing .when{font-family:var(--mono);font-size:12px;color:#9fe7dc;letter-spacing:.06em;margin-bottom:26px;}
+    .closing .hero-cta{align-items:center;}
+    .closing .btn-line{color:#cfe9e4;}
 
-    /* CTA section block */
-    .cta-block{background:linear-gradient(135deg,var(--navy),#2a3f6e);border-radius:18px;padding:30px 22px;text-align:center;color:#fff;}
-    .cta-block .big{font-family:'Zen Kaku Gothic New',sans-serif;font-weight:900;font-size:clamp(18px,5vw,22px);line-height:1.5;margin-bottom:8px;}
-    .cta-block .sm{font-size:13px;color:rgba(255,255,255,0.8);margin-bottom:20px;}
-    .cta-block .hero-cta{margin-top:4px;}
-
-    /* sticky bottom bar */
-    .stickybar{position:fixed;bottom:0;left:0;right:0;z-index:950;background:rgba(255,255,255,0.97);backdrop-filter:blur(8px);border-top:1px solid var(--border);box-shadow:0 -4px 20px rgba(28,42,84,0.12);padding:10px 12px;display:flex;gap:10px;align-items:center;max-width:760px;margin:0 auto;}
-    .stickybar .btn{flex:1;border-radius:12px;padding:14px 10px;font-size:15px;}
-    .stickybar .btn-apply{box-shadow:none;max-width:none;}
-    .stickybar .btn-line{max-width:none;font-size:13px;flex:0 0 38%;}
+    /* sticky */
+    .sticky{position:fixed;bottom:0;left:0;right:0;z-index:950;}
+    .sticky .scar{background:var(--navy);color:#ffd9a8;font-size:11px;text-align:center;padding:3px;font-family:var(--mono);letter-spacing:.08em;}
+    .sticky .bar{display:flex;gap:10px;align-items:center;background:rgba(255,255,255,0.97);backdrop-filter:blur(8px);border-top:1px solid var(--line);box-shadow:0 -4px 22px rgba(22,34,63,0.13);padding:9px 12px;max-width:680px;margin:0 auto;}
+    .sticky .bar .btn-apply{flex:1;max-width:none;box-shadow:none;border-radius:11px;padding:14px;font-size:15px;}
+    .sticky .bar .ln{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;width:58px;height:50px;border-radius:11px;background:#06C755;color:#fff;text-decoration:none;font-size:10px;font-weight:700;font-family:var(--gothic);gap:1px;}
+    .sticky .bar .ln svg{width:18px;height:18px;}
 
     /* footer */
-    footer{background:var(--navy);color:rgba(255,255,255,0.8);padding:36px 0 28px;font-size:13px;text-align:center;line-height:1.9;}
+    footer{background:var(--navy);color:rgba(255,255,255,0.72);font-size:12.5px;text-align:center;padding:34px 22px 30px;line-height:1.95;}
     footer a{color:var(--teal);text-decoration:none;}
-    footer .flinks{margin:14px 0;display:flex;gap:18px;justify-content:center;flex-wrap:wrap;}
+    footer .fl{margin:12px 0;display:flex;gap:18px;justify-content:center;flex-wrap:wrap;}
+    .cp{font-size:10.5px;color:rgba(255,255,255,0.45);margin-top:6px;}
 
-    @media(min-width:560px){
-      .check-list,.spk-list{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-      .stickybar .btn-line{flex:0 0 30%;}
+    @media(min-width:600px){
+      .spk-list-2{display:grid;grid-template-columns:1fr 1fr;gap:0 30px;}
+      .spk-list-2 .spk:nth-child(2){border-top:1px solid var(--line);}
     }
   </style>
 </head>
 <body>
 
-<nav>
-  <div class="nav-inner">
-    <a class="nav-logo" href="https://app.sokonara.co.jp/"><img src="/images/logo-02.png" alt="ソコナラ"></a>
-    <a class="nav-cta" href="https://www17.webcas.net/db/pub/sokonara/register-meet-r/create/input" target="_blank" rel="noopener">参加申込 ▶</a>
+<nav id="nav">
+  <div class="nav-in">
+    <a href="https://app.sokonara.co.jp/"><img src="/images/logo-02.png" alt="ソコナラ"></a>
+    <a class="nav-apply" id="navApply" href="#">参加申込 ▶</a>
   </div>
 </nav>
 
-<!-- HERO -->
 <header id="hero">
-  <div class="container">
-    <span class="hero-eyebrow">SOKONARA MEET — 福岡転職</span>
-    <h1 class="hero-title">求人票では分からない<br><em>会社のリアル</em>が分かる<br>キャリアイベント</h1>
-    <p class="hero-sub">経営層と直接話して「自分でも力になれるかも」を発見できる夜。<br>まずはキャリアの情報収集でOK。その場で応募する必要はありません。</p>
-    <div class="hero-badge"><span class="free">参加無料</span>2026.7.30(木) 19:00–21:30 ／ 福岡・大名</div>
+  <div class="bg" id="heroBg"></div>
+  <div class="ov"></div>
+  <div class="hero-in fade">
+    <div class="hero-kick" id="heroKick"></div>
+    <h1 class="hero-h1" id="heroH1"></h1>
+    <p class="hero-lead" id="heroLead"></p>
+    <div class="datebox" id="dateBox"></div>
     <div class="hero-cta">
-      <a class="btn btn-apply" href="https://www17.webcas.net/db/pub/sokonara/register-meet-r/create/input" target="_blank" rel="noopener">今すぐ参加申込 ▶</a>
-      <a class="btn btn-line" href="https://lin.ee/qT5A0zN" target="_blank" rel="noopener">日程が合わない方は LINEで転職情報を見る</a>
+      <a class="btn btn-apply" id="heroApply" href="#">今すぐ参加申込 ▶</a>
+      <a class="btn btn-line" id="heroLine" href="#">日程が合わない方は LINEで転職情報を見る</a>
     </div>
-    <p class="hero-note">先着順・数十名／これまでの申込は約400名超・参加者は30代前後がメイン</p>
+    <div class="hero-proof" id="heroProof"></div>
   </div>
 </header>
 
-<!-- INFO CHIPS -->
-<div class="infobar">
-  <div class="container chips">
-    <span class="chip">📅 <b>7/30(木)</b> 19:00–21:30</span>
-    <span class="chip">📍 福岡・大名 エスニコ</span>
-    <span class="chip">💴 <b>無料</b></span>
-    <span class="chip">👥 先着 数十名</span>
-  </div>
-</div>
+<div class="trust"><div class="wrap" id="trustRow"></div></div>
 
-<!-- こんな方におすすめ -->
-<section class="section">
-  <div class="container fade">
-    <div class="eyebrow">For You</div>
-    <h2 class="sec-title">こんな方におすすめ</h2>
-    <div class="stack check-list">
-      <div class="check-row"><div class="ic">✓</div><p>WEBで自分に合う仕事を探しても、なかなかピンとくる企業に出会えていない方</p></div>
-      <div class="check-row"><div class="ic">✓</div><p>地方創生や地域に関わる、面白い仕事ができる企業を探している方</p></div>
-      <div class="check-row"><div class="ic">✓</div><p>仕事を単なる収入の手段ではなく、自分の力を活かせるやりがいあるものにしたい方</p></div>
-    </div>
-  </div>
-</section>
+<section class="sec"><div class="wrap fade">
+  <div class="kicker">For You</div>
+  <h2 class="h2">1つでも当てはまるなら、<br>来る価値があります。</h2>
+  <ul class="aud" id="audList" style="margin-top:22px;"></ul>
+</div></section>
 
-<!-- 登壇者紹介 -->
-<section class="section" id="speakers" style="background:#fff;">
-  <div class="container fade">
-    <div class="eyebrow">Speakers</div>
-    <h2 class="sec-title">登壇する経営層（7名）</h2>
-    <div class="stack spk-list">
-      <div class="spk"><h3>移動体験の未来をつくる／糸島在住の経営層</h3><p>モビリティ領域のソフトウェア開発を軸に、IVI・コネクテッド・品質管理まで展開。上場テック企業グループで、価値創造に取り組む。</p></div>
-      <div class="spk"><h3>老舗企業をデータで進化／変革型の若手社長</h3><p>包装資材の商社として、流通現場を支える企業を牽引。物流網と営業力にDXを掛け合わせ、勘と経験の組織を進化させている。</p></div>
-      <div class="spk"><h3>印刷会社を総合販促企業へ進化／40代社長</h3><p>印刷・DM・Web・動画まで横断し、企業の販促課題を支援。創業45年以上の企業を率い、新たな事業領域を切り拓いている。</p></div>
-      <div class="spk"><h3>自動化で現場を支える／30代前半の次期社長</h3><p>食品工場から自動車まで、幅広い産業向け自動化装置を提供。創業50年以上の老舗装置メーカーで、次のものづくりに挑む。</p></div>
-      <div class="spk"><h3>福岡の物流インフラを支える／若手後継者</h3><p>国内・輸出梱包や精密機器輸送を担い、産業の裏側を支える。創業50年以上の現場基盤を活かしながら、次の物流のあり方に挑む。</p></div>
-      <div class="spk"><h3>建設の枠を越えまちづくりを営む／女性社長</h3><p>建設会社から、ホテル・観光・まちづくりへ展開。星野リゾートでの経験も活かし、地域企業の可能性を広げている。</p></div>
-      <div class="spk"><h3>伝統産業の枠を壊す／老舗企業の若手経営層</h3><p>伝統技術を活かした商品を国内外へ広げ、福祉事業のM&Aやコンサル事業にも挑戦。老舗企業の可能性を、次の時代へ広げている。</p></div>
-    </div>
-  </div>
-</section>
+<section class="sec" style="background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);"><div class="wrap fade">
+  <div class="kicker">Speakers</div>
+  <h2 class="h2" id="spkTitle"></h2>
+  <p class="spk-intro" id="spkIntro"></p>
+  <div id="spkList"></div>
+</div></section>
 
-<!-- ポジション例 -->
-<section class="section">
-  <div class="container fade">
-    <div class="eyebrow">Positions</div>
-    <h2 class="sec-title">企業が求めるポジション例</h2>
-    <div class="tags">
-      <span class="tag">#法人営業</span><span class="tag">#新規事業</span><span class="tag">#ITエンジニア</span>
-      <span class="tag">#施工管理</span><span class="tag">#右腕</span><span class="tag">#マネージャー</span>
-      <span class="tag">#人事戦略</span><span class="tag">#DX推進</span><span class="tag">#経営戦略</span>
-      <span class="tag">#技術開発</span><span class="tag">#ホテル運営</span><span class="tag">#その他</span>
-    </div>
-  </div>
-</section>
+<section class="sec"><div class="wrap fade">
+  <div class="kicker">Positions</div>
+  <h2 class="h2">あなたの経験が<br>活きるかもしれない仕事。</h2>
+  <div class="poscloud" id="posCloud" style="margin-top:22px;"></div>
+</div></section>
 
-<!-- TIME TABLE -->
-<section class="section" id="timetable" style="background:#fff;">
-  <div class="container fade">
-    <div class="eyebrow">Time Table</div>
-    <h2 class="sec-title">当日の流れ</h2>
-    <div class="card tt">
-      <div class="tt-row"><div class="tt-time">19:00</div><div class="tt-body"><h4>オープニング</h4><p>趣旨や流れの説明</p></div></div>
-      <div class="tt-row"><div class="tt-time">19:10</div><div class="tt-body"><h4>経営層トーク</h4><p>経営層によるプレゼン</p></div></div>
-      <div class="tt-row"><div class="tt-time">20:00</div><div class="tt-body"><h4>交流会</h4><p>企業経営層とざっくばらんな座談会</p></div></div>
-      <div class="tt-row"><div class="tt-time">21:00</div><div class="tt-body"><h4>フリー交流</h4><p>さらに話したい経営層と交流</p></div></div>
-      <div class="tt-row"><div class="tt-time">21:30</div><div class="tt-body"><h4>終了予定</h4><p>気になる企業には専用フォームからアプローチ！</p></div></div>
-    </div>
-  </div>
-</section>
+<section class="sec" style="background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);"><div class="wrap fade">
+  <div class="kicker">Time Table</div>
+  <h2 class="h2">当日の流れ</h2>
+  <div class="tl" id="timeline" style="margin-top:26px;"></div>
+</div></section>
 
-<!-- 開催概要 -->
-<section class="section">
-  <div class="container fade">
-    <div class="eyebrow">Overview</div>
-    <h2 class="sec-title">開催概要</h2>
-    <table class="ov">
-      <tr><th>開催日</th><td>2026.7.30(木) 19:00–21:30</td></tr>
-      <tr><th>開催場所</th><td>エスニコ(ethnico)<br>福岡県福岡市中央区大名2丁目1-50 2階</td></tr>
-      <tr><th>参加費</th><td><span class="free">参加無料</span>（今回は特別に無料開放）</td></tr>
-      <tr><th>募集人数</th><td>数十名（先着順で締切）</td></tr>
-      <tr><th>申込資格</th><td>就業経験がある方<br>（営業目的での参加はお断りしています）</td></tr>
-      <tr><th>申込締切</th><td>先着順（定員に達し次第締切）</td></tr>
-    </table>
-  </div>
-</section>
+<section class="sec"><div class="wrap fade">
+  <div class="kicker">Overview</div>
+  <h2 class="h2">開催概要</h2>
+  <div class="facts" id="facts" style="margin-top:20px;"></div>
+</div></section>
 
-<!-- CTA -->
-<section class="section" style="padding-top:8px;">
-  <div class="container">
-    <div class="cta-block fade">
-      <div class="big">【申込先着順！】<br>残席わずか・お早めに</div>
-      <div class="sm">まずは情報収集でOK。その場で応募する必要はありません。</div>
-      <div class="hero-cta">
-        <a class="btn btn-apply" href="https://www17.webcas.net/db/pub/sokonara/register-meet-r/create/input" target="_blank" rel="noopener">今すぐ参加申込 ▶</a>
-        <a class="btn btn-line" href="https://lin.ee/qT5A0zN" target="_blank" rel="noopener">日程が合わない方は LINEで転職情報を見る</a>
-      </div>
-    </div>
-  </div>
-</section>
+<section class="sec" style="background:var(--teal-soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line);"><div class="wrap fade">
+  <div class="kicker">Voice</div>
+  <h2 class="h2">この出会いから、<br>転職した人たち。</h2>
+  <div id="voices" style="margin-top:18px;"></div>
+</div></section>
 
-<!-- 参加者の声 -->
-<section class="section" style="background:#fff;">
-  <div class="container fade">
-    <div class="eyebrow">Voice</div>
-    <h2 class="sec-title">出会いをきっかけに<br>転職された方の声</h2>
-    <div class="stack">
-      <div class="voice">
-        <div class="q">「条件よりも、ビジョンで心が動いた転職」</div>
-        <div class="who">デジタルハリウッド／G'sへ転職・Kさん</div>
-        <div class="body">求人票をいくら見比べても、「ここで働きたい」と確信を持てる会社にはなかなか出会えませんでした。40代に入り、「子どもに胸を張って語れる仕事ができているだろうか」と自問する中で参加したのがソコナラMEETです。創設者や責任者と直接対話し、教育と挑戦で社会を変えようとするビジョンや熱量に触れるうちに、「この環境で自分も本気で挑戦したい」と心が動きました。書類だけでは伝わらない想いや価値観を語り合い、条件よりも先に納得感が生まれたことが入社の決め手になりました。</div>
-      </div>
-      <div class="voice">
-        <div class="q">経営層のリアルな声が、自分の視野を広げてくれた</div>
-        <div class="who">株式会社ラグジュアリーへ転職・Sさん</div>
-        <div class="body">漠然と「次は地域に関わる仕事がしたい」と思う中で、ソコナラMEETに参加。経営者の挑戦する姿勢や、事業に込めた想いを直接聞くことで、「こういう形で地域に貢献できるのか」と視野が広がりました。求人票ではわからない“人”や“想い”との出会いが、自分の決断の後押しに。イベント後すぐに個別面談を経て、この出会いをきっかけに転職を決めました。</div>
-      </div>
-    </div>
-  </div>
-</section>
+<section class="sec"><div class="wrap fade">
+  <div class="kicker">Why Join</div>
+  <h2 class="h2">ここでしか得られない、<br>3つのこと。</h2>
+  <div class="why" id="whyList" style="margin-top:22px;"></div>
+</div></section>
 
-<!-- 価値 -->
-<section class="section">
-  <div class="container fade">
-    <div class="eyebrow">Why Join</div>
-    <h2 class="sec-title">このイベントで得られること</h2>
-    <div class="stack">
-      <div class="card val"><div class="n">01</div><div><h4>条件ではなく“共感”で選ぶ転職ができる</h4><p>経営層の想いに触れることで、「この人と働きたい」「この想いに関わりたい」という出会いが生まれます。</p></div></div>
-      <div class="card val"><div class="n">02</div><div><h4>求人票では見えないリアルがわかる</h4><p>事業の背景や挑戦のストーリー、目指す未来まで。経営層のリアルな言葉だからこそ、本質が伝わります。</p></div></div>
-      <div class="card val"><div class="n">03</div><div><h4>新たなキャリアの道筋が見つかる</h4><p>これまでの経験だけでなく、「これからどうありたいか」という視点での対話が、自分らしいキャリアのヒントにつながります。</p></div></div>
-    </div>
-    <p style="text-align:center;margin-top:22px;font-weight:700;color:var(--navy);line-height:1.7;">30分話しただけで、「この人の仲間として挑戦したい」と感じる人もいます。<br>ぜひ、お気軽にお越しください！</p>
-  </div>
-</section>
+<section class="sec" style="background:#fff;border-top:1px solid var(--line);"><div class="wrap fade">
+  <div class="kicker">FAQ</div>
+  <h2 class="h2">よくあるご質問</h2>
+  <div class="faq" id="faqList" style="margin-top:18px;"></div>
+</div></section>
 
-<!-- FAQ -->
-<section class="section" id="faq" style="background:#fff;">
-  <div class="container fade">
-    <div class="eyebrow">FAQ</div>
-    <h2 class="sec-title">よくあるご質問</h2>
-    <div class="faq-item"><div class="faq-q">実際の様子（動画）を見てみたいです<span class="pm">+</span></div><div class="faq-a"><div class="faq-a-inner">30秒程度で過去のイベントの雰囲気をご覧いただけます。<br><a href="https://youtu.be/OhiOtmbFqTk" target="_blank" rel="noopener">https://youtu.be/OhiOtmbFqTk</a></div></div></div>
-    <div class="faq-item"><div class="faq-q">なぜ関西電力グループの会社が福岡で創業？<span class="pm">+</span></div><div class="faq-a"><div class="faq-a-inner">創業者の三宅はキャリアコンサルタントで福岡出身。ソコナラは関西電力の社内ベンチャーです。本事業は様々な人との出会いから着想され、創業者の地元・福岡でスタートしました。参加された方に「人生の転機」を創造するためにソコナラMEETを展開しています。</div></div></div>
-    <div class="faq-item"><div class="faq-q">どんな方が参加されますか？<span class="pm">+</span></div><div class="faq-a"><div class="faq-a-inner">20〜30代の方が多く参加されています。福岡で夢中になれる仕事や地域に貢献できる仕事を見つけたい方に特に好評です！</div></div></div>
-    <div class="faq-item"><div class="faq-q">服装は何を着ていけばいいですか？<span class="pm">+</span></div><div class="faq-a"><div class="faq-a-inner">カジュアルな服装でOKです！リラックスして参加できる服装でお越しください。</div></div></div>
-    <div class="faq-item"><div class="faq-q">過去参加者の声を聴かせてください<span class="pm">+</span></div><div class="faq-a"><div class="faq-a-inner">最も多いのが「自然体で普段聞けない経営層の想いに触れることができ、大変有意義でした」という声。詳細は過去レポートをご確認ください。<br><a href="https://sokonara.co.jp/meet/archive" target="_blank" rel="noopener">https://sokonara.co.jp/meet/archive</a></div></div></div>
-    <div class="faq-item"><div class="faq-q">ソコナラMEET参加後の選考フローは？<span class="pm">+</span></div><div class="faq-a"><div class="faq-a-inner">イベント後、専用フォームで興味のある企業を選択。個別面談など次のステップにつながります！詳細は当日ご案内します。</div></div></div>
-  </div>
-</section>
-
-<!-- FINAL CTA -->
-<section class="section" style="padding-top:8px;">
-  <div class="container">
-    <div class="cta-block fade">
-      <div class="big">【残席わずか！】<br>あなたの転機は、<br>まだ出会っていない人に。</div>
-      <div class="sm">2026.7.30(木) 19:00–21:30 ／ 福岡・大名 エスニコ ／ 参加無料</div>
-      <div class="hero-cta">
-        <a class="btn btn-apply" href="https://www17.webcas.net/db/pub/sokonara/register-meet-r/create/input" target="_blank" rel="noopener">今すぐ参加申込 ▶</a>
-        <a class="btn btn-line" href="https://lin.ee/qT5A0zN" target="_blank" rel="noopener">日程が合わない方は LINEで転職情報を見る</a>
-      </div>
+<section class="closing">
+  <div class="in fade">
+    <h2>あなたの転機は、<br><em>まだ出会っていない人</em>に。</h2>
+    <div class="sub">まずは情報収集でOK。その場で応募する必要はありません。</div>
+    <div class="when" id="closeWhen"></div>
+    <div class="hero-cta">
+      <a class="btn btn-apply" id="closeApply" href="#">今すぐ参加申込 ▶</a>
+      <a class="btn btn-line" id="closeLine" href="#">日程が合わない方は LINEで</a>
     </div>
   </div>
 </section>
 
 <footer>
-  <div class="container">
+  <div class="wrap">
     運営会社｜株式会社ソコナラ<br>
-    所在地｜〒810-0001 福岡市中央区天神2丁目5番28号 天神西通りセンタービル6F<br>
-    HP｜<a href="https://sokonara.co.jp" target="_blank" rel="noopener">https://sokonara.co.jp</a>
-    <div class="flinks">
+    〒810-0001 福岡市中央区天神2丁目5番28号 天神西通りセンタービル6F<br>
+    HP｜<a href="https://sokonara.co.jp" target="_blank" rel="noopener">sokonara.co.jp</a>
+    <div class="fl">
       <a href="/legal/terms.pdf" target="_blank" rel="noopener">利用規約</a>
       <a href="/legal/privacy.pdf" target="_blank" rel="noopener">プライバシーポリシー</a>
     </div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.5);">©COPYRIGHT SOKONARA All rights reserved.</div>
+    <div class="cp">© SOKONARA All rights reserved.</div>
   </div>
 </footer>
 
-<!-- STICKY BOTTOM CTA -->
-<div class="stickybar">
-  <a class="btn btn-apply" href="https://www17.webcas.net/db/pub/sokonara/register-meet-r/create/input" target="_blank" rel="noopener">今すぐ参加申込 ▶</a>
-  <a class="btn btn-line" href="https://lin.ee/qT5A0zN" target="_blank" rel="noopener">LINE</a>
+<div class="sticky">
+  <div class="scar" id="scarBar"></div>
+  <div class="bar">
+    <a class="btn btn-apply" id="stickyApply" href="#">参加申込（無料）▶</a>
+    <a class="ln" id="stickyLine" href="#">
+      <svg viewBox="0 0 24 24" fill="white"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.070 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+      LINE
+    </a>
+  </div>
 </div>
 
 <script>
-  // FAQ accordion
-  document.querySelectorAll('.faq-q').forEach(function(q){
-    q.addEventListener('click', function(){
-      var item = q.parentElement;
-      var a = q.nextElementSibling;
-      var open = item.classList.toggle('open');
-      a.style.maxHeight = open ? a.firstElementChild.scrollHeight + 32 + 'px' : '0';
+/* ============================================================
+   イベント設定 — 次回はこの EV だけ差し替えれば再利用できます。
+   日付/会場/定員/申込URL/登壇者/タイムテーブル/声/FAQ をここで管理。
+   ============================================================ */
+const EV = {
+  applyUrl: 'https://www17.webcas.net/db/pub/sokonara/register-meet-r/create/input',
+  lineUrl:  'https://lin.ee/qT5A0zN',
+  heroImage:'/images/TOP.jpg',
+  heroKick: '福岡・地域企業の経営層と出会う夜',
+  heroH1:   '経営者の<em>本音</em>に、<br>ふれる福岡の夜。',
+  heroLead: '求人票では分からない「会社のリアル」と、経営層の想い。直接話して、「自分でも力になれるかも」に出会う。',
+  date: { num:'7.30', dow:'THU', year:'2026', time:'19:00–21:30' },
+  venue:{ name:'エスニコ（ethnico）', area:'福岡市中央区・大名', addr:'福岡県福岡市中央区大名2-1-50 2F' },
+  fee:'参加無料', capacity:'数十名（先着順で締切）',
+  qualify:'就業経験がある方（営業目的での参加はお断りしています）',
+  deadline:'先着順・定員に達し次第締切',
+  proofLine:'申込のべ400名超 ／ 参加者は30代前後がメイン',
+  scarcity:'残席わずか・先着順',
+  trust:['申込のべ400名超','参加者は30代前後がメイン','参加費 無料'],
+  audience:[
+    'WEBで探しても、ピンとくる企業になかなか出会えていない',
+    '地方創生や地域に関わる、面白い仕事ができる企業を探している',
+    '仕事を、自分の力を活かせるやりがいあるものにしたい',
+  ],
+  spkTitle:'登壇する、7人の経営層。',
+  spkIntro:'地域で挑戦する後継ぎ・変革型リーダーが登壇。業種も世代もさまざまな経営層の「いま」に、直接触れられます。',
+  speakers:[
+    {tag:'モビリティ / SaaS', h:'移動体験の未来をつくる、糸島在住の経営層', p:'モビリティ領域のソフトウェア開発を軸に、IVI・コネクテッド・品質管理まで展開。上場テック企業グループで価値創造に取り組む。'},
+    {tag:'商社 / DX', h:'老舗企業をデータで進化させる、変革型の若手社長', p:'包装資材の商社として流通現場を支える企業を牽引。物流網と営業力にDXを掛け合わせ、勘と経験の組織を進化させている。'},
+    {tag:'印刷 / 販促', h:'印刷会社を総合販促企業へ進化させる、40代社長', p:'印刷・DM・Web・動画まで横断し、企業の販促課題を支援。創業45年以上の企業を率い、新たな事業領域を切り拓く。'},
+    {tag:'製造 / 自動化', h:'自動化で現場を支える、30代前半の次期社長', p:'食品工場から自動車まで、幅広い産業向け自動化装置を提供。創業50年以上の老舗装置メーカーで、次のものづくりに挑む。'},
+    {tag:'物流 / 梱包', h:'福岡の物流インフラを支える、若手後継者', p:'国内・輸出梱包や精密機器輸送を担い、産業の裏側を支える。創業50年以上の現場基盤を活かし、次の物流のあり方に挑む。'},
+    {tag:'建設 / まちづくり', h:'建設の枠を越えてまちづくりを営む、女性社長', p:'建設会社から、ホテル・観光・まちづくりへ展開。星野リゾートでの経験も活かし、地域企業の可能性を広げている。'},
+    {tag:'伝統産業 / M&A', h:'伝統産業の枠を壊す、老舗企業の若手経営層', p:'伝統技術を活かした商品を国内外へ広げ、福祉事業のM&Aやコンサル事業にも挑戦。老舗の可能性を次の時代へ広げる。'},
+  ],
+  positions:['法人営業','新規事業','ITエンジニア','施工管理','右腕','マネージャー','人事戦略','DX推進','経営戦略','技術開発','ホテル運営','その他'],
+  timetable:[
+    {t:'19:00', h:'オープニング', d:'趣旨や流れの説明'},
+    {t:'19:10', h:'経営層トーク', d:'経営層によるプレゼン'},
+    {t:'20:00', h:'交流会', d:'企業経営層とざっくばらんな座談会'},
+    {t:'21:00', h:'フリー交流', d:'さらに話したい経営層と交流'},
+    {t:'21:30', h:'終了予定', d:'気になる企業には専用フォームからアプローチ'},
+  ],
+  voices:[
+    {q:'条件よりも、ビジョンで心が動いた転職', who:'デジタルハリウッド／G’sへ転職・Kさん', body:'求人票をいくら見比べても、「ここで働きたい」と確信を持てる会社にはなかなか出会えませんでした。40代に入り、「子どもに胸を張って語れる仕事ができているだろうか」と自問する中で参加したのがソコナラMEET。創設者や責任者と直接対話し、教育と挑戦で社会を変えようとするビジョンや熱量に触れるうちに、「この環境で自分も本気で挑戦したい」と心が動きました。条件よりも先に納得感が生まれたことが、入社の決め手になりました。'},
+    {q:'経営層のリアルな声が、自分の視野を広げてくれた', who:'株式会社ラグジュアリーへ転職・Sさん', body:'漠然と「次は地域に関わる仕事がしたい」と思う中で参加。経営者の挑戦する姿勢や事業に込めた想いを直接聞くことで、「こういう形で地域に貢献できるのか」と視野が広がりました。求人票ではわからない“人”や“想い”との出会いが、決断の後押しに。イベント後すぐ個別面談を経て、この出会いをきっかけに転職を決めました。'},
+  ],
+  why:[
+    {h:'条件ではなく“共感”で選ぶ', d:'経営層の想いに触れることで、「この人と働きたい」「この想いに関わりたい」という出会いが生まれます。'},
+    {h:'求人票では見えないリアル', d:'事業の背景や挑戦のストーリー、目指す未来まで。経営層のリアルな言葉だからこそ、本質が伝わります。'},
+    {h:'新しいキャリアの道筋', d:'これまでの経験だけでなく「これからどうありたいか」という視点での対話が、自分らしいキャリアのヒントになります。'},
+  ],
+  faq:[
+    {q:'実際の様子（動画）を見てみたいです', a:'30秒程度で過去のイベントの雰囲気をご覧いただけます。<br><a href="https://youtu.be/OhiOtmbFqTk" target="_blank" rel="noopener">https://youtu.be/OhiOtmbFqTk</a>'},
+    {q:'なぜ関西電力グループの会社が福岡で創業？', a:'創業者の三宅はキャリアコンサルタントで福岡出身。ソコナラは関西電力の社内ベンチャーです。本事業は様々な人との出会いから着想され、創業者の地元・福岡でスタートしました。'},
+    {q:'どんな方が参加されますか？', a:'20〜30代の方が多く参加されています。福岡で夢中になれる仕事や地域に貢献できる仕事を見つけたい方に特に好評です。'},
+    {q:'服装は何を着ていけばいいですか？', a:'カジュアルな服装でOKです。リラックスして参加できる服装でお越しください。'},
+    {q:'過去参加者の声を聴かせてください', a:'最も多いのが「自然体で普段聞けない経営層の想いに触れることができ、大変有意義でした」という声。詳細は過去レポートをご確認ください。<br><a href="https://sokonara.co.jp/meet/archive" target="_blank" rel="noopener">https://sokonara.co.jp/meet/archive</a>'},
+    {q:'ソコナラMEET参加後の選考フローは？', a:'イベント後、専用フォームで興味のある企業を選択。個別面談など次のステップにつながります。詳細は当日ご案内します。'},
+  ],
+};
+
+(function render(){
+  var E=EV, $=function(id){return document.getElementById(id);};
+  // links
+  ['navApply','heroApply','closeApply','stickyApply'].forEach(function(id){$(id).href=E.applyUrl;$(id).target='_blank';$(id).rel='noopener';});
+  ['heroLine','closeLine','stickyLine'].forEach(function(id){$(id).href=E.lineUrl;$(id).target='_blank';$(id).rel='noopener';});
+  // hero
+  $('heroBg').style.backgroundImage="url('"+E.heroImage+"')";
+  $('heroKick').insertAdjacentHTML('beforeend',E.heroKick);
+  $('heroH1').innerHTML=E.heroH1;
+  $('heroLead').textContent=E.heroLead;
+  $('heroProof').textContent=E.proofLine;
+  $('dateBox').innerHTML='<div class="d"><div class="big">'+E.date.num+'</div><div class="dow">'+E.date.dow+'</div></div>'+
+    '<div class="meta"><b>'+E.date.year+'</b>'+E.date.time+'<span class="free">'+E.fee+'</span></div>';
+  $('closeWhen').textContent=E.date.year+'.'+E.date.num+'('+E.date.dow+') '+E.date.time+' ／ '+E.venue.area+' ／ '+E.fee;
+  $('scarBar').textContent='【'+E.scarcity+'】 '+E.date.num+'('+E.date.dow+') '+E.venue.area;
+  // trust
+  $('trustRow').innerHTML=E.trust.map(function(t){return '<span>'+t+'</span>';}).join('');
+  // audience
+  $('audList').innerHTML=E.audience.map(function(t){return '<li><span class="ck">✓</span>'+t+'</li>';}).join('');
+  // speakers
+  $('spkTitle').textContent=E.spkTitle;
+  $('spkIntro').textContent=E.spkIntro;
+  $('spkList').innerHTML=E.speakers.map(function(s,i){
+    var n=(i+1<10?'0':'')+(i+1);
+    return '<div class="spk"><div class="no">'+n+'</div><div><span class="tag">'+s.tag+'</span><h3>'+s.h+'</h3><p>'+s.p+'</p></div></div>';
+  }).join('');
+  // positions
+  $('posCloud').innerHTML=E.positions.map(function(p){return '<span class="pos">'+p+'</span>';}).join('');
+  // timeline
+  $('timeline').innerHTML=E.timetable.map(function(r){return '<div class="it"><div class="t">'+r.t+'</div><h4>'+r.h+'</h4><p>'+r.d+'</p></div>';}).join('');
+  // facts
+  var F=[['開催日',E.date.year+'.'+E.date.num+'（'+E.date.dow+'） '+E.date.time],
+    ['会場',E.venue.name+'<br>'+E.venue.addr],
+    ['参加費','<span class="free">'+E.fee+'</span>（今回は特別に無料開放）'],
+    ['定員',E.capacity],['資格',E.qualify],['締切',E.deadline]];
+  $('facts').innerHTML=F.map(function(r){return '<div class="row"><div class="k">'+r[0]+'</div><div class="v">'+r[1]+'</div></div>';}).join('');
+  // voices
+  $('voices').innerHTML=E.voices.map(function(v){return '<div class="voice"><div class="q">'+v.q+'</div><div class="who">'+v.who+'</div><div class="body">'+v.body+'</div></div>';}).join('');
+  // why
+  $('whyList').innerHTML=E.why.map(function(w){return '<div class="it"><h4>'+w.h+'</h4><p>'+w.d+'</p></div>';}).join('');
+  // faq
+  $('faqList').innerHTML=E.faq.map(function(f){return '<div class="it"><div class="q">'+f.q+'<span class="pm">+</span></div><div class="a"><div class="in">'+f.a+'</div></div></div>';}).join('');
+  // faq accordion
+  document.querySelectorAll('.faq .q').forEach(function(q){
+    q.addEventListener('click',function(){
+      var it=q.parentElement,a=q.nextElementSibling;
+      var open=it.classList.toggle('open');
+      a.style.maxHeight=open?(a.firstElementChild.scrollHeight+28)+'px':'0';
     });
   });
-  // fade-in on scroll
-  var io = new IntersectionObserver(function(es){
-    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('vis'); io.unobserve(e.target); } });
-  }, { threshold: 0.12 });
-  document.querySelectorAll('.fade').forEach(function(el){ io.observe(el); });
+  // nav solidify on scroll
+  var nav=$('nav');
+  var onScroll=function(){ nav.classList.toggle('solid',window.scrollY>60); };
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+  // fade-in
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('vis');io.unobserve(e.target);}});},{threshold:0.1});
+  document.querySelectorAll('.fade').forEach(function(el){io.observe(el);});
+})();
 </script>
 </body>
 </html>
