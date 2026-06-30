@@ -291,8 +291,10 @@ export default async function handler(req) {
 
   const allowOrigin = req.headers.get('origin') || '';
 
-  // ユーザー向け診断(values/cardfeedback)は品質優先で4o＋ストリーミング中継（Edge関数のタイムアウト504を回避）。
+  // ユーザー向け診断(values/cardfeedback)はストリーミング中継（Edge関数のタイムアウト504を回避）。
+  // モデルは出力速度優先で gpt-4o-mini（4問化で入力材料が増え品質を補完）。薄ければ 4o に戻す。
   const isStream = (type === 'values' || type === 'cardfeedback');
+  const streamModel = 'gpt-4o-mini';
 
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -301,7 +303,7 @@ export default async function handler(req) {
       'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
-      model: isStream ? 'gpt-4o' : 'gpt-4o-mini',
+      model: isStream ? streamModel : 'gpt-4o-mini',
       // ストリーミングでタイムアウトが無くなったため、診断は長文を許容（途中切れ防止に余裕を持たせる）
       max_tokens: isStream ? 2000 : 1000,
       // 本人の言葉を踏まえた固有性・毎回の新鮮さを出すため、診断系はやや高め。繰り返し同じ言い回しを避ける。
