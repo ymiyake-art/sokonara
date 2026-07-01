@@ -1838,6 +1838,7 @@ async function genReport(id){
     <div class="panel" style="margin-bottom:20px">
       <div class="phdr">${escapeHtmlA(co?.ceo||'')}（${escapeHtmlA(co?.name||'')}）共感レポート
         <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="abtn" style="font-size:10px;padding:4px 12px;border:1px solid var(--teal-d);color:#fff;background:var(--teal-d)" onclick="printCompanyReport('${id}')">🖨 PDFレポート出力</button>
           <button class="abtn" style="font-size:10px;padding:4px 12px;border:1px solid var(--border)" onclick="downloadReportCsv('${id}')">CSV出力</button>
           <button class="abtn" style="font-size:10px;padding:4px 12px;border:1px solid var(--hot);color:var(--hot)" onclick="clearReportData('${id}')">テストデータ全消去</button>
         </div>
@@ -1881,6 +1882,95 @@ async function genReport(id){
           </div>`;}).join('') : '<div style="padding:16px;color:var(--text3);font-size:12px">コメントはまだありません</div>'}
       </div>
     </div>`;
+}
+
+// お客様提示用の高デザインPDFレポート（別ウィンドウ→印刷/PDF保存）。genReport実行後の _reportRows を使用。
+function printCompanyReport(id){
+  const co = loadCompanies().find(c=>String(c.id)===String(id)) || {};
+  const rows = Array.isArray(_reportRows) ? _reportRows : [];
+  const total = rows.length;
+  const reactions = co?.reactions || 0;
+  const cta = rows.filter(r=>r.contact_cta).length;
+  const form = rows.filter(r=>r.form_open).length;
+  const q1 = _dist(rows, r=>r.q1_answer);
+  const q2 = _dist(rows, r=>r.q2_values);
+  const ab = _dist(rows, r=>String(r.q3_answer||'').split('、'));
+  const comments = rows.filter(r=>r.ai_message && r.ai_message.trim()).slice(0,6);
+  const period = (_resFrom||_resTo) ? ((_resFrom||'開始')+'  〜  '+(_resTo||'現在')) : '全期間';
+  const today = new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'});
+  const esc = s => escapeHtmlA(String(s==null?'':s));
+  const bars = (entries)=>{
+    if(!entries.length) return '<div class="muted">データがまだありません</div>';
+    const max = Math.max(...entries.map(e=>e[1]),1);
+    return entries.slice(0,6).map(([k,v])=>{
+      const w = Math.round(v/max*100);
+      return `<div class="bar"><div class="bar-label">${esc(k)}</div><div class="bar-track"><div class="bar-fill" style="width:${w}%"></div></div><div class="bar-val">${v}</div></div>`;
+    }).join('');
+  };
+  const kpi = (label,val,accent)=>`<div class="kpi"><div class="kpi-l">${esc(label)}</div><div class="kpi-v" style="color:${accent}">${val}</div></div>`;
+  const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<title>${esc(co.ceo||'')}様 共鳴レポート｜ソコナラ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#16223f;--teal:#2f9c8d;--teal-d:#247c70;--ink:#20242b;--muted:#8b8f98;--line:rgba(22,34,63,.12);--paper:#fff;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Noto Sans JP',sans-serif;color:var(--ink);background:#eceef1;line-height:1.8;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .page{max-width:760px;margin:24px auto;background:var(--paper);padding:44px 48px 40px;box-shadow:0 4px 24px rgba(0,0,0,.1);}
+  .head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid var(--navy);padding-bottom:16px;margin-bottom:24px;}
+  .head img{height:26px;}
+  .head .meta{text-align:right;font-size:11px;color:var(--muted);line-height:1.6;font-family:'JetBrains Mono',monospace;}
+  .kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:var(--teal-d);text-transform:uppercase;margin-bottom:8px;}
+  h1{font-family:'Shippori Mincho',serif;font-weight:700;font-size:26px;color:var(--navy);line-height:1.4;margin-bottom:6px;}
+  .sub{font-size:12px;color:var(--muted);margin-bottom:26px;}
+  .kpis{display:flex;gap:12px;margin-bottom:30px;}
+  .kpi{flex:1;border:1px solid var(--line);border-radius:10px;padding:14px 12px;text-align:center;}
+  .kpi-l{font-size:11px;color:var(--muted);margin-bottom:4px;}
+  .kpi-v{font-size:28px;font-weight:700;font-family:'Shippori Mincho',serif;color:var(--navy);}
+  h2{font-family:'Shippori Mincho',serif;font-weight:700;font-size:16px;color:var(--navy);margin:26px 0 12px;padding-left:11px;border-left:4px solid var(--teal);}
+  .bar{display:flex;align-items:center;gap:12px;margin-bottom:8px;font-size:13px;}
+  .bar-label{width:42%;color:var(--ink);line-height:1.5;}
+  .bar-track{flex:1;height:9px;background:rgba(22,34,63,.07);border-radius:6px;overflow:hidden;}
+  .bar-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--navy));border-radius:6px;}
+  .bar-val{width:30px;text-align:right;font-weight:700;color:var(--teal-d);font-family:'JetBrains Mono',monospace;}
+  .muted{font-size:12px;color:var(--muted);}
+  .voice{border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:#fafbfc;}
+  .voice .t{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:6px;}
+  .voice .b{font-size:12.5px;line-height:1.85;color:var(--ink);white-space:pre-line;}
+  .foot{margin-top:32px;padding-top:16px;border-top:1px solid var(--line);font-size:10.5px;color:var(--muted);line-height:1.7;}
+  .noprint{text-align:center;margin:16px;}
+  .noprint button{font:inherit;font-size:14px;font-weight:700;background:var(--teal-d);color:#fff;border:none;border-radius:8px;padding:11px 26px;cursor:pointer;}
+  @media print{ body{background:#fff;} .page{box-shadow:none;margin:0;max-width:none;padding:24px 20px;} .noprint{display:none;} @page{size:A4;margin:14mm;} }
+</style></head><body>
+<div class="noprint"><button onclick="window.print()">🖨 PDFとして保存 / 印刷</button></div>
+<div class="page">
+  <div class="head">
+    <img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ" style="filter:brightness(0.15)">
+    <div class="meta">発行日 ${esc(today)}<br>期間 ${esc(period)}</div>
+  </div>
+  <div class="kicker">Resonance Report</div>
+  <h1>${esc(co.ceo||'')}様（${esc(co.name||co.company||'')}）<br>共鳴レポート</h1>
+  <div class="sub">ソコナラ上で、${esc(co.ceo||'貴社')}様の記事に反応した方々の傾向（匿名・個人情報なし）をまとめたものです。</div>
+  <div class="kpis">
+    ${kpi('診断した人', total, 'var(--teal-d)')}
+    ${kpi('共感', reactions, 'var(--navy)')}
+    ${kpi('興味を伝えた', cta, 'var(--navy)')}
+    ${kpi('フォーム開封', form, 'var(--teal-d)')}
+  </div>
+  <h2>どの言葉に、心が動いたか</h2>
+  ${bars(q1)}
+  <h2>いま、求めているもの</h2>
+  ${bars(q2)}
+  <h2>参加者の“いまの状況”</h2>
+  ${bars(ab)}
+  <h2>寄せられた、あなたへの声（抜粋）</h2>
+  ${comments.length? comments.map(function(r){ var dt=r.created_at?new Date(r.created_at).toLocaleDateString('ja-JP',{year:'numeric',month:'numeric',day:'numeric'}):''; return '<div class="voice"><div class="t">'+esc(dt)+'</div><div class="b">'+esc(r.ai_message)+'</div></div>'; }).join('') : '<div class="muted">コメントはまだありません。</div>'}
+  <div class="foot">本レポートは、ソコナラ上の匿名の行動データに基づく集計です（氏名・連絡先は記録していません）。<br>運営会社｜株式会社ソコナラ　／　https://sokonara.co.jp　／　発行 ${esc(today)}</div>
+</div>
+</body></html>`;
+  const w = window.open('', '_blank');
+  if(!w){ toast('ポップアップがブロックされました。許可してください。'); return; }
+  w.document.open(); w.document.write(html); w.document.close();
 }
 
 async function deleteReportRow(rowId, companyId){
