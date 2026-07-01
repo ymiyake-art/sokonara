@@ -1620,6 +1620,7 @@ h1, h2, h3, h4,
         <div id="fbCta" class="fb-cta" style="display:none">
           <div id="fbCtaLabel" style="font-size:13px;color:var(--text2);margin-bottom:10px;text-align:center"></div>
           <div style="display:flex;flex-direction:column;gap:10px;">
+            <button class="btn-primary" style="width:100%;justify-content:center;background:var(--navy);" onclick="openWellbeing()">📊 あなたのCareer Well-being を見る →</button>
             <button class="btn-primary" style="width:100%;justify-content:center;" onclick="openEmpathyForm()">この経営層に興味を伝える →</button>
             <button class="btn-outline" style="width:100%;justify-content:center;font-size:13px;" onclick="goScreen('p4')">他の経営層のはたらくヒントを見る</button>
           </div>
@@ -3987,6 +3988,110 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var html=top.map(function(x){ return card(x,false,picks); }).join('');
     if(surprise) html+='<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;letter-spacing:2px;color:var(--teal-d);margin:22px 0 10px;">＋ SERENDIPITY ── まだ出会っていない人</div>'+card(surprise,true,picks);
     var el=document.getElementById('moyaRecoList'); if(el) el.innerHTML=html;
+  };
+})();
+</script>
+<script>
+/* ===== Career Well-being レポート =====
+   6軸（意味/裁量挑戦/人近さ/地域/ゆとり/経済）で「あなたの重心 × この経営層の相性」をレーダー＋バンドで提示。
+   会社スコアは companies.wb（adminで採点）優先、無ければ rtags/btags/tags から自動導出。
+   保存は派生値のみ（生自由記述は保存しない）。 */
+(function(){
+  var AX=[
+    {k:'meaning',label:'意味・使命',short:'意味',rt:['mission','trust'],bt:['local']},
+    {k:'agency', label:'裁量・挑戦',short:'裁量',rt:['autonomy','challenge','inquiry'],bt:['newbiz','expand','it_dx']},
+    {k:'people', label:'人・近さ',short:'人',rt:['team','dialogue'],bt:[]},
+    {k:'local',  label:'地域・つながり',short:'地域',rt:[],bt:['local']},
+    {k:'time',   label:'時間・ゆとり',short:'ゆとり',rt:[],bt:[]},
+    {k:'econ',   label:'経済（年収）',short:'経済',rt:[],bt:[]}
+  ];
+  var MOYA_AX={mission:'meaning',local:'local',newbiz:'agency',expertise:'agency',autonomy:'agency',team:'people',challenge:'agency',org:'people'};
+  if(typeof SCREENS!=='undefined' && SCREENS.indexOf('p-wb')<0) SCREENS.push('p-wb');
+
+  function clamp(v){ return Math.max(0,Math.min(100,Math.round(v))); }
+  function companyWB(c){
+    if(!c) return {meaning:60,agency:60,people:60,local:60,time:60,econ:60};
+    if(c.wb && typeof c.wb==='object'){ var o={}; AX.forEach(function(a){ o[a.k]=clamp(c.wb[a.k]!=null?c.wb[a.k]:60); }); return o; }
+    var rt=(Array.isArray(c.rtags)?c.rtags:[]).map(String), bt=(Array.isArray(c.btags)?c.btags:[]).map(String);
+    var tx=[c.catchphrase,c.title,(Array.isArray(c.tags)?c.tags.join(' '):''),String(c.body||'').slice(0,400)].filter(Boolean).join(' ');
+    var wb={};
+    AX.forEach(function(a){
+      if(a.k==='time'||a.k==='econ'){ wb[a.k]=60; return; }
+      var h=0; a.rt.forEach(function(t){ if(rt.indexOf(t)>=0)h++; }); a.bt.forEach(function(t){ if(bt.indexOf(t)>=0)h++; });
+      wb[a.k]=clamp(58+h*16);
+    });
+    if(/地域|まちづく|地元|福岡|中津|観光/.test(tx)) wb.local=Math.max(wb.local,86);
+    if(/挑戦|革新|新規|事業開発|変革|転換/.test(tx)) wb.agency=Math.max(wb.agency,80);
+    if(/仲間|右腕|チーム|一緒|共に/.test(tx)) wb.people=Math.max(wb.people,80);
+    return wb;
+  }
+  function userWeights(co){
+    var w={meaning:52,agency:52,people:52,local:52,time:52,econ:50};
+    ((typeof S!=='undefined'&&S.moya)||[]).forEach(function(id){ var ax=MOYA_AX[id]; if(ax) w[ax]=clamp(w[ax]+22); });
+    if(co){ var cw=companyWB(co); AX.forEach(function(a){ w[a.k]=clamp(w[a.k]+(cw[a.k]-58)*0.28); }); }
+    return w;
+  }
+  function radar(comp, weight){
+    var cx=140,cy=138,R=96,N=6;
+    function pt(i,val){ var a=(-90+i*60)*Math.PI/180, r=R*clamp(val)/100; return [cx+r*Math.cos(a), cy+r*Math.sin(a)]; }
+    function ring(g){ var p=[]; for(var i=0;i<N;i++){ var q=pt(i,g); p.push(q[0].toFixed(1)+','+q[1].toFixed(1)); } return '<polygon points="'+p.join(' ')+'" fill="none" stroke="rgba(22,34,63,0.09)"/>'; }
+    function poly(vals,fill,stroke,wd){ var p=[]; for(var i=0;i<N;i++){ var q=pt(i,vals[AX[i].k]); p.push(q[0].toFixed(1)+','+q[1].toFixed(1)); } return '<polygon points="'+p.join(' ')+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+wd+'"/>'; }
+    var s='<svg viewBox="0 0 280 276" width="100%" style="max-width:320px;display:block;margin:0 auto;">';
+    [25,50,75,100].forEach(function(g){ s+=ring(g); });
+    for(var i=0;i<N;i++){ var e=pt(i,100); s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+e[0].toFixed(1)+'" y2="'+e[1].toFixed(1)+'" stroke="rgba(22,34,63,0.09)"/>'; }
+    if(weight) s+=poly(weight,'rgba(22,34,63,0.08)','rgba(22,34,63,0.45)',1.5);
+    s+=poly(comp,'rgba(47,156,141,0.24)','#2f9c8d',2.2);
+    for(var j=0;j<N;j++){ var lp=pt(j,124); s+='<text x="'+lp[0].toFixed(1)+'" y="'+lp[1].toFixed(1)+'" font-size="10.5" fill="#4a4f58" text-anchor="middle" dominant-baseline="middle">'+AX[j].short+'</text>'; }
+    s+='</svg>';
+    return s;
+  }
+  function band(v){ return v>=75?['高','#247c70','rgba(47,156,141,.14)']:(v>=50?['中','#8a6d1f','rgba(201,162,74,.14)']:['低','#8b8f98','rgba(139,143,152,.12)']); }
+
+  function ensureScreen(){
+    if(document.getElementById('p-wb')) return;
+    var user=document.getElementById('user'); if(!user) return;
+    var d=document.createElement('div'); d.id='p-wb'; d.className='screen';
+    d.innerHTML='<div style="max-width:640px;margin:0 auto;padding:28px 20px 60px;">'
+      +'<div id="wbManifesto" style="font-family:\'Zen Kaku Gothic New\',serif;color:var(--navy);font-size:15px;font-weight:700;line-height:1.9;background:var(--teal-bg);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:16px 18px;margin-bottom:24px;"></div>'
+      +'<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;letter-spacing:2px;color:var(--teal-d);margin-bottom:8px;">CAREER WELL-BEING</div>'
+      +'<h1 id="wbTitle" style="font-family:\'Zen Kaku Gothic New\',sans-serif;font-weight:900;font-size:22px;color:var(--navy);line-height:1.5;margin-bottom:6px;"></h1>'
+      +'<div id="wbSub" style="font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:18px;"></div>'
+      +'<div id="wbRadar" style="margin:6px 0 6px;"></div>'
+      +'<div style="display:flex;gap:16px;justify-content:center;font-size:11px;color:var(--text2);margin-bottom:20px;"><span><span style="display:inline-block;width:10px;height:10px;background:rgba(47,156,141,0.6);border-radius:2px;margin-right:4px;"></span>この経営層</span><span><span style="display:inline-block;width:10px;height:10px;border:1.5px solid rgba(22,34,63,0.5);border-radius:2px;margin-right:4px;"></span>あなたの重心</span></div>'
+      +'<div id="wbBands" style="margin-bottom:22px;"></div>'
+      +'<div id="wbText" style="margin-bottom:24px;"></div>'
+      +'<div id="wbCta"></div>'
+      +'<button onclick="goScreen(\'p-list\')" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--text3);text-decoration:underline;padding:8px;margin-top:8px;font-family:inherit;display:block;width:100%;">他の経営層を見る →</button>'
+      +'</div>';
+    user.appendChild(d);
+  }
+  function getCo(){
+    try{ var id=(typeof selectedCompanyId!=='undefined'&&selectedCompanyId)||((typeof SN_CARDS!=='undefined'&&SN_CARDS)?SN_CARDS.cid:''); return (loadCompanies()||[]).filter(function(c){return String(c.id)===String(id);})[0]||loadCompanies()[0]; }catch(e){ return null; }
+  }
+  window.openWellbeing=function(){
+    ensureScreen();
+    var co=getCo();
+    var comp=companyWB(co), weight=userWeights(co);
+    var name=(co&&co.ceo)?co.ceo+'さん':'この経営層';
+    document.getElementById('wbManifesto').innerHTML='年収や知名度だけが、キャリアの&ldquo;正解&rdquo;じゃない。<br>地域で、その会社だからこそ自分を活かせて——その手応えそのものが、人生の意味になる。';
+    document.getElementById('wbTitle').textContent='あなたの手応えは、どこで最大化するか。';
+    document.getElementById('wbSub').innerHTML='あなたの価値観の<b>重心</b>と、'+escapeHtml(name)+'の<b>環境</b>を6軸で重ねました（点数はあなたの価値観に照らした相性の目安です）。';
+    document.getElementById('wbRadar').innerHTML=radar(comp,weight);
+    // bands
+    var bands=AX.map(function(a){ var b=band(comp[a.k]); return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;"><div style="width:96px;font-size:12.5px;color:var(--text);">'+a.label+'</div><div style="flex:1;height:8px;background:rgba(0,0,0,0.06);border-radius:5px;overflow:hidden;"><div style="height:100%;width:'+comp[a.k]+'%;background:var(--teal);border-radius:5px;"></div></div><div style="width:30px;text-align:right;font-size:11px;font-weight:700;color:'+b[1]+';background:'+b[2]+';border-radius:4px;">'+b[0]+'</div></div>'; }).join('');
+    document.getElementById('wbBands').innerHTML=bands;
+    // text
+    var sortedW=AX.slice().sort(function(a,b){return weight[b.k]-weight[a.k];});
+    var top2=[sortedW[0].label,sortedW[1].label];
+    var overlap=AX.filter(function(a){return weight[a.k]>=62 && comp[a.k]>=72;}).map(function(a){return a.label;});
+    var moyaLabels=((typeof S!=='undefined'&&S.moya)||[]).map(function(id){ var m=(window.MOYA||[]).filter(function(x){return x.id===id;})[0]; return m?m.label:''; }).filter(Boolean);
+    var blocks='';
+    blocks+='<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:12px;"><div style="font-size:11px;color:var(--teal-d);font-weight:700;margin-bottom:6px;font-family:\'JetBrains Mono\',monospace;">あなたが仕事に求めているもの</div><div style="font-size:14px;line-height:1.85;color:var(--text);">あなたは <b>「'+escapeHtml(top2[0])+'」「'+escapeHtml(top2[1])+'」</b> を特に大事にするタイプ。年収そのものより、<b>そこで自分の力が効く手応え</b>に満足度が動きます。</div></div>';
+    blocks+='<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:12px;"><div style="font-size:11px;color:var(--teal-d);font-weight:700;margin-bottom:6px;font-family:\'JetBrains Mono\',monospace;">'+escapeHtml(name)+'との相性</div><div style="font-size:14px;line-height:1.85;color:var(--text);">'+(overlap.length?'この経営層は、あなたが重視する <b>'+escapeHtml(overlap.join('・'))+'</b> が高い環境です。':'この経営層は、あなたの重心と重なる部分があります。')+(moyaLabels.length?'<br>いま感じている <b>「'+escapeHtml(moyaLabels.join('／'))+'」</b> は、ここで満たされやすいかもしれません。':'')+'</div></div>';
+    blocks+='<div style="background:var(--teal-bg);border:1px solid var(--teal-mid,rgba(66,173,159,.35));border-radius:10px;padding:16px 18px;"><div style="font-size:13.5px;line-height:1.85;color:var(--navy);">'+(comp.econ>=70?'しかも経済（年収）も低くありません。<b>well-beingも経済も、両方あきらめなくていい</b>可能性があります。':'経済（年収）は環境によります。ただ、<b>あなたが大事にする軸は大きく上がりそう</b>——それをどう捉えるかは、あなた次第です。')+'</div></div>';
+    document.getElementById('wbText').innerHTML=blocks;
+    document.getElementById('wbCta').innerHTML='<button class="btn-primary" style="width:100%;justify-content:center;" onclick="openEmpathyForm()">'+escapeHtml(name)+'に興味を伝える →</button>';
+    goScreen('p-wb');
   };
 })();
 </script>
