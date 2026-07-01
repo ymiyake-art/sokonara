@@ -1288,13 +1288,17 @@ function caseCardHtml(c){
   const id=escA(String(c.id||''));
   return `<div data-cid="${id}" style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
     <div style="display:flex;gap:12px;align-items:flex-start">
-      <div style="width:160px;flex-shrink:0"><div style="position:relative;aspect-ratio:3/2;border-radius:8px;overflow:hidden;background:#14213f"><img class="cs-previmg" src="${escA(c.photo_url||'')}" style="width:100%;height:100%;object-fit:contain;display:block" onerror="this.style.opacity=0"></div><div style="font-size:9px;color:var(--text3);text-align:center;margin-top:3px">全体表示（余白は背景色）</div></div>
+      <div style="width:160px;flex-shrink:0"><div style="position:relative;aspect-ratio:3/2;border-radius:8px;overflow:hidden;background:#14213f"><img class="cs-previmg" src="${escA(c.photo_url||'')}" style="position:absolute;left:${c.pos_x!=null?c.pos_x:50}%;top:${c.pos_y!=null?c.pos_y:40}%;width:${Math.max(110,c.zoom!=null?c.zoom:115)}%;height:${Math.max(110,c.zoom!=null?c.zoom:115)}%;object-fit:cover;object-position:center;transform:translate(-${c.pos_x!=null?c.pos_x:50}%,-${c.pos_y!=null?c.pos_y:40}%)" onerror="this.style.opacity=0"></div><div style="font-size:9px;color:var(--text3);text-align:center;margin-top:3px">↓ 拡大・位置で顔合わせ</div></div>
       <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px">
         <div style="grid-column:1/3"><div style="${lb}">見出し</div><input class="cs-head" value="${escA(c.headline||'')}" style="${inp}"></div>
         <div style="grid-column:1/3"><div style="${lb}">✔ ファクト（1行に1つ）</div><textarea class="cs-facts" rows="3" style="${inp}resize:vertical">${escA(facts)}</textarea></div>
         <div><div style="${lb}">お名前ラベル</div><input class="cs-name" value="${escA(c.name_label||'')}" style="${inp}"></div>
         <div><div style="${lb}">写真URL</div><input class="cs-photo" value="${escA(c.photo_url||'')}" style="${inp}"></div>
-        <div style="grid-column:1/3"><div style="${lb}">写真は<b>全体を表示</b>します（トリミングなし・余白は背景色で埋めます）。顔が切れる場合は、少し引きで撮った写真をご用意ください。</div></div>
+        <div style="grid-column:1/3"><div style="${lb}">写真の調整（拡大・左右・上下で顔合わせ）</div>
+          <div style="display:flex;gap:8px;font-size:11px;color:var(--text2);align-items:center"><span style="width:30px">拡大</span><input class="cs-zoom" type="range" min="100" max="240" value="${c.zoom!=null?c.zoom:115}" oninput="caseAdj(this)" style="flex:1;accent-color:var(--teal)"><span class="cs-zoom-val" style="width:36px;text-align:right">${c.zoom!=null?c.zoom:115}%</span></div>
+          <div style="display:flex;gap:8px;font-size:11px;color:var(--text2);align-items:center"><span style="width:30px">左右</span><input class="cs-posx" type="range" min="0" max="100" value="${c.pos_x!=null?c.pos_x:50}" oninput="caseAdj(this)" style="flex:1;accent-color:var(--teal)"><span class="cs-posx-val" style="width:36px;text-align:right">${c.pos_x!=null?c.pos_x:50}</span></div>
+          <div style="display:flex;gap:8px;font-size:11px;color:var(--text2);align-items:center"><span style="width:30px">上下</span><input class="cs-posy" type="range" min="0" max="100" value="${c.pos_y!=null?c.pos_y:40}" oninput="caseAdj(this)" style="flex:1;accent-color:var(--teal)"><span class="cs-posy-val" style="width:36px;text-align:right">${c.pos_y!=null?c.pos_y:40}</span></div>
+        </div>
         <div><div style="${lb}">並び順</div><input class="cs-sort" type="number" value="${c.sort||0}" style="${inp}"></div>
         <div style="grid-column:1/3;display:flex;gap:12px;align-items:center;margin-top:4px"><label style="font-size:12px;color:var(--text2)"><input class="cs-active" type="checkbox" ${c.active!==false?'checked':''}> 公開</label><button onclick="caseSave('${id}',this)" style="margin-left:auto;padding:7px 18px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-family:inherit;font-size:12px">保存</button><button onclick="caseDel('${id}')" style="padding:7px 12px;background:none;border:1px solid var(--hot);color:var(--hot);border-radius:6px;cursor:pointer;font-size:12px">削除</button></div>
       </div>
@@ -1313,7 +1317,7 @@ function caseAdj(el){
 async function caseSave(id,btn){
   const el=document.querySelector('[data-cid="'+id+'"]'); if(!el) return;
   const g=s=>el.querySelector(s);
-  const row={ id, headline:g('.cs-head').value.trim(), facts:g('.cs-facts').value.split('\n').map(x=>x.trim()).filter(Boolean), name_label:g('.cs-name').value.trim(), photo_url:g('.cs-photo').value.trim(), pos_y:28, pos_x:50, zoom:100, sort:parseInt(g('.cs-sort').value)||0, active:g('.cs-active').checked };
+  const row={ id, headline:g('.cs-head').value.trim(), facts:g('.cs-facts').value.split('\n').map(x=>x.trim()).filter(Boolean), name_label:g('.cs-name').value.trim(), photo_url:g('.cs-photo').value.trim(), pos_y:parseInt((g('.cs-posy')||{}).value)||40, pos_x:parseInt((g('.cs-posx')||{}).value)||50, zoom:parseInt((g('.cs-zoom')||{}).value)||115, sort:parseInt(g('.cs-sort').value)||0, active:g('.cs-active').checked };
   if(btn){ btn.textContent='…'; }
   const r=await adminWrite('cases','upsert',{rows:[row]});
   if(btn){ btn.textContent='保存'; }
