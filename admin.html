@@ -635,10 +635,10 @@ async function renderResonance(){
   }).join('');
 
   // 版別（人物=person / 課題=challenge / 旧=不明）A/B比較
-  const vLabel={person:'人物(偶然性)',challenge:'課題',_:'（旧/不明）'};
+  const vLabel={person:'人物(偶然性)',challenge:'課題',moya:'モヤモヤ(逆引き)',_:'（旧/不明）'};
   const byVar={};
-  logs.forEach(l=>{ const k=(l.variant==='person'||l.variant==='challenge')?l.variant:'_'; (byVar[k]=byVar[k]||[]).push(l); });
-  const varTable=['person','challenge','_'].filter(k=>byVar[k]).map(k=>{
+  logs.forEach(l=>{ const k=(l.variant==='person'||l.variant==='challenge'||l.variant==='moya')?l.variant:'_'; (byVar[k]=byVar[k]||[]).push(l); });
+  const varTable=['person','challenge','moya','_'].filter(k=>byVar[k]).map(k=>{
     const arr=byVar[k], n=arr.length;
     const sel=arr.filter(l=>l.reached_result||(l.top_tags&&l.top_tags.length)).length;
     const a=arr.filter(l=>l.article_read).length;

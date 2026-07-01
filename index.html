@@ -2088,6 +2088,16 @@ let SN_CARDS = null;
 })();
 // 直接導線（経営層から探す）に切り替わったらカード文脈を破棄（誤った紐付け防止）
 function clearCardCtx(){ try{ localStorage.removeItem('sn_card_ctx'); }catch(e){} SN_CARDS = null; }
+// 逆引き(モヤモヤ)入口の計測：card_logs行を生成しSN_CARDSに紐付け（variant='moya'）。以降のcontact_cta/form_openも同じ行へ。
+async function logMoyaStart(cid, moyaLabels){
+  try{
+    const id='moya_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+    SN_CARDS={ logId:id, cid:String(cid||''), variant:'moya' };
+    try{ localStorage.setItem('sn_card_ctx', JSON.stringify(Object.assign({},SN_CARDS,{_ts:Date.now()}))); }catch(e){}
+    await fetch('/api/card-log',{ method:'POST', keepalive:true, headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ id, set:{ started:true, variant:'moya', recommended_company:String(cid||''), reason:String(moyaLabels||'').slice(0,200), article_read:true } }) });
+  }catch(e){}
+}
 // P5「フォームを開く」でform_open(CV)を送るためのlogId退避先。clearCardCtxでSN_CARDS=nullになる前に保持する。
 let _formOpenLogId = null;
 
@@ -3958,7 +3968,7 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var badge=isSurprise?'<span style="position:absolute;top:10px;left:10px;background:var(--navy);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;font-family:\'JetBrains Mono\',monospace;">意外な出会い</span>':'';
     var cid=String(c.id||'').replace(/'/g,'');
     var av=photo?('<div class="leader-photo" style="background-image:url(\''+photo+'\');background-size:cover;background-position:center;"></div>'):('<div class="leader-photo">'+esc(name.charAt(0))+'</div>');
-    return '<div class="leader-card" style="margin-bottom:14px;cursor:pointer;" onclick="openCompanyArticle(\''+cid+'\')">'
+    return '<div class="leader-card" style="margin-bottom:14px;cursor:pointer;" onclick="openMoyaArticle(\''+cid+'\')">'
       +'<div class="leader-card-top" style="position:relative;"><div class="leader-card-photo-bg" style="'+bg+'"></div>'+badge+'<div class="leader-phrase">'+esc(phrase)+'</div></div>'
       +'<div class="leader-card-bottom">'
       +'<div style="font-size:12px;color:var(--teal-d);font-weight:700;margin-bottom:9px;">'+esc(reason)+'。</div>'
@@ -3966,6 +3976,11 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
       +'<div class="leader-cta">この経営層の想いを読む →</div>'
       +'</div></div>';
   }
+  window.openMoyaArticle=function(cid){
+    var labels=((typeof S!=='undefined'&&S.moya)||[]).map(function(id){ var m=MOYA.filter(function(x){return x.id===id;})[0]; return m?m.label:id; }).join(' / ');
+    if(typeof logMoyaStart==='function') logMoyaStart(cid, labels);
+    openCompanyArticle(cid);
+  };
   window.renderMoyaReco=function(top,surprise,picks){
     var echo=document.getElementById('moyaSelEcho');
     if(echo) echo.innerHTML='あなたが選んだ：'+picks.map(function(m){return '「'+esc(m.label)+'」';}).join('　');
