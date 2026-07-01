@@ -37,7 +37,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
 #shell{display:none;padding-top:48px;min-height:100vh;}
 .admin-shell{display:grid;grid-template-columns:200px 1fr;min-height:calc(100vh - 48px);}
 
-.admin-sidebar{background:var(--navy);display:flex;flex-direction:column;}
+.admin-sidebar{background:var(--navy);display:flex;flex-direction:column;position:sticky;top:48px;height:calc(100vh - 48px);overflow-y:auto;}
 .admin-sidebar-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,0.07);}
 .admin-brand-title{margin-bottom:4px;display:flex;align-items:center;}
 .admin-brand-title img{height:24px;width:auto;display:block;}
