@@ -2953,6 +2953,17 @@ function renderArticleEditor(){
             </div>
             <textarea id="art-q1" rows="4" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
           </div>
+          <!-- 逆引きタグ（btags事業テーマ / rtags価値観）— 記事から自動生成＋手動調整。「モヤモヤから探す」のマッチに使用 -->
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <label style="font-size:11px;color:var(--navy);font-weight:700">逆引きタグ（事業テーマ／価値観）<span style="font-size:10px;color:var(--text3);font-weight:400"> ※「モヤモヤから探す」のレコメンドに使用</span></label>
+              <button class="abtn" id="art-gentags-btn" style="font-size:11px;padding:5px 12px;background:#42AD9F;color:#fff;border-color:#42AD9F;white-space:nowrap;" onclick="genCompanyTags()">✨ 記事から自動生成</button>
+            </div>
+            <div style="font-size:10px;color:var(--text2);margin-bottom:5px;font-weight:700">① 事業テーマ（btags）</div>
+            <div id="art-btags-box" style="display:flex;flex-wrap:wrap;gap:4px 14px;margin-bottom:10px;"></div>
+            <div style="font-size:10px;color:var(--text2);margin-bottom:5px;font-weight:700">② 価値観（rtags）</div>
+            <div id="art-rtags-box" style="display:flex;flex-wrap:wrap;gap:4px 14px;"></div>
+          </div>
         </div>
       </div>
 
@@ -3041,6 +3052,32 @@ async function genArticleMeta(silent){
   finally{ if(btn){ btn.disabled=false; btn.textContent='✨ AIで自動生成'; } }
 }
 
+// 逆引きタグ（btags/rtags）チェックボックスを描画（企業編集用）
+function renderArtTags(bt, rt){
+  bt=Array.isArray(bt)?bt:[]; rt=Array.isArray(rt)?rt:[];
+  const bb=document.getElementById('art-btags-box'), rb=document.getElementById('art-rtags-box');
+  if(bb) bb.innerHTML=Object.entries(CARD_BTAGS).map(([k,v])=>`<label style="font-size:12px;white-space:nowrap"><input type="checkbox" class="art-bt" value="${k}" ${bt.includes(k)?'checked':''}> ${escA(v)}</label>`).join('');
+  if(rb) rb.innerHTML=Object.entries(CARD_RTAGS).map(([k,v])=>`<label style="font-size:12px;white-space:nowrap"><input type="checkbox" class="art-rt" value="${k}" ${rt.includes(k)?'checked':''}> ${escA(v)}</label>`).join('');
+}
+// 記事本文から btags/rtags を cardgen で自動生成→チェック
+async function genCompanyTags(){
+  if(!_articleSections || !_articleSections.length){ toast('先にNotion記事を解析してください'); return; }
+  const co=loadCompanies().find(c=>String(c.id)===String(_articleCompanyId))||{};
+  const articleText=_articleSections.map(s=>[s.heading,s.body,(s.items||[]).map(i=>(i.q||'')+' '+(i.a||'')).join(' ')].filter(Boolean).join('\n')).join('\n\n');
+  const btn=document.getElementById('art-gentags-btn'); if(btn){ btn.disabled=true; btn.textContent='生成中…'; }
+  try{
+    const res=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({type:'cardgen',data:{ceo:co.ceo||'',company:co.name||co.company||'',articleText}})});
+    if(!res.ok) throw new Error('API '+res.status);
+    const d=await res.json(); const txt=d.content?.[0]?.text||''; const m=txt.match(/\{[\s\S]*\}/);
+    const p=JSON.parse(m?m[0]:txt);
+    if(Array.isArray(p.btags)) document.querySelectorAll('.art-bt').forEach(cb=>{ cb.checked=p.btags.includes(cb.value); });
+    if(Array.isArray(p.rtags)) document.querySelectorAll('.art-rt').forEach(cb=>{ cb.checked=p.rtags.includes(cb.value); });
+    toast('タグをAI生成しました（必要に応じて調整を）');
+  }catch(e){ toast('生成失敗: '+(e.message||e)); }
+  finally{ if(btn){ btn.disabled=false; btn.textContent='✨ 記事から自動生成'; } }
+}
+
 function onArtCompanyChange(id){
   _articleCompanyId = id || null;
 
@@ -3071,6 +3108,7 @@ function onArtCompanyChange(id){
   setVal('art-plan', co.plan||'light');
   setVal('art-article-type', co.articleType||'light');
   updateProfilePhotoPreview();
+  renderArtTags(co.btags, co.rtags); // 逆引きタグを復元（未設定なら空）
 
   // bodyがJSONならセクションを復元
   if(co.body && co.body.trimStart().startsWith('[')){
@@ -3621,6 +3659,8 @@ async function saveArticle(){
   const type=document.getElementById('art-type')?.value||'manager';
   const plan=document.getElementById('art-plan')?.value||'light';
   const articleType=document.getElementById('art-article-type')?.value||'standard';
+  const btags=[...document.querySelectorAll('.art-bt:checked')].map(e=>e.value);
+  const rtags=[...document.querySelectorAll('.art-rt:checked')].map(e=>e.value);
 
   const companies=loadCompanies();
   const idx=companies.findIndex(c=>String(c.id)===String(companyId));
@@ -3634,7 +3674,7 @@ async function saveArticle(){
     body: JSON.stringify(_articleSections),
     tags, catchphrase, quote,
     companyIntro, summaryComment, wantedProfile, q1, cardLabel,
-    photoUrl, heroUrl, type, plan, articleType
+    photoUrl, heroUrl, type, plan, articleType, btags, rtags
   };
   saveCompanies(companies);
   if(statusEl) statusEl.textContent='✓ 保存しました！';
