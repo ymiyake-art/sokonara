@@ -1288,7 +1288,7 @@ function caseCardHtml(c){
   const id=escA(String(c.id||''));
   return `<div data-cid="${id}" style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
     <div style="display:flex;gap:12px;align-items:flex-start">
-      <div style="width:100px;flex-shrink:0"><div style="aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--bg)"><img class="cs-previmg" src="${escA(c.photo_url||'')}" style="width:100%;height:100%;object-fit:cover;object-position:${c.pos_x!=null?c.pos_x:50}% ${c.pos_y!=null?c.pos_y:28}%;transform:scale(${(c.zoom!=null?c.zoom:100)/100})" onerror="this.style.opacity=0"></div><div style="font-size:9px;color:var(--text3);text-align:center;margin-top:3px">↓で顔位置調整</div></div>
+      <div style="width:100px;flex-shrink:0"><div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--bg)"><img class="cs-previmg" src="${escA(c.photo_url||'')}" style="position:absolute;left:${c.pos_x!=null?c.pos_x:50}%;top:${c.pos_y!=null?c.pos_y:28}%;width:${Math.max(110,c.zoom!=null?c.zoom:110)}%;height:${Math.max(110,c.zoom!=null?c.zoom:110)}%;object-fit:cover;object-position:center;transform:translate(-${c.pos_x!=null?c.pos_x:50}%,-${c.pos_y!=null?c.pos_y:28}%)" onerror="this.style.opacity=0"></div><div style="font-size:9px;color:var(--text3);text-align:center;margin-top:3px">↓で顔位置調整</div></div>
       <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px">
         <div style="grid-column:1/3"><div style="${lb}">見出し</div><input class="cs-head" value="${escA(c.headline||'')}" style="${inp}"></div>
         <div style="grid-column:1/3"><div style="${lb}">✔ ファクト（1行に1つ）</div><textarea class="cs-facts" rows="3" style="${inp}resize:vertical">${escA(facts)}</textarea></div>
@@ -1309,7 +1309,7 @@ function caseAdj(el){
   const card=el.closest('[data-cid]'); if(!card) return;
   const g=s=>card.querySelector(s);
   const z=(g('.cs-zoom')||{}).value||100, x=(g('.cs-posx')||{}).value||50, y=(g('.cs-posy')||{}).value||28;
-  const img=g('.cs-previmg'); if(img){ img.style.objectPosition=x+'% '+y+'%'; img.style.transform='scale('+(z/100)+')'; }
+  const img=g('.cs-previmg'); if(img){ const zz=Math.max(110,parseInt(z)||110); img.style.position='absolute'; img.style.left=x+'%'; img.style.top=y+'%'; img.style.width=zz+'%'; img.style.height=zz+'%'; img.style.objectFit='cover'; img.style.objectPosition='center'; img.style.transform='translate(-'+x+'%,-'+y+'%)'; }
   if(g('.cs-zoom-val')) g('.cs-zoom-val').textContent=z+'%';
   if(g('.cs-posx-val')) g('.cs-posx-val').textContent=x;
   if(g('.cs-posy-val')) g('.cs-posy-val').textContent=y;
