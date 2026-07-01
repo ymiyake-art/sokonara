@@ -4031,7 +4031,7 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     if(co){ var cw=companyWB(co); AX.forEach(function(a){ w[a.k]=clamp(w[a.k]+(cw[a.k]-58)*0.28); }); }
     return w;
   }
-  function radar(comp, weight){
+  function radar(comp, sec, secStroke){
     var cx=140,cy=138,R=96,N=6;
     function pt(i,val){ var a=(-90+i*60)*Math.PI/180, r=R*clamp(val)/100; return [cx+r*Math.cos(a), cy+r*Math.sin(a)]; }
     function ring(g){ var p=[]; for(var i=0;i<N;i++){ var q=pt(i,g); p.push(q[0].toFixed(1)+','+q[1].toFixed(1)); } return '<polygon points="'+p.join(' ')+'" fill="none" stroke="rgba(22,34,63,0.09)"/>'; }
@@ -4039,7 +4039,7 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var s='<svg viewBox="0 0 280 276" width="100%" style="max-width:320px;display:block;margin:0 auto;">';
     [25,50,75,100].forEach(function(g){ s+=ring(g); });
     for(var i=0;i<N;i++){ var e=pt(i,100); s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+e[0].toFixed(1)+'" y2="'+e[1].toFixed(1)+'" stroke="rgba(22,34,63,0.09)"/>'; }
-    if(weight) s+=poly(weight,'rgba(22,34,63,0.08)','rgba(22,34,63,0.45)',1.5);
+    if(sec) s+=poly(sec,'rgba(22,34,63,0.06)',secStroke||'rgba(22,34,63,0.45)',1.5);
     s+=poly(comp,'rgba(47,156,141,0.24)','#2f9c8d',2.2);
     for(var j=0;j<N;j++){ var lp=pt(j,124); s+='<text x="'+lp[0].toFixed(1)+'" y="'+lp[1].toFixed(1)+'" font-size="10.5" fill="#4a4f58" text-anchor="middle" dominant-baseline="middle">'+AX[j].short+'</text>'; }
     s+='</svg>';
@@ -4057,9 +4057,19 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
       +'<h1 id="wbTitle" style="font-family:\'Zen Kaku Gothic New\',sans-serif;font-weight:900;font-size:22px;color:var(--navy);line-height:1.5;margin-bottom:6px;"></h1>'
       +'<div id="wbSub" style="font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:18px;"></div>'
       +'<div id="wbRadar" style="margin:6px 0 6px;"></div>'
-      +'<div style="display:flex;gap:16px;justify-content:center;font-size:11px;color:var(--text2);margin-bottom:20px;"><span><span style="display:inline-block;width:10px;height:10px;background:rgba(47,156,141,0.6);border-radius:2px;margin-right:4px;"></span>この経営層</span><span><span style="display:inline-block;width:10px;height:10px;border:1.5px solid rgba(22,34,63,0.5);border-radius:2px;margin-right:4px;"></span>あなたの重心</span></div>'
+      +'<div id="wbLegend" style="display:flex;gap:16px;justify-content:center;font-size:11px;color:var(--text2);margin-bottom:20px;"></div>'
       +'<div id="wbBands" style="margin-bottom:22px;"></div>'
-      +'<div id="wbText" style="margin-bottom:24px;"></div>'
+      +'<div id="wbText" style="margin-bottom:20px;"></div>'
+      +'<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:22px;">'
+        +'<div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:4px;">今の仕事と、比べてみる</div>'
+        +'<div style="font-size:11px;color:var(--text3);margin-bottom:12px;">2つ答えるだけ。現状とこの環境を、あなたの価値観で採点して比べます。</div>'
+        +'<div style="font-size:11px;color:var(--text2);margin-bottom:4px;">今の年収帯</div>'
+        +'<select id="wbSalary" style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:12px;background:#fff;"></select>'
+        +'<div style="font-size:11px;color:var(--text2);margin-bottom:6px;">今の仕事で「足りない」と感じるもの（複数可）</div>'
+        +'<div id="wbLackChips" style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;"></div>'
+        +'<button class="btn-primary" style="width:100%;justify-content:center;font-size:14px;" onclick="wbCompare()">現状と比較する →</button>'
+        +'<div id="wbCompareResult" style="margin-top:16px;"></div>'
+      +'</div>'
       +'<div id="wbCta"></div>'
       +'<button onclick="goScreen(\'p-list\')" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--text3);text-decoration:underline;padding:8px;margin-top:8px;font-family:inherit;display:block;width:100%;">他の経営層を見る →</button>'
       +'</div>';
@@ -4068,6 +4078,30 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
   function getCo(){
     try{ var id=(typeof selectedCompanyId!=='undefined'&&selectedCompanyId)||((typeof SN_CARDS!=='undefined'&&SN_CARDS)?SN_CARDS.cid:''); return (loadCompanies()||[]).filter(function(c){return String(c.id)===String(id);})[0]||loadCompanies()[0]; }catch(e){ return null; }
   }
+  var SALARY=[['','選択してください'],['s3','〜300万'],['s4','300〜400万'],['s5','400〜500万'],['s6','500〜650万'],['s7','650〜850万'],['s8','850万〜']];
+  var SAL_ECON={s3:30,s4:45,s5:58,s6:70,s7:82,s8:92};
+  function legendHTML(secLabel,secStyle){ return '<span><span style="display:inline-block;width:10px;height:10px;background:rgba(47,156,141,0.6);border-radius:2px;margin-right:4px;"></span>この経営層</span><span><span style="display:inline-block;width:10px;height:10px;'+secStyle+';border-radius:2px;margin-right:4px;"></span>'+secLabel+'</span>'; }
+  function wavg(vals,w){ var s=0,ws=0; AX.forEach(function(a){ var wt=(w&&w[a.k])||1; s+=wt*vals[a.k]; ws+=wt; }); return ws?Math.round(s/ws):0; }
+  window.wbCompare=function(){
+    var co=getCo(); var comp=companyWB(co); if(co&&co.wb&&co.wb.econ!=null) comp.econ=clamp(co.wb.econ);
+    var weight=userWeights(co);
+    var salEl=document.getElementById('wbSalary'); var salEcon=SAL_ECON[salEl?salEl.value:'']; if(salEcon==null) salEcon=55;
+    var lack={}; document.querySelectorAll('#wbLackChips .wb-lack[data-on="1"]').forEach(function(el){ lack[el.getAttribute('data-k')]=1; });
+    var cur={}; AX.forEach(function(a){ cur[a.k]=lack[a.k]?35:66; }); cur.econ=salEcon;
+    var totCur=wavg(cur,weight), totCo=wavg(comp,weight), delta=totCo-totCur;
+    document.getElementById('wbRadar').innerHTML=radar(comp,cur,'rgba(226,114,91,0.75)');
+    document.getElementById('wbLegend').innerHTML=legendHTML('今の仕事','border:1.5px solid rgba(226,114,91,0.85)');
+    var ups=AX.filter(function(a){ return comp[a.k]-cur[a.k]>=15; }).map(function(a){return a.label;});
+    var econDown=(cur.econ-comp.econ)>=12;
+    var html='<div style="text-align:center;padding:14px;background:var(--teal-bg);border-radius:10px;">'
+      +'<div style="font-size:12px;color:var(--text2);margin-bottom:6px;">あなたの価値観で採点した&ldquo;総合の手応え&rdquo;</div>'
+      +'<div style="font-size:14px;font-weight:700;color:var(--navy);line-height:1.7;">今の仕事 <span style="font-family:\'JetBrains Mono\',monospace;font-size:22px;">'+totCur+'</span>&nbsp;→&nbsp;この経営層 <span style="font-family:\'JetBrains Mono\',monospace;font-size:26px;color:var(--teal-d);">'+totCo+'</span></div>'
+      +(delta>0?'<div style="font-size:12px;color:var(--teal-d);font-weight:700;margin-top:4px;">＋'+delta+' 上がる</div>':(delta<0?'<div style="font-size:12px;color:var(--text3);margin-top:4px;">総合はほぼ横ばい</div>':''))
+      +'</div>';
+    if(ups.length) html+='<div style="font-size:13.5px;line-height:1.85;color:var(--text);margin-top:12px;">特に <b>'+escapeHtml(ups.join('・'))+'</b> が、今より大きく上がりそうです。あなたが&ldquo;足りない&rdquo;と感じている部分が、ここで満たされるかもしれません。</div>';
+    if(econDown) html+='<div style="font-size:12.5px;color:var(--text2);margin-top:8px;line-height:1.7;">※ 年収は下がる可能性があります。それでも&ldquo;あなたが大事にする軸&rdquo;は上がる——その価値をどう見るかは、あなた次第です。</div>';
+    document.getElementById('wbCompareResult').innerHTML=html;
+  };
   window.openWellbeing=function(){
     ensureScreen();
     var co=getCo();
@@ -4091,6 +4125,11 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     blocks+='<div style="background:var(--teal-bg);border:1px solid var(--teal-mid,rgba(66,173,159,.35));border-radius:10px;padding:16px 18px;"><div style="font-size:13.5px;line-height:1.85;color:var(--navy);">'+(comp.econ>=70?'しかも経済（年収）も低くありません。<b>well-beingも経済も、両方あきらめなくていい</b>可能性があります。':'経済（年収）は環境によります。ただ、<b>あなたが大事にする軸は大きく上がりそう</b>——それをどう捉えるかは、あなた次第です。')+'</div></div>';
     document.getElementById('wbText').innerHTML=blocks;
     document.getElementById('wbCta').innerHTML='<button class="btn-primary" style="width:100%;justify-content:center;" onclick="openEmpathyForm()">'+escapeHtml(name)+'に興味を伝える →</button>';
+    // 比較UI初期化（デフォルトは重心表示）
+    document.getElementById('wbLegend').innerHTML=legendHTML('あなたの重心','border:1.5px solid rgba(22,34,63,0.5)');
+    var _sal=document.getElementById('wbSalary'); if(_sal) _sal.innerHTML=SALARY.map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>';}).join('');
+    var _lc=document.getElementById('wbLackChips'); if(_lc) _lc.innerHTML=AX.map(function(a){return '<span class="wb-lack" data-k="'+a.k+'" data-on="0" onclick="var v=this.getAttribute(\'data-on\')===\'1\';this.setAttribute(\'data-on\',v?\'0\':\'1\');this.style.background=v?\'\':\'var(--teal)\';this.style.color=v?\'\':\'#fff\';this.style.borderColor=v?\'var(--border)\':\'var(--teal)\';" style="cursor:pointer;font-size:12px;border:1px solid var(--border);border-radius:20px;padding:6px 12px;user-select:none;">'+a.label+'</span>';}).join('');
+    var _cr=document.getElementById('wbCompareResult'); if(_cr) _cr.innerHTML='';
     goScreen('p-wb');
   };
 })();
