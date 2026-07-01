@@ -1887,7 +1887,12 @@ async function genReport(id){
 // お客様提示用の高デザインPDFレポート（別ウィンドウ→印刷/PDF保存）。genReport実行後の _reportRows を使用。
 function printCompanyReport(id){
   const co = loadCompanies().find(c=>String(c.id)===String(id)) || {};
-  const rows = Array.isArray(_reportRows) ? _reportRows : [];
+  let rows = Array.isArray(_reportRows) ? _reportRows.slice() : [];
+  if(_resFrom || _resTo){
+    const fromT=_resFrom?new Date(_resFrom+'T00:00:00').getTime():-Infinity;
+    const toT=_resTo?new Date(_resTo+'T23:59:59').getTime():Infinity;
+    rows=rows.filter(r=>{ const ts=Date.parse(r.started_at||r.created_at||r.updated_at||''); return isNaN(ts)?false:(ts>=fromT && ts<=toT); });
+  }
   const total = rows.length;
   const reactions = co?.reactions || 0;
   const cta = rows.filter(r=>r.contact_cta).length;
