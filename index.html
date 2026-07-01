@@ -1246,6 +1246,7 @@ h1, h2, h3, h4,
   <div class="mode-brand" style="cursor:pointer;" onclick="goHome()" title="TOPへ"><img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ"></div>
   <button class="mode-btn active" id="mb-company" onclick="goHome()">TOP</button>
   <button class="mode-btn" id="mb-project" onclick="goCards()">経営層と出会う</button>
+  <button class="mode-btn" id="mb-moya" onclick="enterMoya()">モヤモヤから探す</button>
   <button class="mode-btn" id="mb-leaders" onclick="goLeaders()">経営層一覧</button>
   <!-- 管理画面・リセットは admin.html から直接アクセス（公開ナビからは非表示） -->
 </div>
@@ -1716,7 +1717,7 @@ h1, h2, h3, h4,
     <div style="max-width:640px;margin:0 auto;padding:32px 20px 110px;">
       <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--teal-d);margin-bottom:10px;">FROM YOUR FEELING</div>
       <h1 style="font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-weight:900;font-size:22px;color:var(--navy);line-height:1.55;margin-bottom:8px;">今、あなたのキャリアで<br>一番モヤモヤしていることは？</h1>
-      <div style="font-size:13px;color:var(--text2);line-height:1.85;margin-bottom:22px;">近いものを2〜3つ選んでください。その“気持ち”に響き合う経営層をお見せします。</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.85;margin-bottom:22px;">近いものを2〜3つ選んでください。その“気持ち”に響き合う経営層を推薦します。</div>
       <div class="chip-list" id="moyaChips"></div>
     </div>
     <div style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);padding:12px 16px;box-shadow:0 -4px 18px rgba(28,42,84,0.08);z-index:50;">

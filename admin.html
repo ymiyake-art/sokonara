@@ -565,6 +565,11 @@ async function adminWrite(table, action, body){
 function escA(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // ===== v2 共鳴データ集計（card_logs）=====
+// 共鳴データの期間フィルタ（started_at基準・なければcreated_at/updated_at）
+var _resFrom='', _resTo='';
+function resPreset(days){ if(days==null){_resFrom='';_resTo='';}else{var to=new Date();var from=(days===0)?new Date():new Date(Date.now()-days*86400000);_resFrom=from.toISOString().slice(0,10);_resTo=to.toISOString().slice(0,10);} renderResonance(); }
+function resSetFrom(v){ _resFrom=v||''; renderResonance(); }
+function resSetTo(v){ _resTo=v||''; renderResonance(); }
 async function renderResonance(){
   const box=document.getElementById('adminContent');
   box.innerHTML=`<div style="padding:24px"><div style="color:var(--text3);font-size:13px">共鳴データを集計中…</div></div>`;
@@ -589,6 +594,12 @@ async function renderResonance(){
   const coCeo =id=>{ const c=cos.find(x=>String(x.id)===String(id)); return c?(c.ceo||''):''; };
   const pct=(n,d)=>d?Math.round(n/d*100):0;
 
+  // 期間フィルタ（started_at優先。未パース行は期間指定時に除外して件数を正確に）
+  if(_resFrom || _resTo){
+    const fromT=_resFrom?new Date(_resFrom+'T00:00:00').getTime():-Infinity;
+    const toT=_resTo?new Date(_resTo+'T23:59:59').getTime():Infinity;
+    logs=logs.filter(l=>{ const ts=Date.parse(l.started_at||l.created_at||l.updated_at||''); return isNaN(ts)?false:(ts>=fromT && ts<=toT); });
+  }
   // 全体ファネル（行はカード開始時に作成されるため N=カード開始数）
   const N=logs.length;
   const swiped=l=>((l.picked_cards||[]).length+(l.dropped_cards||[]).length);
@@ -673,6 +684,18 @@ async function renderResonance(){
         新導線（経営者を選ぶ→記事→面談）の到達と、診断/LINE特典の件数を集計。版別（人物/課題）の比較も。個人情報は含みません。
       </div>
       ${N? `<button onclick="cardLogDeleteAll()" style="flex:0 0 auto;padding:8px 14px;background:none;border:1px solid var(--hot);color:var(--hot);border-radius:4px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">全セッション消去</button>`:''}
+    </div>
+
+    <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <span style="font-size:12px;font-weight:700;color:var(--navy);margin-right:4px;">📅 期間</span>
+      <button onclick="resPreset(null)" style="font-size:11px;padding:5px 12px;border:1px solid ${(!_resFrom&&!_resTo)?'#2e8c7f':'var(--border)'};background:${(!_resFrom&&!_resTo)?'rgba(66,173,159,.1)':'#fff'};border-radius:20px;cursor:pointer;font-family:inherit;">全期間</button>
+      <button onclick="resPreset(0)" style="font-size:11px;padding:5px 12px;border:1px solid var(--border);background:#fff;border-radius:20px;cursor:pointer;font-family:inherit;">今日</button>
+      <button onclick="resPreset(7)" style="font-size:11px;padding:5px 12px;border:1px solid var(--border);background:#fff;border-radius:20px;cursor:pointer;font-family:inherit;">7日</button>
+      <button onclick="resPreset(30)" style="font-size:11px;padding:5px 12px;border:1px solid var(--border);background:#fff;border-radius:20px;cursor:pointer;font-family:inherit;">30日</button>
+      <input type="date" value="${_resFrom}" onchange="resSetFrom(this.value)" style="font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-family:inherit;">
+      <span style="color:var(--text3);font-size:12px;">〜</span>
+      <input type="date" value="${_resTo}" onchange="resSetTo(this.value)" style="font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-family:inherit;">
+      <span style="font-size:11px;color:var(--text3);margin-left:auto;">${(_resFrom||_resTo)?('該当 <b>'+N+'</b>件'):('全 <b>'+N+'</b>件')}</span>
     </div>
 
     <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
