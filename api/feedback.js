@@ -258,6 +258,22 @@ ${(data.articleText || '').slice(0, 2500)}`;
       return { system, user };
     }
 
+    case 'wbscore': {
+      // 記事から Career Well-being を4軸(0-100)で推定（time/経済は記事から不明なのでadmin手動）。
+      const system = `あなたはソコナラのキャリア分析AIです。経営層の記事から、その環境の「Career Well-being」を4軸で0〜100で採点します。
+軸の定義：
+- meaning（意味・使命感）：仕事の目的・社会的意義・経営層の想いの強さ
+- agency（裁量・挑戦）：任される裁量、事業を自分で動かせる、挑戦・成長の機会
+- people（人・近さ）：経営層との距離の近さ、尊敬できる人・仲間と働ける度合い
+- local（地域・つながり）：地域・まちへの関わり、地元密着の度合い
+根拠は記事の具体（事業内容・規模・語り口）に紐づけ、誇張しない。中庸は50前後、突出して当てはまる時だけ80以上。
+返答はJSONのみ（コードブロック不要）：{"meaning":70,"agency":85,"people":80,"local":90}`;
+      const user = `経営層：${data.ceo || ''}（${data.company || ''}）
+記事本文：
+${(data.articleText || '').slice(0, 2500)}`;
+      return { system, user };
+    }
+
     default:
       return null;
   }

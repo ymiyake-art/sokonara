@@ -3060,6 +3060,14 @@ function renderArticleEditor(){
             <div id="art-btags-box" style="display:flex;flex-wrap:wrap;gap:4px 14px;margin-bottom:10px;"></div>
             <div style="font-size:10px;color:var(--text2);margin-bottom:5px;font-weight:700">② 価値観（rtags）</div>
             <div id="art-rtags-box" style="display:flex;flex-wrap:wrap;gap:4px 14px;"></div>
+            <div style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--border)">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <label style="font-size:11px;color:var(--navy);font-weight:700">Career Well-being 6軸スコア（0-100）<span style="font-size:10px;color:var(--text3);font-weight:400"> ※レーダー/比較に使用</span></label>
+                <button class="abtn" id="art-genwb-btn" style="font-size:11px;padding:5px 12px;background:#16223f;color:#fff;border-color:#16223f;white-space:nowrap;" onclick="genCompanyWB()">✨ 記事から推定(4軸)</button>
+              </div>
+              <div id="art-wb-box"></div>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px;">※ time（ゆとり）と経済（年収）は記事から不明なので手動で。</div>
+            </div>
           </div>
         </div>
       </div>
@@ -3175,6 +3183,29 @@ async function genCompanyTags(){
   finally{ if(btn){ btn.disabled=false; btn.textContent='✨ 記事から自動生成'; } }
 }
 
+// Career Well-being 6軸スライダーを描画（0-100）
+function renderArtWB(wb){
+  wb=wb||{}; const box=document.getElementById('art-wb-box'); if(!box) return;
+  const axes=[['meaning','意味・使命'],['agency','裁量・挑戦'],['people','人・近さ'],['local','地域・つながり'],['time','時間・ゆとり'],['econ','経済（年収）']];
+  box.innerHTML=axes.map(function(a){ const v=(wb[a[0]]!=null?wb[a[0]]:60); return '<div style="display:flex;gap:8px;font-size:11px;color:var(--text2);align-items:center;margin-bottom:3px"><span style="width:88px">'+a[1]+'</span><input class="art-wb" data-k="'+a[0]+'" type="range" min="0" max="100" value="'+v+'" oninput="this.nextElementSibling.textContent=this.value" style="flex:1;accent-color:#16223f"><span style="width:28px;text-align:right">'+v+'</span></div>'; }).join('');
+}
+// 記事から Well-being 4軸をAI推定→スライダーに反映
+async function genCompanyWB(){
+  if(!_articleSections || !_articleSections.length){ toast('先にNotion記事を解析してください'); return; }
+  const co=loadCompanies().find(c=>String(c.id)===String(_articleCompanyId))||{};
+  const articleText=_articleSections.map(s=>[s.heading,s.body,(s.items||[]).map(i=>(i.q||'')+' '+(i.a||'')).join(' ')].filter(Boolean).join('\n')).join('\n\n');
+  const btn=document.getElementById('art-genwb-btn'); if(btn){ btn.disabled=true; btn.textContent='推定中…'; }
+  try{
+    const res=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({type:'wbscore',data:{ceo:co.ceo||'',company:co.name||co.company||'',articleText}})});
+    if(!res.ok) throw new Error('API '+res.status);
+    const d=await res.json(); const txt=d.content?.[0]?.text||''; const m=txt.match(/\{[\s\S]*\}/); const p=JSON.parse(m?m[0]:txt);
+    ['meaning','agency','people','local'].forEach(function(k){ if(p[k]!=null){ const el=document.querySelector('.art-wb[data-k="'+k+'"]'); if(el){ el.value=p[k]; if(el.nextElementSibling) el.nextElementSibling.textContent=p[k]; } } });
+    toast('4軸をAI推定しました（time/経済は手動で調整を）');
+  }catch(e){ toast('推定失敗: '+(e.message||e)); }
+  finally{ if(btn){ btn.disabled=false; btn.textContent='✨ 記事から推定(4軸)'; } }
+}
+
 function onArtCompanyChange(id){
   _articleCompanyId = id || null;
 
@@ -3206,6 +3237,7 @@ function onArtCompanyChange(id){
   setVal('art-article-type', co.articleType||'light');
   updateProfilePhotoPreview();
   renderArtTags(co.btags, co.rtags); // 逆引きタグを復元（未設定なら空）
+  renderArtWB(co.wb); // Career Well-being 6軸を復元
 
   // bodyがJSONならセクションを復元
   if(co.body && co.body.trimStart().startsWith('[')){
@@ -3758,6 +3790,7 @@ async function saveArticle(){
   const articleType=document.getElementById('art-article-type')?.value||'standard';
   const btags=[...document.querySelectorAll('.art-bt:checked')].map(e=>e.value);
   const rtags=[...document.querySelectorAll('.art-rt:checked')].map(e=>e.value);
+  const wb={}; document.querySelectorAll('.art-wb').forEach(e=>{ wb[e.getAttribute('data-k')]=parseInt(e.value)||0; });
 
   const companies=loadCompanies();
   const idx=companies.findIndex(c=>String(c.id)===String(companyId));
@@ -3771,7 +3804,7 @@ async function saveArticle(){
     body: JSON.stringify(_articleSections),
     tags, catchphrase, quote,
     companyIntro, summaryComment, wantedProfile, q1, cardLabel,
-    photoUrl, heroUrl, type, plan, articleType, btags, rtags
+    photoUrl, heroUrl, type, plan, articleType, btags, rtags, wb
   };
   saveCompanies(companies);
   if(statusEl) statusEl.textContent='✓ 保存しました！';
