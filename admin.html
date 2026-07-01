@@ -1288,17 +1288,13 @@ function caseCardHtml(c){
   const id=escA(String(c.id||''));
   return `<div data-cid="${id}" style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
     <div style="display:flex;gap:12px;align-items:flex-start">
-      <div style="width:100px;flex-shrink:0"><div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--bg)"><img class="cs-previmg" src="${escA(c.photo_url||'')}" style="position:absolute;left:${c.pos_x!=null?c.pos_x:50}%;top:${c.pos_y!=null?c.pos_y:28}%;width:${Math.max(110,c.zoom!=null?c.zoom:110)}%;height:${Math.max(110,c.zoom!=null?c.zoom:110)}%;object-fit:cover;object-position:center;transform:translate(-${c.pos_x!=null?c.pos_x:50}%,-${c.pos_y!=null?c.pos_y:28}%)" onerror="this.style.opacity=0"></div><div style="font-size:9px;color:var(--text3);text-align:center;margin-top:3px">↓で顔位置調整</div></div>
+      <div style="width:160px;flex-shrink:0"><div style="position:relative;aspect-ratio:3/2;border-radius:8px;overflow:hidden;background:#14213f"><img class="cs-previmg" src="${escA(c.photo_url||'')}" style="width:100%;height:100%;object-fit:contain;display:block" onerror="this.style.opacity=0"></div><div style="font-size:9px;color:var(--text3);text-align:center;margin-top:3px">全体表示（余白は背景色）</div></div>
       <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px">
         <div style="grid-column:1/3"><div style="${lb}">見出し</div><input class="cs-head" value="${escA(c.headline||'')}" style="${inp}"></div>
         <div style="grid-column:1/3"><div style="${lb}">✔ ファクト（1行に1つ）</div><textarea class="cs-facts" rows="3" style="${inp}resize:vertical">${escA(facts)}</textarea></div>
         <div><div style="${lb}">お名前ラベル</div><input class="cs-name" value="${escA(c.name_label||'')}" style="${inp}"></div>
         <div><div style="${lb}">写真URL</div><input class="cs-photo" value="${escA(c.photo_url||'')}" style="${inp}"></div>
-        <div style="grid-column:1/3"><div style="${lb}">写真の調整（スライドで顔合わせ）</div>
-          <div style="display:flex;gap:8px;font-size:11px;color:var(--text2);align-items:center"><span style="width:30px">拡大</span><input class="cs-zoom" type="range" min="100" max="220" value="${c.zoom!=null?c.zoom:100}" oninput="caseAdj(this)" style="flex:1;accent-color:var(--teal)"><span class="cs-zoom-val" style="width:36px;text-align:right">${c.zoom!=null?c.zoom:100}%</span></div>
-          <div style="display:flex;gap:8px;font-size:11px;color:var(--text2);align-items:center"><span style="width:30px">左右</span><input class="cs-posx" type="range" min="0" max="100" value="${c.pos_x!=null?c.pos_x:50}" oninput="caseAdj(this)" style="flex:1;accent-color:var(--teal)"><span class="cs-posx-val" style="width:36px;text-align:right">${c.pos_x!=null?c.pos_x:50}</span></div>
-          <div style="display:flex;gap:8px;font-size:11px;color:var(--text2);align-items:center"><span style="width:30px">上下</span><input class="cs-posy" type="range" min="0" max="100" value="${c.pos_y!=null?c.pos_y:28}" oninput="caseAdj(this)" style="flex:1;accent-color:var(--teal)"><span class="cs-posy-val" style="width:36px;text-align:right">${c.pos_y!=null?c.pos_y:28}</span></div>
-        </div>
+        <div style="grid-column:1/3"><div style="${lb}">写真は<b>全体を表示</b>します（トリミングなし・余白は背景色で埋めます）。顔が切れる場合は、少し引きで撮った写真をご用意ください。</div></div>
         <div><div style="${lb}">並び順</div><input class="cs-sort" type="number" value="${c.sort||0}" style="${inp}"></div>
         <div style="grid-column:1/3;display:flex;gap:12px;align-items:center;margin-top:4px"><label style="font-size:12px;color:var(--text2)"><input class="cs-active" type="checkbox" ${c.active!==false?'checked':''}> 公開</label><button onclick="caseSave('${id}',this)" style="margin-left:auto;padding:7px 18px;background:var(--teal);color:#fff;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-family:inherit;font-size:12px">保存</button><button onclick="caseDel('${id}')" style="padding:7px 12px;background:none;border:1px solid var(--hot);color:var(--hot);border-radius:6px;cursor:pointer;font-size:12px">削除</button></div>
       </div>
@@ -1317,7 +1313,7 @@ function caseAdj(el){
 async function caseSave(id,btn){
   const el=document.querySelector('[data-cid="'+id+'"]'); if(!el) return;
   const g=s=>el.querySelector(s);
-  const row={ id, headline:g('.cs-head').value.trim(), facts:g('.cs-facts').value.split('\n').map(x=>x.trim()).filter(Boolean), name_label:g('.cs-name').value.trim(), photo_url:g('.cs-photo').value.trim(), pos_y:parseInt(g('.cs-posy').value)||28, pos_x:parseInt(g('.cs-posx').value)||50, zoom:parseInt(g('.cs-zoom').value)||100, sort:parseInt(g('.cs-sort').value)||0, active:g('.cs-active').checked };
+  const row={ id, headline:g('.cs-head').value.trim(), facts:g('.cs-facts').value.split('\n').map(x=>x.trim()).filter(Boolean), name_label:g('.cs-name').value.trim(), photo_url:g('.cs-photo').value.trim(), pos_y:28, pos_x:50, zoom:100, sort:parseInt(g('.cs-sort').value)||0, active:g('.cs-active').checked };
   if(btn){ btn.textContent='…'; }
   const r=await adminWrite('cases','upsert',{rows:[row]});
   if(btn){ btn.textContent='保存'; }
@@ -1820,18 +1816,21 @@ async function genReport(id){
   out.scrollIntoView({behavior:'smooth'});
   let rows = [];
   try {
-    const res = await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw, action:'list', company_id:id})});
+    // 共鳴データと同一ソース＝card_logs を recommended_company で絞る（interest_formsではない）
+    const res = await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw, action:'list', table:'card_logs'})});
     if(res.status===401){ out.innerHTML='<div class="panel"><div class="pbody" style="color:var(--hot);padding:20px">認証エラー。再ログインしてください。</div></div>'; return; }
-    rows = await res.json();
-    if(!Array.isArray(rows)) rows = [];
+    let all = await res.json(); if(!Array.isArray(all)) all=[];
+    rows = all.filter(l=> String(l.recommended_company||'')===String(id));
+    if(_resFrom||_resTo){ const fromT=_resFrom?new Date(_resFrom+'T00:00:00').getTime():-Infinity; const toT=_resTo?new Date(_resTo+'T23:59:59').getTime():Infinity; rows=rows.filter(r=>{const ts=Date.parse(r.started_at||r.created_at||r.updated_at||'');return isNaN(ts)?false:(ts>=fromT&&ts<=toT);}); }
   } catch(e){ out.innerHTML='<div class="panel"><div class="pbody" style="color:var(--hot);padding:20px">取得失敗: '+e.message+'</div></div>'; return; }
   _reportRows = rows;
 
   const total = rows.length;
   const reactions = co?.reactions || 0;
-  const q1Dist = _dist(rows, r=>r.q1_answer);
-  const q2Dist = _dist(rows, r=>r.q2_values);
-  const aboutDist = _dist(rows, r=>String(r.q3_answer||'').split('、'));
+  const cta = rows.filter(r=>r.contact_cta).length;
+  const form = rows.filter(r=>r.form_open).length;
+  const q1Dist = _dist(rows, r=>r.q1_phrase);
+  const chipsDist = _dist(rows, r=>r.memo_chips);
   const comments = rows.filter(r=>r.ai_message && r.ai_message.trim());
 
   out.innerHTML = `
@@ -1845,26 +1844,22 @@ async function genReport(id){
       </div>
       <div class="pbody">
         <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:8px">
-          <div><div style="font-size:11px;color:var(--text3)">❤ 共感ボタン</div><div style="font-size:26px;font-weight:700;color:var(--navy)">${reactions}</div></div>
-          <div><div style="font-size:11px;color:var(--text3)">診断を受けた人</div><div style="font-size:26px;font-weight:700;color:var(--teal-d)">${total}</div></div>
-          <div><div style="font-size:11px;color:var(--text3)">コメント数</div><div style="font-size:26px;font-weight:700;color:var(--navy)">${comments.length}</div></div>
+          <div><div style="font-size:11px;color:var(--text3)">反応した人</div><div style="font-size:26px;font-weight:700;color:var(--teal-d)">${total}</div></div>
+          <div><div style="font-size:11px;color:var(--text3)">❤ 共感</div><div style="font-size:26px;font-weight:700;color:var(--navy)">${reactions}</div></div>
+          <div><div style="font-size:11px;color:var(--text3)">興味を伝えた</div><div style="font-size:26px;font-weight:700;color:var(--navy)">${cta}</div></div>
+          <div><div style="font-size:11px;color:var(--text3)">フォーム開封</div><div style="font-size:26px;font-weight:700;color:var(--teal-d)">${form}</div></div>
         </div>
       </div>
     </div>
 
     <div class="panel" style="margin-bottom:20px">
-      <div class="phdr">どこに共感が集まったか（刺さった言葉）</div>
+      <div class="phdr">どの言葉に、心が動いたか（刺さった言葉）</div>
       <div class="pbody">${q1Dist.length? q1Dist.map(([k,v])=>_bar(k,v,total)).join('') : '<div style="color:var(--text3);font-size:12px">データなし</div>'}</div>
     </div>
 
     <div class="panel" style="margin-bottom:20px">
-      <div class="phdr">求めているもの</div>
-      <div class="pbody">${q2Dist.length? q2Dist.map(([k,v])=>_bar(k,v,total)).join('') : '<div style="color:var(--text3);font-size:12px">データなし</div>'}</div>
-    </div>
-
-    <div class="panel" style="margin-bottom:20px">
-      <div class="phdr">今の状況</div>
-      <div class="pbody">${aboutDist.length? aboutDist.map(([k,v])=>_bar(k,v,total)).join('') : '<div style="color:var(--text3);font-size:12px">データなし</div>'}</div>
+      <div class="phdr">「自分にもできそう」と感じたこと</div>
+      <div class="pbody">${chipsDist.length? chipsDist.map(([k,v])=>_bar(k,v,total)).join('') : '<div style="color:var(--text3);font-size:12px">データなし</div>'}</div>
     </div>
 
     <div class="panel" style="margin-bottom:20px">
