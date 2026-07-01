@@ -1288,7 +1288,8 @@ h1, h2, h3, h4,
       </div>
       <div class="hero-in" style="--hd:1.1s;font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:22px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">無料・約1分</div>
 
-      <button class="btn-primary hero-in" onclick="goCards()" style="--hd:1.2s;width:100%;max-width:360px;justify-content:center;margin-bottom:12px;background:var(--teal);font-size:17px;font-weight:700;padding:18px 20px;border-radius:14px;box-shadow:0 8px 24px rgba(66,173,159,0.35);">経営層と出会ってみる →</button>
+      <button class="btn-primary hero-in" onclick="goCards()" style="--hd:1.2s;width:100%;max-width:360px;justify-content:center;margin-bottom:10px;background:var(--teal);font-size:17px;font-weight:700;padding:18px 20px;border-radius:14px;box-shadow:0 8px 24px rgba(66,173,159,0.35);">直感で、経営層と出会う →</button>
+      <button class="hero-in" onclick="enterMoya()" style="--hd:1.26s;width:100%;max-width:360px;justify-content:center;margin-bottom:12px;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.38);color:#fff;font-size:15px;font-weight:700;padding:14px 20px;border-radius:14px;cursor:pointer;font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;">今の“モヤモヤ”から探す →</button>
       <div class="hero-in" style="--hd:1.28s;margin-top:4px;">
         <button onclick="showLeaderList()" style="background:none;border:none;cursor:pointer;font-size:12px;color:rgba(255,255,255,0.4);font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;padding:8px 0;letter-spacing:0.3px;">今すぐ会いたい方はコチラ →「経営層一覧を見る」</button>
       </div>
@@ -1707,6 +1708,33 @@ h1, h2, h3, h4,
           LINEで経営層の近況を受け取る（無料）
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- P-MOYA（逆引き入口B：今のモヤモヤ＝価値観を選ぶ） -->
+  <div id="p-moya" class="screen">
+    <div style="max-width:640px;margin:0 auto;padding:32px 20px 110px;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--teal-d);margin-bottom:10px;">FROM YOUR FEELING</div>
+      <h1 style="font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-weight:900;font-size:22px;color:var(--navy);line-height:1.55;margin-bottom:8px;">今、あなたのキャリアで<br>一番モヤモヤしていることは？</h1>
+      <div style="font-size:13px;color:var(--text2);line-height:1.85;margin-bottom:22px;">近いものを2〜3つ選んでください。その“気持ち”に響き合う経営層をお見せします。</div>
+      <div class="chip-list" id="moyaChips"></div>
+    </div>
+    <div style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);padding:12px 16px;box-shadow:0 -4px 18px rgba(28,42,84,0.08);z-index:50;">
+      <div style="max-width:640px;margin:0 auto;display:flex;gap:10px;">
+        <button class="btn-outline" style="flex:0 0 auto;font-size:13px;padding:12px 16px;" onclick="goScreen('p-list')">← 戻る</button>
+        <button class="btn-primary" id="moyaNext" style="flex:1;justify-content:center;" onclick="runMoyaMatch()" disabled>響き合う経営層を見る →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- P-MOYARECO（逆引きレコメンド：モヤモヤ×タグでマッチ＋意外枠） -->
+  <div id="p-moyareco" class="screen">
+    <div style="max-width:640px;margin:0 auto;padding:32px 20px 60px;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--teal-d);margin-bottom:10px;">YOUR MATCHES</div>
+      <h1 style="font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-weight:900;font-size:22px;color:var(--navy);line-height:1.55;margin-bottom:10px;">あなたのモヤモヤに<br>響き合う経営層</h1>
+      <div id="moyaSelEcho" style="font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:20px;"></div>
+      <div id="moyaRecoList"></div>
+      <button class="btn-outline" style="width:100%;justify-content:center;margin-top:16px;font-size:13px;" onclick="goScreen('p-moya')">← モヤモヤを選び直す</button>
     </div>
   </div>
 
@@ -2791,6 +2819,7 @@ function goScreen(id) {
     if(!d) return;
     d.className = 'sdot';
     const idx = SCREENS.indexOf(id);
+    if(idx>5) return; // p-moya等はジャーニー(p1-p5)外＝進捗ドットに反映しない
     if(i<idx) d.classList.add('done');
     else if(i===idx) d.classList.add('active');
   });
@@ -3868,6 +3897,82 @@ async function triggerPwaInstall(){
 // 初回訪問から少し待って表示（記事を1つ見た頃合い）
 setTimeout(showPwaBanner, 6000);
 window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
+</script>
+<script>
+/* ===== 逆引き入口B：モヤモヤ(価値観)→タグマッチ→レコメンド（＋計画的偶発性の意外枠） =====
+   キャリア・アンカー(シャイン)で選択肢を設計／既存の company タグでマッチ／
+   選んだモヤモヤは診断(自己発見)の材料にも使えるよう S.moya に保持。 */
+(function(){
+  var MOYA=[
+    {id:'mission',   label:'会社の“方向性・意味”に納得できない', reason:'“意味ある仕事”を求めるあなたへ', tags:['mission'],            kw:['使命','想い','意味','ビジョン','理念','志','学び','教育','継承']},
+    {id:'local',     label:'もっと地域・地元に関わりたい',       reason:'“地域に関わりたい”あなたへ',   tags:['local'],              kw:['まちづくり','地元','地方','ローカル','中津','観光','地域']},
+    {id:'newbiz',    label:'新しいことを自由に立ち上げたい',     reason:'“ゼロから創りたい”あなたへ',   tags:['newbiz','autonomy'],  kw:['新規','立ち上げ','事業開発','新事業','開拓','事業拡','XR','AI']},
+    {id:'expertise', label:'自分の専門・技を活かしきれていない', reason:'“専門を活かしたい”あなたへ',   tags:['expertise','craft'],  kw:['専門','技術','ものづくり','職人','品質','建設','IT']},
+    {id:'autonomy',  label:'裁量がなく、指示待ちがつらい',       reason:'“自分の裁量で動きたい”あなたへ', tags:['autonomy'],          kw:['裁量','任せ','自律','現場','右腕']},
+    {id:'team',      label:'熱を一緒に上げられる仲間がいない',   reason:'“熱い仲間が欲しい”あなたへ',   tags:['team'],               kw:['仲間','チーム','一緒','共に','右腕']},
+    {id:'challenge', label:'安定はあるが、挑戦がない',           reason:'“挑戦したい”あなたへ',         tags:['challenge'],          kw:['挑戦','革新','急成長','成長','転換','進化','変革']},
+    {id:'org',       label:'組織・チームをより良くしたい',       reason:'“組織を良くしたい”あなたへ',   tags:['org'],                kw:['組織','仕組み','育成','風土','拡充','右腕','組織づくり']},
+  ];
+  if(typeof SCREENS!=='undefined' && SCREENS.indexOf('p-moya')<0){ SCREENS.push('p-moya','p-moyareco'); }
+  function esc(s){ return (typeof escapeHtml==='function')?escapeHtml(String(s==null?'':s)):String(s==null?'':s); }
+
+  window.enterMoya=function(){
+    try{ if(typeof S!=='undefined') S.moya=[]; }catch(e){}
+    var box=document.getElementById('moyaChips');
+    if(box) box.innerHTML=MOYA.map(function(m){ return '<div class="chip" data-moya="'+m.id+'" onclick="toggleMoya(this)"><div class="chip-check">✓</div><span>'+esc(m.label)+'</span></div>'; }).join('');
+    var n=document.getElementById('moyaNext'); if(n) n.disabled=true;
+    goScreen('p-moya');
+  };
+  window.toggleMoya=function(el){
+    var id=el.getAttribute('data-moya');
+    if(typeof S==='undefined') return; if(!Array.isArray(S.moya)) S.moya=[];
+    var i=S.moya.indexOf(id);
+    if(i>=0){ S.moya.splice(i,1); el.classList.remove('selected'); }
+    else { if(S.moya.length>=3){ if(typeof toast==='function') toast('3つまで選べます'); return; } S.moya.push(id); el.classList.add('selected'); }
+    var n=document.getElementById('moyaNext'); if(n) n.disabled = (S.moya.length===0);
+  };
+  function tagset(c){ var s=[]; ['rtags','btags','tags'].forEach(function(k){ if(Array.isArray(c[k])) s=s.concat(c[k].map(function(x){return String(x).toLowerCase();})); }); return s; }
+  function blob(c){ return [c.catchphrase,c.quote,c.title,c.companyIntro,c.intro,(Array.isArray(c.tags)?c.tags.join(' '):''),String(c.body||'').slice(0,700)].filter(Boolean).join(' '); }
+  function score(c,picks){ var ts=tagset(c),tx=blob(c),total=0,per={}; picks.forEach(function(m){ var s=0; m.tags.forEach(function(t){ if(ts.indexOf(t)>=0) s+=3; }); m.kw.forEach(function(k){ if(tx.indexOf(k)>=0) s+=1; }); per[m.id]=s; total+=s; }); return {score:total,per:per}; }
+  function bestReason(x,picks){ var best=null,bs=-1; picks.forEach(function(m){ var s=(x.per&&x.per[m.id])||0; if(s<=0) return; var adj=s-(m.id==='local'?0.6:0); if(adj>bs){ bs=adj; best=m; } }); return best?best.reason:'あなたに響き合う経営層'; }
+
+  window.runMoyaMatch=function(){
+    var picks=((typeof S!=='undefined'&&S.moya)||[]).map(function(id){ return MOYA.filter(function(m){return m.id===id;})[0]; }).filter(Boolean);
+    if(!picks.length) return;
+    var cos=(loadCompanies()||[]).filter(function(c){ return c&&(c.ceo||c.name); });
+    var scored=cos.map(function(c){ var r=score(c,picks); return {c:c,score:r.score,per:r.per}; });
+    scored.sort(function(a,b){ return b.score-a.score; });
+    var top=scored.filter(function(x){return x.score>0;}).slice(0,3);
+    scored.forEach(function(x){ if(top.length<3 && top.indexOf(x)<0) top.push(x); });
+    var rest=scored.filter(function(x){ return top.indexOf(x)<0; });
+    var surprise=rest.length?rest[Math.floor(Math.random()*rest.length)]:null;
+    renderMoyaReco(top,surprise,picks);
+    goScreen('p-moyareco');
+  };
+  function card(x,isSurprise,picks){
+    var c=x.c, name=c.ceo||'経営層', company=c.name||c.company||'', photo=c.photoUrl||'';
+    var bg=photo?("background-image:url('"+photo+"')"):"background:linear-gradient(135deg,#1C2A54,#2e4080)";
+    var reason=isSurprise?'あなたの選択とは少し違うけれど、きっと響く出会い':bestReason(x,picks||[]);
+    var phrase=String(c.catchphrase||c.quote||name).split('\n')[0];
+    var badge=isSurprise?'<span style="position:absolute;top:10px;left:10px;background:var(--navy);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;font-family:\'JetBrains Mono\',monospace;">意外な出会い</span>':'';
+    var cid=String(c.id||'').replace(/'/g,'');
+    var av=photo?('<div class="leader-photo" style="background-image:url(\''+photo+'\');background-size:cover;background-position:center;"></div>'):('<div class="leader-photo">'+esc(name.charAt(0))+'</div>');
+    return '<div class="leader-card" style="margin-bottom:14px;cursor:pointer;" onclick="openCompanyArticle(\''+cid+'\')">'
+      +'<div class="leader-card-top" style="position:relative;"><div class="leader-card-photo-bg" style="'+bg+'"></div>'+badge+'<div class="leader-phrase">'+esc(phrase)+'</div></div>'
+      +'<div class="leader-card-bottom">'
+      +'<div style="font-size:12px;color:var(--teal-d);font-weight:700;margin-bottom:9px;">'+esc(reason)+'。</div>'
+      +'<div class="leader-card-profile">'+av+'<div class="leader-meta"><div class="leader-name">'+esc(name)+'</div><div class="leader-company">'+esc(company)+'</div></div></div>'
+      +'<div class="leader-cta">この経営層の想いを読む →</div>'
+      +'</div></div>';
+  }
+  window.renderMoyaReco=function(top,surprise,picks){
+    var echo=document.getElementById('moyaSelEcho');
+    if(echo) echo.innerHTML='あなたが選んだ：'+picks.map(function(m){return '「'+esc(m.label)+'」';}).join('　');
+    var html=top.map(function(x){ return card(x,false,picks); }).join('');
+    if(surprise) html+='<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;letter-spacing:2px;color:var(--teal-d);margin:22px 0 10px;">＋ SERENDIPITY ── まだ出会っていない人</div>'+card(surprise,true,picks);
+    var el=document.getElementById('moyaRecoList'); if(el) el.innerHTML=html;
+  };
+})();
 </script>
 </body>
 </html>
