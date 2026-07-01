@@ -133,6 +133,17 @@
     .scene-vid{display:inline-flex;align-items:center;gap:9px;margin-top:20px;font-family:var(--gothic);font-weight:700;font-size:13px;color:var(--teal-d);text-decoration:none;}
     .scene-vid::before{content:'';background:var(--teal) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M8 5v14l11-7z'/%3E%3C/svg%3E") center/10px no-repeat;width:24px;height:24px;border-radius:50%;display:inline-flex;flex-shrink:0;}
 
+    /* 実例カード（個人LPと共通のcasesテーブル） */
+    .meet-cases{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+    .mcase{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+    .mcase .ph{position:relative;aspect-ratio:3/2;overflow:hidden;background:#14213f;}
+    .mcase .ph img{width:100%;height:100%;object-fit:contain;display:block;}
+    .mcase .body{padding:13px 15px 15px;}
+    .mcase h4{font-family:var(--gothic);font-weight:700;font-size:14px;color:var(--navy);line-height:1.55;margin-bottom:9px;}
+    .mcase .fact{display:flex;gap:6px;font-size:11.5px;color:var(--muted);line-height:1.55;margin-bottom:4px;}
+    .mcase .fact b{color:var(--teal);font-weight:700;flex-shrink:0;}
+    .mcase .nm{font-size:11px;color:var(--muted);margin-top:9px;}
+
     /* voices */
     .voice{padding:26px 0;border-top:1px solid var(--line);}
     .voice:first-child{border-top:none;}
@@ -208,7 +219,7 @@
     <div class="datebox" id="dateBox"></div>
     <div class="hero-cta">
       <a class="btn btn-apply" id="heroApply" href="#">今すぐ参加申込 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="margin-left:5px;vertical-align:middle;flex-shrink:0"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
-      <a class="btn btn-line" id="heroLine" href="#">日程が合わない方は LINEで転職情報を見る</a>
+      <a class="btn btn-line" id="heroLine" href="#">日程が合わない方は、LINEで次回のご案内を</a>
     </div>
     <div class="hero-proof" id="heroProof"></div>
   </div>
@@ -256,9 +267,10 @@
 </div></section>
 
 <section class="sec" style="background:var(--teal-soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line);"><div class="wrap fade">
-  <div class="kicker">Voice</div>
-  <h2 class="h2">この出会いから、<br>転職した人たち。</h2>
-  <div id="voices" style="margin-top:18px;"></div>
+  <div class="kicker">Cases</div>
+  <h2 class="h2">この出会いから、<br>動き出した人たち。</h2>
+  <div class="meet-cases" id="meetCases" style="margin-top:20px;"></div>
+  <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:16px;">※ 写真・お名前はご本人の許諾のうえ掲載しています。</div>
 </div></section>
 
 <section class="sec"><div class="wrap fade">
@@ -280,7 +292,7 @@
     <div class="when" id="closeWhen"></div>
     <div class="hero-cta">
       <a class="btn btn-apply" id="closeApply" href="#">今すぐ参加申込 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="margin-left:5px;vertical-align:middle;flex-shrink:0"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
-      <a class="btn btn-line" id="closeLine" href="#">日程が合わない方は LINEで</a>
+      <a class="btn btn-line" id="closeLine" href="#">日程が合わない方は、LINEで次回のご案内を</a>
     </div>
   </div>
 </section>
@@ -320,13 +332,13 @@ const EV = {
   heroImage:'/images/meet-hero.jpg',
   videoUrl:'https://youtu.be/OhiOtmbFqTk',
   gallery:[
-    {src:'/images/meet-scene3.jpg', cap:'笑って話すうちに、「自分にもできるかも」が生まれる。'},
+    {src:'/images/meet-scene3.jpg', cap:'まずは、ざっくばらんに話すことから。'},
     {src:'/images/meet-scene2.jpg', cap:'交流会では、ざっくばらんに。'},
     {src:'/images/meet-scene1.jpg', cap:'経営層と、テーブル越しに本音で。'},
   ],
-  heroKick: '福岡・地域企業の経営層と出会う夜',
-  heroH1:   '経営者の<em>本音</em>に、<br>ふれる福岡の夜。',
-  heroLead: '求人票では分からない「会社のリアル」と、経営層の想い。直接話して、「自分でも力になれるかも」に出会う。',
+  heroKick: '福岡・大名｜経営層と話せる少人数の夜',
+  heroH1:   '会社を選ぶ前に、<br><em>経営層に会う</em>。',
+  heroLead: '求人票では分からない会社のリアルを、6名の地域企業の経営層から直接。まずは情報収集でOK、応募でも選考でもありません。',
   date: { num:'7.30', dow:'THU', year:'2026', time:'19:00–21:30' },
   venue:{ name:'エスニコ（ethnico）', area:'福岡市中央区・大名', addr:'福岡県福岡市中央区大名2-1-50 2F' },
   fee:'参加無料', capacity:'数十名（先着順で締切）',
@@ -420,7 +432,7 @@ const EV = {
   }
   if(E.videoUrl){ $('sceneVid').href=E.videoUrl; } else { var sv=$('sceneVid'); if(sv) sv.style.display='none'; }
   // voices
-  $('voices').innerHTML=E.voices.map(function(v){return '<div class="voice"><div class="q">'+v.q+'</div><div class="who">'+v.who+'</div><div class="body">'+v.body+'</div></div>';}).join('');
+  loadMeetCases(); // 実例は個人LPと共通の cases テーブルから取得
   // why
   $('whyList').innerHTML=E.why.map(function(w){return '<div class="it"><h4>'+w.h+'</h4><p>'+w.d+'</p></div>';}).join('');
   // faq
@@ -441,6 +453,22 @@ const EV = {
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('vis');io.unobserve(e.target);}});},{threshold:0.1});
   document.querySelectorAll('.fade').forEach(function(el){io.observe(el);});
 })();
+
+// 実例(CASES)を個人LPと同じ cases テーブルから取得（単一ソース＝admin編集で両LP同時更新）
+function loadMeetCases(){
+  var g=document.getElementById('meetCases'); if(!g) return;
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  var SUPA='https://ypwwuylcvjwcyazvpibd.supabase.co', KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd3d1eWxjdmp3Y3lhenZwaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTY1MTMsImV4cCI6MjA5MjI3MjUxM30.7YseXt8libEzFsSAv4bI46l36kZ2lFz_jnh1JphVpvA';
+  fetch(SUPA+'/rest/v1/cases?active=eq.true&order=sort.asc&select=*',{headers:{apikey:KEY,Authorization:'Bearer '+KEY}})
+    .then(function(r){return r.ok?r.json():null;})
+    .then(function(rows){
+      if(!Array.isArray(rows)||!rows.length) return;
+      g.innerHTML=rows.map(function(c){
+        var facts=(Array.isArray(c.facts)?c.facts:[]).map(function(f){return '<div class="fact"><b>✔</b><span>'+esc(f)+'</span></div>';}).join('');
+        return '<div class="mcase"><div class="ph"><img src="'+esc(c.photo_url||'')+'" loading="lazy" onerror="this.style.display=\'none\'"></div><div class="body"><h4>'+esc(c.headline||'')+'</h4>'+facts+'<div class="nm">'+esc(c.name_label||'')+'</div></div></div>';
+      }).join('');
+    }).catch(function(){});
+}
 </script>
 </body>
 </html>
