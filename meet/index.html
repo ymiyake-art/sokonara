@@ -50,7 +50,7 @@
     /* HERO */
     #hero{position:relative;min-height:96vh;display:flex;align-items:flex-end;color:#fff;background:#16223f;overflow:hidden;}
     #hero .bg{position:absolute;inset:0;background-size:cover;background-position:center 42%;}
-    #hero .ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(16,22,40,0.55) 0%,rgba(16,22,40,0.25) 34%,rgba(16,22,40,0.72) 74%,rgba(16,22,40,0.95) 100%);}
+    #hero .ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(16,22,40,0.62) 0%,rgba(16,22,40,0.44) 34%,rgba(16,22,40,0.80) 74%,rgba(16,22,40,0.96) 100%);}
     .hero-in{position:relative;z-index:2;width:100%;max-width:680px;margin:0 auto;padding:0 22px 46px;}
     .hero-kick{font-family:var(--mono);font-size:11px;letter-spacing:.24em;color:#9fe7dc;text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:10px;}
     .hero-kick::before{content:'';width:26px;height:1px;background:#9fe7dc;}
@@ -100,6 +100,9 @@
     .spk{display:flex;gap:16px;padding:20px 0;border-top:1px solid var(--line);}
     .spk:last-child{border-bottom:1px solid var(--line);}
     .spk .no{flex:0 0 auto;font-family:var(--mincho);font-weight:700;font-size:20px;color:var(--teal);width:30px;line-height:1.4;}
+    .spk-av{flex:0 0 auto;position:relative;width:52px;height:52px;border-radius:50%;background:var(--teal-soft);display:flex;align-items:center;justify-content:center;}
+    .spk-av svg{width:30px;height:30px;color:var(--teal);}
+    .spk-av .spk-no{position:absolute;bottom:-3px;right:-4px;background:var(--navy);color:#fff;font-family:var(--mono);font-size:9px;font-weight:700;min-width:19px;height:19px;padding:0 3px;border-radius:10px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;}
     .spk .tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--teal-d);background:var(--teal-soft);padding:3px 9px;border-radius:5px;margin-bottom:7px;}
     .spk h3{font-family:var(--gothic);font-weight:700;font-size:15.5px;color:var(--navy);line-height:1.55;margin-bottom:6px;}
     .spk p{font-size:13.5px;color:var(--muted);line-height:1.85;}
@@ -128,7 +131,7 @@
     .scene-row img{width:100%;height:160px;object-fit:cover;display:block;border-radius:13px;border:1px solid var(--line);}
     .scene-row figcaption{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:7px;line-height:1.5;}
     .scene-vid{display:inline-flex;align-items:center;gap:9px;margin-top:20px;font-family:var(--gothic);font-weight:700;font-size:13px;color:var(--teal-d);text-decoration:none;}
-    .scene-vid::before{content:'▶';font-size:9px;background:var(--teal);color:#fff;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .scene-vid::before{content:'';background:var(--teal) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M8 5v14l11-7z'/%3E%3C/svg%3E") center/10px no-repeat;width:24px;height:24px;border-radius:50%;display:inline-flex;flex-shrink:0;}
 
     /* voices */
     .voice{padding:26px 0;border-top:1px solid var(--line);}
@@ -191,7 +194,7 @@
 <nav id="nav">
   <div class="nav-in">
     <a href="https://app.sokonara.co.jp/"><img src="/images/logo-02.png" alt="ソコナラ"></a>
-    <a class="nav-apply" id="navApply" href="#">参加申込 ▶</a>
+    <a class="nav-apply" id="navApply" href="#">参加申込 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="margin-left:5px;vertical-align:middle;flex-shrink:0"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
   </div>
 </nav>
 
@@ -204,7 +207,7 @@
     <p class="hero-lead" id="heroLead"></p>
     <div class="datebox" id="dateBox"></div>
     <div class="hero-cta">
-      <a class="btn btn-apply" id="heroApply" href="#">今すぐ参加申込 ▶</a>
+      <a class="btn btn-apply" id="heroApply" href="#">今すぐ参加申込 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="margin-left:5px;vertical-align:middle;flex-shrink:0"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
       <a class="btn btn-line" id="heroLine" href="#">日程が合わない方は LINEで転職情報を見る</a>
     </div>
     <div class="hero-proof" id="heroProof"></div>
@@ -232,12 +235,6 @@
   <div class="poscloud" id="posCloud" style="margin-top:22px;"></div>
 </div></section>
 
-<section class="sec" style="background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);"><div class="wrap fade">
-  <div class="kicker">Time Table</div>
-  <h2 class="h2">当日の流れ</h2>
-  <div class="tl" id="timeline" style="margin-top:26px;"></div>
-</div></section>
-
 <section class="sec"><div class="wrap fade">
   <div class="kicker">Overview</div>
   <h2 class="h2">開催概要</h2>
@@ -246,10 +243,16 @@
 
 <section class="sec" style="background:#fff;border-top:1px solid var(--line);"><div class="wrap fade">
   <div class="kicker">Scene</div>
-  <h2 class="h2">当日の、空気。</h2>
+  <h2 class="h2">当日の雰囲気。</h2>
   <div id="sceneFeat" style="margin-top:22px;"></div>
   <div class="scene-row" id="sceneRow"></div>
   <a class="scene-vid" id="sceneVid" href="#" target="_blank" rel="noopener">30秒の動画で、過去の様子を見る</a>
+</div></section>
+
+<section class="sec" style="border-bottom:1px solid var(--line);"><div class="wrap fade">
+  <div class="kicker">Time Table</div>
+  <h2 class="h2">当日の流れ</h2>
+  <div class="tl" id="timeline" style="margin-top:24px;"></div>
 </div></section>
 
 <section class="sec" style="background:var(--teal-soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line);"><div class="wrap fade">
@@ -276,7 +279,7 @@
     <div class="sub">まずは情報収集でOK。その場で応募する必要はありません。</div>
     <div class="when" id="closeWhen"></div>
     <div class="hero-cta">
-      <a class="btn btn-apply" id="closeApply" href="#">今すぐ参加申込 ▶</a>
+      <a class="btn btn-apply" id="closeApply" href="#">今すぐ参加申込 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="margin-left:5px;vertical-align:middle;flex-shrink:0"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
       <a class="btn btn-line" id="closeLine" href="#">日程が合わない方は LINEで</a>
     </div>
   </div>
@@ -298,7 +301,7 @@
 <div class="sticky">
   <div class="scar" id="scarBar"></div>
   <div class="bar">
-    <a class="btn btn-apply" id="stickyApply" href="#">参加申込（無料）▶</a>
+    <a class="btn btn-apply" id="stickyApply" href="#">参加申込（無料）<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="margin-left:5px;vertical-align:middle;flex-shrink:0"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
     <a class="ln" id="stickyLine" href="#">
       <svg viewBox="0 0 24 24" fill="white"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.070 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
       LINE
@@ -317,9 +320,9 @@ const EV = {
   heroImage:'/images/meet-hero.jpg',
   videoUrl:'https://youtu.be/OhiOtmbFqTk',
   gallery:[
-    {src:'/images/meet-scene1.jpg', cap:'経営層と、テーブル越しに本音で対話。'},
+    {src:'/images/meet-scene3.jpg', cap:'笑って話すうちに、「自分にもできるかも」が生まれる。'},
     {src:'/images/meet-scene2.jpg', cap:'交流会では、ざっくばらんに。'},
-    {src:'/images/meet-scene3.jpg', cap:'「自分にもできるかも」が生まれる。'},
+    {src:'/images/meet-scene1.jpg', cap:'経営層と、テーブル越しに本音で。'},
   ],
   heroKick: '福岡・地域企業の経営層と出会う夜',
   heroH1:   '経営者の<em>本音</em>に、<br>ふれる福岡の夜。',
@@ -337,10 +340,9 @@ const EV = {
     '地方創生や地域に関わる、面白い仕事ができる企業を探している',
     '仕事を、自分の力を活かせるやりがいあるものにしたい',
   ],
-  spkTitle:'登壇する、7人の経営層。',
-  spkIntro:'地域で挑戦する後継ぎ・変革型リーダーが登壇。業種も世代もさまざまな経営層の「いま」に、直接触れられます。',
+  spkTitle:'登壇する、6人の経営層。',
+  spkIntro:'地域で挑戦する後継ぎ・変革型リーダーが登壇。業種も世代もさまざま。※社名・お顔は当日のお楽しみ（会場で直接お会いいただけます）。',
   speakers:[
-    {tag:'モビリティ / SaaS', h:'移動体験の未来をつくる、糸島在住の経営層', p:'モビリティ領域のソフトウェア開発を軸に、IVI・コネクテッド・品質管理まで展開。上場テック企業グループで価値創造に取り組む。'},
     {tag:'商社 / DX', h:'老舗企業をデータで進化させる、変革型の若手社長', p:'包装資材の商社として流通現場を支える企業を牽引。物流網と営業力にDXを掛け合わせ、勘と経験の組織を進化させている。'},
     {tag:'印刷 / 販促', h:'印刷会社を総合販促企業へ進化させる、40代社長', p:'印刷・DM・Web・動画まで横断し、企業の販促課題を支援。創業45年以上の企業を率い、新たな事業領域を切り拓く。'},
     {tag:'製造 / 自動化', h:'自動化で現場を支える、30代前半の次期社長', p:'食品工場から自動車まで、幅広い産業向け自動化装置を提供。創業50年以上の老舗装置メーカーで、次のものづくりに挑む。'},
@@ -350,15 +352,14 @@ const EV = {
   ],
   positions:['法人営業','新規事業','ITエンジニア','施工管理','右腕','マネージャー','人事戦略','DX推進','経営戦略','技術開発','ホテル運営','その他'],
   timetable:[
-    {t:'19:00', h:'オープニング', d:'趣旨や流れの説明'},
-    {t:'19:10', h:'経営層トーク', d:'経営層によるプレゼン'},
-    {t:'20:00', h:'交流会', d:'企業経営層とざっくばらんな座談会'},
-    {t:'21:00', h:'フリー交流', d:'さらに話したい経営層と交流'},
-    {t:'21:30', h:'終了予定', d:'気になる企業には専用フォームからアプローチ'},
+    {h:'オープニング'},
+    {h:'経営層トーク'},
+    {h:'少人数で交流'},
+    {h:'終了予定'},
   ],
   voices:[
-    {q:'条件よりも、ビジョンで心が動いた転職', who:'デジタルハリウッド／G’sへ転職・Kさん', body:'求人票をいくら見比べても、「ここで働きたい」と確信を持てる会社にはなかなか出会えませんでした。40代に入り、「子どもに胸を張って語れる仕事ができているだろうか」と自問する中で参加したのがソコナラMEET。創設者や責任者と直接対話し、教育と挑戦で社会を変えようとするビジョンや熱量に触れるうちに、「この環境で自分も本気で挑戦したい」と心が動きました。条件よりも先に納得感が生まれたことが、入社の決め手になりました。'},
-    {q:'経営層のリアルな声が、自分の視野を広げてくれた', who:'株式会社ラグジュアリーへ転職・Sさん', body:'漠然と「次は地域に関わる仕事がしたい」と思う中で参加。経営者の挑戦する姿勢や事業に込めた想いを直接聞くことで、「こういう形で地域に貢献できるのか」と視野が広がりました。求人票ではわからない“人”や“想い”との出会いが、決断の後押しに。イベント後すぐ個別面談を経て、この出会いをきっかけに転職を決めました。'},
+    {q:'条件よりも、ビジョンで心が動いた転職', who:'地域企業へ転職・Kさん', body:'求人票をいくら見比べても、「ここで働きたい」と確信を持てる会社にはなかなか出会えませんでした。40代に入り、「子どもに胸を張って語れる仕事ができているだろうか」と自問する中で参加したのがソコナラMEET。創設者や責任者と直接対話し、教育と挑戦で社会を変えようとするビジョンや熱量に触れるうちに、「この環境で自分も本気で挑戦したい」と心が動きました。条件よりも先に納得感が生まれたことが、入社の決め手になりました。'},
+    {q:'経営層のリアルな声が、自分の視野を広げてくれた', who:'地域企業へ転職・Sさん', body:'漠然と「次は地域に関わる仕事がしたい」と思う中で参加。経営者の挑戦する姿勢や事業に込めた想いを直接聞くことで、「こういう形で地域に貢献できるのか」と視野が広がりました。求人票ではわからない“人”や“想い”との出会いが、決断の後押しに。イベント後すぐ個別面談を経て、この出会いをきっかけに転職を決めました。'},
   ],
   why:[
     {h:'条件ではなく“共感”で選ぶ', d:'経営層の想いに触れることで、「この人と働きたい」「この想いに関わりたい」という出会いが生まれます。'},
@@ -399,12 +400,12 @@ const EV = {
   $('spkIntro').textContent=E.spkIntro;
   $('spkList').innerHTML=E.speakers.map(function(s,i){
     var n=(i+1<10?'0':'')+(i+1);
-    return '<div class="spk"><div class="no">'+n+'</div><div><span class="tag">'+s.tag+'</span><h3>'+s.h+'</h3><p>'+s.p+'</p></div></div>';
+    return '<div class="spk"><div class="spk-av"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5 0-9 2.6-9 6v2h18v-2c0-3.4-4-6-9-6z"/></svg><span class="spk-no">'+n+'</span></div><div><span class="tag">'+s.tag+'</span><h3>'+s.h+'</h3><p>'+s.p+'</p></div></div>';
   }).join('');
   // positions
   $('posCloud').innerHTML=E.positions.map(function(p){return '<span class="pos">'+p+'</span>';}).join('');
   // timeline
-  $('timeline').innerHTML=E.timetable.map(function(r){return '<div class="it"><div class="t">'+r.t+'</div><h4>'+r.h+'</h4><p>'+r.d+'</p></div>';}).join('');
+  $('timeline').innerHTML=E.timetable.map(function(r){return '<div class="it">'+(r.t?'<div class="t">'+r.t+'</div>':'')+'<h4>'+r.h+'</h4>'+(r.d?'<p>'+r.d+'</p>':'')+'</div>';}).join('');
   // facts
   var F=[['開催日',E.date.year+'.'+E.date.num+'（'+E.date.dow+'） '+E.date.time],
     ['会場',E.venue.name+'<br>'+E.venue.addr],
