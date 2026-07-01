@@ -2045,6 +2045,7 @@ function toCompanyRow(c){
     industry:c.industry||'',employeeSize:c.employeeSize||'',companyIntro:c.companyIntro||'',
     tags:c.tags||[],title:c.title||'',quote:c.quote||'',body:c.body||'',q1:c.q1||[],fee:c.fee||'',
     catchphrase:c.catchphrase||'',cc_what:c.cc_what||'',cc_value:c.cc_value||'',cc_life:c.cc_life||'',cardLabel:c.cardLabel||'',wantedProfile:c.wantedProfile||'',summaryComment:c.summaryComment||'',
+    btags:Array.isArray(c.btags)?c.btags:[],rtags:Array.isArray(c.rtags)?c.rtags:[],wb:(c.wb&&typeof c.wb==='object')?c.wb:{},
     status:c.status||'active',created_at:c.created_at||new Date().toISOString(),reactions:c.reactions||0,cta:c.cta||0
   };
 }
@@ -2065,8 +2066,8 @@ async function saveCompanies(arr){
   const rows = companiesCache.map(toCompanyRow);
   // service_role API経由で保存（anon書込はDB側で禁止）
   let r=await adminWrite('companies','upsert',{rows});
-  if(!r.ok && r.error && /catchphrase|cardLabel|card_label|wantedProfile|summaryComment|cc_what|cc_value|cc_life|column/.test(r.error)){
-    const minRows = rows.map(rw=>{ const {catchphrase,cardLabel,heroUrl,wantedProfile,summaryComment,cc_what,cc_value,cc_life,...rest}=rw; return rest; });
+  if(!r.ok && r.error && /catchphrase|cardLabel|card_label|wantedProfile|summaryComment|cc_what|cc_value|cc_life|btags|rtags|wb|column/.test(r.error)){
+    const minRows = rows.map(rw=>{ const {catchphrase,cardLabel,heroUrl,wantedProfile,summaryComment,cc_what,cc_value,cc_life,btags,rtags,wb,...rest}=rw; return rest; });
     const r2=await adminWrite('companies','upsert',{rows:minRows});
     if(!r2.ok){ toast('⚠️ DB保存失敗。SQL Editorで supabase_setup.sql を実行してください。'); }
     else { toast('⚠️ 一部カラム未追加のため除外して保存。SQL Editorでカラム追加を推奨。'); }
