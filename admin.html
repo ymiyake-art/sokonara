@@ -1885,9 +1885,15 @@ async function genReport(id){
 }
 
 // お客様提示用の高デザインPDFレポート（別ウィンドウ→印刷/PDF保存）。genReport実行後の _reportRows を使用。
-function printCompanyReport(id){
+async function printCompanyReport(id){
   const co = loadCompanies().find(c=>String(c.id)===String(id)) || {};
-  let rows = Array.isArray(_reportRows) ? _reportRows.slice() : [];
+  // 経営層別レポートは「共鳴データ」と同じ card_logs を recommended_company で絞る（interest_formsではない）
+  let logs=[];
+  try{
+    const r=await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw,action:'list',table:'card_logs'})});
+    logs=await r.json(); if(!Array.isArray(logs)) logs=[];
+  }catch(e){ toast('データ取得に失敗: '+(e.message||e)); return; }
+  let rows = logs.filter(l=> String(l.recommended_company||'')===String(id));
   if(_resFrom || _resTo){
     const fromT=_resFrom?new Date(_resFrom+'T00:00:00').getTime():-Infinity;
     const toT=_resTo?new Date(_resTo+'T23:59:59').getTime():Infinity;
@@ -1897,9 +1903,8 @@ function printCompanyReport(id){
   const reactions = co?.reactions || 0;
   const cta = rows.filter(r=>r.contact_cta).length;
   const form = rows.filter(r=>r.form_open).length;
-  const q1 = _dist(rows, r=>r.q1_answer);
-  const q2 = _dist(rows, r=>r.q2_values);
-  const ab = _dist(rows, r=>String(r.q3_answer||'').split('、'));
+  const q1 = _dist(rows, r=>r.q1_phrase);
+  const chips = _dist(rows, r=>r.memo_chips);
   const comments = rows.filter(r=>r.ai_message && r.ai_message.trim()).slice(0,6);
   const period = (_resFrom||_resTo) ? ((_resFrom||'開始')+'  〜  '+(_resTo||'現在')) : '全期間';
   const today = new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'});
@@ -1957,17 +1962,15 @@ function printCompanyReport(id){
   <h1>${esc(co.ceo||'')}様（${esc(co.name||co.company||'')}）<br>共鳴レポート</h1>
   <div class="sub">ソコナラ上で、${esc(co.ceo||'貴社')}様の記事に反応した方々の傾向（匿名・個人情報なし）をまとめたものです。</div>
   <div class="kpis">
-    ${kpi('診断した人', total, 'var(--teal-d)')}
+    ${kpi('反応した人', total, 'var(--teal-d)')}
     ${kpi('共感', reactions, 'var(--navy)')}
     ${kpi('興味を伝えた', cta, 'var(--navy)')}
     ${kpi('フォーム開封', form, 'var(--teal-d)')}
   </div>
   <h2>どの言葉に、心が動いたか</h2>
   ${bars(q1)}
-  <h2>いま、求めているもの</h2>
-  ${bars(q2)}
-  <h2>参加者の“いまの状況”</h2>
-  ${bars(ab)}
+  <h2>「自分にもできそう」と感じたこと</h2>
+  ${bars(chips)}
   <h2>寄せられた、あなたへの声（抜粋）</h2>
   ${comments.length? comments.map(function(r){ var dt=r.created_at?new Date(r.created_at).toLocaleDateString('ja-JP',{year:'numeric',month:'numeric',day:'numeric'}):''; return '<div class="voice"><div class="t">'+esc(dt)+'</div><div class="b">'+esc(r.ai_message)+'</div></div>'; }).join('') : '<div class="muted">コメントはまだありません。</div>'}
   <div class="foot">本レポートは、ソコナラ上の匿名の行動データに基づく集計です（氏名・連絡先は記録していません）。<br>運営会社｜株式会社ソコナラ　／　https://sokonara.co.jp　／　発行 ${esc(today)}</div>
