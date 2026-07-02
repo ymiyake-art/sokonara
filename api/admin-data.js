@@ -3,7 +3,8 @@ export const config = { runtime: 'edge' };
 // 管理画面の書き込み専用API（service_role）。
 // companies/challenge_cards/projects への upsert/update/delete を ADMIN_PASSWORD 認証で実行。
 // これにより anon の書き込み権限をDBから剥がせる（改竄・削除の穴を塞ぐ）。
-const TABLES = ['companies', 'challenge_cards', 'projects', 'cases'];
+// meet_entries はPII（氏名）を含むため anon読取不可＝adminは list アクション（認証必須）で閲覧する。
+const TABLES = ['companies', 'challenge_cards', 'projects', 'cases', 'meet_entries'];
 
 export default async function handler(req) {
   const cors = {
@@ -53,6 +54,13 @@ export default async function handler(req) {
       if (!id) return json({ error: 'id required' }, 400);
       const res = await fetch(`${base}?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE', headers: H });
       return json({ ok: res.ok, status: res.status });
+    }
+    if (action === 'list') {
+      // 認証済み管理者のみ全行取得（anon読取不可テーブルの閲覧用。MEET運営の班分け等）
+      const res = await fetch(`${base}?select=*&order=updated_at.desc.nullslast&limit=1000`, { headers: H });
+      const data = res.ok ? await res.json() : [];
+      const txt = res.ok ? '' : await res.text();
+      return json({ ok: res.ok, status: res.status, rows: data, error: txt || undefined }, res.ok ? 200 : 400);
     }
     return json({ error: 'unknown action' }, 400);
   } catch (e) {

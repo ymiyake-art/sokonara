@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>ソコナラMEET 当日ページ</title>
+<style>
+:root{ --navy:#16223f; --teal:#42ad9f; --teal-d:#2e8c7f; --teal-bg:#e9f6f4; --bg:#f4f5f7; --white:#fff; --border:#e2e5ea; --text:#2b2f36; --text2:#6b7280; --text3:#9aa1ab; --hot:#c0341a; }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Noto Sans JP','Hiragino Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px 80px;}
+.hero{background:var(--navy);color:#fff;padding:26px 16px 22px;text-align:center;}
+.hero .mono{font-family:'Courier New',monospace;font-size:10px;letter-spacing:3px;color:var(--teal);margin-bottom:6px;}
+.hero h1{font-size:22px;font-weight:900;letter-spacing:1px;}
+.hero .date{font-size:12px;color:rgba(255,255,255,0.65);margin-top:4px;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:18px;margin-top:16px;}
+.step{font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;color:var(--teal-d);font-weight:700;margin-bottom:6px;}
+.h2{font-size:16px;font-weight:900;color:var(--navy);margin-bottom:8px;}
+.note{font-size:11px;color:var(--text3);line-height:1.8;}
+.btn{display:block;width:100%;padding:13px;border:none;border-radius:8px;background:var(--teal);color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;text-align:center;}
+.btn:disabled{opacity:0.45;}
+.btn-o{background:none;border:1px solid var(--border);color:var(--text2);font-weight:400;}
+input[type=text],textarea{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;background:#fff;}
+textarea{min-height:72px;resize:vertical;}
+.co{display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--border);}
+.co:last-child{border-bottom:none;}
+.co-ph{width:56px;height:56px;border-radius:50%;object-fit:cover;background:var(--navy);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px;}
+.co-name{font-size:14px;font-weight:700;color:var(--navy);}
+.co-corp{font-size:11px;color:var(--text2);}
+.co-catch{font-size:12px;color:var(--text);margin-top:3px;line-height:1.6;}
+.co-links{display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap;}
+.co-art{font-size:11px;color:var(--teal-d);text-decoration:underline;}
+.ck{font-size:12px;font-weight:700;padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;font-family:inherit;}
+.ck.on{background:var(--teal);border-color:var(--teal);color:#fff;}
+.chip{display:inline-block;font-size:12px;padding:7px 13px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;user-select:none;margin:0 6px 8px 0;}
+.chip.on{background:var(--navy);border-color:var(--navy);color:#fff;}
+.q{font-size:13px;font-weight:700;color:var(--navy);margin:18px 0 8px;}
+.q:first-child{margin-top:0;}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:12px;padding:10px 18px;border-radius:20px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:50;white-space:nowrap;}
+.toast.show{opacity:1;}
+.ckbar{position:sticky;top:0;z-index:10;background:var(--navy);color:#fff;font-size:12px;padding:9px 16px;display:none;justify-content:space-between;align-items:center;}
+.ckbar b{color:#7fd8cb;}
+</style>
+</head>
+<body>
+<script>
+// ===== イベント設定（次回以降はここを差し替えるだけ） =====
+var EV = {
+  eventId: 'meet_2026_07_30',
+  title: 'ソコナラMEET',
+  dateLabel: '2026.7.30（木）18:40〜',
+  maxChecks: 3,
+  companyIds: [],                       // 空=掲載中の全経営層。絞る場合は company id を列挙
+  appUrl: 'https://app.sokonara.co.jp'  // 経営層記事の本体アプリ
+};
+var SUPA_URL='https://ypwwuylcvjwcyazvpibd.supabase.co';
+var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd3d1eWxjdmp3Y3lhenZwaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTY1MTMsImV4cCI6MjA5MjI3MjUxM30.7YseXt8libEzFsSAv4bI46l36kZ2lFz_jnh1JphVpvA';
+</script>
+
+<div class="hero">
+  <div class="mono">SOKONARA MEET</div>
+  <h1 id="evTitle">ソコナラMEET</h1>
+  <div class="date" id="evDate"></div>
+  <div style="font-size:12px;color:rgba(255,255,255,0.8);margin-top:10px;line-height:1.8;">今日の目的は、<b style="color:#7fd8cb;">気になる企業・経営層を見つけること</b>。<br>チェックした情報は、後半のテーブル交流の班分けに使われます。</div>
+</div>
+
+<div class="ckbar" id="ckbar"><span>気になる企業 <b id="ckCount">0</b> / <span id="ckMax">3</span></span><span id="ckName" style="color:rgba(255,255,255,0.7);"></span></div>
+
+<div class="wrap">
+
+  <!-- STEP1 氏名登録 -->
+  <div class="card" id="regCard">
+    <div class="step">STEP 1</div>
+    <div class="h2">お名前の登録</div>
+    <div class="note" style="margin-bottom:12px;">気になる企業へのチェック情報は、イベント運営および班分けのためにソコナラが利用します。企業向けレポートには匿名・集計情報として活用します。氏名や連絡先等を企業へ共有するのは、本人が個別接点を希望し、情報共有に同意した場合のみです。</div>
+    <div id="regForm">
+      <input type="text" id="nameIn" placeholder="氏名（フルネーム）" autocomplete="name" style="margin-bottom:10px;">
+      <button class="btn" onclick="register()">同意して登録する</button>
+    </div>
+    <div id="regDone" style="display:none;">
+      <div style="font-size:14px;color:var(--navy);"><b id="regName"></b> さんで登録済み ✓</div>
+      <button class="btn btn-o" style="margin-top:8px;font-size:12px;padding:9px;" onclick="editName()">名前を変更する</button>
+    </div>
+  </div>
+
+  <!-- STEP2 企業一覧＋チェック -->
+  <div class="card">
+    <div class="step">STEP 2</div>
+    <div class="h2">気になる企業にチェック（最大<span id="maxLbl">3</span>社）</div>
+    <div class="note" style="margin-bottom:6px;">プレゼンを聞きながら、いつでも付け替えOK。記事はこの場でも、後日でも読み返せます。</div>
+    <div id="coList"><div class="note" style="padding:20px 0;text-align:center;">読み込み中…</div></div>
+  </div>
+
+  <!-- STEP3 アンケート -->
+  <div class="card" id="svCard">
+    <div class="step">STEP 3</div>
+    <div class="h2">最後のアンケート（1〜2分）</div>
+    <div class="note" style="margin-bottom:12px;">クロージングで案内があったら回答してください。</div>
+    <button class="btn btn-o" id="svOpenBtn" onclick="openSurvey()">アンケートを開く</button>
+    <div id="svForm" style="display:none;">
+      <div class="q">① 詳しく知りたい企業（複数可）</div>
+      <div id="svDeep"></div>
+      <div class="q">② 個別に話してみたい企業（複数可）</div>
+      <div id="svTalk"></div>
+      <div class="q">③ ②を選んだ場合：あなたの氏名を、その企業へ共有してよいですか？</div>
+      <div class="note" style="margin-bottom:8px;">「はい」の方には、後日ソコナラから個別接点のご連絡をします。連絡先等は本人確認のうえで扱います。</div>
+      <div><span class="chip" data-consent="1" onclick="setConsent(this)">はい、共有してよい</span><span class="chip" data-consent="0" onclick="setConsent(this)">いいえ（今回は見送る）</span></div>
+      <div class="q">④ 気になった理由（複数可）</div>
+      <div id="svTags"></div>
+      <div class="q">⑤ 一言コメント（任意）</div>
+      <textarea id="svComment" placeholder="印象に残った言葉・話してみた感想など"></textarea>
+      <button class="btn" style="margin-top:14px;" onclick="submitSurvey()">回答を送信する</button>
+    </div>
+    <!-- 送信後：お礼＋報酬の重心ミニレポート -->
+    <div id="svThanks" style="display:none;">
+      <div style="text-align:center;padding:8px 0 4px;"><div style="font-size:32px;">🎉</div><div style="font-size:15px;font-weight:900;color:var(--navy);margin-top:4px;">ご回答ありがとうございました</div></div>
+      <div style="background:var(--teal-bg);border-radius:10px;padding:14px 16px;margin-top:12px;">
+        <div class="step" style="margin-bottom:2px;">REWARD COMPASS</div>
+        <div style="font-size:14px;font-weight:900;color:var(--navy);">今日のあなたの「報酬の重心」</div>
+        <div class="note" style="margin:4px 0 2px;">チェックした企業と理由から導いた、あなたが仕事に求める報酬のかたち。年収や知名度だけが、キャリアの正解じゃない。</div>
+        <div id="svRadar"></div>
+        <div class="note" style="text-align:center;">※参考値です。企業を評価する数値ではありません。</div>
+      </div>
+      <div style="font-size:12.5px;line-height:1.9;color:var(--text);margin-top:12px;">個別に話したい企業を選んだ方には、後日ソコナラからご連絡します。経営層の記事はこの後もアプリで読み返せます。</div>
+      <a href="#" id="appLink" style="display:block;text-align:center;margin-top:10px;font-size:13px;color:var(--teal-d);text-decoration:underline;">アプリで経営層の記事を見返す →</a>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:20px;text-align:center;">運営：ソコナラ（株式会社ソコナラ）</div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+var AX=[['meaning','意味'],['agency','裁量'],['people','人'],['local','地域'],['time','ゆとり'],['econ','経済']];
+var RTAGS=[['leader','経営者に惹かれた'],['biz','事業内容が面白かった'],['exp','自分の経験が活かせそう'],['local','地域との関わりに惹かれた'],['growth','成長機会がありそう'],['people','働く人・雰囲気が良さそう'],['cond','条件面を詳しく知りたい'],['undecided','まだ判断中']];
+var TAG_AX={leader:{people:10},biz:{meaning:8,agency:6},exp:{agency:10},local:{local:12},growth:{agency:10},people:{people:10},cond:{econ:12}};
+var COS=[];
+var M=null; // {id,name,checks,survey:{deep,talk,consent,rtags,comment},done}
+
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toast(m){ var t=document.getElementById('toastEl'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(function(){t.classList.remove('show');},2200); }
+function clamp(v){ return Math.max(0,Math.min(100,Math.round(v))); }
+function loadM(){ try{ M=JSON.parse(localStorage.getItem('sn_meet')||'null'); }catch(e){ M=null; } if(!M||!M.id) M={id:'meet_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),name:'',checks:[],survey:{deep:[],talk:[],consent:null,rtags:[],comment:''},done:false}; if(!M.survey) M.survey={deep:[],talk:[],consent:null,rtags:[],comment:''}; }
+function saveM(){ localStorage.setItem('sn_meet',JSON.stringify(M)); }
+// サーバ保存（service_role API経由・PIIはmeet_entriesのみに保持）
+function push(set){ if(!M.name) return; try{ fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:M.id,set:Object.assign({event_id:EV.eventId},set)})}).catch(function(){}); }catch(e){} }
+
+function register(){
+  var v=(document.getElementById('nameIn').value||'').trim();
+  if(v.length<2){ toast('氏名を入力してください'); return; }
+  M.name=v; saveM();
+  push({name:M.name,checks:M.checks});
+  paintReg(); toast('登録しました。気になる企業にチェックを！');
+}
+function editName(){ document.getElementById('regForm').style.display='block'; document.getElementById('regDone').style.display='none'; document.getElementById('nameIn').value=M.name; }
+function paintReg(){
+  var ok=!!M.name;
+  document.getElementById('regForm').style.display=ok?'none':'block';
+  document.getElementById('regDone').style.display=ok?'block':'none';
+  if(ok) document.getElementById('regName').textContent=M.name;
+  document.getElementById('ckbar').style.display='flex';
+  document.getElementById('ckName').textContent=ok?M.name+' さん':'未登録';
+  document.getElementById('ckCount').textContent=M.checks.length;
+}
+
+function toggleCheck(id){
+  var i=M.checks.indexOf(id);
+  if(i>=0){ M.checks.splice(i,1); }
+  else{
+    if(M.checks.length>=EV.maxChecks){ toast('チェックは最大'+EV.maxChecks+'社まで。どれか外してから選んでください'); return; }
+    M.checks.push(id);
+  }
+  saveM(); paintCos(); paintReg();
+  if(M.name) push({checks:M.checks}); else toast('お名前を登録すると保存されます');
+}
+function coById(id){ return COS.filter(function(c){return String(c.id)===String(id);})[0]; }
+function paintCos(){
+  var el=document.getElementById('coList');
+  if(!COS.length){ el.innerHTML='<div class="note" style="padding:20px 0;text-align:center;">企業情報を取得できませんでした。通信環境をご確認ください。</div>'; return; }
+  el.innerHTML=COS.map(function(c){
+    var on=M.checks.indexOf(String(c.id))>=0;
+    var ph=c.photoUrl?'<img class="co-ph" src="'+esc(c.photoUrl)+'" alt="">':'<div class="co-ph">'+esc((c.ceo||c.name||'?')[0])+'</div>';
+    return '<div class="co">'+ph+'<div style="flex:1;min-width:0;">'
+      +'<div class="co-name">'+esc(c.ceo||'')+'</div><div class="co-corp">'+esc(c.name||'')+'</div>'
+      +(c.catchphrase?'<div class="co-catch">'+esc(c.catchphrase)+'</div>':'')
+      +'<div class="co-links"><button class="ck'+(on?' on':'')+'" onclick="toggleCheck(\''+esc(c.id)+'\')">'+(on?'✓ 気になる':'☆ 気になる')+'</button>'
+      +'<a class="co-art" href="'+esc(EV.appUrl)+'/?cid='+encodeURIComponent(c.id)+'" target="_blank" rel="noopener">記事を読む ↗</a></div>'
+      +'</div></div>';
+  }).join('');
+}
+
+// ===== アンケート =====
+function openSurvey(){
+  document.getElementById('svOpenBtn').style.display='none';
+  document.getElementById('svForm').style.display='block';
+  var mk=function(boxId,key){ document.getElementById(boxId).innerHTML=COS.map(function(c){ var on=M.survey[key].indexOf(String(c.id))>=0; return '<span class="chip'+(on?' on':'')+'" onclick="togArr(\''+key+'\',\''+esc(c.id)+'\',this)">'+esc(c.ceo||c.name)+'</span>'; }).join(''); };
+  mk('svDeep','deep'); mk('svTalk','talk');
+  document.getElementById('svTags').innerHTML=RTAGS.map(function(t){ var on=M.survey.rtags.indexOf(t[0])>=0; return '<span class="chip'+(on?' on':'')+'" onclick="togArr(\'rtags\',\''+t[0]+'\',this)">'+t[1]+'</span>'; }).join('');
+  document.getElementById('svComment').value=M.survey.comment||'';
+}
+function togArr(key,val,el){ var a=M.survey[key]; var i=a.indexOf(val); if(i>=0)a.splice(i,1); else a.push(val); el.classList.toggle('on'); saveM(); }
+function setConsent(el){ M.survey.consent=el.getAttribute('data-consent')==='1'; saveM(); var ps=el.parentNode.querySelectorAll('.chip'); for(var i=0;i<ps.length;i++)ps[i].classList.remove('on'); el.classList.add('on'); }
+function submitSurvey(){
+  if(!M.name){ toast('先にSTEP1でお名前を登録してください'); return; }
+  if(M.survey.talk.length && M.survey.consent==null){ toast('③ 氏名共有の可否を選んでください'); return; }
+  M.survey.comment=(document.getElementById('svComment').value||'').slice(0,500);
+  M.done=true; saveM();
+  push({name:M.name,checks:M.checks,deep:M.survey.deep,talk:M.survey.talk,consent:M.survey.consent,rtags:M.survey.rtags,comment:M.survey.comment,survey_done:true});
+  paintThanks();
+}
+// ===== 報酬の重心（チェック企業のwb＋理由タグから導出。PII不使用・派生値のみ） =====
+function centroid(){
+  var w={meaning:52,agency:52,people:52,local:52,time:52,econ:50};
+  var ids={}; M.checks.concat(M.survey.deep,M.survey.talk).forEach(function(id){ids[id]=1;});
+  Object.keys(ids).forEach(function(id){ var c=coById(id); if(!c)return; var wb=(c.wb&&typeof c.wb==='object')?c.wb:{};
+    AX.forEach(function(a){ var v=(wb[a[0]]!=null)?wb[a[0]]:60; w[a[0]]=clamp(w[a[0]]+(v-58)*0.35); }); });
+  M.survey.rtags.forEach(function(t){ var m=TAG_AX[t]; if(m) Object.keys(m).forEach(function(k){ w[k]=clamp(w[k]+m[k]); }); });
+  return w;
+}
+function radar(w){
+  var cx=130,cy=118,R=82;
+  function pt(i,val){ var a=(-90+i*60)*Math.PI/180,r=R*clamp(val)/100; return [cx+r*Math.cos(a),cy+r*Math.sin(a)]; }
+  function ring(g){ var p=[]; for(var i=0;i<6;i++){var q=pt(i,g);p.push(q[0].toFixed(1)+','+q[1].toFixed(1));} return '<polygon points="'+p.join(' ')+'" fill="none" stroke="rgba(22,34,63,0.1)"/>'; }
+  var s='<svg viewBox="0 0 260 240" width="100%" style="max-width:280px;display:block;margin:4px auto;">';
+  [33,66,100].forEach(function(g){s+=ring(g);});
+  for(var i=0;i<6;i++){ var e=pt(i,100); s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+e[0].toFixed(1)+'" y2="'+e[1].toFixed(1)+'" stroke="rgba(22,34,63,0.1)"/>'; }
+  var p=[]; for(var j=0;j<6;j++){ var q=pt(j,w[AX[j][0]]); p.push(q[0].toFixed(1)+','+q[1].toFixed(1)); }
+  s+='<polygon points="'+p.join(' ')+'" fill="rgba(47,156,141,0.26)" stroke="#2f9c8d" stroke-width="2"/>';
+  for(var k=0;k<6;k++){ var lp=pt(k,126); s+='<text x="'+lp[0].toFixed(1)+'" y="'+lp[1].toFixed(1)+'" font-size="10.5" fill="#4a4f58" text-anchor="middle" dominant-baseline="middle">'+AX[k][1]+'</text>'; }
+  return s+'</svg>';
+}
+function paintThanks(){
+  document.getElementById('svForm').style.display='none';
+  document.getElementById('svOpenBtn').style.display='none';
+  document.getElementById('svThanks').style.display='block';
+  document.getElementById('svRadar').innerHTML=radar(centroid());
+  document.getElementById('appLink').href=EV.appUrl+'/';
+}
+
+// ===== 初期化 =====
+(function init(){
+  document.getElementById('evTitle').textContent=EV.title;
+  document.getElementById('evDate').textContent=EV.dateLabel;
+  document.getElementById('maxLbl').textContent=EV.maxChecks;
+  document.getElementById('ckMax').textContent=EV.maxChecks;
+  loadM(); paintReg();
+  if(M.done) paintThanks();
+  fetch(SUPA_URL+'/rest/v1/companies?select=*&order=created_at.asc',{headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY}})
+    .then(function(r){return r.json();})
+    .then(function(rows){
+      rows=(rows||[]).filter(function(c){ return (c.status||'active')==='active'; });
+      if(EV.companyIds.length) rows=rows.filter(function(c){ return EV.companyIds.indexOf(String(c.id))>=0; });
+      COS=rows.map(function(c){ c.id=String(c.id); return c; });
+      paintCos();
+      if(M.done) document.getElementById('svRadar').innerHTML=radar(centroid());
+    })
+    .catch(function(){ paintCos(); });
+})();
+</script>
+</body>
+</html>

@@ -203,6 +203,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
         <div class="nav-item" id="ni-biz" onclick="switchTab('biz')"><div class="nav-dot" style="background:var(--teal)"></div>🏢 法人問い合わせ<span class="nav-badge" id="biz-badge" data-count="0"></span></div>
         <div class="nav-item" id="ni-report" onclick="switchTab('report')"><div class="nav-dot" style="background:var(--navy)"></div>AIレポート</div>
         <div class="nav-item" id="ni-broadcast" onclick="switchTab('broadcast')"><div class="nav-dot" style="background:#06c755"></div>LINE配信</div>
+        <div class="nav-item" id="ni-meetops" onclick="switchTab('meetops')"><div class="nav-dot" style="background:#e67e22"></div>🎪 MEET運営</div>
       </div>
       <div class="admin-nav" style="border-top:1px solid rgba(255,255,255,0.07);padding-top:12px;">
         <div class="admin-nav-label">登録・管理</div>
@@ -348,7 +349,7 @@ function switchTab(tab){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const ni=document.getElementById('ni-'+tab);
   if(ni) ni.classList.add('active');
-  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',biz:'🏢 法人問い合わせ',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',article:'📝 記事管理',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧',wbmatrix:'📈 Well-beingマトリクス',cards:'🗂️ 課題カード(v2)',resonance:'📊 共鳴データ(v2)',utmlinks:'🔗 配信リンク・UTM',cases:'✨ 出会いの実例(LP)',philosophy:'🧭 設計思想'};
+  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',biz:'🏢 法人問い合わせ',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',meetops:'🎪 MEET運営（班分け・興味データ）',article:'📝 記事管理',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧',wbmatrix:'📈 Well-beingマトリクス',cards:'🗂️ 課題カード(v2)',resonance:'📊 共鳴データ(v2)',utmlinks:'🔗 配信リンク・UTM',cases:'✨ 出会いの実例(LP)',philosophy:'🧭 設計思想'};
   document.getElementById('tabTitle').textContent=titles[tab]||tab;
   if(tab === 'interests'){
     // 既読としてマーク
@@ -359,7 +360,7 @@ function switchTab(tab){
     localStorage.setItem('snLastSeenBiz', new Date().toISOString());
     setBizBadge(0);
   }
-  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,biz:renderBiz,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,article:renderArticleEditor,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList,wbmatrix:renderWBMatrix,cards:renderCardsAdmin,resonance:renderResonance,utmlinks:renderUtmLinks,cases:renderCases,philosophy:renderPhilosophy};
+  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,biz:renderBiz,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,meetops:renderMeetAdmin,article:renderArticleEditor,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList,wbmatrix:renderWBMatrix,cards:renderCardsAdmin,resonance:renderResonance,utmlinks:renderUtmLinks,cases:renderCases,philosophy:renderPhilosophy};
   fns[tab]?.();
 }
 
@@ -2959,6 +2960,79 @@ async function wbSaveAll(){
       toast('Well-beingスコアを一括保存しました');
     }
   }finally{ btn.disabled=false; btn.textContent='💾 一括保存'; }
+}
+
+// ===== 🎪 MEET運営（meet_entries＝PIIテーブル。閲覧はadmin-data listアクション＝認証必須のみ） =====
+const MEET_RTAGS={leader:'経営者に惹かれた',biz:'事業が面白い',exp:'経験活かせそう',local:'地域との関わり',growth:'成長機会',people:'人・雰囲気',cond:'条件面',undecided:'判断中'};
+async function renderMeetAdmin(){
+  const box=document.getElementById('adminContent');
+  box.innerHTML=`<div style="padding:24px"><div style="color:var(--text3);font-size:13px">参加者データを読み込み中…</div></div>`;
+  let rows=[];
+  try{
+    const res=await fetch('/api/admin-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw,table:'meet_entries',action:'list'})});
+    const d=await res.json();
+    if(!res.ok||d.ok===false) throw new Error(d.error||('API '+res.status));
+    rows=d.rows||[];
+  }catch(e){
+    box.innerHTML=`<div style="padding:24px"><div style="color:var(--hot);font-weight:700;margin-bottom:8px">参加者データを取得できませんでした。</div><div style="font-size:13px;color:var(--text2);line-height:1.8">meet_entries テーブル未作成の可能性。SQL Editorで <code>meet_entries_setup.sql</code> を実行してください。<br>エラー: ${escA(e.message||e)}</div></div>`;
+    return;
+  }
+  const cos=loadCompanies();
+  const coName=id=>{ const c=cos.find(x=>String(x.id)===String(id)); return c?(c.ceo||c.name||id):id; };
+  // イベント別に絞り込み（最新イベントを既定）
+  const evs=[...new Set(rows.map(r=>r.event_id).filter(Boolean))];
+  const curEv=window._meetEv||evs[0]||'';
+  if(curEv) rows=rows.filter(r=>r.event_id===curEv);
+  const nAll=rows.length;
+  const nCk=rows.filter(r=>(r.checks||[]).length).length;
+  const nSv=rows.filter(r=>r.survey_done).length;
+  const nCs=rows.filter(r=>r.consent===true).length;
+  // 社別集計
+  const agg={};
+  cos.forEach(c=>{ agg[String(c.id)]={ck:0,deep:0,talk:0,names:[],talks:[]}; });
+  rows.forEach(r=>{
+    (r.checks||[]).forEach(id=>{ if(agg[id]){ agg[id].ck++; agg[id].names.push(r.name||'（無名）'); } });
+    (r.deep||[]).forEach(id=>{ if(agg[id]) agg[id].deep++; });
+    (r.talk||[]).forEach(id=>{ if(agg[id]){ agg[id].talk++; agg[id].talks.push((r.name||'（無名）')+(r.consent===true?'':'（共有不可）')); } });
+  });
+  // 理由タグ分布
+  const tagCnt={};
+  rows.forEach(r=>(r.rtags||[]).forEach(t=>{ tagCnt[t]=(tagCnt[t]||0)+1; }));
+  const tagChips=Object.entries(tagCnt).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`<span style="font-size:11px;background:var(--teal-bg);color:var(--teal-d);border-radius:20px;padding:4px 11px;">${escA(MEET_RTAGS[t]||t)} <b>${n}</b></span>`).join(' ')||'<span style="font-size:12px;color:var(--text3)">まだありません</span>';
+  const th=(t,r)=>`<th style="text-align:${r?'right':'left'};padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">${t}</th>`;
+  const td=(v,r,b)=>`<td style="padding:8px 10px;border-bottom:1px solid var(--border);${r?'text-align:right;':''}${b?'font-weight:700;color:#2e8c7f;':''}">${v}</td>`;
+  box.innerHTML=`
+    <div style="padding:24px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+        <div style="font-size:12px;color:var(--text2)">当日ページ: <a href="/meet/day.html" target="_blank" style="color:var(--teal-d)">/meet/day.html ↗</a>（受付でQR配布）</div>
+        ${evs.length>1?`<select onchange="window._meetEv=this.value;renderMeetAdmin();" style="margin-left:auto;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;">${evs.map(e=>`<option value="${escA(e)}"${e===curEv?' selected':''}>${escA(e)}</option>`).join('')}</select>`:''}
+        <button onclick="renderMeetAdmin()" style="margin-left:auto;padding:6px 14px;border:1px solid var(--border);background:#fff;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;">🔄 更新</button>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
+        ${[['登録者',nAll],['チェックあり',nCk],['アンケ回答',nSv],['共有同意',nCs]].map(([l,n])=>`<div style="flex:1;min-width:120px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px;"><div style="font-size:11px;color:var(--text2)">${l}</div><div style="font-size:22px;font-weight:700;color:var(--navy)">${n}</div></div>`).join('')}
+      </div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px;">社別の興味（班分け用）</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">チェック＝気になる／詳しく＝詳しく知りたい／話したい＝個別接点希望（（共有不可）＝本人が氏名共有に不同意）。</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead><tr>${th('経営層')}${th('チェック',1)}${th('詳しく',1)}${th('話したい',1)}${th('チェックした人')}</tr></thead>
+          <tbody>${cos.map(c=>{ const a=agg[String(c.id)]||{ck:0,deep:0,talk:0,names:[],talks:[]};
+            return `<tr>${td('<b style="color:var(--navy)">'+escA(c.ceo||c.name||'')+'</b><div style="font-size:10px;color:var(--text3)">'+escA(c.name||'')+'</div>')}${td(a.ck,1)}${td(a.deep,1)}${td(a.talk,1,a.talk>0)}${td('<span style="font-size:11px;color:var(--text2)">'+escA(a.names.join('、'))+(a.talks.length?'<br><span style="color:#2e8c7f">話したい: '+escA(a.talks.join('、'))+'</span>':'')+'</span>')}</tr>`; }).join('')}</tbody>
+        </table>
+      </div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:10px;">理由タグの傾向（匿名集計＝企業レポート用）</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;">${tagChips}</div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px;">参加者一覧（${nAll}名）</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">⚠️ 氏名はイベント運営・班分け専用。企業共有は「共有✓」の本人のみ。</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead><tr>${th('氏名')}${th('チェック')}${th('詳しく')}${th('話したい')}${th('共有',1)}${th('コメント')}</tr></thead>
+          <tbody>${rows.map(r=>`<tr>${td('<b style="color:var(--navy)">'+escA(r.name||'（無名）')+'</b>')}${td('<span style="font-size:11px">'+escA((r.checks||[]).map(coName).join('、'))+'</span>')}${td('<span style="font-size:11px">'+escA((r.deep||[]).map(coName).join('、'))+'</span>')}${td('<span style="font-size:11px;color:#2e8c7f;font-weight:700">'+escA((r.talk||[]).map(coName).join('、'))+'</span>')}${td(r.consent===true?'✓':(r.consent===false?'×':'—'),1)}${td('<span style="font-size:11px;color:var(--text2)">'+escA((r.comment||'').slice(0,60))+'</span>')}</tr>`).join('')||'<tr><td colspan="6" style="padding:16px;color:var(--text3);font-size:12px;">まだ登録がありません。</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>`;
 }
 
 // ===== 記事管理 =====
