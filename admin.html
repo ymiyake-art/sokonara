@@ -209,6 +209,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
         <div class="nav-item" id="ni-article" onclick="switchTab('article')"><div class="nav-dot" style="background:#f39c12"></div>📝 記事管理</div>
         <div class="nav-item" id="ni-addpj" onclick="switchTab('addpj')"><div class="nav-dot" style="background:#27ae60"></div>共創テーマ登録</div>
         <div class="nav-item" id="ni-colist" onclick="switchTab('colist')"><div class="nav-dot" style="background:var(--teal)"></div>掲載企業一覧</div>
+        <div class="nav-item" id="ni-wbmatrix" onclick="switchTab('wbmatrix')"><div class="nav-dot" style="background:#2980b9"></div>📈 Well-beingマトリクス</div>
         <div class="nav-item" id="ni-cards" onclick="switchTab('cards')"><div class="nav-dot" style="background:#9b59b6"></div>🗂️ 課題カード(v2)</div>
         <div class="nav-item" id="ni-utmlinks" onclick="switchTab('utmlinks')"><div class="nav-dot" style="background:#16a085"></div>🔗 配信リンク・UTM</div>
         <div class="nav-item" id="ni-cases" onclick="switchTab('cases')"><div class="nav-dot" style="background:#e74c3c"></div>✨ 出会いの実例(LP)</div>
@@ -347,7 +348,7 @@ function switchTab(tab){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const ni=document.getElementById('ni-'+tab);
   if(ni) ni.classList.add('active');
-  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',biz:'🏢 法人問い合わせ',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',article:'📝 記事管理',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧',cards:'🗂️ 課題カード(v2)',resonance:'📊 共鳴データ(v2)',utmlinks:'🔗 配信リンク・UTM',cases:'✨ 出会いの実例(LP)',philosophy:'🧭 設計思想'};
+  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',biz:'🏢 法人問い合わせ',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',article:'📝 記事管理',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧',wbmatrix:'📈 Well-beingマトリクス',cards:'🗂️ 課題カード(v2)',resonance:'📊 共鳴データ(v2)',utmlinks:'🔗 配信リンク・UTM',cases:'✨ 出会いの実例(LP)',philosophy:'🧭 設計思想'};
   document.getElementById('tabTitle').textContent=titles[tab]||tab;
   if(tab === 'interests'){
     // 既読としてマーク
@@ -358,7 +359,7 @@ function switchTab(tab){
     localStorage.setItem('snLastSeenBiz', new Date().toISOString());
     setBizBadge(0);
   }
-  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,biz:renderBiz,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,article:renderArticleEditor,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList,cards:renderCardsAdmin,resonance:renderResonance,utmlinks:renderUtmLinks,cases:renderCases,philosophy:renderPhilosophy};
+  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,biz:renderBiz,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,article:renderArticleEditor,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList,wbmatrix:renderWBMatrix,cards:renderCardsAdmin,resonance:renderResonance,utmlinks:renderUtmLinks,cases:renderCases,philosophy:renderPhilosophy};
   fns[tab]?.();
 }
 
@@ -2069,11 +2070,13 @@ async function saveCompanies(arr){
   if(!r.ok && r.error && /catchphrase|cardLabel|card_label|wantedProfile|summaryComment|cc_what|cc_value|cc_life|btags|rtags|wb|column/.test(r.error)){
     const minRows = rows.map(rw=>{ const {catchphrase,cardLabel,heroUrl,wantedProfile,summaryComment,cc_what,cc_value,cc_life,btags,rtags,wb,...rest}=rw; return rest; });
     const r2=await adminWrite('companies','upsert',{rows:minRows});
-    if(!r2.ok){ toast('⚠️ DB保存失敗。SQL Editorで supabase_setup.sql を実行してください。'); }
-    else { toast('⚠️ 一部カラム未追加のため除外して保存。SQL Editorでカラム追加を推奨。'); }
+    if(!r2.ok){ toast('⚠️ DB保存失敗。SQL Editorで supabase_setup.sql を実行してください。'); return false; }
+    else { toast('⚠️ 一部カラム未追加のため除外して保存。SQL Editorでカラム追加を推奨。'); return false; }
   } else if(!r.ok){
     toast('⚠️ DB保存失敗: ' + String(r.error||r.status).slice(0,80));
+    return false;
   }
+  return true;
 }
 function loadProjects(){
   if(Array.isArray(projectsCache) && projectsCache.length) return projectsCache;
@@ -2822,6 +2825,129 @@ function deletePj(id){
   saveProjects(arr);
   toast('削除しました');
   renderCoList();
+}
+
+// ===== Well-being マトリクス（企業×6軸を横並びで一括管理）=====
+// 総合列は作らない方針。値はフロア45・上限90にクランプ。保存先は companies.wb（jsonb）。
+const WB_AXES=[['meaning','意味・使命'],['agency','裁量・挑戦'],['people','人・近さ'],['local','地域・つながり'],['time','時間・ゆとり'],['econ','経済（年収）']];
+const WB_FLOOR=45, WB_CAP=90;
+let _wbDirty={};
+function wbClamp(v){ v=parseInt(v); if(isNaN(v)) return null; return Math.max(WB_FLOOR, Math.min(WB_CAP, v)); }
+// 記事本文（body JSONセクション or プレーンテキスト）からAI推定用テキストを組み立て
+function wbArticleText(co){
+  const b=co.body||'';
+  if(b.trimStart().startsWith('[')){
+    try{
+      const secs=JSON.parse(b);
+      return secs.map(s=>[s.heading,s.body,(s.items||[]).map(i=>(i.q||'')+' '+(i.a||'')).join(' ')].filter(Boolean).join('\n')).join('\n\n');
+    }catch{}
+  }
+  return b;
+}
+async function renderWBMatrix(){
+  const box=document.getElementById('adminContent');
+  box.innerHTML=`<div style="padding:24px"><div style="color:var(--text3);font-size:13px">企業を読み込み中…</div></div>`;
+  const cos=await loadCompaniesAsync();
+  _wbDirty={};
+  if(!cos.length){ box.innerHTML=`<div style="padding:24px;color:var(--text2);font-size:13px">企業が登録されていません。</div>`; return; }
+  const rows=cos.map(c=>{
+    const wb=(c.wb&&typeof c.wb==='object')?c.wb:{};
+    const cells=WB_AXES.map(a=>{
+      const v=(wb[a[0]]!=null)?Math.max(WB_FLOOR,Math.min(WB_CAP,parseInt(wb[a[0]])||WB_FLOOR)):'';
+      return `<td style="padding:4px 6px;text-align:center"><input class="wbm-in" data-co="${escA(c.id)}" data-k="${a[0]}" type="number" min="${WB_FLOOR}" max="${WB_CAP}" value="${v}" placeholder="—" onchange="wbCellChange(this)" style="width:52px;padding:5px 4px;text-align:center;border:1px solid var(--border);border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--white)"></td>`;
+    }).join('');
+    return `<tr style="border-bottom:0.5px solid var(--border)">
+      <td style="padding:8px 10px;white-space:nowrap"><div style="font-size:12px;font-weight:700;color:var(--navy)">${escA(c.name||'')}</div><div style="font-size:10px;color:var(--text3)">${escA(c.ceo||'')}</div></td>
+      ${cells}
+      <td style="padding:4px 8px;text-align:center"><button class="wbm-ai" data-co="${escA(c.id)}" onclick="wbEstimateRow('${escA(c.id)}',this)" style="font-family:'JetBrains Mono',monospace;font-size:9px;padding:4px 10px;border:1px solid var(--teal);background:var(--teal-bg);cursor:pointer;color:var(--teal-d);border-radius:2px;white-space:nowrap">✨ AI推定</button></td>
+    </tr>`;
+  }).join('');
+  box.innerHTML=`
+    <div style="padding:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap">
+        <div style="font-size:12px;color:var(--text2);line-height:1.7">全${cos.length}社の Career Well-being 6軸を横並びで編集。値は${WB_FLOOR}〜${WB_CAP}（フロア${WB_FLOOR}・上限${WB_CAP}）。<br>✨AI推定は記事から意味/裁量/人/地域の4軸のみ更新（時間・経済は手動）。編集後は右の一括保存で反映。</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span id="wbm-dirty" style="font-size:11px;color:var(--hot);font-family:'JetBrains Mono',monospace"></span>
+          <button id="wbm-aiall" onclick="wbEstimateAll()" style="padding:8px 14px;background:var(--navy);color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">✨ 全社AI推定(4軸)</button>
+          <button id="wbm-save" onclick="wbSaveAll()" style="padding:8px 16px;background:var(--teal);color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">💾 一括保存</button>
+        </div>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;overflow-x:auto">
+        <table style="border-collapse:collapse;width:100%;min-width:720px">
+          <thead><tr style="border-bottom:1px solid var(--border);background:rgba(22,34,63,0.03)">
+            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--text2);font-family:'JetBrains Mono',monospace;letter-spacing:0.06em">企業 / 経営層</th>
+            ${WB_AXES.map(a=>`<th style="padding:8px 4px;font-size:10px;color:var(--text2);font-weight:700;white-space:nowrap">${a[1]}</th>`).join('')}
+            <th style="padding:8px 4px;font-size:10px;color:var(--text2)">記事から</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+function wbCellChange(el){
+  const v=wbClamp(el.value);
+  if(v==null){ el.value=''; } else { el.value=v; }
+  _wbDirty[el.getAttribute('data-co')+'.'+el.getAttribute('data-k')]=true;
+  el.style.background='rgba(66,173,159,0.12)';
+  const d=document.getElementById('wbm-dirty'); if(d) d.textContent='未保存 '+Object.keys(_wbDirty).length+'件';
+}
+// 1社ぶんの4軸（意味/裁量/人/地域）をAI推定してセルに反映（time/econは触らない）
+async function wbEstimateRow(coId, btn){
+  const co=loadCompanies().find(c=>String(c.id)===String(coId));
+  if(!co){ toast('企業が見つかりません'); return; }
+  const articleText=wbArticleText(co);
+  if(!articleText || articleText.length<50){ toast((co.name||coId)+': 記事本文が無いため推定できません'); return; }
+  if(btn){ btn.disabled=true; btn.textContent='推定中…'; }
+  try{
+    const res=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({type:'wbscore',data:{ceo:co.ceo||'',company:co.name||co.company||'',articleText}})});
+    if(!res.ok) throw new Error('API '+res.status);
+    const d=await res.json(); const txt=d.content?.[0]?.text||''; const m=txt.match(/\{[\s\S]*\}/); const p=JSON.parse(m?m[0]:txt);
+    ['meaning','agency','people','local'].forEach(k=>{
+      if(p[k]==null) return;
+      const v=wbClamp(p[k]); if(v==null) return;
+      const el=document.querySelector('.wbm-in[data-co="'+CSS.escape(String(coId))+'"][data-k="'+k+'"]');
+      if(el){ el.value=v; wbCellChange(el); }
+    });
+    return true;
+  }catch(e){ toast('推定失敗('+(co.name||coId)+'): '+(e.message||e)); return false; }
+  finally{ if(btn){ btn.disabled=false; btn.textContent='✨ AI推定'; } }
+}
+// 全社を順番にAI推定（API負荷を避けて直列）
+async function wbEstimateAll(){
+  const btn=document.getElementById('wbm-aiall'); if(!btn||btn.disabled) return;
+  if(!confirm('全社の4軸（意味/裁量/人/地域）をAIで推定し直します。時間・経済は変わりません。よろしいですか？')) return;
+  const cos=loadCompanies(); btn.disabled=true;
+  let done=0;
+  for(let i=0;i<cos.length;i++){
+    btn.textContent='推定中 '+(i+1)+'/'+cos.length+'…';
+    const rowBtn=document.querySelector('.wbm-ai[data-co="'+CSS.escape(String(cos[i].id))+'"]');
+    const ok=await wbEstimateRow(cos[i].id, rowBtn);
+    if(ok) done++;
+  }
+  btn.disabled=false; btn.textContent='✨ 全社AI推定(4軸)';
+  toast(done+'/'+cos.length+'社を推定しました。内容を確認して一括保存してください');
+}
+// 画面上の全セルを companies.wb に反映して一括保存
+async function wbSaveAll(){
+  const btn=document.getElementById('wbm-save'); if(!btn||btn.disabled) return;
+  const cos=loadCompanies();
+  document.querySelectorAll('.wbm-in').forEach(el=>{
+    const co=cos.find(c=>String(c.id)===String(el.getAttribute('data-co'))); if(!co) return;
+    const v=wbClamp(el.value); if(v==null) return;
+    if(!co.wb||typeof co.wb!=='object') co.wb={};
+    co.wb[el.getAttribute('data-k')]=v;
+  });
+  btn.disabled=true; btn.textContent='保存中…';
+  try{
+    const ok=await saveCompanies(cos);
+    if(ok){
+      _wbDirty={};
+      const d=document.getElementById('wbm-dirty'); if(d) d.textContent='';
+      document.querySelectorAll('.wbm-in').forEach(el=>{ el.style.background='var(--white)'; });
+      toast('Well-beingスコアを一括保存しました');
+    }
+  }finally{ btn.disabled=false; btn.textContent='💾 一括保存'; }
 }
 
 // ===== 記事管理 =====
