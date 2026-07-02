@@ -1425,15 +1425,90 @@ function renderPhilosophy(){
 
     <div style="${card('background:linear-gradient(135deg,var(--navy),#243566);color:#fff;border:none')}">
       <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--teal);margin-bottom:8px">DESIGN PHILOSOPHY</div>
-      <div style="font-family:'Noto Serif JP',serif;font-size:18px;font-weight:700;margin-bottom:10px;line-height:1.6">「仕事を探す」のではなく、<br>課題との出会いから<strong style="color:var(--teal)">自分の価値観を発見する</strong></div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.82);line-height:1.9">ソコナラは求人・マッチングサービスではありません。求職前の生活者が、地域の経営者が抱える「課題」と偶然出会い、<b style="color:#fff">「この課題なら自分の出番があるかも」</b>という手応えから、自分の興味・価値観に気づいていく——そんなキャリア共創の体験を設計しています。条件提示を先に置かず、<b style="color:#fff">課題 → 人 → 接点</b>の順で温度を高めます。</div>
+      <div style="font-family:'Noto Serif JP',serif;font-size:18px;font-weight:700;margin-bottom:10px;line-height:1.6">年収だけが、仕事の報酬じゃない。<br>出会いから<strong style="color:var(--teal)">“報酬の重心”を発見する</strong></div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.82);line-height:1.9">ソコナラは求人・マッチングサービスではありません。地域の経営層との<b style="color:#fff">偶然の出会い</b>に反応するうちに、年収以外の報酬——意味・裁量・人・地域・ゆとり——のどれを自分が大事にしているか＝<b style="color:#fff">報酬の重心</b>に気づいていく。その重心を確かめる方法は、会って話すことだけ。だから接点（興味を伝える）は温度が上がった最後に、軽く置きます。順序は常に <b style="color:#fff">出会い → 反応 → 発見 → 接点</b>。</div>
     </div>
 
     <div style="${card()}">
-      ${h('なぜこの設計か（背景）')}
+      ${h('なぜこの設計か（背景と変遷）')}
       <div style="font-size:13px;color:var(--text);line-height:1.95">
-        従来は「記事を読む→いきなり診断→LINE登録ゲート→接点」と、ユーザーの温度より先に“経営層と話す”を要求していました。人はいきなり転職・面談を望むわけではありません。まず<b>自分ごとに感じられる課題</b>に触れ、軽い反応（カード選択・記事・診断閲覧）を積み重ねてから、最後に接点へ。重い関門は最後だけに置く設計です。
+        人はいきなり転職・面談を望みません。初期は「記事→診断→LINEゲート→接点」と温度より先に要求を置いて失敗。<b>2026-06末の自己発見ピボット</b>でAIレポートを主役に（要約は無料）、<b>07-02の報酬の重心ピボット</b>で「診断が答えを出す」のではなく「重心という仮説を出し、会って確かめる」構造に。重い関門（LINE）は“ことばの読み解き”という深い価値の手前だけに置き、数値レーダーは無料。経営層を点数で評価して見せることはしない（＝企業側の<b>自己開示</b>という立て付け。数値は将来変化の推定にだけ内部使用）。
       </div>
+    </div>
+
+    <div style="${card()}">
+      ${h('顧客の動き（全体模式図）','WEB・MEETの2つの入口が同じ「報酬の重心」に合流し、接点（興味を伝える）に向かう。AI＝紺バッジ、計測＝下段の点線。')}
+      <div style="overflow-x:auto">
+      <svg viewBox="0 0 880 505" style="min-width:760px;width:100%;display:block" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="phAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8a93a3"/></marker></defs>
+        <style>
+          .phB{fill:#fff;stroke:#42ad9f;stroke-width:1.3;rx:8}
+          .phT{font-family:'Noto Sans JP',sans-serif;font-size:11px;font-weight:700;fill:#16223f}
+          .phS{font-family:'Noto Sans JP',sans-serif;font-size:9px;fill:#6b7280}
+          .phL{stroke:#8a93a3;stroke-width:1.2;fill:none;marker-end:url(#phAr)}
+          .phLd{stroke:#b3bac6;stroke-width:1.1;fill:none;marker-end:url(#phAr);stroke-dasharray:4 3}
+          .phAi{font-family:'JetBrains Mono',monospace;font-size:8px;fill:#fff}
+        </style>
+        <text x="20" y="22" class="phT" style="font-size:12px">WEB（アプリ）</text>
+        <rect x="20" y="34" width="124" height="42" rx="8" class="phB"/><text x="82" y="51" text-anchor="middle" class="phT">① ピンとくる経営層</text><text x="82" y="65" text-anchor="middle" class="phS">/pf 運命マッチVS</text>
+        <rect x="20" y="88" width="124" height="42" rx="8" class="phB"/><text x="82" y="105" text-anchor="middle" class="phT">② モヤモヤ逆引き</text><text x="82" y="119" text-anchor="middle" class="phS">8択 → 3人を推薦</text>
+        <path class="phL" d="M144 55 L166 72"/><path class="phL" d="M144 109 L166 92"/>
+        <rect x="170" y="60" width="104" height="44" rx="8" class="phB"/><text x="222" y="78" text-anchor="middle" class="phT">経営層の記事</text><text x="222" y="92" text-anchor="middle" class="phS">想い・挑戦・課題</text>
+        <path class="phL" d="M274 82 L306 82"/>
+        <rect x="310" y="60" width="96" height="44" rx="8" class="phB"/><text x="358" y="78" text-anchor="middle" class="phT">反応 4問</text><text x="358" y="92" text-anchor="middle" class="phS">刺さった言葉 等</text>
+        <path class="phL" d="M406 82 L438 82"/>
+        <rect x="442" y="60" width="118" height="44" rx="8" class="phB"/><text x="501" y="78" text-anchor="middle" class="phT">WORKING HINT</text><text x="501" y="92" text-anchor="middle" class="phS">要約・無料</text>
+        <rect x="524" y="52" width="30" height="14" rx="7" fill="#16223f"/><text x="539" y="62" text-anchor="middle" class="phAi">AI</text>
+        <path class="phL" d="M560 82 L592 82"/>
+        <rect x="596" y="60" width="122" height="44" rx="8" class="phB" style="stroke-width:2"/><text x="657" y="78" text-anchor="middle" class="phT">報酬の重心</text><text x="657" y="92" text-anchor="middle" class="phS">6軸レーダー＋比較</text>
+        <path class="phL" d="M718 82 L750 82"/>
+        <rect x="754" y="60" width="106" height="44" rx="8" fill="#42ad9f"/><text x="807" y="78" text-anchor="middle" class="phT" style="fill:#fff">興味を伝える</text><text x="807" y="92" text-anchor="middle" class="phS" style="fill:rgba(255,255,255,0.85)">form_open＝CV</text>
+        <path class="phL" d="M501 104 L501 138"/>
+        <rect x="442" y="142" width="118" height="40" rx="8" fill="#fff" stroke="#06c755" stroke-width="1.3"/><text x="501" y="159" text-anchor="middle" class="phT">LINE登録</text><text x="501" y="172" text-anchor="middle" class="phS">任意・ここだけ関門</text>
+        <path class="phL" d="M560 162 L592 162"/>
+        <rect x="596" y="142" width="150" height="40" rx="8" fill="#fff" stroke="#06c755" stroke-width="1.3"/><text x="671" y="159" text-anchor="middle" class="phT">詳細レポート</text><text x="671" y="172" text-anchor="middle" class="phS">AIことば＋重心マトリクス</text>
+        <rect x="712" y="134" width="30" height="14" rx="7" fill="#16223f"/><text x="727" y="144" text-anchor="middle" class="phAi">AI</text>
+        <path class="phLd" d="M442 162 C 300 162 240 130 226 108"/><text x="300" y="150" class="phS">近況・新着 → 再訪</text>
+
+        <text x="20" y="222" class="phT" style="font-size:12px;fill:#b35c12">MEET（リアルイベント）</text>
+        <rect x="20" y="234" width="134" height="44" rx="8" fill="#fff" stroke="#e67e22" stroke-width="1.3"/><text x="87" y="252" text-anchor="middle" class="phT">受付・当日ページ</text><text x="87" y="266" text-anchor="middle" class="phS">氏名＋チェック最大3社</text>
+        <path class="phL" d="M154 256 L186 256"/>
+        <rect x="190" y="234" width="118" height="44" rx="8" fill="#fff" stroke="#e67e22" stroke-width="1.3"/><text x="249" y="252" text-anchor="middle" class="phT">テーブル交流</text><text x="249" y="266" text-anchor="middle" class="phS">班分け＝チェック情報</text>
+        <path class="phL" d="M308 256 L340 256"/>
+        <rect x="344" y="234" width="128" height="44" rx="8" fill="#fff" stroke="#e67e22" stroke-width="1.3"/><text x="408" y="252" text-anchor="middle" class="phT">当日アンケート</text><text x="408" y="266" text-anchor="middle" class="phS">理由タグ・接点希望</text>
+        <path class="phL" d="M472 256 L504 256"/>
+        <rect x="508" y="234" width="128" height="44" rx="8" fill="#fff" stroke="#e67e22" stroke-width="1.3"/><text x="572" y="252" text-anchor="middle" class="phT">今日の報酬の重心</text><text x="572" y="266" text-anchor="middle" class="phS">チェック＋タグから導出</text>
+        <path class="phLd" d="M600 234 C 620 200 640 130 653 108"/><text x="628" y="200" class="phS">同じ6軸に合流</text>
+        <path class="phL" d="M636 256 L688 256"/>
+        <rect x="692" y="234" width="168" height="44" rx="8" fill="#42ad9f"/><text x="776" y="252" text-anchor="middle" class="phT" style="fill:#fff">個別接点（後日連絡）</text><text x="776" y="266" text-anchor="middle" class="phS" style="fill:rgba(255,255,255,0.85)">共有同意した本人のみ</text>
+        <path class="phLd" d="M120 234 C 140 180 180 130 206 106"/><text x="128" y="186" class="phS">記事へ回遊（後日も）</text>
+
+        <text x="20" y="330" class="phT" style="font-size:12px;fill:#23335c">企業側（裏側で支える）</text>
+        <rect x="20" y="342" width="240" height="48" rx="8" fill="#f0f3f9" stroke="#23335c" stroke-width="1.2"/><text x="140" y="360" text-anchor="middle" class="phT">companies.wb ＝ 6軸プロファイル</text><text x="140" y="375" text-anchor="middle" class="phS">記事からAI推定＋管理画面で自己開示として調整</text>
+        <rect x="216" y="334" width="30" height="14" rx="7" fill="#16223f"/><text x="231" y="344" text-anchor="middle" class="phAi">AI</text>
+        <path class="phLd" d="M200 342 C 320 300 560 150 640 106"/><text x="330" y="310" class="phS">重心・共鳴後の想定に内部使用（点数は見せない）</text>
+        <rect x="620" y="342" width="240" height="48" rx="8" fill="#f0f3f9" stroke="#23335c" stroke-width="1.2"/><text x="740" y="360" text-anchor="middle" class="phT">企業レポート（匿名・集計）</text><text x="740" y="375" text-anchor="middle" class="phS">共鳴・重心分布・理由タグ・MEET接触 → PDF</text>
+        <path class="phLd" d="M807 104 L790 338"/><path class="phLd" d="M776 278 L760 338"/>
+
+        <rect x="20" y="420" width="840" height="66" rx="8" fill="none" stroke="#b3bac6" stroke-dasharray="5 4"/>
+        <text x="36" y="442" class="phT" style="font-size:11px">計測（card_logs＝匿名・PIIなし）</text>
+        <text x="36" y="460" class="phS" style="font-size:10px">started → article_read → ai_viewed → wb_view / wb_compare → contact_cta → form_open（＝North Star）。variant＝person/moya/direct で入口別、utm_sourceでチャネル別。</text>
+        <text x="36" y="476" class="phS" style="font-size:10px">H1検証＝重心レポート閲覧の有無×CV率／MEETの氏名は meet_entries に分離（anon読取不可・企業共有は同意者のみ）。</text>
+      </svg>
+      </div>
+    </div>
+
+    <div style="${card()}">
+      ${h('指標＝報酬の重心（Career Well-being 6軸）','ユーザーの「重心」と企業の「プロファイル」を同じ6軸で捉える。この両面性が独自性。')}
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+        ${[['meaning','意味・使命'],['agency','裁量・挑戦'],['people','人・近さ'],['local','地域・つながり'],['time','時間・ゆとり'],['econ','経済（年収）']].map(a=>`<span style="background:rgba(66,173,159,.1);color:#2e8c7f;font-size:12px;padding:4px 11px;border-radius:14px"><b>${a[1]}</b> <span style="font-family:'JetBrains Mono',monospace;font-size:9px;opacity:.7">${a[0]}</span></span>`).join('')}
+      </div>
+      <ul style="margin:0;padding-left:20px;font-size:13px;color:var(--text);line-height:2">
+        <li><b>ユーザー側＝重心</b>：反応・モヤモヤ選択・MEETチェックから派生的に導出（設問で聞き倒さない）。比較は「いま vs 共鳴後の想定」で、<b>経営層の点数は見せない</b>。</li>
+        <li><b>企業側＝プロファイル</b>：記事からAI推定（wbscore・フロア45/上限90）＋管理マトリクスで手動調整＝<b>自己開示</b>の立て付け。企業が増えたら「未採点のみ」「選択のみ」でAI採点。</li>
+        <li><b>フロー予報</b>：意味×裁量から派生表示（チクセントミハイの没頭概念。第7軸としては保存しない）。</li>
+        <li>診断とは名乗らない。「<b>報酬の重心を知る</b>」——仮説を出し、確かめる方法は会うことだけ、でCTAに接続。</li>
+      </ul>
     </div>
 
     <div style="${card()}">
@@ -1454,9 +1529,17 @@ function renderPhilosophy(){
         <div style="font-weight:700;color:var(--navy);font-size:13.5px">シャインのキャリア・アンカー</div>
         <div style="font-size:12.5px;color:var(--text2);line-height:1.8">「人が仕事で手放したくない価値（錨）」の理論。<b>価値観(rtags)</b>で“何を大事に働きたいか”という譲れない軸を捉えます。</div>
       </div>
+      <div style="margin-bottom:14px;padding-left:14px;border-left:3px solid var(--teal)">
+        <div style="font-weight:700;color:var(--navy);font-size:13.5px">計画的偶発性理論（クランボルツ）</div>
+        <div style="font-size:12.5px;color:var(--text2);line-height:1.8">キャリアの転機の多くは<b>偶然の出会い</b>から生まれる——だから偶然を計画的に起こす。運命マッチVS・「意外な出会い」枠・MEETそのものが、この理論の実装です。差別化の核。</div>
+      </div>
+      <div style="margin-bottom:14px;padding-left:14px;border-left:3px solid var(--teal)">
+        <div style="font-weight:700;color:var(--navy);font-size:13.5px">フロー理論（チクセントミハイ）</div>
+        <div style="font-size:12.5px;color:var(--text2);line-height:1.8">挑戦の大きさと自分の力が釣り合うとき、人は時間を忘れて没頭する。重心レポートの<b>フロー予報</b>（意味×裁量から派生）の根拠。年収以外の報酬の代表例として提示します。</div>
+      </div>
       <div style="padding-left:14px;border-left:3px solid var(--teal)">
         <div style="font-weight:700;color:var(--navy);font-size:13.5px">自己決定理論（SDT・内発的動機づけ）</div>
-        <div style="font-size:12.5px;color:var(--text2);line-height:1.8">人の意欲は「自律性・有能感・関係性」が満たされると高まる、という理論。価値観タグはこの観点に対応づけています：</div>
+        <div style="font-size:12.5px;color:var(--text2);line-height:1.8">人の意欲は「自律性・有能感・関係性」が満たされると高まる、という理論。価値観タグと6軸はこの観点に対応づけています：</div>
       </div>
       <table style="width:100%;border-collapse:collapse;margin-top:12px;background:var(--bg);border-radius:6px;overflow:hidden">
         <thead><tr>
@@ -1478,15 +1561,24 @@ function renderPhilosophy(){
     <div style="${card()}">
       ${h('体験設計の原則')}
       <ul style="margin:0;padding-left:20px;font-size:13px;color:var(--text);line-height:2">
-        <li>カードでは<b>経営層名・社名は伏せる</b>（先入観なく“課題そのもの”で選んでもらう。人物は結果で開示）。</li>
-        <li><b>LINE登録は温まった後</b>：診断のフル詳細を見る手前まで遅らせ、ナーチャリング母数を確保。</li>
+        <li>順序は常に<b>出会い → 反応 → 発見 → 接点</b>。重い要求（LINE・フォーム）を温度より先に置かない。</li>
+        <li><b>無料と関門の線引き</b>：数値（レーダー・要約）は無料、AIの“ことばの読み解き”だけLINE後。空約束はしない。</li>
+        <li><b>経営層を点数で評価して見せない</b>：ユーザーには「あなたがどう変わりうるか」だけ。企業側は自己開示の立て付け。</li>
+        <li>正直さを設計に入れる：<b>年収が下がる可能性は隠さない</b>。「参考値」「確かめる方法は会うことだけ」を明示。</li>
         <li>占い的な決めつけを避け、<b>本人の言葉・選択を根拠</b>に返す（主語の取り違え厳禁）。</li>
-        <li>白ベタを避けた紙感の配色で、診断を“押し付け”でなく“発見”の体験に。</li>
+        <li>PIIの分離：行動ログ（card_logs）は匿名、氏名はMEET運営（meet_entries）のみ・企業共有は同意者のみ。</li>
       </ul>
     </div>
 
+    <div style="${card()}">
+      ${h('計測と学習ループ（何で判断するか）')}
+      <div style="font-size:13px;color:var(--text);line-height:1.95">
+        North Star＝<b>興味を伝える（form_open）数/週</b>。いま検証中の仮説は2つ：<b>H1</b>＝重心レポートはCVを増やすか（共鳴データの「H1検証」行＝閲覧有無×CV率）／<b>H2</b>＝どの入口が強いか（variant別）。この2つの答えで<b>TOPの主役（診断起点 vs 出会い起点）を決める</b>。決め打ちでTOPを作り替えない。
+      </div>
+    </div>
+
     <div style="font-size:11px;color:var(--text3);line-height:1.7;margin-top:6px">
-      ※ 詳細設計は <code>DESIGN_v2_challenge_cards.md</code>、タグ語彙は pf/admin のラベル定義（CARD_BTAGS / CARD_RTAGS）が一次情報です。本ページはそれを要約した社内リファレンスです。
+      ※ 一次情報：直近の全体像は <code>HANDOFF_2026-07-02.md</code>、v2詳細設計は <code>DESIGN_v2_challenge_cards.md</code>、タグ語彙は CARD_BTAGS / CARD_RTAGS、6軸の実装は index.html の報酬の重心レポート。 本ページはそれらを要約した社内リファレンスです。
     </div>
   </div>`;
 }
@@ -2868,8 +2960,10 @@ async function renderWBMatrix(){
       const v=(wb[a[0]]!=null)?Math.max(WB_FLOOR,Math.min(WB_CAP,parseInt(wb[a[0]])||WB_FLOOR)):'';
       return `<td style="padding:4px 6px;text-align:center"><input class="wbm-in" data-co="${escA(c.id)}" data-k="${a[0]}" type="number" min="${WB_FLOOR}" max="${WB_CAP}" value="${v}" placeholder="—" onchange="wbCellChange(this)" style="width:52px;padding:5px 4px;text-align:center;border:1px solid var(--border);border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--white)"></td>`;
     }).join('');
-    return `<tr style="border-bottom:0.5px solid var(--border)">
-      <td style="padding:8px 10px;white-space:nowrap"><div style="font-size:12px;font-weight:700;color:var(--navy)">${escA(c.name||'')}</div><div style="font-size:10px;color:var(--text3)">${escA(c.ceo||'')}</div></td>
+    const unscored=!(c.wb&&typeof c.wb==='object'&&Object.keys(c.wb).length);
+    return `<tr class="wbm-row" data-name="${escA((c.name||'')+' '+(c.ceo||''))}" style="border-bottom:0.5px solid var(--border)">
+      <td style="padding:4px 6px;text-align:center"><input type="checkbox" class="wbm-sel" data-co="${escA(c.id)}" style="cursor:pointer"></td>
+      <td style="padding:8px 10px;white-space:nowrap"><div style="font-size:12px;font-weight:700;color:var(--navy)">${escA(c.name||'')}${unscored?' <span style="font-size:9px;color:#fff;background:#e67e22;border-radius:3px;padding:1px 5px;vertical-align:middle">未採点</span>':''}</div><div style="font-size:10px;color:var(--text3)">${escA(c.ceo||'')}</div></td>
       ${cells}
       <td style="padding:4px 8px;text-align:center"><button class="wbm-ai" data-co="${escA(c.id)}" onclick="wbEstimateRow('${escA(c.id)}',this)" style="font-family:'JetBrains Mono',monospace;font-size:9px;padding:4px 10px;border:1px solid var(--teal);background:var(--teal-bg);cursor:pointer;color:var(--teal-d);border-radius:2px;white-space:nowrap">✨ AI推定</button></td>
     </tr>`;
@@ -2878,15 +2972,21 @@ async function renderWBMatrix(){
     <div style="padding:24px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap">
         <div style="font-size:12px;color:var(--text2);line-height:1.7">全${cos.length}社の Career Well-being 6軸を横並びで編集。値は${WB_FLOOR}〜${WB_CAP}（フロア${WB_FLOOR}・上限${WB_CAP}）。<br>✨AI推定は記事から意味/裁量/人/地域の4軸のみ更新（時間・経済は手動）。編集後は右の一括保存で反映。</div>
-        <div style="display:flex;gap:8px;align-items:center">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <span id="wbm-dirty" style="font-size:11px;color:var(--hot);font-family:'JetBrains Mono',monospace"></span>
-          <button id="wbm-aiall" onclick="wbEstimateAll()" style="padding:8px 14px;background:var(--navy);color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">✨ 全社AI推定(4軸)</button>
+          <button onclick="wbEstimateSelected()" style="padding:8px 12px;background:#fff;color:var(--navy);border:1px solid var(--navy);font-size:12px;font-weight:700;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">✨ 選択をAI推定</button>
+          <button onclick="wbEstimateUnscored()" style="padding:8px 12px;background:#fff;color:#e67e22;border:1px solid #e67e22;font-size:12px;font-weight:700;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">✨ 未採点のみ</button>
+          <button id="wbm-aiall" onclick="wbEstimateAll()" style="padding:8px 12px;background:var(--navy);color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">✨ 全社</button>
           <button id="wbm-save" onclick="wbSaveAll()" style="padding:8px 16px;background:var(--teal);color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;border-radius:2px;font-family:'Noto Sans JP',sans-serif">💾 一括保存</button>
         </div>
+      </div>
+      <div style="margin-bottom:10px">
+        <input type="text" placeholder="🔍 企業名・経営層名で絞り込み" oninput="wbmFilter(this.value)" style="width:260px;padding:7px 10px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:inherit;background:#fff">
       </div>
       <div style="background:var(--white);border:1px solid var(--border);border-radius:2px;overflow-x:auto">
         <table style="border-collapse:collapse;width:100%;min-width:720px">
           <thead><tr style="border-bottom:1px solid var(--border);background:rgba(22,34,63,0.03)">
+            <th style="padding:8px 6px"><input type="checkbox" onclick="document.querySelectorAll('.wbm-row:not([style*=none]) .wbm-sel').forEach(e=>e.checked=this.checked)" style="cursor:pointer" title="表示中を全選択"></th>
             <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--text2);font-family:'JetBrains Mono',monospace;letter-spacing:0.06em">企業 / 経営層</th>
             ${WB_AXES.map(a=>`<th style="padding:8px 4px;font-size:10px;color:var(--text2);font-weight:700;white-space:nowrap">${a[1]}</th>`).join('')}
             <th style="padding:8px 4px;font-size:10px;color:var(--text2)">記事から</th>
@@ -2925,20 +3025,37 @@ async function wbEstimateRow(coId, btn){
   }catch(e){ toast('推定失敗('+(co.name||coId)+'): '+(e.message||e)); return false; }
   finally{ if(btn){ btn.disabled=false; btn.textContent='✨ AI推定'; } }
 }
-// 全社を順番にAI推定（API負荷を避けて直列）
-async function wbEstimateAll(){
+// 指定した企業だけを順番にAI推定（API負荷を避けて直列）。企業が増えても選択/未採点だけ回せる
+async function wbEstimateBulk(ids,label){
   const btn=document.getElementById('wbm-aiall'); if(!btn||btn.disabled) return;
-  if(!confirm('全社の4軸（意味/裁量/人/地域）をAIで推定し直します。時間・経済は変わりません。よろしいですか？')) return;
-  const cos=loadCompanies(); btn.disabled=true;
+  if(!ids.length){ toast('対象がありません'); return; }
+  if(!confirm(label+' '+ids.length+'社の4軸（意味/裁量/人/地域）をAIで推定します。時間・経済は変わりません。よろしいですか？')) return;
+  btn.disabled=true;
   let done=0;
-  for(let i=0;i<cos.length;i++){
-    btn.textContent='推定中 '+(i+1)+'/'+cos.length+'…';
-    const rowBtn=document.querySelector('.wbm-ai[data-co="'+CSS.escape(String(cos[i].id))+'"]');
-    const ok=await wbEstimateRow(cos[i].id, rowBtn);
+  for(let i=0;i<ids.length;i++){
+    btn.textContent='推定中 '+(i+1)+'/'+ids.length+'…';
+    const rowBtn=document.querySelector('.wbm-ai[data-co="'+CSS.escape(String(ids[i]))+'"]');
+    const ok=await wbEstimateRow(ids[i], rowBtn);
     if(ok) done++;
   }
-  btn.disabled=false; btn.textContent='✨ 全社AI推定(4軸)';
-  toast(done+'/'+cos.length+'社を推定しました。内容を確認して一括保存してください');
+  btn.disabled=false; btn.textContent='✨ 全社';
+  toast(done+'/'+ids.length+'社を推定しました。内容を確認して一括保存してください');
+}
+function wbEstimateAll(){ wbEstimateBulk(loadCompanies().map(c=>String(c.id)),'全社'); }
+function wbEstimateSelected(){
+  const ids=[...document.querySelectorAll('.wbm-sel:checked')].map(e=>e.getAttribute('data-co'));
+  wbEstimateBulk(ids,'選択した');
+}
+function wbEstimateUnscored(){
+  const ids=loadCompanies().filter(c=>!(c.wb&&typeof c.wb==='object'&&Object.keys(c.wb).length)).map(c=>String(c.id));
+  wbEstimateBulk(ids,'未採点の');
+}
+// 企業名・経営層名で行を絞り込み（企業が増えた時用）
+function wbmFilter(v){
+  v=(v||'').trim().toLowerCase();
+  document.querySelectorAll('.wbm-row').forEach(tr=>{
+    tr.style.display=(!v||(tr.getAttribute('data-name')||'').toLowerCase().indexOf(v)>=0)?'':'none';
+  });
 }
 // 画面上の全セルを companies.wb に反映して一括保存
 async function wbSaveAll(){

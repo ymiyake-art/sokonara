@@ -186,7 +186,7 @@ function paintCos(){
       +'<div class="co-name">'+esc(c.ceo||'')+'</div><div class="co-corp">'+esc(c.name||'')+'</div>'
       +(c.catchphrase?'<div class="co-catch">'+esc(c.catchphrase)+'</div>':'')
       +'<div class="co-links"><button class="ck'+(on?' on':'')+'" onclick="toggleCheck(\''+esc(c.id)+'\')">'+(on?'✓ 気になる':'☆ 気になる')+'</button>'
-      +'<a class="co-art" href="'+esc(EV.appUrl)+'/?cid='+encodeURIComponent(c.id)+'" target="_blank" rel="noopener">記事を読む ↗</a></div>'
+      +((c.body&&String(c.body).length>50)?'<a class="co-art" href="'+esc(EV.appUrl)+'/?cid='+encodeURIComponent(c.id)+'" target="_blank" rel="noopener">記事を読む ↗</a>':'<span style="font-size:11px;color:var(--text3)">記事は近日公開</span>')+'</div>'
       +'</div></div>';
   }).join('');
 }
@@ -222,13 +222,16 @@ function centroid(){
 function radar(w){
   var cx=130,cy=118,R=82;
   function pt(i,val){ var a=(-90+i*60)*Math.PI/180,r=R*clamp(val)/100; return [cx+r*Math.cos(a),cy+r*Math.sin(a)]; }
-  function ring(g){ var p=[]; for(var i=0;i<6;i++){var q=pt(i,g);p.push(q[0].toFixed(1)+','+q[1].toFixed(1));} return '<polygon points="'+p.join(' ')+'" fill="none" stroke="rgba(22,34,63,0.1)"/>'; }
-  var s='<svg viewBox="0 0 260 240" width="100%" style="max-width:280px;display:block;margin:4px auto;">';
-  [33,66,100].forEach(function(g){s+=ring(g);});
-  for(var i=0;i<6;i++){ var e=pt(i,100); s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+e[0].toFixed(1)+'" y2="'+e[1].toFixed(1)+'" stroke="rgba(22,34,63,0.1)"/>'; }
+  function ring(g,f){ var p=[]; for(var i=0;i<6;i++){var q=pt(i,g);p.push(q[0].toFixed(1)+','+q[1].toFixed(1));} return '<polygon points="'+p.join(' ')+'" fill="'+(f||'none')+'" stroke="rgba(22,34,63,0.10)" stroke-width="0.8"/>'; }
+  var s='<svg viewBox="0 0 260 240" width="100%" style="max-width:280px;display:block;margin:4px auto;">'
+    +'<defs><linearGradient id="dg1" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#3cbcaa" stop-opacity="0.55"/><stop offset="1" stop-color="#16223f" stop-opacity="0.22"/></linearGradient>'
+    +'<filter id="ds1" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#16223f" flood-opacity="0.28"/></filter></defs>';
+  [100,66,33].forEach(function(g){s+=ring(g,'rgba(22,34,63,0.030)');});
+  for(var i=0;i<6;i++){ var e=pt(i,100); s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+e[0].toFixed(1)+'" y2="'+e[1].toFixed(1)+'" stroke="rgba(22,34,63,0.10)" stroke-width="0.8"/>'; }
   var p=[]; for(var j=0;j<6;j++){ var q=pt(j,w[AX[j][0]]); p.push(q[0].toFixed(1)+','+q[1].toFixed(1)); }
-  s+='<polygon points="'+p.join(' ')+'" fill="rgba(47,156,141,0.26)" stroke="#2f9c8d" stroke-width="2"/>';
-  for(var k=0;k<6;k++){ var lp=pt(k,126); s+='<text x="'+lp[0].toFixed(1)+'" y="'+lp[1].toFixed(1)+'" font-size="10.5" fill="#4a4f58" text-anchor="middle" dominant-baseline="middle">'+AX[k][1]+'</text>'; }
+  s+='<polygon points="'+p.join(' ')+'" fill="url(#dg1)" stroke="#2f9c8d" stroke-width="2.2" stroke-linejoin="round" filter="url(#ds1)"/>';
+  for(var d=0;d<6;d++){ var qd=pt(d,w[AX[d][0]]); s+='<circle cx="'+qd[0].toFixed(1)+'" cy="'+qd[1].toFixed(1)+'" r="3" fill="#fff" stroke="#2f9c8d" stroke-width="2"/>'; }
+  for(var k=0;k<6;k++){ var lp=pt(k,126); s+='<text x="'+lp[0].toFixed(1)+'" y="'+lp[1].toFixed(1)+'" font-size="10.5" font-weight="700" fill="#3d4453" text-anchor="middle" dominant-baseline="middle">'+AX[k][1]+'</text>'; }
   return s+'</svg>';
 }
 function paintThanks(){

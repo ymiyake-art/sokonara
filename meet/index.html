@@ -122,21 +122,23 @@
     .tl h4{font-family:var(--gothic);font-weight:700;font-size:15px;color:var(--navy);margin:1px 0 2px;}
     .tl p{font-size:13px;color:var(--muted);}
 
-    /* scene gallery */
-    .scene-feat{border-radius:16px;overflow:hidden;border:1px solid var(--line);line-height:0;}
-    .scene-feat img{width:100%;height:auto;display:block;}
-    .scene-cap{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.02em;padding:9px 2px 0;line-height:1.5;}
+    /* scene gallery — 白マット＋金のヘアライン＋ソフトシャドウの“額装”仕上げ */
+    .scene-feat{border-radius:14px;background:#fff;border:1px solid var(--line);padding:10px;box-shadow:0 16px 36px rgba(22,34,63,0.10);line-height:0;}
+    .scene-feat img{width:100%;height:auto;display:block;border-radius:8px;outline:1px solid rgba(201,162,74,0.38);outline-offset:-1px;}
+    .scene-cap{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.02em;padding:11px 4px 0;line-height:1.5;}
+    .scene-cap::before{content:'';display:inline-block;width:14px;height:1px;background:var(--gold);margin-right:8px;vertical-align:middle;}
     .scene-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;}
-    .scene-row figure{margin:0;}
-    .scene-row img{width:100%;height:160px;object-fit:cover;display:block;border-radius:13px;border:1px solid var(--line);}
-    .scene-row figcaption{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:7px;line-height:1.5;}
+    .scene-row figure{margin:0;background:#fff;border:1px solid var(--line);border-radius:12px;padding:7px 7px 9px;box-shadow:0 9px 24px rgba(22,34,63,0.08);}
+    .scene-row img{width:100%;height:148px;object-fit:cover;display:block;border-radius:7px;outline:1px solid rgba(201,162,74,0.32);outline-offset:-1px;}
+    .scene-row figcaption{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:8px;padding:0 3px;line-height:1.5;}
     .scene-vid{display:inline-flex;align-items:center;gap:9px;margin-top:20px;font-family:var(--gothic);font-weight:700;font-size:13px;color:var(--teal-d);text-decoration:none;}
     .scene-vid::before{content:'';background:var(--teal) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M8 5v14l11-7z'/%3E%3C/svg%3E") center/10px no-repeat;width:24px;height:24px;border-radius:50%;display:inline-flex;flex-shrink:0;}
 
     /* 実例カード（個人LPと共通のcasesテーブル） */
     .meet-cases{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
-    .mcase{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+    .mcase{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 10px 26px rgba(22,34,63,0.07);}
     .mcase .ph{position:relative;aspect-ratio:3/2;overflow:hidden;background:#14213f;}
+    .mcase .ph::after{content:'';position:absolute;inset:0;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.14),inset 0 -26px 30px -22px rgba(0,0,0,0.45);pointer-events:none;}
     .mcase .ph img{width:100%;height:100%;object-fit:contain;display:block;}
     .mcase .body{padding:13px 15px 15px;}
     .mcase h4{font-family:var(--gothic);font-weight:700;font-size:14px;color:var(--navy);line-height:1.55;margin-bottom:9px;}
@@ -339,7 +341,7 @@ const EV = {
   heroKick: '福岡・大名｜経営層と話せる少人数の夜',
   heroH1:   '会社を選ぶ前に、<br><em>経営層に会う</em>。',
   heroLead: '求人票では分からない会社のリアルを、6名の地域企業の経営層から直接。まずは情報収集でOK、応募でも選考でもありません。',
-  date: { num:'7.30', dow:'THU', year:'2026', time:'19:00–21:30' },
+  date: { num:'7.30', dow:'THU', year:'2026', time:'19:00–21:30（受付18:40〜）' },
   venue:{ name:'エスニコ（ethnico）', area:'福岡市中央区・大名', addr:'福岡県福岡市中央区大名2-1-50 2F' },
   fee:'参加無料', capacity:'数十名（先着順で締切）',
   qualify:'就業経験がある方（営業目的での参加はお断りしています）',
@@ -364,10 +366,11 @@ const EV = {
   ],
   positions:['法人営業','新規事業','ITエンジニア','施工管理','右腕','マネージャー','人事戦略','DX推進','経営戦略','技術開発','ホテル運営','その他'],
   timetable:[
-    {h:'オープニング'},
-    {h:'経営層トーク'},
-    {h:'少人数で交流'},
-    {h:'終了予定'},
+    {t:'18:40',h:'受付開始',d:'開場後、登壇企業のプロフィールをゆっくりご覧いただけます。'},
+    {t:'19:00',h:'オープニング'},
+    {t:'19:10',h:'経営層トーク',d:'各社の経営層が、事業と想いを語ります。'},
+    {t:'20:10',h:'少人数で交流',d:'気になる経営層のテーブルで、直接話せます。'},
+    {t:'21:30',h:'終了予定'},
   ],
   voices:[
     {q:'条件よりも、ビジョンで心が動いた転職', who:'地域企業へ転職・Kさん', body:'求人票をいくら見比べても、「ここで働きたい」と確信を持てる会社にはなかなか出会えませんでした。40代に入り、「子どもに胸を張って語れる仕事ができているだろうか」と自問する中で参加したのがソコナラMEET。創設者や責任者と直接対話し、教育と挑戦で社会を変えようとするビジョンや熱量に触れるうちに、「この環境で自分も本気で挑戦したい」と心が動きました。条件よりも先に納得感が生まれたことが、入社の決め手になりました。'},

@@ -4045,17 +4045,26 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     if(co){ var cw=companyWB(co); AX.forEach(function(a){ w[a.k]=clamp(w[a.k]+(cw[a.k]-58)*0.28); }); }
     return w;
   }
+  // 立体感のあるレーダー：層状の同心フィル＋グラデ塗り＋ソフトシャドウ＋頂点ドット
+  var _radarUid=0;
   function radar(comp, sec, secStroke){
-    var cx=140,cy=138,R=96,N=6;
+    var cx=140,cy=138,R=96,N=6, uid='wbg'+(++_radarUid);
     function pt(i,val){ var a=(-90+i*60)*Math.PI/180, r=R*clamp(val)/100; return [cx+r*Math.cos(a), cy+r*Math.sin(a)]; }
-    function ring(g){ var p=[]; for(var i=0;i<N;i++){ var q=pt(i,g); p.push(q[0].toFixed(1)+','+q[1].toFixed(1)); } return '<polygon points="'+p.join(' ')+'" fill="none" stroke="rgba(22,34,63,0.09)"/>'; }
-    function poly(vals,fill,stroke,wd){ var p=[]; for(var i=0;i<N;i++){ var q=pt(i,vals[AX[i].k]); p.push(q[0].toFixed(1)+','+q[1].toFixed(1)); } return '<polygon points="'+p.join(' ')+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+wd+'"/>'; }
-    var s='<svg viewBox="0 0 280 276" width="100%" style="max-width:320px;display:block;margin:0 auto;">';
-    [25,50,75,100].forEach(function(g){ s+=ring(g); });
-    for(var i=0;i<N;i++){ var e=pt(i,100); s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+e[0].toFixed(1)+'" y2="'+e[1].toFixed(1)+'" stroke="rgba(22,34,63,0.09)"/>'; }
-    if(sec) s+=poly(sec,'rgba(22,34,63,0.06)',secStroke||'rgba(22,34,63,0.45)',1.5);
-    s+=poly(comp,'rgba(47,156,141,0.24)','#2f9c8d',2.2);
-    for(var j=0;j<N;j++){ var lp=pt(j,124); s+='<text x="'+lp[0].toFixed(1)+'" y="'+lp[1].toFixed(1)+'" font-size="10.5" fill="#4a4f58" text-anchor="middle" dominant-baseline="middle">'+AX[j].short+'</text>'; }
+    function pts(fn){ var p=[]; for(var i=0;i<N;i++){ var q=fn(i); p.push(q[0].toFixed(1)+','+q[1].toFixed(1)); } return p.join(' '); }
+    function ring(g,fill){ return '<polygon points="'+pts(function(i){return pt(i,g);})+'" fill="'+(fill||'none')+'" stroke="rgba(22,34,63,0.10)" stroke-width="0.8"/>'; }
+    function poly(vals,fill,stroke,wd,extra){ return '<polygon points="'+pts(function(i){return pt(i,vals[AX[i].k]);})+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+wd+'" stroke-linejoin="round"'+(extra||'')+'/>'; }
+    var s='<svg viewBox="0 0 280 276" width="100%" style="max-width:320px;display:block;margin:0 auto;">'
+      +'<defs><linearGradient id="'+uid+'" x1="0" y1="0" x2="0.35" y2="1">'
+      +'<stop offset="0" stop-color="#3cbcaa" stop-opacity="0.55"/>'
+      +'<stop offset="1" stop-color="#16223f" stop-opacity="0.22"/></linearGradient>'
+      +'<filter id="'+uid+'s" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="2.5" stdDeviation="3.5" flood-color="#16223f" flood-opacity="0.28"/></filter></defs>';
+    // 外→内へ薄いフィルを重ねて奥行きを出す
+    s+=ring(100,'rgba(22,34,63,0.030)')+ring(75,'rgba(22,34,63,0.030)')+ring(50,'rgba(22,34,63,0.030)')+ring(25,'rgba(22,34,63,0.030)');
+    for(var i=0;i<N;i++){ var e=pt(i,100); s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+e[0].toFixed(1)+'" y2="'+e[1].toFixed(1)+'" stroke="rgba(22,34,63,0.10)" stroke-width="0.8"/>'; }
+    if(sec) s+=poly(sec,'rgba(22,34,63,0.05)',secStroke||'rgba(22,34,63,0.45)',1.5,' stroke-dasharray="5 4"');
+    s+=poly(comp,'url(#'+uid+')','#2f9c8d',2.4,' filter="url(#'+uid+'s)"');
+    for(var d=0;d<N;d++){ var q=pt(d,comp[AX[d].k]); s+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="3.4" fill="#fff" stroke="#2f9c8d" stroke-width="2"/>'; }
+    for(var j=0;j<N;j++){ var lp=pt(j,124); s+='<text x="'+lp[0].toFixed(1)+'" y="'+lp[1].toFixed(1)+'" font-size="10.5" font-weight="700" fill="#3d4453" text-anchor="middle" dominant-baseline="middle">'+AX[j].short+'</text>'; }
     s+='</svg>';
     return s;
   }
