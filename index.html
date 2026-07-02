@@ -1599,10 +1599,10 @@ h1, h2, h3, h4,
           <div id="fbSummaryText" style="font-size:14px;line-height:1.9;color:rgba(255,255,255,0.9);white-space:pre-line;"></div>
         </div>
 
-        <!-- LINE任意CTAは自己発見レポートの最下部へ移動（ゲートではなく“詳細版・近況”の任意導線） -->
-
-        <!-- LINE登録後の詳細フィードバック -->
+        <!-- 詳細レポート（AIのことばの読み解き＋報酬の重心マトリックス）＝LINE登録後に表示。要約(WORKING HINT)は無料 -->
         <div id="fbDetail" style="display:none">
+          <div style="font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:2px;color:var(--teal);margin:4px 0 10px;">詳細レポート</div>
+          <div id="fbWbMini" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:14px 12px 6px;margin-bottom:16px;"></div>
           <div class="values-section">
             <div class="values-label">価値観キーワード</div>
             <div class="value-tags" id="valueTags"></div>
@@ -1616,24 +1616,33 @@ h1, h2, h3, h4,
           <div style="font-size:11px;color:rgba(255,255,255,0.5);line-height:1.7;margin-top:8px;text-align:center;">※ この診断結果は24時間で消えます。<br>残しておきたい場合はコピーして保存してください。</div>
         </div>
 
+        <!-- LINE未登録時：詳細レポートのロック表示（要約と同じ話を二度しない＝重複解消） -->
+        <div id="fbDetailLock" style="display:none;background:rgba(255,255,255,0.04);border:1px dashed rgba(255,255,255,0.25);border-radius:10px;padding:16px 18px;margin-bottom:4px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span style="font-size:14px;">🔒</span>
+            <span style="font-size:13px;font-weight:700;color:#fff;">詳細レポート</span>
+          </div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.65);line-height:1.8;">AIがあなたの反応を、ことばで読み解きます。あなたの「報酬の重心」マトリックスと、この経営層との接点のヒントもここに。<br><span style="color:rgba(255,255,255,0.45);">LINE登録（無料・ワンタップ）で表示されます。下のボタンからどうぞ。</span></div>
+        </div>
+
         <!-- LINE登録後のCTA -->
         <div id="fbCta" class="fb-cta" style="display:none">
           <div id="fbCtaLabel" style="font-size:13px;color:var(--text2);margin-bottom:10px;text-align:center"></div>
           <div style="display:flex;flex-direction:column;gap:10px;">
-            <button class="btn-primary" style="width:100%;justify-content:center;background:var(--navy);" onclick="openWellbeing()">📊 あなたのCareer Well-being を見る →</button>
+            <button class="btn-primary" style="width:100%;justify-content:center;background:var(--navy);" onclick="openWellbeing()">📊 あなたの報酬の重心を見る →</button>
             <button class="btn-primary" style="width:100%;justify-content:center;" onclick="openEmpathyForm()">この経営層に興味を伝える →</button>
             <button class="btn-outline" style="width:100%;justify-content:center;font-size:13px;" onclick="goScreen('p4')">他の経営層のはたらくヒントを見る</button>
           </div>
         </div>
 
-        <!-- LINE：継続ナーチャ（近況・新着・別の経営層）。レポートは無料で全文表示済み＝“詳細版”の空約束はしない。 -->
+        <!-- LINE：詳細レポート特典＋継続ナーチャ（近況・新着・別の経営層）。要約は無料＝上下重複はしない。 -->
         <div id="fbLineCta" style="display:none;margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.12);">
           <div style="font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;color:var(--teal);margin-bottom:6px;">LINEでつながる</div>
-          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">この出会いを、続けていく</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:14px;line-height:1.8;">話した経営層の近況や新着の記事、そして「あなたに合いそうな別の経営層」をLINEでお届けします。気になる人が増えたら、また話せます。<span style="color:var(--teal);">無料・ワンタップ／いつでも解除可。</span></div>
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">詳細レポートを受け取る</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:14px;line-height:1.8;">AIがあなたの反応をことばで読み解く詳細レポートを、その場で表示します。あわせて経営層の近況や「あなたに合いそうな別の経営層」もお届け。<span style="color:var(--teal);">無料・ワンタップ／いつでも解除可。</span></div>
           <button class="btn-line-login" onclick="beginLineLogin()" style="width:100%;justify-content:center;font-size:13px;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.070 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
-            LINEで経営層の近況を受け取る（無料）
+            LINEで詳細レポートを受け取る（無料）
           </button>
         </div>
       </div>
@@ -2981,9 +2990,10 @@ async function genFeedback() {
       const _sumEl=document.getElementById('fbSummaryText');
       const _msgEl=document.getElementById('msgText');
       const _detail=document.getElementById('fbDetail');
-      // 自己発見レポートは全員に全文表示（LINEゲート撤廃）。本文もライブ表示。
-      if(_detail) _detail.style.display='block';
-      { const _mb=document.getElementById('msgBlock'); if(_mb) _mb.classList.add('show'); }
+      // 要約(WORKING HINT)は全員に表示。詳細（ことばの読み解き）はLINE登録後のみ＝要約との重複を出さない。
+      if(_detail) _detail.style.display = lineReg ? 'block' : 'none';
+      { const _lk=document.getElementById('fbDetailLock'); if(_lk) _lk.style.display = lineReg ? 'none' : 'block'; }
+      if(lineReg){ const _mb=document.getElementById('msgBlock'); if(_mb) _mb.classList.add('show'); }
       const reader = res.body.getReader(); const dec = new TextDecoder();
       while(true){
         const {done,value} = await reader.read(); if(done) break;
@@ -3119,11 +3129,15 @@ function showFeedback(fb) {
   document.getElementById('fbSkel').style.display = 'none';
   document.getElementById('fbContent').style.display = 'block';
 
-  // 自己発見レポートは全員に全文表示（LINEゲート撤廃）。LINEは“詳細版・近況”の任意導線に降格。
+  // 要約(WORKING HINT)は全員に表示。詳細（ことばの読み解き＋重心マトリックス）はLINE登録後のみ＝上下重複を解消。
+  const _reg = isLineRegistered();
   const summaryEl = document.getElementById('fbSummaryText');
   if(summaryEl) summaryEl.textContent = fb.summary || '';
   document.getElementById('fbSummary').style.display = 'block';
-  document.getElementById('fbDetail').style.display = 'block';
+  document.getElementById('fbDetail').style.display = _reg ? 'block' : 'none';
+  { const _lk = document.getElementById('fbDetailLock'); if(_lk) _lk.style.display = _reg ? 'none' : 'block'; }
+  // 詳細レポート冒頭に「報酬の重心」ミニマトリックスを埋め込み（LINE後）
+  if(_reg){ try{ const _mini=document.getElementById('fbWbMini'); if(_mini && typeof wbUserRadar==='function'){ _mini.innerHTML='<div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:2px;">あなたの報酬の重心</div>'+wbUserRadar(); } }catch(e){} }
 
   // 価値観キーワード表示は廃止（記事の抜粋に見えてピンと来ないため）
   const tags = document.getElementById('valueTags');
@@ -3992,10 +4006,10 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
 })();
 </script>
 <script>
-/* ===== Career Well-being レポート =====
-   6軸（意味/裁量挑戦/人近さ/地域/ゆとり/経済）で「あなたの重心 × この経営層の相性」をレーダー＋バンドで提示。
-   会社スコアは companies.wb（adminで採点）優先、無ければ rtags/btags/tags から自動導出。
-   保存は派生値のみ（生自由記述は保存しない）。 */
+/* ===== 報酬の重心（Career Well-being）レポート =====
+   6軸（意味/裁量挑戦/人近さ/地域/ゆとり/経済）。上段＝あなたの重心のみ（経営層のスコアは表示しない＝評価している印象を出さない）。
+   比較＝「いまの仕事」と「共鳴後の想定（この環境に飛び込んだ場合の変化の可能性・参考値）」。
+   会社スコア companies.wb は将来値の推定にのみ内部使用。保存は派生値のみ（生自由記述は保存しない）。 */
 (function(){
   var AX=[
     {k:'meaning',label:'意味・使命',short:'意味',rt:['mission','trust'],bt:['local']},
@@ -4045,8 +4059,6 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     s+='</svg>';
     return s;
   }
-  function band(v){ return v>=75?['高','#247c70','rgba(47,156,141,.14)']:(v>=50?['中','#8a6d1f','rgba(201,162,74,.14)']:['低','#8b8f98','rgba(139,143,152,.12)']); }
-
   function ensureScreen(){
     if(document.getElementById('p-wb')) return;
     var user=document.getElementById('user'); if(!user) return;
@@ -4057,12 +4069,12 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
       +'<h1 id="wbTitle" style="font-family:\'Zen Kaku Gothic New\',sans-serif;font-weight:900;font-size:22px;color:var(--navy);line-height:1.5;margin-bottom:6px;"></h1>'
       +'<div id="wbSub" style="font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:18px;"></div>'
       +'<div id="wbRadar" style="margin:6px 0 6px;"></div>'
-      +'<div id="wbLegend" style="display:flex;gap:16px;justify-content:center;font-size:11px;color:var(--text2);margin-bottom:20px;"></div>'
-      +'<div id="wbBands" style="margin-bottom:22px;"></div>'
+      +'<div id="wbLegend" style="display:flex;gap:16px;justify-content:center;font-size:11px;color:var(--text2);margin-bottom:14px;"></div>'
+      +'<div id="wbFlow" style="margin-bottom:22px;"></div>'
       +'<div id="wbText" style="margin-bottom:20px;"></div>'
       +'<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:22px;">'
-        +'<div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:4px;">今の仕事と、比べてみる</div>'
-        +'<div style="font-size:11px;color:var(--text3);margin-bottom:12px;">2つ答えるだけ。現状とこの環境を、あなたの価値観で採点して比べます。</div>'
+        +'<div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:4px;">いまの仕事と、比べてみる</div>'
+        +'<div style="font-size:11px;color:var(--text3);margin-bottom:12px;">2つ答えるだけ。いまの報酬と、この環境に飛び込んだ場合に変わる可能性を重ねます。</div>'
         +'<div style="font-size:11px;color:var(--text2);margin-bottom:4px;">今の年収帯</div>'
         +'<select id="wbSalary" style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:12px;background:#fff;"></select>'
         +'<div style="font-size:11px;color:var(--text2);margin-bottom:6px;">今の仕事で「足りない」と感じるもの（複数可）</div>'
@@ -4080,56 +4092,82 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
   }
   var SALARY=[['','選択してください'],['s3','〜300万'],['s4','300〜400万'],['s5','400〜500万'],['s6','500〜650万'],['s7','650〜850万'],['s8','850万〜']];
   var SAL_ECON={s3:30,s4:45,s5:58,s6:70,s7:82,s8:92};
-  function legendHTML(secLabel,secStyle){ return '<span><span style="display:inline-block;width:10px;height:10px;background:rgba(47,156,141,0.6);border-radius:2px;margin-right:4px;"></span>この経営層</span><span><span style="display:inline-block;width:10px;height:10px;'+secStyle+';border-radius:2px;margin-right:4px;"></span>'+secLabel+'</span>'; }
   function wavg(vals,w){ var s=0,ws=0; AX.forEach(function(a){ var wt=(w&&w[a.k])||1; s+=wt*vals[a.k]; ws+=wt; }); return ws?Math.round(s/ws):0; }
+  // 共鳴後の想定：現状から、この環境のポテンシャル方向へどれだけ動きうるか（参考値）。
+  // 経営層の生スコアは出さない＝「あなたがどう変わりうるか」だけを見せる。econ(年収)は環境で決まる度合いが強いので追従を強めに。
+  function projectWB(cur,comp){
+    var fut={};
+    AX.forEach(function(a){ var f=(a.k==='econ')?0.85:0.6; fut[a.k]=clamp(cur[a.k]+(comp[a.k]-cur[a.k])*f); });
+    return fut;
+  }
   window.wbCompare=function(){
     var co=getCo(); var comp=companyWB(co); if(co&&co.wb&&co.wb.econ!=null) comp.econ=clamp(co.wb.econ);
     var weight=userWeights(co);
     var salEl=document.getElementById('wbSalary'); var salEcon=SAL_ECON[salEl?salEl.value:'']; if(salEcon==null) salEcon=55;
     var lack={}; document.querySelectorAll('#wbLackChips .wb-lack[data-on="1"]').forEach(function(el){ lack[el.getAttribute('data-k')]=1; });
     var cur={}; AX.forEach(function(a){ cur[a.k]=lack[a.k]?35:66; }); cur.econ=salEcon;
-    var totCur=wavg(cur,weight), totCo=wavg(comp,weight), delta=totCo-totCur;
-    document.getElementById('wbRadar').innerHTML=radar(comp,cur,'rgba(226,114,91,0.75)');
-    document.getElementById('wbLegend').innerHTML=legendHTML('今の仕事','border:1.5px solid rgba(226,114,91,0.85)');
-    var ups=AX.filter(function(a){ return comp[a.k]-cur[a.k]>=15; }).map(function(a){return a.label;});
-    var econDown=(cur.econ-comp.econ)>=12;
+    var fut=projectWB(cur,comp);
+    var totCur=wavg(cur,weight), totFut=wavg(fut,weight), delta=totFut-totCur;
+    document.getElementById('wbRadar').innerHTML=radar(fut,cur,'rgba(226,114,91,0.75)');
+    document.getElementById('wbLegend').innerHTML='<span><span style="display:inline-block;width:10px;height:10px;border:1.5px solid rgba(226,114,91,0.85);border-radius:2px;margin-right:4px;"></span>いまの仕事</span><span><span style="display:inline-block;width:10px;height:10px;background:rgba(47,156,141,0.6);border-radius:2px;margin-right:4px;"></span>共鳴後の想定</span>';
+    var chips=AX.map(function(a){ var d=fut[a.k]-cur[a.k];
+      if(d>=8) return '<span style="font-size:11px;background:var(--teal-bg);color:var(--teal-d);border-radius:20px;padding:4px 11px;font-weight:700;">'+escapeHtml(a.label)+' +'+d+'</span>';
+      if(d<=-8) return '<span style="font-size:11px;background:rgba(0,0,0,0.05);color:var(--text2);border-radius:20px;padding:4px 11px;">'+escapeHtml(a.label)+' '+d+'</span>';
+      return '';
+    }).filter(Boolean).join('');
+    var econDown=(cur.econ-fut.econ)>=8;
     var html='<div style="text-align:center;padding:14px;background:var(--teal-bg);border-radius:10px;">'
-      +'<div style="font-size:12px;color:var(--text2);margin-bottom:6px;">あなたの価値観で採点した&ldquo;総合の手応え&rdquo;</div>'
-      +'<div style="font-size:14px;font-weight:700;color:var(--navy);line-height:1.7;">今の仕事 <span style="font-family:\'JetBrains Mono\',monospace;font-size:22px;">'+totCur+'</span>&nbsp;→&nbsp;この経営層 <span style="font-family:\'JetBrains Mono\',monospace;font-size:26px;color:var(--teal-d);">'+totCo+'</span></div>'
-      +(delta>0?'<div style="font-size:12px;color:var(--teal-d);font-weight:700;margin-top:4px;">＋'+delta+' 上がる</div>':(delta<0?'<div style="font-size:12px;color:var(--text3);margin-top:4px;">総合はほぼ横ばい</div>':''))
+      +'<div style="font-size:12px;color:var(--text2);margin-bottom:6px;">あなたの重心で重み付けした&ldquo;報酬の総量&rdquo;</div>'
+      +'<div style="font-size:14px;font-weight:700;color:var(--navy);line-height:1.7;">いま <span style="font-family:\'JetBrains Mono\',monospace;font-size:22px;">'+totCur+'</span>&nbsp;→&nbsp;共鳴後の想定 <span style="font-family:\'JetBrains Mono\',monospace;font-size:26px;color:var(--teal-d);">'+totFut+'</span></div>'
+      +(delta>0?'<div style="font-size:12px;color:var(--teal-d);font-weight:700;margin-top:4px;">＋'+delta+' 増える可能性</div>':(delta<0?'<div style="font-size:12px;color:var(--text3);margin-top:4px;">総合はほぼ横ばい</div>':''))
       +'</div>';
-    if(ups.length) html+='<div style="font-size:13.5px;line-height:1.85;color:var(--text);margin-top:12px;">特に <b>'+escapeHtml(ups.join('・'))+'</b> が、今より大きく上がりそうです。あなたが&ldquo;足りない&rdquo;と感じている部分が、ここで満たされるかもしれません。</div>';
-    if(econDown) html+='<div style="font-size:12.5px;color:var(--text2);margin-top:8px;line-height:1.7;">※ 年収は下がる可能性があります。それでも&ldquo;あなたが大事にする軸&rdquo;は上がる——その価値をどう見るかは、あなた次第です。</div>';
+    if(chips) html+='<div style="display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:12px;">'+chips+'</div>';
+    if(econDown) html+='<div style="font-size:12.5px;color:var(--text2);margin-top:10px;line-height:1.7;">※ 年収は下がる可能性があります。それでも&ldquo;あなたが大事にする軸&rdquo;は増える——その価値をどう見るかは、あなた次第です。</div>';
+    html+='<div style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.7;">※ あなたの反応から推定した参考値です。経営層を評価する数値ではありません。確かめる方法は、会って話すことだけ。</div>';
     document.getElementById('wbCompareResult').innerHTML=html;
+    try{ if(typeof SN_CARDS!=='undefined'&&SN_CARDS&&SN_CARDS.logId&&typeof patchCardLog==='function') patchCardLog({wb_compare:true}); }catch(e){}
+  };
+  // フロー予報：重心（意味×裁量）から「没頭が生まれやすいか」を一言で。チクセントミハイの注釈付き。
+  function flowHTML(weight){
+    var msg;
+    if(weight.agency>=62 && weight.meaning>=62) msg='<b>挑戦と意味の両輪</b>が強い重心。裁量のある環境ほど、時間を忘れる没頭（フロー）が生まれやすいタイプです。';
+    else if(weight.agency>=62) msg='<b>挑戦・裁量</b>に重心。自分で決めて動かせる環境で、没頭（フロー）が生まれやすいタイプです。';
+    else if(weight.people>=62) msg='<b>人との近さ</b>に重心。信頼できる相手と組めたとき、没頭（フロー）が生まれやすいタイプです。';
+    else msg='あなたの重心に合う環境ほど、時間を忘れる手応え（フロー）は生まれやすくなります。';
+    return '<div style="display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--border);border-radius:10px;padding:13px 15px;">'
+      +'<span style="font-size:16px;line-height:1;">🌀</span>'
+      +'<div><div style="font-size:11px;color:var(--teal-d);font-weight:700;font-family:\'JetBrains Mono\',monospace;margin-bottom:3px;">フロー予報</div>'
+      +'<div style="font-size:13px;line-height:1.8;color:var(--text);">'+msg+'</div>'
+      +'<div style="font-size:10.5px;color:var(--text3);line-height:1.7;margin-top:5px;">※フロー＝心理学者チクセントミハイが提唱した「没頭」の概念。挑戦の大きさと自分の力が釣り合うとき、人は時間を忘れて集中できる。</div></div></div>';
+  }
+  // p3詳細レポート埋め込み用：あなたの重心レーダー（ダーク背景でも見えるよう白カードで包む）
+  window.wbUserRadar=function(){
+    try{ return '<div style="background:#fff;border-radius:8px;padding:6px 2px;">'+radar(userWeights(getCo()))+'</div>'; }catch(e){ return ''; }
   };
   window.openWellbeing=function(){
     ensureScreen();
     var co=getCo();
-    var comp=companyWB(co), weight=userWeights(co);
+    var weight=userWeights(co);
     var name=(co&&co.ceo)?co.ceo+'さん':'この経営層';
-    document.getElementById('wbManifesto').innerHTML='年収や知名度だけが、キャリアの&ldquo;正解&rdquo;じゃない。<br>地域で、その会社だからこそ自分を活かせて——その手応えそのものが、人生の意味になる。';
-    document.getElementById('wbTitle').textContent='あなたの手応えは、どこで最大化するか。';
-    document.getElementById('wbSub').innerHTML='あなたの価値観の<b>重心</b>と、'+escapeHtml(name)+'の<b>環境</b>を6軸で重ねました（点数はあなたの価値観に照らした相性の目安です）。';
-    document.getElementById('wbRadar').innerHTML=radar(comp,weight);
-    // bands
-    var bands=AX.map(function(a){ var b=band(comp[a.k]); return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;"><div style="width:96px;font-size:12.5px;color:var(--text);">'+a.label+'</div><div style="flex:1;height:8px;background:rgba(0,0,0,0.06);border-radius:5px;overflow:hidden;"><div style="height:100%;width:'+comp[a.k]+'%;background:var(--teal);border-radius:5px;"></div></div><div style="width:30px;text-align:right;font-size:11px;font-weight:700;color:'+b[1]+';background:'+b[2]+';border-radius:4px;">'+b[0]+'</div></div>'; }).join('');
-    document.getElementById('wbBands').innerHTML=bands;
-    // text
+    document.getElementById('wbManifesto').innerHTML='年収以外にも、仕事の報酬には様々な種類がある。<br>裁量、自由度、人との近さ、地域、ゆとり——<br>年収や知名度だけが、キャリアの正解じゃない。';
+    document.getElementById('wbTitle').textContent='仕事の報酬を、どう最大化するか。';
+    document.getElementById('wbSub').innerHTML='あなたの反応から、いま大切にしている報酬のかたち＝<b>報酬の重心</b>を導きました。';
+    document.getElementById('wbRadar').innerHTML=radar(weight);
+    document.getElementById('wbLegend').innerHTML='<span><span style="display:inline-block;width:10px;height:10px;background:rgba(47,156,141,0.6);border-radius:2px;margin-right:4px;"></span>あなたの重心</span>';
+    document.getElementById('wbFlow').innerHTML=flowHTML(weight);
+    // text：あなた起点の読み解きのみ（経営層のスコア・優劣は出さない。ことばの解釈はLINE後の詳細レポートへ）
     var sortedW=AX.slice().sort(function(a,b){return weight[b.k]-weight[a.k];});
     var top2=[sortedW[0].label,sortedW[1].label];
-    var overlap=AX.filter(function(a){return weight[a.k]>=62 && comp[a.k]>=72;}).map(function(a){return a.label;});
     var moyaLabels=((typeof S!=='undefined'&&S.moya)||[]).map(function(id){ var m=(window.MOYA||[]).filter(function(x){return x.id===id;})[0]; return m?m.label:''; }).filter(Boolean);
     var blocks='';
-    blocks+='<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:12px;"><div style="font-size:11px;color:var(--teal-d);font-weight:700;margin-bottom:6px;font-family:\'JetBrains Mono\',monospace;">あなたが仕事に求めているもの</div><div style="font-size:14px;line-height:1.85;color:var(--text);">あなたは <b>「'+escapeHtml(top2[0])+'」「'+escapeHtml(top2[1])+'」</b> を特に大事にするタイプ。年収そのものより、<b>そこで自分の力が効く手応え</b>に満足度が動きます。</div></div>';
-    blocks+='<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:12px;"><div style="font-size:11px;color:var(--teal-d);font-weight:700;margin-bottom:6px;font-family:\'JetBrains Mono\',monospace;">'+escapeHtml(name)+'との相性</div><div style="font-size:14px;line-height:1.85;color:var(--text);">'+(overlap.length?'この経営層は、あなたが重視する <b>'+escapeHtml(overlap.join('・'))+'</b> が高い環境です。':'この経営層は、あなたの重心と重なる部分があります。')+(moyaLabels.length?'<br>いま感じている <b>「'+escapeHtml(moyaLabels.join('／'))+'」</b> は、ここで満たされやすいかもしれません。':'')+'</div></div>';
-    blocks+='<div style="background:var(--teal-bg);border:1px solid var(--teal-mid,rgba(66,173,159,.35));border-radius:10px;padding:16px 18px;"><div style="font-size:13.5px;line-height:1.85;color:var(--navy);">'+(comp.econ>=70?'しかも経済（年収）も低くありません。<b>well-beingも経済も、両方あきらめなくていい</b>可能性があります。':'経済（年収）は環境によります。ただ、<b>あなたが大事にする軸は大きく上がりそう</b>——それをどう捉えるかは、あなた次第です。')+'</div></div>';
+    blocks+='<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px;"><div style="font-size:11px;color:var(--teal-d);font-weight:700;margin-bottom:6px;font-family:\'JetBrains Mono\',monospace;">あなたが仕事に求めているもの</div><div style="font-size:14px;line-height:1.85;color:var(--text);">あなたは <b>「'+escapeHtml(top2[0])+'」「'+escapeHtml(top2[1])+'」</b> を特に大事にするタイプ。年収そのものより、<b>そこで自分の力が効く手応え</b>に満足度が動きます。'+(moyaLabels.length?'<br>いま感じている <b>「'+escapeHtml(moyaLabels.join('／'))+'」</b> も、この重心とつながっています。':'')+'</div></div>';
     document.getElementById('wbText').innerHTML=blocks;
     document.getElementById('wbCta').innerHTML='<button class="btn-primary" style="width:100%;justify-content:center;" onclick="openEmpathyForm()">'+escapeHtml(name)+'に興味を伝える →</button>';
-    // 比較UI初期化（デフォルトは重心表示）
-    document.getElementById('wbLegend').innerHTML=legendHTML('あなたの重心','border:1.5px solid rgba(22,34,63,0.5)');
+    // 比較UI初期化
     var _sal=document.getElementById('wbSalary'); if(_sal) _sal.innerHTML=SALARY.map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>';}).join('');
     var _lc=document.getElementById('wbLackChips'); if(_lc) _lc.innerHTML=AX.map(function(a){return '<span class="wb-lack" data-k="'+a.k+'" data-on="0" onclick="var v=this.getAttribute(\'data-on\')===\'1\';this.setAttribute(\'data-on\',v?\'0\':\'1\');this.style.background=v?\'\':\'var(--teal)\';this.style.color=v?\'\':\'#fff\';this.style.borderColor=v?\'var(--border)\':\'var(--teal)\';" style="cursor:pointer;font-size:12px;border:1px solid var(--border);border-radius:20px;padding:6px 12px;user-select:none;">'+a.label+'</span>';}).join('');
     var _cr=document.getElementById('wbCompareResult'); if(_cr) _cr.innerHTML='';
+    try{ if(typeof SN_CARDS!=='undefined'&&SN_CARDS&&SN_CARDS.logId&&typeof patchCardLog==='function') patchCardLog({wb_view:true}); }catch(e){}
     goScreen('p-wb');
   };
 })();

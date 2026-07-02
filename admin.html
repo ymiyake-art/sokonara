@@ -612,6 +612,11 @@ async function renderResonance(){
   const fLine=logs.filter(l=>l.line_registered).length;
   const fCta=logs.filter(l=>l.contact_cta).length;
   const fForm=logs.filter(l=>l.form_open).length;
+  // H1検証：報酬の重心レポート閲覧の有無でCV(form_open)率がどう変わるか
+  const fWb=logs.filter(l=>l.wb_view).length;
+  const fWbCmp=logs.filter(l=>l.wb_compare).length;
+  const wbYes=logs.filter(l=>l.wb_view), wbNo=logs.filter(l=>!l.wb_view);
+  const wbYesCv=wbYes.filter(l=>l.form_open).length, wbNoCv=wbNo.filter(l=>l.form_open).length;
 
   // チャネル別（utm_source）— LINE配信 vs メール等の効果比較
   const chName=s=>s?String(s):'直接/不明';
@@ -701,12 +706,18 @@ async function renderResonance(){
 
     <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
       <div style="font-weight:700;font-size:13px;margin-bottom:14px;">新導線ファネル <span style="font-weight:400;color:var(--text3);font-size:11px">（開始を100%とした到達率／フォームを開く＝メインCV）</span></div>
-      ${[['カード開始',N],['経営者を選んだ',fResult],['記事を読んだ',fRead],['興味（共感→P5）',fCta],['フォームを開いた（CV）',fForm]].map(([lbl,n],i,arr)=>
+      ${[['カード開始',N],['経営者を選んだ',fResult],['記事を読んだ',fRead],['報酬の重心を見た',fWb],['興味（共感→P5）',fCta],['フォームを開いた（CV）',fForm]].map(([lbl,n],i,arr)=>
         `<div style="display:flex;align-items:center;gap:12px;margin-bottom:9px;font-size:12px;">
           <div style="width:160px;color:${i===arr.length-1?'#2e8c7f':'var(--text2)'};font-weight:${i===arr.length-1?'700':'400'}">${lbl}</div>
           ${funnelBar(n)}
           <div style="width:70px;text-align:right"><b>${n}</b> <span style="color:var(--text3)">(${pct(n,N)}%)</span></div>
         </div>`).join('')}
+      <div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--border);font-size:11px;color:var(--text2);line-height:1.8;">
+        <b style="color:var(--navy)">H1検証（重心レポートはCVを増やすか）</b>：
+        閲覧あり ${wbYes.length}件 → CV <b style="color:#2e8c7f">${pct(wbYesCv,wbYes.length)}%</b>（${wbYesCv}件）
+        ／ 閲覧なし ${wbNo.length}件 → CV <b>${pct(wbNoCv,wbNo.length)}%</b>（${wbNoCv}件）
+        ／ 比較実行 ${fWbCmp}件
+      </div>
     </div>
 
     <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
