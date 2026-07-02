@@ -112,13 +112,13 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
       <textarea id="svComment" placeholder="印象に残った言葉・話してみた感想など"></textarea>
       <button class="btn" style="margin-top:14px;" onclick="submitSurvey()">回答を送信する</button>
     </div>
-    <!-- 送信後：お礼＋報酬の重心ミニレポート -->
+    <!-- 送信後：お礼＋“仕事の軸”ミニレポート -->
     <div id="svThanks" style="display:none;">
       <div style="text-align:center;padding:8px 0 4px;"><div style="font-size:32px;">🎉</div><div style="font-size:15px;font-weight:900;color:var(--navy);margin-top:4px;">ご回答ありがとうございました</div></div>
       <div style="background:var(--teal-bg);border-radius:10px;padding:14px 16px;margin-top:12px;">
-        <div class="step" style="margin-bottom:2px;">REWARD COMPASS</div>
-        <div style="font-size:14px;font-weight:900;color:var(--navy);">今日のあなたの「報酬の重心」</div>
-        <div class="note" style="margin:4px 0 2px;">チェックした企業と理由から導いた、あなたが仕事に求める報酬のかたち。年収や知名度だけが、キャリアの正解じゃない。</div>
+        <div class="step" style="margin-bottom:2px;">CAREER AXIS</div>
+        <div style="font-size:14px;font-weight:900;color:var(--navy);">今日のあなたの“仕事の軸”</div>
+        <div class="note" style="margin:4px 0 2px;">チェックした企業と理由から導いた、あなたが仕事に求めるもの。年収や知名度だけが、キャリアの正解じゃない。</div>
         <div id="svRadar"></div>
         <div class="note" style="text-align:center;">※参考値です。企業を評価する数値ではありません。</div>
       </div>
@@ -210,7 +210,7 @@ function submitSurvey(){
   push({name:M.name,checks:M.checks,deep:M.survey.deep,talk:M.survey.talk,consent:M.survey.consent,rtags:M.survey.rtags,comment:M.survey.comment,survey_done:true});
   paintThanks();
 }
-// ===== 報酬の重心（チェック企業のwb＋理由タグから導出。PII不使用・派生値のみ） =====
+// ===== “仕事の軸”（チェック企業のwb＋理由タグから導出。PII不使用・派生値のみ） =====
 function centroid(){
   var w={meaning:52,agency:52,people:52,local:52,time:52,econ:50};
   var ids={}; M.checks.concat(M.survey.deep,M.survey.talk).forEach(function(id){ids[id]=1;});

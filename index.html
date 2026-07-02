@@ -1599,7 +1599,7 @@ h1, h2, h3, h4,
           <div id="fbSummaryText" style="font-size:14px;line-height:1.9;color:rgba(255,255,255,0.9);white-space:pre-line;"></div>
         </div>
 
-        <!-- 詳細レポート（AIのことばの読み解き＋報酬の重心マトリックス）＝LINE登録後に表示。要約(WORKING HINT)は無料 -->
+        <!-- 詳細レポート（AIのことばの読み解き＋“仕事の軸”マトリックス）＝LINE登録後に表示。要約(WORKING HINT)は無料 -->
         <div id="fbDetail" style="display:none">
           <div style="font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:2px;color:var(--teal);margin:4px 0 10px;">詳細レポート</div>
           <div id="fbWbMini" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:14px 12px 6px;margin-bottom:16px;"></div>
@@ -1622,14 +1622,14 @@ h1, h2, h3, h4,
             <span style="font-size:14px;">🔒</span>
             <span style="font-size:13px;font-weight:700;color:#fff;">詳細レポート</span>
           </div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.65);line-height:1.8;">AIがあなたの反応を、ことばで読み解きます。あなたの「報酬の重心」マトリックスと、この経営層との接点のヒントもここに。<br><span style="color:rgba(255,255,255,0.45);">LINE登録（無料・ワンタップ）で表示されます。下のボタンからどうぞ。</span></div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.65);line-height:1.8;">AIがあなたの反応を、ことばで読み解きます。あなたの“仕事の軸”マトリックスと、この経営層との接点のヒントもここに。<br><span style="color:rgba(255,255,255,0.45);">LINE登録（無料・ワンタップ）で表示されます。下のボタンからどうぞ。</span></div>
         </div>
 
         <!-- LINE登録後のCTA -->
         <div id="fbCta" class="fb-cta" style="display:none">
           <div id="fbCtaLabel" style="font-size:13px;color:var(--text2);margin-bottom:10px;text-align:center"></div>
           <div style="display:flex;flex-direction:column;gap:10px;">
-            <button class="btn-primary" style="width:100%;justify-content:center;background:var(--navy);" onclick="openWellbeing()">📊 あなたの報酬の重心を見る →</button>
+            <button class="btn-primary" style="width:100%;justify-content:center;background:var(--navy);" onclick="openWellbeing()">📊 あなたの“仕事の軸”を見る →</button>
             <button class="btn-primary" style="width:100%;justify-content:center;" onclick="openEmpathyForm()">この経営層に興味を伝える →</button>
             <button class="btn-outline" style="width:100%;justify-content:center;font-size:13px;" onclick="goScreen('p4')">他の経営層のはたらくヒントを見る</button>
           </div>
@@ -3129,15 +3129,15 @@ function showFeedback(fb) {
   document.getElementById('fbSkel').style.display = 'none';
   document.getElementById('fbContent').style.display = 'block';
 
-  // 要約(WORKING HINT)は全員に表示。詳細（ことばの読み解き＋重心マトリックス）はLINE登録後のみ＝上下重複を解消。
+  // 要約(WORKING HINT)は全員に表示。詳細（ことばの読み解き＋“仕事の軸”マトリックス）はLINE登録後のみ＝上下重複を解消。
   const _reg = isLineRegistered();
   const summaryEl = document.getElementById('fbSummaryText');
   if(summaryEl) summaryEl.textContent = fb.summary || '';
   document.getElementById('fbSummary').style.display = 'block';
   document.getElementById('fbDetail').style.display = _reg ? 'block' : 'none';
   { const _lk = document.getElementById('fbDetailLock'); if(_lk) _lk.style.display = _reg ? 'none' : 'block'; }
-  // 詳細レポート冒頭に「報酬の重心」ミニマトリックスを埋め込み（LINE後）
-  if(_reg){ try{ const _mini=document.getElementById('fbWbMini'); if(_mini && typeof wbUserRadar==='function'){ _mini.innerHTML='<div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:2px;">あなたの報酬の重心</div>'+wbUserRadar(); } }catch(e){} }
+  // 詳細レポート冒頭に「仕事の軸」ミニマトリックスを埋め込み（LINE後）
+  if(_reg){ try{ const _mini=document.getElementById('fbWbMini'); if(_mini && typeof wbUserRadar==='function'){ _mini.innerHTML='<div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:2px;">あなたの仕事の軸</div>'+wbUserRadar(); } }catch(e){} }
 
   // 価値観キーワード表示は廃止（記事の抜粋に見えてピンと来ないため）
   const tags = document.getElementById('valueTags');
@@ -4006,8 +4006,8 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
 })();
 </script>
 <script>
-/* ===== 報酬の重心（Career Well-being）レポート =====
-   6軸（意味/裁量挑戦/人近さ/地域/ゆとり/経済）。上段＝あなたの重心のみ（経営層のスコアは表示しない＝評価している印象を出さない）。
+/* ===== “仕事の軸”（Career Well-being）レポート =====
+   6軸（意味/裁量挑戦/人近さ/地域/ゆとり/経済）。上段＝あなたの軸のみ（経営層のスコアは表示しない＝評価している印象を出さない）。
    比較＝「いまの仕事」と「共鳴後の想定（この環境に飛び込んだ場合の変化の可能性・参考値）」。
    会社スコア companies.wb は将来値の推定にのみ内部使用。保存は派生値のみ（生自由記述は保存しない）。 */
 (function(){
@@ -4126,7 +4126,7 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     }).filter(Boolean).join('');
     var econDown=(cur.econ-fut.econ)>=8;
     var html='<div style="text-align:center;padding:14px;background:var(--teal-bg);border-radius:10px;">'
-      +'<div style="font-size:12px;color:var(--text2);margin-bottom:6px;">あなたの重心で重み付けした&ldquo;報酬の総量&rdquo;</div>'
+      +'<div style="font-size:12px;color:var(--text2);margin-bottom:6px;">あなたの軸で重み付けした&ldquo;総合の手応え&rdquo;</div>'
       +'<div style="font-size:14px;font-weight:700;color:var(--navy);line-height:1.7;">いま <span style="font-family:\'JetBrains Mono\',monospace;font-size:22px;">'+totCur+'</span>&nbsp;→&nbsp;共鳴後の想定 <span style="font-family:\'JetBrains Mono\',monospace;font-size:26px;color:var(--teal-d);">'+totFut+'</span></div>'
       +(delta>0?'<div style="font-size:12px;color:var(--teal-d);font-weight:700;margin-top:4px;">＋'+delta+' 増える可能性</div>':(delta<0?'<div style="font-size:12px;color:var(--text3);margin-top:4px;">総合はほぼ横ばい</div>':''))
       +'</div>';
@@ -4136,20 +4136,20 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     document.getElementById('wbCompareResult').innerHTML=html;
     try{ if(typeof SN_CARDS!=='undefined'&&SN_CARDS&&SN_CARDS.logId&&typeof patchCardLog==='function') patchCardLog({wb_compare:true}); }catch(e){}
   };
-  // フロー予報：重心（意味×裁量）から「没頭が生まれやすいか」を一言で。チクセントミハイの注釈付き。
+  // フロー予報：仕事の軸（意味×裁量）から「没頭が生まれやすいか」を一言で。チクセントミハイの注釈付き。
   function flowHTML(weight){
     var msg;
-    if(weight.agency>=62 && weight.meaning>=62) msg='<b>挑戦と意味の両輪</b>が強い重心。裁量のある環境ほど、時間を忘れる没頭（フロー）が生まれやすいタイプです。';
-    else if(weight.agency>=62) msg='<b>挑戦・裁量</b>に重心。自分で決めて動かせる環境で、没頭（フロー）が生まれやすいタイプです。';
-    else if(weight.people>=62) msg='<b>人との近さ</b>に重心。信頼できる相手と組めたとき、没頭（フロー）が生まれやすいタイプです。';
-    else msg='あなたの重心に合う環境ほど、時間を忘れる手応え（フロー）は生まれやすくなります。';
+    if(weight.agency>=62 && weight.meaning>=62) msg='あなたの軸は<b>挑戦と意味の両輪</b>。裁量のある環境ほど、時間を忘れる没頭（フロー）が生まれやすいタイプです。';
+    else if(weight.agency>=62) msg='あなたの軸は<b>挑戦・裁量</b>寄り。自分で決めて動かせる環境で、没頭（フロー）が生まれやすいタイプです。';
+    else if(weight.people>=62) msg='あなたの軸は<b>人との近さ</b>寄り。信頼できる相手と組めたとき、没頭（フロー）が生まれやすいタイプです。';
+    else msg='あなたの軸に合う環境ほど、時間を忘れる手応え（フロー）は生まれやすくなります。';
     return '<div style="display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--border);border-radius:10px;padding:13px 15px;">'
       +'<span style="font-size:16px;line-height:1;">🌀</span>'
       +'<div><div style="font-size:11px;color:var(--teal-d);font-weight:700;font-family:\'JetBrains Mono\',monospace;margin-bottom:3px;">フロー予報</div>'
       +'<div style="font-size:13px;line-height:1.8;color:var(--text);">'+msg+'</div>'
       +'<div style="font-size:10.5px;color:var(--text3);line-height:1.7;margin-top:5px;">※フロー＝心理学者チクセントミハイが提唱した「没頭」の概念。挑戦の大きさと自分の力が釣り合うとき、人は時間を忘れて集中できる。</div></div></div>';
   }
-  // p3詳細レポート埋め込み用：あなたの重心レーダー（ダーク背景でも見えるよう白カードで包む）
+  // p3詳細レポート埋め込み用：あなたの“仕事の軸”レーダー（ダーク背景でも見えるよう白カードで包む）
   window.wbUserRadar=function(){
     try{ return '<div style="background:#fff;border-radius:8px;padding:6px 2px;">'+radar(userWeights(getCo()))+'</div>'; }catch(e){ return ''; }
   };
@@ -4158,18 +4158,18 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var co=getCo();
     var weight=userWeights(co);
     var name=(co&&co.ceo)?co.ceo+'さん':'この経営層';
-    document.getElementById('wbManifesto').innerHTML='年収以外にも、仕事の報酬には様々な種類がある。<br>裁量、自由度、人との近さ、地域、ゆとり——<br>年収や知名度だけが、キャリアの正解じゃない。';
-    document.getElementById('wbTitle').textContent='仕事の報酬を、どう最大化するか。';
-    document.getElementById('wbSub').innerHTML='あなたの反応から、いま大切にしている報酬のかたち＝<b>報酬の重心</b>を導きました。';
+    document.getElementById('wbManifesto').innerHTML='年収以外にも、仕事から得られるものはたくさんある。<br>裁量、自由度、人との近さ、地域、ゆとり——<br>年収や知名度だけが、キャリアの正解じゃない。';
+    document.getElementById('wbTitle').textContent='あなたの“仕事の軸”は、どこにあるか。';
+    document.getElementById('wbSub').innerHTML='あなたの反応から、いま大切にしている<b>“仕事の軸”</b>を導きました。';
     document.getElementById('wbRadar').innerHTML=radar(weight);
-    document.getElementById('wbLegend').innerHTML='<span><span style="display:inline-block;width:10px;height:10px;background:rgba(47,156,141,0.6);border-radius:2px;margin-right:4px;"></span>あなたの重心</span>';
+    document.getElementById('wbLegend').innerHTML='<span><span style="display:inline-block;width:10px;height:10px;background:rgba(47,156,141,0.6);border-radius:2px;margin-right:4px;"></span>あなたの軸</span>';
     document.getElementById('wbFlow').innerHTML=flowHTML(weight);
     // text：あなた起点の読み解きのみ（経営層のスコア・優劣は出さない。ことばの解釈はLINE後の詳細レポートへ）
     var sortedW=AX.slice().sort(function(a,b){return weight[b.k]-weight[a.k];});
     var top2=[sortedW[0].label,sortedW[1].label];
     var moyaLabels=((typeof S!=='undefined'&&S.moya)||[]).map(function(id){ var m=(window.MOYA||[]).filter(function(x){return x.id===id;})[0]; return m?m.label:''; }).filter(Boolean);
     var blocks='';
-    blocks+='<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px;"><div style="font-size:11px;color:var(--teal-d);font-weight:700;margin-bottom:6px;font-family:\'JetBrains Mono\',monospace;">あなたが仕事に求めているもの</div><div style="font-size:14px;line-height:1.85;color:var(--text);">あなたは <b>「'+escapeHtml(top2[0])+'」「'+escapeHtml(top2[1])+'」</b> を特に大事にするタイプ。年収そのものより、<b>そこで自分の力が効く手応え</b>に満足度が動きます。'+(moyaLabels.length?'<br>いま感じている <b>「'+escapeHtml(moyaLabels.join('／'))+'」</b> も、この重心とつながっています。':'')+'</div></div>';
+    blocks+='<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px;"><div style="font-size:11px;color:var(--teal-d);font-weight:700;margin-bottom:6px;font-family:\'JetBrains Mono\',monospace;">あなたが仕事に求めているもの</div><div style="font-size:14px;line-height:1.85;color:var(--text);">あなたは <b>「'+escapeHtml(top2[0])+'」「'+escapeHtml(top2[1])+'」</b> を特に大事にするタイプ。年収そのものより、<b>そこで自分の力が効く手応え</b>に満足度が動きます。'+(moyaLabels.length?'<br>いま感じている <b>「'+escapeHtml(moyaLabels.join('／'))+'」</b> も、この軸とつながっています。':'')+'</div></div>';
     document.getElementById('wbText').innerHTML=blocks;
     document.getElementById('wbCta').innerHTML='<button class="btn-primary" style="width:100%;justify-content:center;" onclick="openEmpathyForm()">'+escapeHtml(name)+'に興味を伝える →</button>';
     // 比較UI初期化
