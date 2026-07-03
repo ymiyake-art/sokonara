@@ -250,7 +250,7 @@ function paintThanks(){
   document.getElementById('ckMax').textContent=EV.maxChecks;
   loadM(); paintReg();
   if(M.done) paintThanks();
-  fetch(SUPA_URL+'/rest/v1/companies?select=*&order=created_at.asc',{headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY}})
+  fetch(SUPA_URL+'/rest/v1/companies?select=*&order=sort.asc.nullslast,created_at.asc',{headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY}})
     .then(function(r){return r.json();})
     .then(function(rows){
       rows=(rows||[]).filter(function(c){ return (c.status||'active')==='active'; });

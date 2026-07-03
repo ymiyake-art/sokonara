@@ -2166,7 +2166,7 @@ function loadProjects(){
 }
 async function loadCompaniesAsync(){
   if(!supabaseClient){ loadCompanies(); return cachedCompanies; }
-  const {data,error}=await supabaseClient.from('companies').select('*').order('created_at',{ascending:true});
+  const {data,error}=await supabaseClient.from('companies').select('*').order('sort',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true});
   if(error){ console.warn('companies load fallback:', error.message); loadCompanies(); return cachedCompanies; }
   cachedCompanies = Array.isArray(data) ? data : [];
   try{ localStorage.setItem('sn_companies', JSON.stringify(cachedCompanies)); }catch{}

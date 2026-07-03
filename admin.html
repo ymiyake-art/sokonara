@@ -2152,6 +2152,7 @@ function toCompanyRow(c){
     tags:c.tags||[],title:c.title||'',quote:c.quote||'',body:c.body||'',q1:c.q1||[],fee:c.fee||'',
     catchphrase:c.catchphrase||'',cc_what:c.cc_what||'',cc_value:c.cc_value||'',cc_life:c.cc_life||'',cardLabel:c.cardLabel||'',wantedProfile:c.wantedProfile||'',summaryComment:c.summaryComment||'',
     btags:Array.isArray(c.btags)?c.btags:[],rtags:Array.isArray(c.rtags)?c.rtags:[],wb:(c.wb&&typeof c.wb==='object')?c.wb:{},
+    sort:(c.sort==null||c.sort==='')?null:(parseInt(c.sort)||null),
     status:c.status||'active',created_at:c.created_at||new Date().toISOString(),reactions:c.reactions||0,cta:c.cta||0
   };
 }
@@ -2160,7 +2161,7 @@ function fromCompanyRow(r){
 }
 async function loadCompaniesAsync(){
   if(!supabaseClient) return loadCompanies();
-  const {data,error}=await supabaseClient.from('companies').select('*').order('created_at',{ascending:true});
+  const {data,error}=await supabaseClient.from('companies').select('*').order('sort',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true});
   if(error){ console.warn('companies load fallback:', error.message); return loadCompanies(); }
   companiesCache = (data||[]).map(fromCompanyRow);
   localStorage.setItem('sn_companies', JSON.stringify(companiesCache));
@@ -2172,8 +2173,8 @@ async function saveCompanies(arr){
   const rows = companiesCache.map(toCompanyRow);
   // service_role API経由で保存（anon書込はDB側で禁止）
   let r=await adminWrite('companies','upsert',{rows});
-  if(!r.ok && r.error && /catchphrase|cardLabel|card_label|wantedProfile|summaryComment|cc_what|cc_value|cc_life|btags|rtags|wb|column/.test(r.error)){
-    const minRows = rows.map(rw=>{ const {catchphrase,cardLabel,heroUrl,wantedProfile,summaryComment,cc_what,cc_value,cc_life,btags,rtags,wb,...rest}=rw; return rest; });
+  if(!r.ok && r.error && /catchphrase|cardLabel|card_label|wantedProfile|summaryComment|cc_what|cc_value|cc_life|btags|rtags|wb|sort|column/.test(r.error)){
+    const minRows = rows.map(rw=>{ const {catchphrase,cardLabel,heroUrl,wantedProfile,summaryComment,cc_what,cc_value,cc_life,btags,rtags,wb,sort,...rest}=rw; return rest; });
     const r2=await adminWrite('companies','upsert',{rows:minRows});
     if(!r2.ok){ toast('⚠️ DB保存失敗。SQL Editorで supabase_setup.sql を実行してください。'); return false; }
     else { toast('⚠️ 一部カラム未追加のため除外して保存。SQL Editorでカラム追加を推奨。'); return false; }
@@ -2881,7 +2882,9 @@ function renderCoList(){
                 </div>
               </div>
               <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">${c.created}</div>
-              <div style="display:flex;gap:6px">
+              <div style="display:flex;gap:6px;align-items:center">
+                <button onclick="coMove('${c.id}',-1)" title="上へ" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);background:#fff;cursor:pointer;color:var(--text2);border-radius:2px">↑</button>
+                <button onclick="coMove('${c.id}',1)" title="下へ" style="font-size:11px;padding:3px 7px;border:1px solid var(--border);background:#fff;cursor:pointer;color:var(--text2);border-radius:2px">↓</button>
                 <button onclick="openArticleEditor('${c.id}')" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border:1px solid var(--teal);background:var(--teal-bg);cursor:pointer;color:var(--teal-d);border-radius:2px">編集</button>
                 <button onclick="deleteCo('${c.id}')" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border:1px solid var(--border);background:none;cursor:pointer;color:var(--text2);border-radius:2px">削除</button>
               </div>
@@ -2930,6 +2933,22 @@ function deletePj(id){
   saveProjects(arr);
   toast('削除しました');
   renderCoList();
+}
+
+// 掲載企業の表示順を入れ替え（現在の表示順で位置をスワップ→sortを10刻みで振り直して保存）。
+// アプリ・MEET当日ページの並びにも反映（companies_sort.sql 適用が前提。未適用時は保存で除外され順序は変わらない）。
+async function coMove(id,dir){
+  const arr=loadCompanies();
+  const i=arr.findIndex(c=>String(c.id)===String(id));
+  if(i<0) return;
+  const j=i+dir;
+  if(j<0||j>=arr.length) return;
+  const tmp=arr[i]; arr[i]=arr[j]; arr[j]=tmp;
+  arr.forEach((c,idx)=>{ c.sort=(idx+1)*10; });
+  await saveCompanies(arr);
+  renderCoList();
+  renderSidebarCompanies();
+  toast('並び順を保存しました（アプリにも反映）');
 }
 
 // ===== Well-being マトリクス（企業×6軸を横並びで一括管理）=====
