@@ -3707,7 +3707,8 @@ function parseNotionPaste(){
   document.getElementById('art-parsed').style.display = 'block';
   renderSectionsList();
   fillMeta(result.meta);
-  toast(`解析完了：セクション ${result.sections.length} 個`);
+  const _q1n=(result.meta.q1||[]).length;
+  toast(`解析完了：セクション ${result.sections.length} 個`+((_q1n&&_q1n!==4)?`／⚠️Q1が${_q1n}件（Why/Who/What/Life各1＝4件が必須）`:''));
   // Notionプロンプトが「ソコナラより/こんな人と出会いたい」を出さない場合、AIで自動生成
   if(!((result.meta.summaryComment||'').trim()) || !((result.meta.wantedProfile||'').trim())){
     genArticleMeta(true);
@@ -3718,7 +3719,17 @@ function parseNotion(text){
   const lines = text.split('\n');
   let title = '';
   const sections = [];
-  const meta = { tags:[], quote:'', catchphrase:'', q1:[], companyIntro:'' };
+  const meta = { tags:[], quote:'', catchphrase:'', q1:[], companyIntro:'', summaryComment:'', wantedProfile:'', catchTitles:[] };
+  // **key** の直後が空の場合、次の **key** / ## 見出し までを値として回収（複数行対応）
+  const collectBlock = (startIdx)=>{
+    let j=startIdx+1; const parts=[];
+    while(j<lines.length){
+      if(lines[j].match(/^\*\*/)||lines[j].startsWith('##')) break;
+      if(lines[j].trim()) parts.push(lines[j].trim());
+      j++;
+    }
+    return { text: parts.join('\n'), lines: parts, next: j-1 };
+  };
   let current = null;
   let inMeta = false;
   let inQ1 = false;
@@ -3743,15 +3754,29 @@ function parseNotion(text){
       const heading = line.slice(3).trim();
       inMeta = heading.includes('📋') || heading.includes('プラットフォーム登録');
       inQ1 = false;
-      // カードタイトルは catchphrase として抽出
+      // カードタイトル（候補3案対応）は catchphrase として抽出→adminで1案に絞る
       if(heading==='カードタイトル' || heading.includes('カードタイトル')){
-        let j=i+1;
-        while(j<lines.length && !lines[j].trim()) j++;
-        if(j<lines.length && !lines[j].startsWith('##') && !lines[j].startsWith('<')){
-          meta.catchphrase = lines[j].trim();
-          i = j;
+        let j=i+1; const cands=[];
+        while(j<lines.length && !lines[j].startsWith('##')){
+          const t=lines[j].trim();
+          if(t && !t.startsWith('<')) cands.push(t.replace(/^[-・*]\s*/,'').replace(/^案?\d+[：:.）)]\s*/,'').trim());
+          j++;
         }
+        meta.catchTitles=cands.filter(Boolean).slice(0,3);
+        if(meta.catchTitles.length){ meta.catchphrase=meta.catchTitles[0]; i=j-1; }
         current=null; continue;
+      }
+      // 「ソコナラより」「こんな人と出会いたい」は本文セクションではなくメタへ（記事冒頭に置かれる現行ルールに対応）
+      if(heading.includes('ソコナラより') || heading.includes('出会いたい')){
+        let j=i+1; const parts=[];
+        while(j<lines.length && !lines[j].startsWith('##')){
+          const t=lines[j].trim();
+          if(t && t!=='---' && !t.startsWith('<')) parts.push(t);
+          j++;
+        }
+        if(heading.includes('ソコナラより')) meta.summaryComment=parts.join('\n');
+        else meta.wantedProfile=parts.join('\n');
+        i=j-1; current=null; continue;
       }
       const SKIP_HEADINGS = ['ファーストビュー','タイトル','本文','ヘッダー','フッター','カバー','ビジュアル','レイアウト','デザイン','メモ','備考','下書き','TODO','todo'];
       const shouldSkip = SKIP_HEADINGS.some(s=>heading.includes(s));
@@ -3783,22 +3808,21 @@ function parseNotion(text){
           meta.quote = rest;
         } else if(k==='キャッチフレーズ'){
           meta.catchphrase = rest;
+        } else if(k.includes('カードタイトル')){
+          // カードタイトル候補（3案）：箇条書き/行で回収→adminのワンクリック選択で1案に絞る
+          const b=collectBlock(i); i=b.next;
+          meta.catchTitles=b.lines.map(l=>l.replace(/^[-・*]\s*/,'').replace(/^案?\d+[：:.）)]\s*/,'').trim()).filter(Boolean).slice(0,3);
+          if(rest) meta.catchTitles.unshift(rest);
+          if(!meta.catchphrase && meta.catchTitles.length) meta.catchphrase=meta.catchTitles[0];
+        } else if(k==='ソコナラより'||k.includes('ソコナラより')){
+          if(rest){ meta.summaryComment=rest; } else { const b=collectBlock(i); meta.summaryComment=b.text; i=b.next; }
+        } else if(k.includes('こんな人と出会いたい')||k.includes('出会いたい')){
+          if(rest){ meta.wantedProfile=rest; } else { const b=collectBlock(i); meta.wantedProfile=b.text; i=b.next; }
         } else if(k.includes('Q1選択肢')){
           inQ1 = true;
         } else if(k==='会社一言紹介'){
-          if(rest){
-            meta.companyIntro = rest;
-          } else {
-            let j=i+1;
-            const introParts=[];
-            while(j<lines.length){
-              if(lines[j].match(/^\*\*/)||lines[j].startsWith('##')) break;
-              if(lines[j].trim()) introParts.push(lines[j].trim());
-              j++;
-            }
-            meta.companyIntro=introParts.join('\n');
-            i=j-1;
-          }
+          if(rest){ meta.companyIntro = rest; }
+          else { const b=collectBlock(i); meta.companyIntro=b.text; i=b.next; }
         }
       }
       if(inQ1 && line.startsWith('- ')){
@@ -3838,6 +3862,19 @@ function fillMeta(meta){
   const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=v||''; };
   set('art-tags', (meta.tags||[]).join(', '));
   set('art-catchphrase', meta.catchphrase||'');
+  // カードタイトル候補（3案）：クリックで1案に絞る（Notionの必須ルール「登録前に1案へ」をここで受ける）
+  {
+    const cp=document.getElementById('art-catchphrase');
+    let box=document.getElementById('art-catch-cands');
+    if(cp && !box){ box=document.createElement('div'); box.id='art-catch-cands'; cp.parentElement.insertBefore(box,cp); }
+    if(box){
+      const cands=(meta.catchTitles||[]).filter(Boolean);
+      box.innerHTML = cands.length>1
+        ? '<div style="font-size:10px;color:var(--text3);margin-bottom:4px">候補から選択（クリックで下に反映）：</div>'
+          + cands.map(t=>`<button type="button" onclick="document.getElementById('art-catchphrase').value=this.textContent;this.parentElement.querySelectorAll('button').forEach(b=>b.style.background='#fff');this.style.background='var(--teal-bg)';" style="display:block;width:100%;text-align:left;font-size:12px;padding:6px 10px;margin-bottom:4px;border:1px solid var(--border);background:#fff;border-radius:2px;cursor:pointer;font-family:inherit;line-height:1.5">${escA(t)}</button>`).join('')
+        : '';
+    }
+  }
   set('art-quote', meta.quote||'');
   set('art-intro', meta.companyIntro||'');
   set('art-summary-comment', meta.summaryComment||'');
