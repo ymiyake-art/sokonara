@@ -4,7 +4,7 @@ export const config = { runtime: 'edge' };
 // companies/challenge_cards/projects への upsert/update/delete を ADMIN_PASSWORD 認証で実行。
 // これにより anon の書き込み権限をDBから剥がせる（改竄・削除の穴を塞ぐ）。
 // meet_entries はPII（氏名）を含むため anon読取不可＝adminは list アクション（認証必須）で閲覧する。
-const TABLES = ['companies', 'challenge_cards', 'projects', 'cases', 'meet_entries'];
+const TABLES = ['companies', 'challenge_cards', 'projects', 'cases', 'meet_entries', 'site_settings'];
 
 export default async function handler(req) {
   const cors = {

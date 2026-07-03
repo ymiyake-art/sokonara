@@ -224,6 +224,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
         <a class="nav-item" href="/" target="_blank" rel="noopener" style="text-decoration:none;"><div class="nav-dot" style="background:#9b59b6"></div>📱 アプリTOP ↗</a>
         <a class="nav-item" href="/personal/" target="_blank" rel="noopener" style="text-decoration:none;"><div class="nav-dot" style="background:#06C755"></div>👤 個人向けLP ↗</a>
         <a class="nav-item" href="/biz/" target="_blank" rel="noopener" style="text-decoration:none;"><div class="nav-dot" style="background:var(--teal)"></div>🏢 法人向けLP ↗</a>
+        <a class="nav-item" href="/meet/" target="_blank" rel="noopener" style="text-decoration:none;"><div class="nav-dot" style="background:#e67e22"></div>🎪 MEET LP ↗</a>
       </div>
       <div class="co-items" id="sidebarCompanies"></div>
       <div style="margin-top:auto;padding:14px 16px;border-top:1px solid rgba(255,255,255,0.07)">
@@ -3125,6 +3126,13 @@ async function renderMeetAdmin(){
         ${evs.length>1?`<select onchange="window._meetEv=this.value;renderMeetAdmin();" style="margin-left:auto;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;">${evs.map(e=>`<option value="${escA(e)}"${e===curEv?' selected':''}>${escA(e)}</option>`).join('')}</select>`:''}
         <button onclick="renderMeetAdmin()" style="margin-left:auto;padding:6px 14px;border:1px solid var(--border);background:#fff;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;">🔄 更新</button>
       </div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px;">📝 LP文言編集（<a href="/meet/" target="_blank" style="color:var(--teal-d)">/meet/ ↗</a>＝今回は7/30ソコナラMEET）</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.7;">① 現在の文言を読み込む → ② 直したい欄だけ編集 → ③ 保存して公開（LPを再読み込みすると反映）。保存は文言全体のスナップショットです。登壇者追加などリスト系は下の「リスト系（JSON）」から。</div>
+        <button onclick="meetLpLoad()" style="padding:8px 16px;background:var(--navy);color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;border-radius:4px;font-family:inherit;">📥 現在の文言を読み込む</button>
+        <span id="mlpStatus" style="font-size:11px;color:var(--text3);margin-left:10px;"></span>
+        <div id="mlpForm" style="display:none;margin-top:14px;"></div>
+      </div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
         ${[['登録者',nAll],['チェックあり',nCk],['アンケ回答',nSv],['共有同意',nCs]].map(([l,n])=>`<div style="flex:1;min-width:120px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px;"><div style="font-size:11px;color:var(--text2)">${l}</div><div style="font-size:22px;font-weight:700;color:var(--navy)">${n}</div></div>`).join('')}
       </div>
@@ -3150,6 +3158,85 @@ async function renderMeetAdmin(){
         </table>
       </div>
     </div>`;
+}
+
+// ===== MEET LP 文言編集（/meet/ の EV を読み込み→編集→site_settings.meet_lp に保存。LPが起動時にマージ） =====
+const MLP_TEXT=[
+  ['heroKick','ヒーロー最上部のキッカー'],['proofLine','ヒーロー下の実績行'],
+  ['fee','参加費'],['capacity','定員'],['qualify','参加資格'],['deadline','締切'],['scarcity','下部固定バーの文言'],
+  ['spkTitle','登壇者セクション見出し'],
+  ['applyUrl','申込フォームURL'],['lineUrl','LINE URL'],['videoUrl','動画URL'],['heroImage','ヒーロー画像パス'],
+];
+const MLP_AREA=[
+  ['heroH1','ヒーロー見出し（&lt;br&gt;改行・&lt;em&gt;強調&lt;/em&gt;可）'],
+  ['heroLead','ヒーローリード文'],
+  ['spkIntro','登壇者イントロ文'],
+];
+const MLP_NESTED=[
+  ['date',[['num','日付(例 7.30)'],['dow','曜日(例 THU)'],['year','年'],['time','時間(受付含む)']]],
+  ['venue',[['name','会場名'],['area','エリア'],['addr','住所']]],
+];
+const MLP_JSON=[
+  ['speakers','登壇者（tag/h/p の配列。7人目はここに追加）'],['timetable','タイムテーブル（t/h/d の配列）'],
+  ['audience','こんな方へ（文字列の配列）'],['trust','ヒーロー下の信頼チップ（文字列の配列）'],
+  ['positions','募集ポジション（文字列の配列）'],['voices','参加者の声（q/who/body の配列）'],
+  ['why','3つの価値（h/d の配列）'],['faq','FAQ（q/a の配列）'],['gallery','写真（src/cap の配列）'],
+];
+let _mlp=null;
+async function meetLpLoad(){
+  const st=document.getElementById('mlpStatus'); if(st) st.textContent='読み込み中…';
+  try{
+    const res=await fetch('/meet/?cb='+Date.now());
+    const t=await res.text();
+    const m=t.match(/\/\*EV_START\*\/[\s\S]*?const EV = ([\s\S]*?);\s*\/\*EV_END\*\//);
+    if(!m) throw new Error('EV定義が見つかりません（LP側のマーカー確認）');
+    const ev=(new Function('return ('+m[1]+')'))();
+    // 保存済みの上書きがあれば重ねる（＝前回の編集を引き継ぐ）
+    if(supabaseClient){
+      const {data}=await supabaseClient.from('site_settings').select('value').eq('key','meet_lp');
+      const v=data&&data[0]&&data[0].value;
+      if(v&&typeof v==='object') Object.keys(v).forEach(k=>{ if(v[k]!=null) ev[k]=v[k]; });
+    }
+    _mlp=ev; meetLpForm();
+    if(st) st.textContent='読み込みました（保存済みの編集があれば反映済み）';
+  }catch(e){ if(st) st.textContent=''; toast('読込失敗: '+(e.message||e)); }
+}
+function meetLpForm(){
+  const box=document.getElementById('mlpForm'); if(!box||!_mlp) return;
+  const inp=(id,label,val)=>`<div style="margin-bottom:8px;"><div style="font-size:11px;color:var(--text2);margin-bottom:2px;">${label}</div><input type="text" id="${id}" value="${escA(val==null?'':val)}" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:12.5px;font-family:inherit;background:#fff;"></div>`;
+  const area=(id,label,val,rows)=>`<div style="margin-bottom:8px;"><div style="font-size:11px;color:var(--text2);margin-bottom:2px;">${label}</div><textarea id="${id}" rows="${rows||3}" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:12.5px;font-family:inherit;background:#fff;resize:vertical;">${escA(val==null?'':val)}</textarea></div>`;
+  let html='<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">';
+  html+='<div>'+MLP_AREA.map(f=>area('mlp_'+f[0],f[1],_mlp[f[0]])).join('')+'</div>';
+  html+='<div>'+MLP_TEXT.slice(0,7).map(f=>inp('mlp_'+f[0],f[1],_mlp[f[0]])).join('')+'</div>';
+  html+='</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">';
+  html+='<div>'+MLP_NESTED.map(n=>'<div style="font-size:11px;font-weight:700;color:var(--navy);margin:4px 0;">'+n[0]+'</div>'+n[1].map(s=>inp('mlp_'+n[0]+'_'+s[0],s[1],(_mlp[n[0]]||{})[s[0]])).join('')).join('')+'</div>';
+  html+='<div>'+MLP_TEXT.slice(7).map(f=>inp('mlp_'+f[0],f[1],_mlp[f[0]])).join('')+'</div>';
+  html+='</div>';
+  html+='<details style="margin:6px 0 10px;"><summary style="font-size:12px;font-weight:700;color:var(--navy);cursor:pointer;">リスト系（JSON編集）— 登壇者の追加・タイムテーブル・FAQ など</summary><div style="font-size:10.5px;color:var(--text3);margin:6px 0;">JSON形式のまま編集してください（["文字列",…] または [{…},…]）。形式エラーは保存時に検出します。</div>'
+    + MLP_JSON.map(f=>area('mlpj_'+f[0],f[1],JSON.stringify(_mlp[f[0]]!=null?_mlp[f[0]]:[],null,1),5)).join('')
+    +'</details>';
+  html+='<button onclick="meetLpSave()" style="padding:10px 20px;background:var(--teal);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;border-radius:4px;font-family:inherit;">💾 保存して公開</button>'
+    +'<span style="font-size:11px;color:var(--text3);margin-left:10px;">保存後、/meet/ を再読み込みで反映</span>';
+  box.innerHTML=html; box.style.display='block';
+}
+async function meetLpSave(){
+  if(!_mlp){ toast('先に「現在の文言を読み込む」を押してください'); return; }
+  const gv=id=>{ const el=document.getElementById(id); return el?el.value:null; };
+  MLP_TEXT.forEach(f=>{ const v=gv('mlp_'+f[0]); if(v!=null) _mlp[f[0]]=v; });
+  MLP_AREA.forEach(f=>{ const v=gv('mlp_'+f[0]); if(v!=null) _mlp[f[0]]=v; });
+  MLP_NESTED.forEach(n=>{ const o=Object.assign({},_mlp[n[0]]||{}); n[1].forEach(s=>{ const v=gv('mlp_'+n[0]+'_'+s[0]); if(v!=null) o[s[0]]=v; }); _mlp[n[0]]=o; });
+  for(const f of MLP_JSON){
+    const el=document.getElementById('mlpj_'+f[0]); if(!el) continue;
+    try{ const p=JSON.parse(el.value); if(!Array.isArray(p)) throw new Error('配列ではありません'); _mlp[f[0]]=p; el.style.borderColor='var(--border)'; }
+    catch(e){ el.style.borderColor='var(--hot)'; toast('「'+f[1]+'」のJSONが不正です: '+(e.message||e)); return; }
+  }
+  const r=await adminWrite('site_settings','upsert',{rows:[{key:'meet_lp',value:_mlp,updated_at:new Date().toISOString()}]});
+  if(!r.ok){
+    if(/site_settings|relation|schema/.test(String(r.error||''))) toast('保存失敗: site_settings テーブル未作成。SQL Editorで site_settings_setup.sql を実行してください');
+    else toast('保存失敗: '+String(r.error||r.status).slice(0,80));
+    return;
+  }
+  toast('LP文言を保存しました。/meet/ を再読み込みすると反映されます');
 }
 
 // ===== 記事管理 =====

@@ -327,7 +327,12 @@
 /* ============================================================
    イベント設定 — 次回はこの EV だけ差し替えれば再利用できます。
    日付/会場/定員/申込URL/登壇者/タイムテーブル/声/FAQ をここで管理。
+   文言は管理画面「🎪 MEET運営 → LP文言編集」からも上書き可
+   （site_settings.meet_lp に保存→このLPが起動時にマージ）。
+   ⚠️ EV_START/EV_END マーカーは管理画面の「現在の文言を読み込む」が
+   使うため削除しないこと。
    ============================================================ */
+/*EV_START*/
 const EV = {
   applyUrl: 'https://www17.webcas.net/db/pub/sokonara/register-meet-r/create/input',
   lineUrl:  'https://lin.ee/qT5A0zN',
@@ -390,8 +395,10 @@ const EV = {
     {q:'ソコナラMEET参加後の選考フローは？', a:'イベント後、専用フォームで興味のある企業を選択。個別面談など次のステップにつながります。詳細は当日ご案内します。'},
   ],
 };
+/*EV_END*/
 
-(function render(){
+// 管理画面で保存されたLP文言（site_settings.meet_lp）を上書き適用してから描画する
+function renderLP(){
   var E=EV, $=function(id){return document.getElementById(id);};
   // links
   ['navApply','heroApply','closeApply','stickyApply'].forEach(function(id){$(id).href=E.applyUrl;$(id).target='_blank';$(id).rel='noopener';});
@@ -455,6 +462,14 @@ const EV = {
   // fade-in
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('vis');io.unobserve(e.target);}});},{threshold:0.1});
   document.querySelectorAll('.fade').forEach(function(el){io.observe(el);});
+}
+(function(){
+  var SUPA='https://ypwwuylcvjwcyazvpibd.supabase.co', KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd3d1eWxjdmp3Y3lhenZwaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTY1MTMsImV4cCI6MjA5MjI3MjUxM30.7YseXt8libEzFsSAv4bI46l36kZ2lFz_jnh1JphVpvA';
+  fetch(SUPA+'/rest/v1/site_settings?key=eq.meet_lp&select=value',{headers:{apikey:KEY,Authorization:'Bearer '+KEY}})
+    .then(function(r){return r.ok?r.json():null;})
+    .then(function(rows){ var v=rows&&rows[0]&&rows[0].value; if(v&&typeof v==='object'){ Object.keys(v).forEach(function(k){ if(v[k]!=null) EV[k]=v[k]; }); } })
+    .catch(function(){})
+    .then(function(){ renderLP(); });
 })();
 
 // 実例(CASES)を個人LPと同じ cases テーブルから取得（単一ソース＝admin編集で両LP同時更新）
