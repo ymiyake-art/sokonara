@@ -133,7 +133,7 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 <div class="toast" id="toastEl"></div>
 
 <script>
-var AX=[['meaning','意味'],['agency','裁量'],['people','人'],['local','地域'],['time','ゆとり'],['econ','経済']];
+var AX=[['meaning','意味・使命'],['agency','裁量・挑戦'],['people','人・近さ'],['local','地域・つながり'],['time','時間・ゆとり'],['econ','経済（年収）']];
 var RTAGS=[['leader','経営者に惹かれた'],['biz','事業内容が面白かった'],['exp','自分の経験が活かせそう'],['local','地域との関わりに惹かれた'],['growth','成長機会がありそう'],['people','働く人・雰囲気が良さそう'],['cond','条件面を詳しく知りたい'],['undecided','まだ判断中']];
 var TAG_AX={leader:{people:10},biz:{meaning:8,agency:6},exp:{agency:10},local:{local:12},growth:{agency:10},people:{people:10},cond:{econ:12}};
 var COS=[];
@@ -223,7 +223,7 @@ function radar(w){
   var cx=130,cy=118,R=82;
   function pt(i,val){ var a=(-90+i*60)*Math.PI/180,r=R*clamp(val)/100; return [cx+r*Math.cos(a),cy+r*Math.sin(a)]; }
   function ring(g,f){ var p=[]; for(var i=0;i<6;i++){var q=pt(i,g);p.push(q[0].toFixed(1)+','+q[1].toFixed(1));} return '<polygon points="'+p.join(' ')+'" fill="'+(f||'none')+'" stroke="rgba(22,34,63,0.10)" stroke-width="0.8"/>'; }
-  var s='<svg viewBox="0 0 260 240" width="100%" style="max-width:280px;display:block;margin:4px auto;">'
+  var s='<svg viewBox="-24 -4 308 250" width="100%" style="max-width:300px;display:block;margin:4px auto;">'
     +'<defs><linearGradient id="dg1" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#3cbcaa" stop-opacity="0.55"/><stop offset="1" stop-color="#16223f" stop-opacity="0.22"/></linearGradient>'
     +'<filter id="ds1" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#16223f" flood-opacity="0.28"/></filter></defs>';
   [100,66,33].forEach(function(g){s+=ring(g,'rgba(22,34,63,0.030)');});
@@ -231,7 +231,7 @@ function radar(w){
   var p=[]; for(var j=0;j<6;j++){ var q=pt(j,w[AX[j][0]]); p.push(q[0].toFixed(1)+','+q[1].toFixed(1)); }
   s+='<polygon points="'+p.join(' ')+'" fill="url(#dg1)" stroke="#2f9c8d" stroke-width="2.2" stroke-linejoin="round" filter="url(#ds1)"/>';
   for(var d=0;d<6;d++){ var qd=pt(d,w[AX[d][0]]); s+='<circle cx="'+qd[0].toFixed(1)+'" cy="'+qd[1].toFixed(1)+'" r="3" fill="#fff" stroke="#2f9c8d" stroke-width="2"/>'; }
-  for(var k=0;k<6;k++){ var lp=pt(k,126); s+='<text x="'+lp[0].toFixed(1)+'" y="'+lp[1].toFixed(1)+'" font-size="10.5" font-weight="700" fill="#3d4453" text-anchor="middle" dominant-baseline="middle">'+AX[k][1]+'</text>'; }
+  for(var k=0;k<6;k++){ var lp=pt(k,128); s+='<text x="'+lp[0].toFixed(1)+'" y="'+lp[1].toFixed(1)+'" font-size="9.5" font-weight="700" fill="#3d4453" text-anchor="middle" dominant-baseline="middle">'+AX[k][1]+'</text>'; }
   return s+'</svg>';
 }
 function paintThanks(){

@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ソコナラMEET｜経営層と直接話せるキャリアイベント（福岡）</title>
   <meta name="description" content="求人票では分からない会社のリアルと、経営層の想い。福岡・大名で開催する、地域企業の経営層と出会うキャリアイベント。参加無料・先着。">
-  <meta property="og:title" content="ソコナラMEET｜経営者の本音に触れる、福岡の夜。">
-  <meta property="og:description" content="地域企業の経営層と直接話して、「自分でも力になれるかも」に出会う。参加無料・先着。">
-  <meta property="og:image" content="https://app.sokonara.co.jp/images/OGP.png">
+  <meta property="og:title" content="ソコナラMEET｜地域企業の経営層と、直接話せるキャリアイベント">
+  <meta property="og:description" content="7/30(木)19:00 福岡・大名。求人票では分からない会社のリアルを、経営層本人から。参加無料・先着。">
+  <meta property="og:image" content="https://app.sokonara.co.jp/images/meet-hero.jpg">
   <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#16223f">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -399,6 +400,8 @@ const EV = {
 // 管理画面で保存されたLP文言（site_settings.meet_lp）を上書き適用してから描画する
 function renderLP(){
   var E=EV, $=function(id){return document.getElementById(id);};
+  // 曜日は入力側の括弧有無に関わらず正規化（(木) と入れても ((木)) にならない）
+  var _dw=String(E.date.dow||'').replace(/^[（(]+/,'').replace(/[）)]+$/,'');
   // links
   ['navApply','heroApply','closeApply','stickyApply'].forEach(function(id){$(id).href=E.applyUrl;$(id).target='_blank';$(id).rel='noopener';});
   ['heroLine','closeLine','stickyLine'].forEach(function(id){$(id).href=E.lineUrl;$(id).target='_blank';$(id).rel='noopener';});
@@ -408,10 +411,10 @@ function renderLP(){
   $('heroH1').innerHTML=E.heroH1;
   $('heroLead').textContent=E.heroLead;
   $('heroProof').textContent=E.proofLine;
-  $('dateBox').innerHTML='<div class="d"><div class="big">'+E.date.num+'</div><div class="dow">'+E.date.dow+'</div></div>'+
+  $('dateBox').innerHTML='<div class="d"><div class="big">'+E.date.num+'</div><div class="dow">'+_dw+'</div></div>'+
     '<div class="meta"><b>'+E.date.year+'</b>'+E.date.time+'<span class="free">'+E.fee+'</span></div>';
-  $('closeWhen').textContent=E.date.year+'.'+E.date.num+'('+E.date.dow+') '+E.date.time+' ／ '+E.venue.area+' ／ '+E.fee;
-  $('scarBar').textContent='【'+E.scarcity+'】 '+E.date.num+'('+E.date.dow+') '+E.venue.area;
+  $('closeWhen').textContent=E.date.year+'.'+E.date.num+'('+_dw+') '+E.date.time+' ／ '+E.venue.area+' ／ '+E.fee;
+  $('scarBar').textContent='【'+E.scarcity+'】 '+E.date.num+'('+_dw+') '+E.venue.area;
   // trust
   $('trustRow').innerHTML=E.trust.map(function(t){return '<span>'+t+'</span>';}).join('');
   // audience
@@ -428,7 +431,7 @@ function renderLP(){
   // timeline
   $('timeline').innerHTML=E.timetable.map(function(r){return '<div class="it">'+(r.t?'<div class="t">'+r.t+'</div>':'')+'<h4>'+r.h+'</h4>'+(r.d?'<p>'+r.d+'</p>':'')+'</div>';}).join('');
   // facts
-  var F=[['開催日',E.date.year+'.'+E.date.num+'（'+E.date.dow+'） '+E.date.time],
+  var F=[['開催日',E.date.year+'.'+E.date.num+'（'+_dw+'） '+E.date.time],
     ['会場',E.venue.name+'<br>'+E.venue.addr],
     ['参加費','<span class="free">'+E.fee+'</span>（今回は特別に無料開放）'],
     ['定員',E.capacity],['資格',E.qualify],['締切',E.deadline]];

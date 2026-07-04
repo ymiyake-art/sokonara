@@ -1068,13 +1068,13 @@ h1, h2, h3, h4,
 .leader-phrase{
   position:absolute;bottom:12px;left:12px;right:12px;z-index:3;
   font-family:'Dela Gothic One','Zen Kaku Gothic New','Noto Sans JP',sans-serif;
-  font-size:19px;color:#fff;line-height:1.55;letter-spacing:.03em;
+  font-size:18px;color:#fff;line-height:1.55;letter-spacing:.03em;
   text-shadow:0 1px 4px rgba(0,0,0,0.9), 0 2px 12px rgba(0,0,0,0.7);
   display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;
   /* 日本語の自然な位置で折り返す（助詞だけが行頭/行末に来にくい） */
   word-break:auto-phrase; line-break:strict; overflow-wrap:break-word;
 }
-@media(max-width:480px){.leader-phrase{font-size:17.5px;}}
+@media(max-width:480px){.leader-phrase{font-size:16px;}}
 
 /* ボトムエリア：ネイビー派生クールグレー交互 */
 .leader-card-bottom{padding:12px 14px 14px;display:flex;flex-direction:column;gap:7px;flex:1;}
@@ -1084,8 +1084,8 @@ h1, h2, h3, h4,
 .leader-card-profile{display:flex;align-items:center;gap:10px;}
 .leader-photo{width:44px;height:44px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;background-size:cover;background-position:center;flex-shrink:0;border:2px solid rgba(28,42,84,0.18);}
 .leader-meta{flex:1;min-width:0;}
-.leader-name{font-size:16.5px;font-weight:700;color:var(--navy);}
-.leader-company{font-size:11.5px;color:#7d8593;margin-top:2px;}
+.leader-name{font-size:15px;font-weight:700;color:var(--navy);}
+.leader-company{font-size:10px;color:#8a92a0;margin-top:2px;}
 .leader-tags{display:flex;flex-wrap:wrap;gap:4px;}
 .leader-tag{font-size:9px;padding:2px 7px;border-radius:20px;}
 /* 地域タグ（index 0）: ティール系 */
@@ -1094,7 +1094,7 @@ h1, h2, h3, h4,
 .leader-tag-1{background:rgba(28,42,84,0.10);color:var(--navy);border:1px solid rgba(28,42,84,0.22);}
 /* フェーズタグ（index 2）: ウォーム系 */
 .leader-tag-2{background:rgba(176,120,24,0.10);color:#8a6010;border:1px solid rgba(176,120,24,0.30);}
-.leader-cta{margin-top:auto;padding-top:10px;font-size:13.5px;color:var(--teal);font-weight:700;text-align:right;letter-spacing:.02em;}
+.leader-cta{margin-top:auto;padding-top:10px;font-size:12px;color:var(--teal);font-weight:700;text-align:right;letter-spacing:.02em;}
 .leader-label{display:none;}
 .leader-quote{display:none;}
 @media(min-width:980px){.leaders-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
@@ -1374,7 +1374,6 @@ h1, h2, h3, h4,
         <div class="ceo-nav-name" id="p1CeoName"></div>
         <div class="ceo-nav-co" id="p1CompanyName"></div>
       </div>
-      <div class="read-progress" id="readPct">0%</div>
       <button onclick="copyArticleUrl()" style="font-size:10px;padding:4px 8px;border:1px solid var(--border);border-radius:2px;background:none;cursor:pointer;color:var(--text2);font-family:'JetBrains Mono',monospace;margin-left:8px;">SHARE</button>
     </div>
 
@@ -2005,10 +2004,11 @@ function _b64decUtf8(s){
 }
 
 function beginLineLogin() {
-  // LINE遷移前に現在の状態をlocalStorageに保存（高速パス。fb込み）
+  // LINE遷移前に現在の状態をlocalStorageに保存（高速パス。fb込み。moyaは仕事の軸の導出材料＝復元しないとレーダーが変わる）
   localStorage.setItem('sn_restore', JSON.stringify({
     companyId: selectedCompanyId,
-    q1: S.q1, q2: S.q2, about: S.about, q3: S.q3, free: S.free, fb: S.fb
+    q1: S.q1, q2: S.q2, about: S.about, q3: S.q3, free: S.free, fb: S.fb,
+    moya: S.moya||[], memoChips: S.memoChips||[]
   }));
   const redirectUri = encodeURIComponent(LINE_REDIRECT_URI);
   const clientId = '2009807359';
@@ -2017,8 +2017,8 @@ function beginLineLogin() {
   // 直接導線：card_logsが無いので、回答を載せて（最終手段の）再生成に備える。
   const _lg = _diagLogId || ((typeof SN_CARDS!=='undefined' && SN_CARDS && SN_CARDS.logId) ? SN_CARDS.logId : '');
   const payload = _lg
-    ? _b64encUtf8({ c: selectedCompanyId||'', lg: _lg })
-    : _b64encUtf8({ c: selectedCompanyId||'', q1: S.q1||'', q2: S.q2||[], a: S.about||[], q3: S.q3||'' });
+    ? _b64encUtf8({ c: selectedCompanyId||'', lg: _lg, m: S.moya||[] })
+    : _b64encUtf8({ c: selectedCompanyId||'', q1: S.q1||'', q2: S.q2||[], a: S.about||[], q3: S.q3||'', m: S.moya||[] });
   const state = Math.random().toString(36).slice(2) + '.f.' + payload;
   localStorage.setItem('snLineState', state);
   const url = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${encodeURIComponent(state)}&scope=profile`;
@@ -3772,6 +3772,7 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(async ()=>{
         const saved = JSON.parse(_restoreRaw);
         selectedCompanyId = saved.companyId || null;
         S.q1 = saved.q1||''; S.q2 = saved.q2||[]; S.about = saved.about||[]; S.q3 = saved.q3||''; S.free = saved.free||''; S.fb = saved.fb||null;
+        S.moya = saved.moya||[]; S.memoChips = saved.memoChips||[];
         goScreen('p3');
         if(S.fb){ _saveFbCache(); showFeedback(S.fb); }
         else { genFeedback(); }
@@ -3781,6 +3782,7 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(async ()=>{
         const st = JSON.parse(_restoreStateRaw);
         selectedCompanyId = st.c || null;
         S.q1 = st.q1||''; S.q2 = st.q2||[]; S.about = st.a||[]; S.q3 = st.q3||''; S.free = st.free||'';
+        S.moya = st.m||[];
         goScreen('p3');
         // ★ログイン前と同じレポートを見せる：
         //   (a) sn_fb_cache → (b) サーバー保存(card_logs/get) → (c) 最終手段で再生成
@@ -3951,6 +3953,7 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     {id:'challenge', label:'安定はあるが、挑戦がない',           reason:'“挑戦したい”あなたへ',         tags:['challenge'],          kw:['挑戦','革新','急成長','成長','転換','進化','変革']},
     {id:'org',       label:'組織・チームをより良くしたい',       reason:'“組織を良くしたい”あなたへ',   tags:['org'],                kw:['組織','仕組み','育成','風土','拡充','右腕','組織づくり']},
   ];
+  window.MOYA=MOYA; // 仕事の軸レポート等がラベル参照に使う（IIFE内部限定だとwindow.MOYAが常にundefinedでモヤモヤ表示が全滅する）
   if(typeof SCREENS!=='undefined' && SCREENS.indexOf('p-moya')<0){ SCREENS.push('p-moya','p-moyareco'); }
   function esc(s){ return (typeof escapeHtml==='function')?escapeHtml(String(s==null?'':s)):String(s==null?'':s); }
 
@@ -3995,10 +3998,10 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var badge=isSurprise?'<span style="position:absolute;top:10px;left:10px;background:var(--navy);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;font-family:\'JetBrains Mono\',monospace;">意外な出会い</span>':'';
     var cid=String(c.id||'').replace(/'/g,'');
     var av=photo?('<div class="leader-photo" style="background-image:url(\''+photo+'\');background-size:cover;background-position:center;"></div>'):('<div class="leader-photo">'+esc(name.charAt(0))+'</div>');
-    return '<div class="leader-card" style="margin-bottom:14px;cursor:pointer;" onclick="openMoyaArticle(\''+cid+'\')">'
+    return '<div class="leader-card" style="cursor:pointer;" onclick="openMoyaArticle(\''+cid+'\')">'
       +'<div class="leader-card-top" style="position:relative;"><div class="leader-card-photo-bg" style="'+bg+'"></div>'+badge+'<div class="leader-phrase">'+esc(phrase)+'</div></div>'
       +'<div class="leader-card-bottom">'
-      +'<div style="font-size:13.5px;color:var(--teal-d);font-weight:700;margin-bottom:9px;">'+esc(reason)+'。</div>'
+      +'<div style="font-size:12px;color:var(--teal-d);font-weight:700;margin-bottom:9px;">'+esc(reason)+'。</div>'
       +'<div class="leader-card-profile">'+av+'<div class="leader-meta"><div class="leader-name">'+esc(name)+'</div><div class="leader-company">'+esc(company)+'</div></div></div>'
       +'<div class="leader-cta">この経営層の想いを読む →</div>'
       +'</div></div>';
@@ -4012,8 +4015,8 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var echo=document.getElementById('moyaSelEcho');
     if(echo) echo.innerHTML='あなたが選んだ：'+picks.map(function(m){return '「'+esc(m.label)+'」';}).join('　');
     var html=top.map(function(x){ return card(x,false,picks); }).join('');
-    if(surprise) html+='<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;letter-spacing:2px;color:var(--teal-d);margin:22px 0 10px;">＋ SERENDIPITY ── まだ出会っていない人</div>'+card(surprise,true,picks);
-    var el=document.getElementById('moyaRecoList'); if(el) el.innerHTML=html;
+    if(surprise) html+='<div style="grid-column:1/-1;font-family:\'JetBrains Mono\',monospace;font-size:10px;letter-spacing:2px;color:var(--teal-d);margin:10px 0 0;">＋ SERENDIPITY ── まだ出会っていない人</div>'+card(surprise,true,picks);
+    var el=document.getElementById('moyaRecoList'); if(el){ el.className='leaders-grid'; el.innerHTML=html; }
   };
 })();
 </script>
@@ -4024,12 +4027,12 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
    会社スコア companies.wb は将来値の推定にのみ内部使用。保存は派生値のみ（生自由記述は保存しない）。 */
 (function(){
   var AX=[
-    {k:'meaning',label:'意味・使命',short:'意味',rt:['mission','trust'],bt:['local']},
-    {k:'agency', label:'裁量・挑戦',short:'裁量',rt:['autonomy','challenge','inquiry'],bt:['newbiz','expand','it_dx']},
-    {k:'people', label:'人・近さ',short:'人',rt:['team','dialogue'],bt:[]},
-    {k:'local',  label:'地域・つながり',short:'地域',rt:[],bt:['local']},
-    {k:'time',   label:'時間・ゆとり',short:'ゆとり',rt:[],bt:[]},
-    {k:'econ',   label:'経済（年収）',short:'経済',rt:[],bt:[]}
+    {k:'meaning',label:'意味・使命',short:'意味・使命',rt:['mission','trust'],bt:['local']},
+    {k:'agency', label:'裁量・挑戦',short:'裁量・挑戦',rt:['autonomy','challenge','inquiry'],bt:['newbiz','expand','it_dx']},
+    {k:'people', label:'人・近さ',short:'人・近さ',rt:['team','dialogue'],bt:[]},
+    {k:'local',  label:'地域・つながり',short:'地域・つながり',rt:[],bt:['local']},
+    {k:'time',   label:'時間・ゆとり',short:'時間・ゆとり',rt:[],bt:[]},
+    {k:'econ',   label:'経済（年収）',short:'経済（年収）',rt:[],bt:[]}
   ];
   var MOYA_AX={mission:'meaning',local:'local',newbiz:'agency',expertise:'agency',autonomy:'agency',team:'people',challenge:'agency',org:'people'};
   if(typeof SCREENS!=='undefined' && SCREENS.indexOf('p-wb')<0) SCREENS.push('p-wb');
@@ -4065,7 +4068,7 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     function pts(fn){ var p=[]; for(var i=0;i<N;i++){ var q=fn(i); p.push(q[0].toFixed(1)+','+q[1].toFixed(1)); } return p.join(' '); }
     function ring(g,fill){ return '<polygon points="'+pts(function(i){return pt(i,g);})+'" fill="'+(fill||'none')+'" stroke="rgba(22,34,63,0.10)" stroke-width="0.8"/>'; }
     function poly(vals,fill,stroke,wd,extra){ return '<polygon points="'+pts(function(i){return pt(i,vals[AX[i].k]);})+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+wd+'" stroke-linejoin="round"'+(extra||'')+'/>'; }
-    var s='<svg viewBox="0 0 280 276" width="100%" style="max-width:320px;display:block;margin:0 auto;">'
+    var s='<svg viewBox="-22 -4 324 284" width="100%" style="max-width:340px;display:block;margin:0 auto;">'
       +'<defs><linearGradient id="'+uid+'" x1="0" y1="0" x2="0.35" y2="1">'
       +'<stop offset="0" stop-color="#3cbcaa" stop-opacity="0.55"/>'
       +'<stop offset="1" stop-color="#16223f" stop-opacity="0.22"/></linearGradient>'
@@ -4076,7 +4079,7 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     if(sec) s+=poly(sec,'rgba(22,34,63,0.05)',secStroke||'rgba(22,34,63,0.45)',1.5,' stroke-dasharray="5 4"');
     s+=poly(comp,'url(#'+uid+')','#2f9c8d',2.4,' filter="url(#'+uid+'s)"');
     for(var d=0;d<N;d++){ var q=pt(d,comp[AX[d].k]); s+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="3.4" fill="#fff" stroke="#2f9c8d" stroke-width="2"/>'; }
-    for(var j=0;j<N;j++){ var lp=pt(j,124); s+='<text x="'+lp[0].toFixed(1)+'" y="'+lp[1].toFixed(1)+'" font-size="10.5" font-weight="700" fill="#3d4453" text-anchor="middle" dominant-baseline="middle">'+AX[j].short+'</text>'; }
+    for(var j=0;j<N;j++){ var lp=pt(j,122); s+='<text x="'+lp[0].toFixed(1)+'" y="'+lp[1].toFixed(1)+'" font-size="9.5" font-weight="700" fill="#3d4453" text-anchor="middle" dominant-baseline="middle">'+AX[j].short+'</text>'; }
     s+='</svg>';
     return s;
   }
@@ -4088,7 +4091,8 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
       +'<div id="wbManifesto" style="font-family:\'Zen Kaku Gothic New\',serif;color:var(--navy);font-size:15px;font-weight:700;line-height:1.9;background:var(--teal-bg);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:16px 18px;margin-bottom:24px;"></div>'
       +'<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;letter-spacing:2px;color:var(--teal-d);margin-bottom:8px;">CAREER WELL-BEING</div>'
       +'<h1 id="wbTitle" style="font-family:\'Zen Kaku Gothic New\',sans-serif;font-weight:900;font-size:22px;color:var(--navy);line-height:1.5;margin-bottom:6px;"></h1>'
-      +'<div id="wbSub" style="font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:18px;"></div>'
+      +'<div id="wbSub" style="font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:10px;"></div>'
+      +'<div id="wbBasis" style="font-size:11.5px;color:var(--text2);line-height:1.9;background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:14px;"></div>'
       +'<div id="wbRadar" style="margin:6px 0 6px;"></div>'
       +'<div id="wbLegend" style="display:flex;gap:16px;justify-content:center;font-size:11px;color:var(--text2);margin-bottom:10px;"></div>'
       +'<div style="text-align:center;margin-bottom:16px;"><button onclick="wbShare()" style="background:none;border:1px solid var(--border);border-radius:20px;color:var(--text2);font-size:12px;padding:8px 18px;cursor:pointer;font-family:inherit;">📤 この“軸”を画像でシェア</button></div>'
@@ -4192,8 +4196,8 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
       x.fillStyle=grad; x.fill();
       x.strokeStyle='#5ecfbe'; x.lineWidth=5; x.lineJoin='round'; x.stroke();
       for(var d2=0;d2<6;d2++){ var q3=pt(d2,w[AX[d2].k]); x.beginPath(); x.arc(q3[0],q3[1],10,0,7); x.fillStyle='#fff'; x.fill(); x.strokeStyle='#c9a95c'; x.lineWidth=4; x.stroke(); }
-      x.fillStyle='rgba(255,255,255,0.88)'; x.font='700 32px "Zen Kaku Gothic New","Noto Sans JP",sans-serif';
-      for(var k2=0;k2<6;k2++){ var lp=pt(k2,126); x.fillText(AX[k2].short,lp[0],lp[1]+11); }
+      x.fillStyle='rgba(255,255,255,0.88)'; x.font='700 25px "Zen Kaku Gothic New","Noto Sans JP",sans-serif';
+      for(var k2=0;k2<6;k2++){ var lp=pt(k2,126); x.fillText(AX[k2].short,lp[0],lp[1]+9); }
       var sw=AX.slice().sort(function(a,b){return w[b.k]-w[a.k];});
       x.fillStyle='#e8cf8f'; x.font='700 36px "Zen Kaku Gothic New","Noto Sans JP",sans-serif';
       x.fillText('いま大切なのは「'+sw[0].label+'」「'+sw[1].label+'」',540,1102);
@@ -4229,6 +4233,15 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var sortedW=AX.slice().sort(function(a,b){return weight[b.k]-weight[a.k];});
     var top2=[sortedW[0].label,sortedW[1].label];
     var moyaLabels=((typeof S!=='undefined'&&S.moya)||[]).map(function(id){ var m=(window.MOYA||[]).filter(function(x){return x.id===id;})[0]; return m?m.label:''; }).filter(Boolean);
+    // 導出根拠を明示（「いきなり数字が出た」感の解消。何からこの軸が導かれたか）
+    var basis=[];
+    if(co&&(co.ceo||co.name)) basis.push('<b>'+escapeHtml(name)+'</b>への反応');
+    if(typeof S!=='undefined'&&S.q1) basis.push('刺さった言葉<b>「'+escapeHtml(S.q1)+'」</b>');
+    if(moyaLabels.length) basis.push('モヤモヤ<b>「'+escapeHtml(moyaLabels.join('・'))+'」</b>');
+    document.getElementById('wbBasis').innerHTML = basis.length
+      ? '<span style="color:var(--teal-d);font-weight:700;font-size:10px;font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">この軸の導き方</span><br>'+basis.join('、')+' から導いています。下の「いまの仕事と、比べてみる」に答えると、さらにあなた仕様になります。'
+      : '';
+    document.getElementById('wbBasis').style.display = basis.length?'':'none';
     var blocks='';
     blocks+='<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px;"><div style="font-size:11px;color:var(--teal-d);font-weight:700;margin-bottom:6px;font-family:\'JetBrains Mono\',monospace;">あなたが仕事に求めているもの</div><div style="font-size:14px;line-height:1.85;color:var(--text);">あなたは <b>「'+escapeHtml(top2[0])+'」「'+escapeHtml(top2[1])+'」</b> を特に大事にするタイプ。年収そのものより、<b>そこで自分の力が効く手応え</b>に満足度が動きます。'+(moyaLabels.length?'<br>いま感じている <b>「'+escapeHtml(moyaLabels.join('／'))+'」</b> も、この軸とつながっています。':'')+'</div></div>';
     document.getElementById('wbText').innerHTML=blocks;
