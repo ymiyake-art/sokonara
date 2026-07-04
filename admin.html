@@ -1553,6 +1553,43 @@ function renderPhilosophy(){
     </div>
 
     <div style="${card()}">
+      ${h('6軸 × 理論 × 導出元（対応表・議論用叩き台）','各軸が「どの理論に接地し」「ユーザーの何から導かれるか」。タイプ命名（構想中）もこの理論の言葉に接地させると軽さと信頼性を両立できる。')}
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr>${['軸','理論的根拠','ユーザー側の導出元','企業側の根拠'].map((h,i)=>`<th style="text-align:left;padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">${h}</th>`).join('')}</tr></thead>
+        <tbody>${[
+          ['意味・使命','SDT：目的／アンカー：奉仕・使命','モヤモヤ（方向性に納得できない）・使命系記事への反応','記事のミッション・想い（AI推定）'],
+          ['裁量・挑戦','SDT：自律性＋有能感／<b>フロー（挑戦×能力）</b>','モヤモヤ（裁量がない・挑戦がない・立ち上げたい・専門を活かせない）','挑戦・変革・新規事業の文脈（AI推定）'],
+          ['人・近さ','SDT：関係性','モヤモヤ（仲間がいない・組織を良くしたい）・MEET理由タグ（経営者に惹かれた／雰囲気）','仲間・右腕・対話の文脈（AI推定）'],
+          ['地域・つながり','<b>計画的偶発性が起きる“場”</b>／アンカー：生活様式','モヤモヤ（地域に関わりたい）・MEET理由タグ（地域）','地域・まちづくりの文脈（AI推定）'],
+          ['時間・ゆとり','アンカー：ワークライフバランス','比較設問「足りないもの」','手動採点（記事から推定不可のため）'],
+          ['経済（年収）','アンカー：保障・安定','年収帯の設問・MEET理由タグ（条件面）','手動採点'],
+        ].map(r=>`<tr>${r.map((c,i)=>`<td style="padding:8px 10px;border-bottom:1px solid var(--border);font-size:12px;${i===0?'font-weight:700;color:var(--navy);white-space:nowrap;':'color:var(--text2);'}">${c}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table>
+      <div style="font-size:11.5px;color:var(--text2);line-height:1.8;margin-top:10px;">フロー予報＝裁量×意味の派生表示（チクセントミハイ）。入口の2択（直感／モヤモヤ）とMEETそのものが計画的偶発性（クランボルツ）の実装。Q1の4択（Why/Who/What/Life）は記事ルール側の4要素で、AI文章診断の根拠に使う。</div>
+    </div>
+
+    <div style="${card()}">
+      ${h('診断の配線表（何が・どこに効いているか）','⭕＝実装済み／❌＝未接続。グレーの❌が現在の議論ポイント：設問（Q1〜Q4）が軸マトリクスに効いていない＝「がっつり書いたのに反映されない」感の正体。')}
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr>${['ユーザーの入力','仕事の軸（マトリクス）','AI文章診断（LINE特典）','企業レポート・計測'].map((h,i)=>`<th style="text-align:${i?'center':'left'};padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">${h}</th>`).join('')}</tr></thead>
+        <tbody>${[
+          ['選んだ経営層','⭕ 企業wbを28%注入','⭕ 記事・人物像を文脈に','⭕ recommended_company'],
+          ['モヤモヤ8択','⭕ 該当軸 +22','<span style="color:var(--hot)">❌ 未接続（渡す価値あり）</span>','⭕ variant=moya・reason'],
+          ['VSで選んだ/捨てた経営層','❌','⭕ cardfeedbackの根拠','⭕ picked/dropped/arm'],
+          ['Q1 刺さった言葉','<span style="color:var(--hot)">❌ 未接続</span>','⭕','⭕ q1_phrase（企業PDFの源泉）'],
+          ['Q2 求めているもの','<span style="color:var(--hot)">❌ 未接続（静的マッピング可）</span>','⭕','❌'],
+          ['Q3 いまの状況','<span style="color:var(--hot)">❌ 未接続（静的マッピング可）</span>','⭕','❌'],
+          ['Q4 話したいこと・自由記述','❌（AI必須になるため非推奨）','⭕ 個別化の主材料','⭕ memo_text（PIIマスク）'],
+          ['比較設問（年収帯・足りない軸）','⭕ 現状側レーダー','❌','⭕ wb_compare'],
+          ['MEETチェック＋理由タグ','⭕ 当日版の軸','❌','⭕ 匿名集計'],
+        ].map(r=>`<tr>${r.map((c,i)=>`<td style="padding:8px 10px;border-bottom:1px solid var(--border);font-size:12px;${i===0?'font-weight:700;color:var(--navy);':'text-align:center;color:var(--text2);'}">${c}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table>
+      <div style="background:var(--teal-bg);border-radius:8px;padding:12px 14px;margin-top:12px;font-size:12.5px;line-height:1.9;color:var(--navy);">
+        <b>改善提案（検討中）</b>：①Q2・Q3の選択肢→軸への静的マッピング追加（例：挑戦できる環境→裁量+10／共鳴できる仲間→人+10／地域で試したい→地域+10。AI不要＝即時性維持）。②モヤモヤ選択をAI文章診断にも渡す。③自由記述はLINE特典（詳細レポート）の直前に移動＝「書く→すぐAIが読む」の隣接。
+      </div>
+    </div>
+
+    <div style="${card()}">
       ${h('診断「○○タイプ」の生成ロジック')}
       <div style="font-size:13px;color:var(--text);line-height:1.95">
         スワイプで選ばれたカードのタグを集計し、<b>事業テーマ上位2 ×　価値観上位1</b>に定型句を組み合わせて「○○タイプ」を自動生成します（AI不要・再現性重視）。AI診断はその上で、選んだ/捨てた課題・メモを根拠に個別の気づきを言語化します。
