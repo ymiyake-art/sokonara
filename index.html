@@ -1496,13 +1496,14 @@ h1, h2, h3, h4,
           <div class="q-prog-step"></div>
         </div>
         <div class="q-num">Q 2 / 4</div>
-        <div class="q-text">今、あなたが求めているものは？<br><span class="q-sub">（複数選択可）</span></div>
+        <div class="q-text">今、仕事に求めているものは？<br><span class="q-sub">（最大3つ・選んだものが“仕事の軸”に反映されます）</span></div>
         <div class="chip-list" id="q2chips">
-          <div class="chip" onclick="toggleQ2(this)"><div class="chip-check">✓</div><span>挑戦できる環境</span></div>
-          <div class="chip" onclick="toggleQ2(this)"><div class="chip-check">✓</div><span>共鳴できる仲間・経営層</span></div>
-          <div class="chip" onclick="toggleQ2(this)"><div class="chip-check">✓</div><span>地域で自分の力を試したい</span></div>
-          <div class="chip" onclick="toggleQ2(this)"><div class="chip-check">✓</div><span>まず話を聞きたい・関わって試したい</span></div>
-          <div class="chip" onclick="toggleQ2(this)"><div class="chip-check">✓</div><span>自己理解を深めたい</span></div>
+          <div class="chip" onclick="toggleQ2(this)"><div class="chip-check">✓</div><span>社会や誰かの役に立つ実感</span></div>
+          <div class="chip" onclick="toggleQ2(this)"><div class="chip-check">✓</div><span>自分で決めて動ける裁量</span></div>
+          <div class="chip" onclick="toggleQ2(this)"><div class="chip-check">✓</div><span>一緒に熱くなれる仲間</span></div>
+          <div class="chip" onclick="toggleQ2(this)"><div class="chip-check">✓</div><span>地元・地域とのつながり</span></div>
+          <div class="chip" onclick="toggleQ2(this)"><div class="chip-check">✓</div><span>自分の時間や暮らしのゆとり</span></div>
+          <div class="chip" onclick="toggleQ2(this)"><div class="chip-check">✓</div><span>納得できる収入</span></div>
         </div>
         <div class="q-nav">
           <button class="btn-outline" onclick="show('q1b'),hide('q2b')">← 戻る</button>
@@ -1519,18 +1520,25 @@ h1, h2, h3, h4,
           <div class="q-prog-step"></div>
         </div>
         <div class="q-num">Q 3 / 4</div>
-        <div class="q-text">今のあなたの状況に近いものは？<br><span class="q-sub">（複数選択可）</span></div>
-        <div class="chip-list" id="qaboutchips">
-          <div class="chip" onclick="toggleAbout(this)"><div class="chip-check">✓</div><span>今の仕事や働き方にモヤモヤがある</span></div>
-          <div class="chip" onclick="toggleAbout(this)"><div class="chip-check">✓</div><span>転職・キャリアチェンジを考えている</span></div>
-          <div class="chip" onclick="toggleAbout(this)"><div class="chip-check">✓</div><span>副業・プロジェクトで力を試したい</span></div>
-          <div class="chip" onclick="toggleAbout(this)"><div class="chip-check">✓</div><span>地元・地域で働くことに関心がある</span></div>
-          <div class="chip" onclick="toggleAbout(this)"><div class="chip-check">✓</div><span>今は急いでいないが、良い出会いがあれば</span></div>
-          <div class="chip" onclick="toggleAbout(this)"><div class="chip-check">✓</div><span>自分のキャリアや強みを整理したい</span></div>
+        <div class="q-text">いまの状況を、2タップだけ<br><span class="q-sub">（“いまの仕事”との比較レーダーに使います）</span></div>
+        <div style="font-size:12px;color:var(--text2);margin:14px 0 8px;font-weight:700;">いまの年収帯</div>
+        <div class="chip-list" id="salChips">
+          <div class="chip" onclick="pickSal(this,'s3')"><div class="chip-check">✓</div><span>〜300万</span></div>
+          <div class="chip" onclick="pickSal(this,'s4')"><div class="chip-check">✓</div><span>300〜400万</span></div>
+          <div class="chip" onclick="pickSal(this,'s5')"><div class="chip-check">✓</div><span>400〜500万</span></div>
+          <div class="chip" onclick="pickSal(this,'s6')"><div class="chip-check">✓</div><span>500〜650万</span></div>
+          <div class="chip" onclick="pickSal(this,'s7')"><div class="chip-check">✓</div><span>650〜850万</span></div>
+          <div class="chip" onclick="pickSal(this,'s8')"><div class="chip-check">✓</div><span>850万〜</span></div>
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin:16px 0 8px;font-weight:700;">いまの忙しさ</div>
+        <div class="chip-list" id="busyChips">
+          <div class="chip" onclick="pickBusy(this,'b1')"><div class="chip-check">✓</div><span>多忙気味</span></div>
+          <div class="chip" onclick="pickBusy(this,'b2')"><div class="chip-check">✓</div><span>ふつう</span></div>
+          <div class="chip" onclick="pickBusy(this,'b3')"><div class="chip-check">✓</div><span>ゆとりあり</span></div>
         </div>
         <div class="q-nav">
           <button class="btn-outline" onclick="show('q2b'),hide('qaboutb')">← 戻る</button>
-          <button class="btn-primary" id="qaboutnext" onclick="buildMemoChips();show('q3b'),hide('qaboutb')">次へ →</button>
+          <button class="btn-primary" id="qaboutnext" onclick="buildMemoChips();show('q3b'),hide('qaboutb')" disabled>次へ →</button>
         </div>
       </div>
 
@@ -1943,7 +1951,7 @@ const Q2_DIST = [
 ];
 
 // ===== STATE =====
-const S = { q1:'', q2:[], about:[], q3:'', free:'', memoChips:[], fb:null, screen:'p-list', mode:'user', adminTab:'dash' };
+const S = { q1:'', q2:[], about:[], q3:'', free:'', sal:'', busy:'', memoChips:[], fb:null, screen:'p-list', mode:'user', adminTab:'dash' };
 const MEMO_CHIPS=['業務改善','IT・DX','新規事業','営業・販路開拓','組織づくり','採用・育成','商品企画','広報・発信','海外展開','まだ分からない'];
 function buildMemoChips(){
   const box=document.getElementById('memoChips'); if(!box||box.dataset.built) return;
@@ -2008,7 +2016,7 @@ function beginLineLogin() {
   localStorage.setItem('sn_restore', JSON.stringify({
     companyId: selectedCompanyId,
     q1: S.q1, q2: S.q2, about: S.about, q3: S.q3, free: S.free, fb: S.fb,
-    moya: S.moya||[], memoChips: S.memoChips||[]
+    moya: S.moya||[], memoChips: S.memoChips||[], sal: S.sal||'', busy: S.busy||''
   }));
   const redirectUri = encodeURIComponent(LINE_REDIRECT_URI);
   const clientId = '2009807359';
@@ -2017,8 +2025,8 @@ function beginLineLogin() {
   // 直接導線：card_logsが無いので、回答を載せて（最終手段の）再生成に備える。
   const _lg = _diagLogId || ((typeof SN_CARDS!=='undefined' && SN_CARDS && SN_CARDS.logId) ? SN_CARDS.logId : '');
   const payload = _lg
-    ? _b64encUtf8({ c: selectedCompanyId||'', lg: _lg, m: S.moya||[] })
-    : _b64encUtf8({ c: selectedCompanyId||'', q1: S.q1||'', q2: S.q2||[], a: S.about||[], q3: S.q3||'', m: S.moya||[] });
+    ? _b64encUtf8({ c: selectedCompanyId||'', lg: _lg, m: S.moya||[], sl: S.sal||'', bs: S.busy||'' })
+    : _b64encUtf8({ c: selectedCompanyId||'', q1: S.q1||'', q2: S.q2||[], a: S.about||[], q3: S.q3||'', m: S.moya||[], sl: S.sal||'', bs: S.busy||'' });
   const state = Math.random().toString(36).slice(2) + '.f.' + payload;
   localStorage.setItem('snLineState', state);
   const url = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${encodeURIComponent(state)}&scope=profile`;
@@ -2896,17 +2904,33 @@ function pickQ1(el, val) {
   document.getElementById('q1next').disabled = false;
 }
 
-// ===== Q2 =====
+// ===== Q2（求めるもの＝6軸対応・最大3つ。選択が“仕事の軸”に直接効く）=====
 function toggleQ2(el) {
+  if(!el.classList.contains('selected') && document.querySelectorAll('#q2chips .chip.selected').length>=3){
+    toast('3つまで選べます（優先順位が軸を鋭くします）'); return;
+  }
   el.classList.toggle('selected');
   S.q2 = [...document.querySelectorAll('#q2chips .chip.selected')].map(c=>c.querySelector('span').textContent);
   document.getElementById('q2next').disabled = S.q2.length===0;
 }
 
-// ===== Q3（個人について）=====
-function toggleAbout(el) {
-  el.classList.toggle('selected');
-  S.about = [...document.querySelectorAll('#qaboutchips .chip.selected')].map(c=>c.querySelector('span').textContent);
+// ===== Q3（事実2タップ＝年収帯・忙しさ。比較レーダーの“いまの仕事”側に使う）=====
+const SAL_LABEL={s3:'〜300万',s4:'300〜400万',s5:'400〜500万',s6:'500〜650万',s7:'650〜850万',s8:'850万〜'};
+const BUSY_LABEL={b1:'多忙気味',b2:'ふつう',b3:'ゆとりあり'};
+function _syncAbout(){
+  // AI診断・匿名ログ互換のため S.about に事実を言語化して格納（既存payloadのキーを変えない）
+  S.about=[];
+  if(S.sal) S.about.push('年収帯: '+SAL_LABEL[S.sal]);
+  if(S.busy) S.about.push('忙しさ: '+BUSY_LABEL[S.busy]);
+  const n=document.getElementById('qaboutnext'); if(n) n.disabled=!(S.sal&&S.busy);
+}
+function pickSal(el, code){
+  document.querySelectorAll('#salChips .chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected'); S.sal=code; _syncAbout();
+}
+function pickBusy(el, code){
+  document.querySelectorAll('#busyChips .chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected'); S.busy=code; _syncAbout();
 }
 
 // ===== Q3 =====
@@ -3772,7 +3796,7 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(async ()=>{
         const saved = JSON.parse(_restoreRaw);
         selectedCompanyId = saved.companyId || null;
         S.q1 = saved.q1||''; S.q2 = saved.q2||[]; S.about = saved.about||[]; S.q3 = saved.q3||''; S.free = saved.free||''; S.fb = saved.fb||null;
-        S.moya = saved.moya||[]; S.memoChips = saved.memoChips||[];
+        S.moya = saved.moya||[]; S.memoChips = saved.memoChips||[]; S.sal = saved.sal||''; S.busy = saved.busy||'';
         goScreen('p3');
         if(S.fb){ _saveFbCache(); showFeedback(S.fb); }
         else { genFeedback(); }
@@ -3782,7 +3806,7 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(async ()=>{
         const st = JSON.parse(_restoreStateRaw);
         selectedCompanyId = st.c || null;
         S.q1 = st.q1||''; S.q2 = st.q2||[]; S.about = st.a||[]; S.q3 = st.q3||''; S.free = st.free||'';
-        S.moya = st.m||[];
+        S.moya = st.m||[]; S.sal = st.sl||''; S.busy = st.bs||'';
         goScreen('p3');
         // ★ログイン前と同じレポートを見せる：
         //   (a) sn_fb_cache → (b) サーバー保存(card_logs/get) → (c) 最終手段で再生成
@@ -4054,9 +4078,12 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     if(/仲間|右腕|チーム|一緒|共に/.test(tx)) wb.people=Math.max(wb.people,80);
     return wb;
   }
+  // Q2（求めるもの）の選択肢→軸マッピング。設問が軸に直接効く配線（+12。モヤモヤ+22とQ2で最大+34）
+  var Q2_AX={'社会や誰かの役に立つ実感':'meaning','自分で決めて動ける裁量':'agency','一緒に熱くなれる仲間':'people','地元・地域とのつながり':'local','自分の時間や暮らしのゆとり':'time','納得できる収入':'econ'};
   function userWeights(co){
     var w={meaning:52,agency:52,people:52,local:52,time:52,econ:50};
     ((typeof S!=='undefined'&&S.moya)||[]).forEach(function(id){ var ax=MOYA_AX[id]; if(ax) w[ax]=clamp(w[ax]+22); });
+    ((typeof S!=='undefined'&&S.q2)||[]).forEach(function(label){ var ax=Q2_AX[label]; if(ax) w[ax]=clamp(w[ax]+12); });
     if(co){ var cw=companyWB(co); AX.forEach(function(a){ w[a.k]=clamp(w[a.k]+(cw[a.k]-58)*0.28); }); }
     return w;
   }
@@ -4101,7 +4128,7 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
       +'<div id="wbDetailCta" style="margin-bottom:22px;"></div>'
       +'<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:22px;">'
         +'<div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:4px;">いまの仕事と、比べてみる</div>'
-        +'<div style="font-size:11px;color:var(--text3);margin-bottom:12px;">2つ答えるだけ。いまの報酬と、この環境に飛び込んだ場合に変わる可能性を重ねます。</div>'
+        +'<div style="font-size:11px;color:var(--text3);margin-bottom:12px;">「いまの仕事」はQ3の回答（年収帯・忙しさ）から自動反映。足りないと感じるものを選ぶと、さらに精度が上がります。</div>'
         +'<div style="font-size:11px;color:var(--text2);margin-bottom:4px;">今の年収帯</div>'
         +'<select id="wbSalary" style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:12px;background:#fff;"></select>'
         +'<div style="font-size:11px;color:var(--text2);margin-bottom:6px;">今の仕事で「足りない」と感じるもの（複数可）</div>'
@@ -4127,23 +4154,31 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     AX.forEach(function(a){ var f=(a.k==='econ')?0.85:0.6; fut[a.k]=clamp(cur[a.k]+(comp[a.k]-cur[a.k])*f); });
     return fut;
   }
+  var BUSY_TIME={b1:35,b2:55,b3:75};
   window.wbCompare=function(){
     var co=getCo(); var comp=companyWB(co); if(co&&co.wb&&co.wb.econ!=null) comp.econ=clamp(co.wb.econ);
     var weight=userWeights(co);
-    var salEl=document.getElementById('wbSalary'); var salEcon=SAL_ECON[salEl?salEl.value:'']; if(salEcon==null) salEcon=55;
+    // 現状レーダーの材料：Q3の事実（年収帯・忙しさ）を最優先。比較カード内の年収セレクト・足りないチップは任意の上書き
+    var salEl=document.getElementById('wbSalary');
+    var salCode=(salEl&&salEl.value)||((typeof S!=='undefined'&&S.sal)||'');
+    var salEcon=SAL_ECON[salCode]; if(salEcon==null) salEcon=55;
     var lack={}; document.querySelectorAll('#wbLackChips .wb-lack[data-on="1"]').forEach(function(el){ lack[el.getAttribute('data-k')]=1; });
     var cur={}; AX.forEach(function(a){ cur[a.k]=lack[a.k]?35:66; }); cur.econ=salEcon;
+    if(!lack.time && typeof S!=='undefined' && S.busy && BUSY_TIME[S.busy]!=null) cur.time=BUSY_TIME[S.busy];
     var fut=projectWB(cur,comp);
     var totCur=wavg(cur,weight), totFut=wavg(fut,weight), delta=totFut-totCur;
-    document.getElementById('wbRadar').innerHTML=radar(fut,cur,'rgba(226,114,91,0.75)');
-    document.getElementById('wbLegend').innerHTML='<span><span style="display:inline-block;width:10px;height:10px;border:1.5px solid rgba(226,114,91,0.85);border-radius:2px;margin-right:4px;"></span>いまの仕事</span><span><span style="display:inline-block;width:10px;height:10px;background:rgba(47,156,141,0.6);border-radius:2px;margin-right:4px;"></span>共鳴後の想定</span>';
+    // 比較レーダーは結果ボックス内に描画（上段の「あなたの軸」レーダーは置き換えない＝重心と比較を同時に見られる）
+    var cmpRadar=radar(fut,cur,'rgba(226,114,91,0.75)')
+      +'<div style="display:flex;gap:16px;justify-content:center;font-size:11px;color:var(--text2);margin:2px 0 12px;">'
+      +'<span><span style="display:inline-block;width:10px;height:10px;border:1.5px solid rgba(226,114,91,0.85);border-radius:2px;margin-right:4px;"></span>いまの仕事</span>'
+      +'<span><span style="display:inline-block;width:10px;height:10px;background:rgba(47,156,141,0.6);border-radius:2px;margin-right:4px;"></span>共鳴後の想定</span></div>';
     var chips=AX.map(function(a){ var d=fut[a.k]-cur[a.k];
       if(d>=8) return '<span style="font-size:11px;background:var(--teal-bg);color:var(--teal-d);border-radius:20px;padding:4px 11px;font-weight:700;">'+escapeHtml(a.label)+' +'+d+'</span>';
       if(d<=-8) return '<span style="font-size:11px;background:rgba(0,0,0,0.05);color:var(--text2);border-radius:20px;padding:4px 11px;">'+escapeHtml(a.label)+' '+d+'</span>';
       return '';
     }).filter(Boolean).join('');
     var econDown=(cur.econ-fut.econ)>=8;
-    var html='<div style="text-align:center;padding:14px;background:var(--teal-bg);border-radius:10px;">'
+    var html=cmpRadar+'<div style="text-align:center;padding:14px;background:var(--teal-bg);border-radius:10px;">'
       +'<div style="font-size:12px;color:var(--text2);margin-bottom:6px;">あなたの軸で重み付けした&ldquo;総合の手応え&rdquo;</div>'
       +'<div style="font-size:14px;font-weight:700;color:var(--navy);line-height:1.7;">いま <span style="font-family:\'JetBrains Mono\',monospace;font-size:22px;">'+totCur+'</span>&nbsp;→&nbsp;共鳴後の想定 <span style="font-family:\'JetBrains Mono\',monospace;font-size:26px;color:var(--teal-d);">'+totFut+'</span></div>'
       +(delta>0?'<div style="font-size:12px;color:var(--teal-d);font-weight:700;margin-top:4px;">＋'+delta+' 増える可能性</div>':(delta<0?'<div style="font-size:12px;color:var(--text3);margin-top:4px;">総合はほぼ横ばい</div>':''))
@@ -4238,8 +4273,10 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     if(co&&(co.ceo||co.name)) basis.push('<b>'+escapeHtml(name)+'</b>への反応');
     if(typeof S!=='undefined'&&S.q1) basis.push('刺さった言葉<b>「'+escapeHtml(S.q1)+'」</b>');
     if(moyaLabels.length) basis.push('モヤモヤ<b>「'+escapeHtml(moyaLabels.join('・'))+'」</b>');
+    var hasFacts=(typeof S!=='undefined')&&S.sal&&S.busy;
+    if(typeof S!=='undefined'&&(S.q2||[]).length) basis.push('求めるもの<b>「'+(S.q2||[]).map(escapeHtml).join('・')+'」</b>');
     document.getElementById('wbBasis').innerHTML = basis.length
-      ? '<span style="color:var(--teal-d);font-weight:700;font-size:10px;font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">この軸の導き方</span><br>'+basis.join('、')+' から導いています。下の「いまの仕事と、比べてみる」に答えると、さらにあなた仕様になります。'
+      ? '<span style="color:var(--teal-d);font-weight:700;font-size:10px;font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">この軸の導き方</span><br>'+basis.join('、')+' から導いています。'+(hasFacts?'下の比較レーダーには、あなたの年収帯・忙しさを反映済みです。':'下の「いまの仕事と、比べてみる」に答えると、さらにあなた仕様になります。')
       : '';
     document.getElementById('wbBasis').style.display = basis.length?'':'none';
     var blocks='';
@@ -4256,10 +4293,11 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
         +'<button class="btn-line-login" style="width:100%;justify-content:center;font-size:13px;" onclick="openDetailReport()">LINEで詳細レポートを受け取る（無料）</button>'
         +'</div>';
     document.getElementById('wbCta').innerHTML='<button class="btn-primary" style="width:100%;justify-content:center;" onclick="openEmpathyForm()">'+escapeHtml(name)+'に興味を伝える →</button>';
-    // 比較UI初期化
-    var _sal=document.getElementById('wbSalary'); if(_sal) _sal.innerHTML=SALARY.map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>';}).join('');
+    // 比較UI初期化（Q3の事実があれば年収セレクトをプリフィルし、比較を自動表示＝ゼロタップ）
+    var _sal=document.getElementById('wbSalary'); if(_sal){ _sal.innerHTML=SALARY.map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>';}).join(''); if(typeof S!=='undefined'&&S.sal) _sal.value=S.sal; }
     var _lc=document.getElementById('wbLackChips'); if(_lc) _lc.innerHTML=AX.map(function(a){return '<span class="wb-lack" data-k="'+a.k+'" data-on="0" onclick="var v=this.getAttribute(\'data-on\')===\'1\';this.setAttribute(\'data-on\',v?\'0\':\'1\');this.style.background=v?\'\':\'var(--teal)\';this.style.color=v?\'\':\'#fff\';this.style.borderColor=v?\'var(--border)\':\'var(--teal)\';" style="cursor:pointer;font-size:12px;border:1px solid var(--border);border-radius:20px;padding:6px 12px;user-select:none;">'+a.label+'</span>';}).join('');
     var _cr=document.getElementById('wbCompareResult'); if(_cr) _cr.innerHTML='';
+    if(hasFacts){ try{ wbCompare(); }catch(e){} }
     try{ if(typeof SN_CARDS!=='undefined'&&SN_CARDS&&SN_CARDS.logId&&typeof patchCardLog==='function') patchCardLog({wb_view:true}); }catch(e){}
     goScreen('p-wb');
   };
