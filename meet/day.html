@@ -41,6 +41,9 @@ textarea{min-height:72px;resize:vertical;}
 .toast.show{opacity:1;}
 .ckbar{position:sticky;top:0;z-index:10;background:var(--navy);color:#fff;font-size:12px;padding:9px 16px;display:none;justify-content:space-between;align-items:center;}
 .ckbar b{color:#7fd8cb;}
+.wbGrow{transform-box:fill-box;transform-origin:center;animation:wbGrow .8s cubic-bezier(.22,1,.36,1) both;}
+@keyframes wbGrow{from{transform:scale(.45);opacity:0}to{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion: reduce){.wbGrow{animation:none;}}
 </style>
 </head>
 <body>
@@ -229,8 +232,10 @@ function radar(w){
   [100,66,33].forEach(function(g){s+=ring(g,'rgba(22,34,63,0.030)');});
   for(var i=0;i<6;i++){ var e=pt(i,100); s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+e[0].toFixed(1)+'" y2="'+e[1].toFixed(1)+'" stroke="rgba(22,34,63,0.10)" stroke-width="0.8"/>'; }
   var p=[]; for(var j=0;j<6;j++){ var q=pt(j,w[AX[j][0]]); p.push(q[0].toFixed(1)+','+q[1].toFixed(1)); }
+  s+='<g class="wbGrow">';
   s+='<polygon points="'+p.join(' ')+'" fill="url(#dg1)" stroke="#2f9c8d" stroke-width="2.2" stroke-linejoin="round" filter="url(#ds1)"/>';
   for(var d=0;d<6;d++){ var qd=pt(d,w[AX[d][0]]); s+='<circle cx="'+qd[0].toFixed(1)+'" cy="'+qd[1].toFixed(1)+'" r="3" fill="#fff" stroke="#2f9c8d" stroke-width="2"/>'; }
+  s+='</g>';
   for(var k=0;k<6;k++){ var lp=pt(k,128); s+='<text x="'+lp[0].toFixed(1)+'" y="'+lp[1].toFixed(1)+'" font-size="9.5" font-weight="700" fill="#3d4453" text-anchor="middle" dominant-baseline="middle">'+AX[k][1]+'</text>'; }
   return s+'</svg>';
 }
