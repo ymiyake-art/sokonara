@@ -1563,10 +1563,7 @@ h1, h2, h3, h4,
         <div class="q-text">もしこの会社に関わるとしたら、<br>あなたは何ができそうですか？</div>
         <div style="font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:10px;">まだ転職を決めていなくても大丈夫です。仮に関わるなら何ができそうか、選んでみてください。（任意・複数可）</div>
         <div class="chip-list" id="memoChips" style="margin-bottom:14px;"></div>
-        <div style="font-size:12.5px;font-weight:700;color:var(--text);line-height:1.6;margin-bottom:4px;">記事を読んで感じたこと・気持ち・聞いてみたいことを、自由にどうぞ <span style="color:var(--text3);font-weight:400;">（任意）</span></div>
-        <div style="font-size:11px;color:var(--teal);margin-bottom:8px;font-family:'JetBrains Mono',monospace;letter-spacing:0.5px;">※ 書くほどAI診断があなたに合ったものになります</div>
-        <textarea id="freeText" class="free-input" rows="5" placeholder="例：今の仕事は安定しているけど、もっと人と近い距離で働きたい。この方になら自分の悩みを話せそうだと思った。"></textarea>
-        <div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.6;">📱 スマホなら、キーボードの音声入力（マイク🎤）で話すと楽に書けます</div>
+        <!-- 自由記述はLINE特典（詳細レポート）の直前へ移設＝「書く→すぐAIが読む」の隣接（2026-07-05） -->
         <div class="q-nav" style="margin-top:18px">
           <button class="btn-outline" onclick="goBackFromMemo()">← 戻る</button>
           <button class="btn-primary" id="submitBtn" onclick="submitEmpathy()">診断結果を見る →</button>
@@ -2955,8 +2952,7 @@ function pickQ3(el, val) {
 // 診断送信：無料側は即マトリクス（p-wb）＝AI待ちゼロ・APIコストゼロ。
 // AIの文章診断（WORKING HINT＋詳細）はLINE特典としてp-wbの導線から（openDetailReport）。
 async function submitEmpathy() {
-  S.free = document.getElementById('freeText').value;
-  logResonance(false); // 刺さった言葉等はここで記録（AI閲覧とは分離）
+  logResonance(false); // 刺さった言葉等はここで記録（AI閲覧とは分離。自由記述は詳細レポート直前で入力）
   _saveFbCache();      // 診断入力を24hキャッシュ＝スワイプで戻ってもTOPの再入口から見返せる
   saveSession();
   openWellbeing();
@@ -2981,10 +2977,13 @@ function renderDiagReentry(){
   bar.style.display='flex';
 }
 // LINE特典：AIの文章診断（詳細レポート）。未登録はLINEへ、登録済みは生成して表示。
+// 自由記述（wbFree）は直前で入力＝S.freeに同期済み。書き足して再度開いた場合は読み直す（再生成）。
 function openDetailReport(){
+  try{ _saveFbCache(); }catch(e){}
   if(!isLineRegistered()){ beginLineLogin(); return; }
   goScreen('p3');
-  if(S.fb){ showFeedback(S.fb); } else { genFeedback(); }
+  if(S.fb && S.free===(S._fbFree||'')){ showFeedback(S.fb); }
+  else { S._fbFree=S.free||''; genFeedback(); }
 }
 
 // ===== AI FEEDBACK =====
@@ -4130,6 +4129,29 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     if(co){ var cw=companyWB(co); AX.forEach(function(a){ if(a.k==='time'||a.k==='econ') return; w[a.k]=clamp(w[a.k]+(cw[a.k]-58)*0.28); }); }
     return w;
   }
+  // ○○タイプ（上位2軸の組合せ・15種）＝シェア面の遊び。レポート本体は軸表示のまま（「診断と名乗らない」方針との2層両立）。
+  // 命名はここを書き換えるだけで差し替え可能。
+  var TYPE_NAMES={
+    'meaning+agency':'変革の旗手','meaning+people':'共鳴の火付け役','meaning+local':'地域の担い手',
+    'meaning+time':'マイペースな理想家','meaning+econ':'実利派の理想家',
+    'agency+people':'仲間と攻める開拓者','agency+local':'地元の仕掛け人','agency+time':'自由設計の職人','agency+econ':'稼ぐ挑戦者',
+    'people+local':'地域の結び役','people+time':'あたたかい安定派','people+econ':'懐深い実務家',
+    'local+time':'暮らし重視の地元党','local+econ':'地に足の実益派','time+econ':'賢いバランサー'
+  };
+  function axisType(w){
+    var order=['meaning','agency','people','local','time','econ'];
+    var top=order.slice().sort(function(a,b){return w[b]-w[a];}).slice(0,2);
+    top.sort(function(a,b){return order.indexOf(a)-order.indexOf(b);});
+    return TYPE_NAMES[top[0]+'+'+top[1]]||'';
+  }
+  function shareText(){
+    var t=axisType(userWeights(getCo()));
+    return '私の仕事の軸は『'+t+'』タイプでした。年収や知名度だけが、キャリアの正解じゃない。 #ソコナラ';
+  }
+  window.wbShareX=function(){ window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(shareText())+'&url='+encodeURIComponent('https://app.sokonara.co.jp/'),'_blank','noopener'); };
+  window.wbShareLine=function(){ window.open('https://line.me/R/share?text='+encodeURIComponent(shareText()+' https://app.sokonara.co.jp/'),'_blank','noopener'); };
+  // 詳細レポート直前の自由記述（Q4から移設＝「書く→すぐAIが読む」の隣接）
+  window.wbFreeInput=function(el){ if(typeof S!=='undefined') S.free=el.value; };
   // 比較の前提（年収帯・忙しさ）をその場で変更→即再計算（「Q3の回答」と言われても覚えていない、への対応）
   window.wbSalChange=function(code){ if(typeof S!=='undefined'){ S.sal=code||''; try{_saveFbCache();}catch(e){} } wbCompare(); };
   window.wbSetBusy=function(code){ if(typeof S!=='undefined'){ S.busy=code; try{_saveFbCache();}catch(e){} } renderBusyChips(); wbCompare(); };
@@ -4178,7 +4200,12 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
       +'<div id="wbBasis" style="font-size:11.5px;color:var(--text2);line-height:1.9;background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:14px;"></div>'
       +'<div id="wbRadar" style="margin:6px 0 6px;"></div>'
       +'<div id="wbLegend" style="display:flex;gap:16px;justify-content:center;font-size:11px;color:var(--text2);margin-bottom:10px;"></div>'
-      +'<div style="text-align:center;margin-bottom:16px;"><button onclick="wbShare()" style="background:none;border:1px solid var(--border);border-radius:20px;color:var(--text2);font-size:12px;padding:8px 18px;cursor:pointer;font-family:inherit;">📤 この“軸”を画像でシェア</button></div>'
+      +'<div id="wbType" style="text-align:center;margin:2px 0 10px;font-size:13px;color:var(--text2);"></div>'
+      +'<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;">'
+        +'<button onclick="wbShareX()" style="background:#000;border:none;border-radius:20px;color:#fff;font-size:12px;font-weight:700;padding:8px 16px;cursor:pointer;font-family:inherit;">𝕏 でシェア</button>'
+        +'<button onclick="wbShareLine()" style="background:#06C755;border:none;border-radius:20px;color:#fff;font-size:12px;font-weight:700;padding:8px 16px;cursor:pointer;font-family:inherit;">LINEで送る</button>'
+        +'<button onclick="wbShare()" style="background:none;border:1px solid var(--border);border-radius:20px;color:var(--text2);font-size:12px;padding:8px 16px;cursor:pointer;font-family:inherit;">📤 画像で保存</button>'
+      +'</div>'
       +'<div id="wbFlow" style="margin-bottom:22px;"></div>'
       +'<div id="wbText" style="margin-bottom:14px;"></div>'
       +'<div id="wbDetailCta" style="margin-bottom:22px;"></div>'
@@ -4284,6 +4311,8 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
       x.fillText('C A R E E R   A X I S',540,150);
       x.fillStyle='#fff'; x.font='900 58px "Zen Kaku Gothic New","Noto Sans JP",sans-serif';
       x.fillText('わたしの“仕事の軸”',540,228);
+      var _t=axisType(w);
+      if(_t){ x.fillStyle='#e8cf8f'; x.font='900 52px "Zen Kaku Gothic New","Noto Sans JP",sans-serif'; x.fillText('『'+_t+'』タイプ',540,300); }
       var cx=540,cy=650,R=310;
       function pt(i,val){ var a=(-90+i*60)*Math.PI/180,r=R*clamp(val)/100; return [cx+r*Math.cos(a),cy+r*Math.sin(a)]; }
       x.strokeStyle='rgba(255,255,255,0.15)'; x.lineWidth=2;
@@ -4307,7 +4336,7 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
         if(!blob){ toast('画像の生成に失敗しました'); return; }
         var file=new File([blob],'sokonara_career_axis.png',{type:'image/png'});
         if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
-          try{ await navigator.share({files:[file],text:'わたしの“仕事の軸”はこれ。｜ソコナラ https://app.sokonara.co.jp/'}); }catch(e){}
+          try{ await navigator.share({files:[file],text:shareText()+' https://app.sokonara.co.jp/'}); }catch(e){}
         } else {
           var u=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=u; a.download='sokonara_career_axis.png'; document.body.appendChild(a); a.click(); a.remove();
           setTimeout(function(){ URL.revokeObjectURL(u); },5000);
@@ -4326,6 +4355,8 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     document.getElementById('wbSub').innerHTML='あなたの反応から、いま大切にしている<b>“仕事の軸”</b>を導きました。';
     document.getElementById('wbRadar').innerHTML=radar(weight);
     document.getElementById('wbLegend').innerHTML='<span><span style="display:inline-block;width:10px;height:10px;background:rgba(47,156,141,0.6);border-radius:2px;margin-right:4px;"></span>あなたの軸</span>';
+    var _type=axisType(weight);
+    document.getElementById('wbType').innerHTML=_type?('あなたは <span style="font-weight:900;color:var(--navy);font-size:16px;">『'+escapeHtml(_type)+'』</span> タイプ'):'';
     document.getElementById('wbFlow').innerHTML=flowHTML(weight);
     // text：あなた起点の読み解きのみ（経営層のスコア・優劣は出さない。ことばの解釈はLINE後の詳細レポートへ）
     var sortedW=AX.slice().sort(function(a,b){return weight[b.k]-weight[a.k];});
@@ -4347,14 +4378,18 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     document.getElementById('wbText').innerHTML=blocks;
     // AIの文章診断＝LINE特典（登録済みならそのまま開ける）
     var _reg=(typeof isLineRegistered==='function')&&isLineRegistered();
-    document.getElementById('wbDetailCta').innerHTML=_reg
-      ? '<button style="width:100%;padding:14px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="openDetailReport()">📝 AIの詳細レポートを見る（文章診断）→</button>'
-      : '<div style="background:var(--navy);border-radius:12px;padding:16px 18px;color:#fff;">'
-        +'<div style="font-family:\'JetBrains Mono\',monospace;font-size:9px;letter-spacing:2px;color:#7fd8cb;margin-bottom:6px;">LINE登録特典</div>'
-        +'<div style="font-size:14px;font-weight:700;margin-bottom:4px;">🎁 AIの詳細レポートをプレゼント</div>'
-        +'<div style="font-size:12px;color:rgba(255,255,255,0.75);line-height:1.8;margin-bottom:12px;">あなたの反応をAIがことばで読み解く文章診断＋この軸マトリクス入りのレポートを、その場でお渡しします。無料・ワンタップ／いつでも解除可。</div>'
-        +'<button class="btn-line-login" style="width:100%;justify-content:center;font-size:13px;" onclick="openDetailReport()">LINEで詳細レポートを受け取る（無料）</button>'
-        +'</div>';
+    var _freeBox='<div style="font-size:11px;color:rgba(255,255,255,0.72);margin:0 0 6px;">AIに読み解いてほしいこと・記事を読んで感じたことを、自由にどうぞ（任意・書くほどあなた仕様に）</div>'
+      +'<textarea id="wbFree" rows="3" oninput="wbFreeInput(this)" placeholder="例：安定はあるけど、もっと人と近い距離で働きたい。この方になら悩みを話せそうだと思った。" style="width:100%;box-sizing:border-box;padding:10px 12px;border:none;border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:4px;resize:vertical;color:var(--text);">'+escapeHtml((typeof S!=='undefined'&&S.free)||'')+'</textarea>'
+      +'<div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:10px;">📱 スマホなら音声入力🎤が楽です</div>';
+    document.getElementById('wbDetailCta').innerHTML='<div style="background:var(--navy);border-radius:12px;padding:16px 18px;color:#fff;">'
+      +'<div style="font-family:\'JetBrains Mono\',monospace;font-size:9px;letter-spacing:2px;color:#7fd8cb;margin-bottom:6px;">'+(_reg?'AIの文章診断':'LINE登録特典')+'</div>'
+      +'<div style="font-size:14px;font-weight:700;margin-bottom:4px;">'+(_reg?'📝 AIの詳細レポート（文章診断）':'🎁 AIの詳細レポートをプレゼント')+'</div>'
+      +'<div style="font-size:12px;color:rgba(255,255,255,0.75);line-height:1.8;margin-bottom:10px;">あなたの反応をAIがことばで読み解く文章診断＋この軸マトリクス入りのレポート'+(_reg?'。':'を、その場でお渡しします。無料・ワンタップ／いつでも解除可。')+'</div>'
+      +_freeBox
+      +(_reg
+        ? '<button style="width:100%;padding:13px;background:#fff;color:var(--navy);border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="openDetailReport()">読み解いてもらう →</button>'
+        : '<button class="btn-line-login" style="width:100%;justify-content:center;font-size:13px;" onclick="openDetailReport()">LINEで詳細レポートを受け取る（無料）</button>')
+      +'</div>';
     document.getElementById('wbCta').innerHTML='<button class="btn-primary" style="width:100%;justify-content:center;" onclick="openEmpathyForm()">'+escapeHtml(name)+'に興味を伝える →</button>';
     // 比較UI初期化（Q3の事実があれば年収セレクトをプリフィルし、比較を自動表示＝ゼロタップ）
     var _sal=document.getElementById('wbSalary'); if(_sal){ _sal.innerHTML=SALARY.map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>';}).join(''); if(typeof S!=='undefined'&&S.sal) _sal.value=S.sal; }
