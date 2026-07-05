@@ -2446,6 +2446,19 @@ function openCompanyArticle(id){
   // 常に記事(p1)を開く。前回の診断結果がキャッシュされていればp1上にボタンで表示する
   selectedCompanyId = String(id || '');
   try { localStorage.setItem('sn_read_article', '1'); } catch(e) {} // 記事閲覧フラグ（バナー表示判定用）
+  // 経営層一覧・関連カード等の“直接入口”を計測（variant='list'）。カード/モヤモヤ/直リンクの既存文脈があれば触らない。
+  // セッション中は1行を使い回し（記事を渡り歩いても開始数が膨らまない）
+  try{
+    if(!(typeof SN_CARDS!=='undefined'&&SN_CARDS&&SN_CARDS.logId)){
+      const lid='list_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+      SN_CARDS={ logId:lid, cid:String(id||''), variant:'list' };
+      try{ localStorage.setItem('sn_card_ctx', JSON.stringify(Object.assign({},SN_CARDS,{_ts:Date.now()}))); }catch(e){}
+      fetch('/api/card-log',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify({id:lid,set:{started:true,variant:'list',recommended_company:String(id||''),article_read:true}})});
+    } else if(SN_CARDS.variant==='list'){
+      SN_CARDS.cid=String(id||'');
+      patchCardLog({recommended_company:String(id||''),article_read:true});
+    }
+  }catch(e){}
   // Q1-Q4の表示状態をリセット
   S.q1=''; S.q2=[]; S.about=[]; S.q3=''; S.free=''; S.memoChips=[];
   const ft=document.getElementById('freeText'); if(ft) ft.value='';
@@ -4139,12 +4152,23 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     'people+local':'地域の結び役','people+time':'あたたかい安定派','people+econ':'懐深い実務家',
     'local+time':'暮らし重視の地元党','local+econ':'地に足の実益派','time+econ':'賢いバランサー'
   };
-  function axisType(w){
+  var TYPE_CHARS={}; // タイプごとのキャラ（絵文字等）。adminの「タイプ命名の編集」から site_settings.axis_types で上書き
+  (function(){ try{
+    if(typeof supabaseClient!=='undefined'&&supabaseClient){
+      supabaseClient.from('site_settings').select('value').eq('key','axis_types').then(function(r){
+        var v=r&&r.data&&r.data[0]&&r.data[0].value; if(!v||typeof v!=='object') return;
+        Object.keys(v).forEach(function(k){ if(v[k]&&v[k].name) TYPE_NAMES[k]=v[k].name; if(v[k]&&v[k].char) TYPE_CHARS[k]=v[k].char; });
+      });
+    }
+  }catch(e){} })();
+  function axisTypeKey(w){
     var order=['meaning','agency','people','local','time','econ'];
     var top=order.slice().sort(function(a,b){return w[b]-w[a];}).slice(0,2);
     top.sort(function(a,b){return order.indexOf(a)-order.indexOf(b);});
-    return TYPE_NAMES[top[0]+'+'+top[1]]||'';
+    return top[0]+'+'+top[1];
   }
+  function axisType(w){ return TYPE_NAMES[axisTypeKey(w)]||''; }
+  function axisChar(w){ return TYPE_CHARS[axisTypeKey(w)]||''; }
   function shareText(){
     var t=axisType(userWeights(getCo()));
     return '私の仕事の軸は『'+t+'』タイプでした。年収や知名度だけが、キャリアの正解じゃない。 #ソコナラ';
@@ -4362,8 +4386,8 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     document.getElementById('wbSub').innerHTML='あなたの反応から、いま大切にしている<b>“仕事の軸”</b>を導きました。';
     document.getElementById('wbRadar').innerHTML=radar(weight);
     document.getElementById('wbLegend').innerHTML='<span><span style="display:inline-block;width:10px;height:10px;background:rgba(47,156,141,0.6);border-radius:2px;margin-right:4px;"></span>あなたの軸</span>';
-    var _type=axisType(weight);
-    document.getElementById('wbType').innerHTML=_type?('あなたは <span style="font-weight:900;color:var(--navy);font-size:16px;">『'+escapeHtml(_type)+'』</span> タイプ'):'';
+    var _type=axisType(weight), _char=axisChar(weight);
+    document.getElementById('wbType').innerHTML=_type?('あなたは <span style="font-weight:900;color:var(--navy);font-size:16px;">'+(_char?escapeHtml(_char)+' ':'')+'『'+escapeHtml(_type)+'』</span> タイプ'):'';
     document.getElementById('wbFlow').innerHTML=flowHTML(weight);
     // text：あなた起点の読み解きのみ（経営層のスコア・優劣は出さない。ことばの解釈はLINE後の詳細レポートへ）
     var sortedW=AX.slice().sort(function(a,b){return weight[b.k]-weight[a.k];});
