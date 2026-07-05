@@ -30,13 +30,15 @@ body{font-family:'Noto Sans JP','Hiragino Sans',sans-serif;background:var(--bg);
 .btn-o{background:none;border:1px solid var(--border);color:var(--text2);font-weight:400;}
 input[type=text],textarea{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;background:#fff;}
 textarea{min-height:72px;resize:vertical;}
-/* 経営層カード（アプリのleader-cardと同じ世界観：写真上にキャッチ重ね） */
-.lcard{border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(28,42,84,0.13);background:#fff;margin-bottom:14px;display:flex;flex-direction:column;}
-.lcard-top{position:relative;min-height:190px;aspect-ratio:16/9;background:linear-gradient(135deg,#1C2A54,#2e4080);background-size:cover;background-position:center top;}
+/* 経営層カード（アプリの経営層一覧と同じ寸法＝2列グリッド・上部210px固定） */
+.lcard-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+.lcard{border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(28,42,84,0.13);background:#fff;display:flex;flex-direction:column;}
+.lcard-top{position:relative;height:210px;overflow:hidden;background:linear-gradient(135deg,#1C2A54,#2e4080);background-size:cover;background-position:center top;flex-shrink:0;}
 .lcard-top::after{content:'';position:absolute;z-index:2;bottom:38%;left:-8%;width:116%;height:2px;background:var(--teal);transform:rotate(-8deg);opacity:0.9;}
 .lcard-phrase{position:absolute;bottom:10px;left:12px;right:12px;z-index:3;font-weight:900;font-size:16px;color:#fff;line-height:1.5;text-shadow:0 1px 4px rgba(0,0,0,0.9),0 2px 12px rgba(0,0,0,0.7);}
-.lcard-bottom{padding:12px 14px;background:#E7EAEF;}
+.lcard-bottom{padding:12px 14px;background:#E7EAEF;flex:1;display:flex;flex-direction:column;}
 .lcard:nth-child(even) .lcard-bottom{background:#D3D8E3;}
+.lcard-bottom .co-links{margin-top:auto;padding-top:10px;}
 .co-ph{width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--navy);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;border:2px solid rgba(28,42,84,0.18);}
 .co-name{font-size:15px;font-weight:700;color:var(--navy);}
 .co-corp{font-size:10px;color:#7d8593;}
@@ -225,7 +227,8 @@ function toggleCheck(id){
 function coById(id){ return COS.filter(function(c){return String(c.id)===String(id);})[0]; }
 function paintCos(){
   var el=document.getElementById('coList');
-  if(!COS.length){ el.innerHTML='<div class="note" style="padding:20px 0;text-align:center;">経営層の情報を取得できませんでした。通信環境をご確認ください。</div>'; return; }
+  if(!COS.length){ el.className=''; el.innerHTML='<div class="note" style="padding:20px 0;text-align:center;">経営層の情報を取得できませんでした。通信環境をご確認ください。</div>'; return; }
+  el.className='lcard-grid';
   el.innerHTML=COS.map(function(c){
     var on=M.checks.indexOf(String(c.id))>=0;
     var photo=c.photoUrl||'';
