@@ -3234,6 +3234,7 @@ async function renderMeetAdmin(){
   const tagChips=Object.entries(tagCnt).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`<span style="font-size:11px;background:var(--teal-bg);color:var(--teal-d);border-radius:20px;padding:4px 11px;">${escA(MEET_RTAGS[t]||t)} <b>${n}</b></span>`).join(' ')||'<span style="font-size:12px;color:var(--text3)">まだありません</span>';
   const th=(t,r)=>`<th style="text-align:${r?'right':'left'};padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">${t}</th>`;
   const td=(v,r,b)=>`<td style="padding:8px 10px;border-bottom:1px solid var(--border);${r?'text-align:right;':''}${b?'font-weight:700;color:#2e8c7f;':''}">${v}</td>`;
+  window._meetRows=rows; window._meetCos=cos; window._meetEvId=curEv; // 班分け関数から参照
   box.innerHTML=`
     <div style="padding:24px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
@@ -3261,6 +3262,17 @@ async function renderMeetAdmin(){
         </table>
       </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px;">🧩 班分け（自動割り当て）</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.7;">テーブル＝経営層（1社1卓）。各参加者は巡目ごとに別テーブルへ移動し、<b>チェックした経営層には必ず行けます</b>。空き枠は各卓が均等になるよう自動配分。①巡数を選ぶ→②計算→③保存で各参加者の当日ページに番号が出ます。</div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+          <span style="font-size:12px;color:var(--text2)">巡数（1人が回るテーブル数）</span>
+          <select id="grpRotations" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;"><option value="3">3巡</option><option value="4">4巡</option></select>
+          <button onclick="computeGroupsUI()" style="padding:8px 16px;background:var(--navy);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🧮 自動計算</button>
+          <button id="grpSaveBtn" onclick="saveGroupsUI(this)" style="padding:8px 16px;background:var(--teal);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:none;">💾 保存して各参加者に反映</button>
+        </div>
+        <div id="grpPreview"></div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
         <div style="font-weight:700;font-size:13px;margin-bottom:10px;">理由タグの傾向（匿名集計＝企業レポート用）</div>
         <div style="display:flex;gap:7px;flex-wrap:wrap;">${tagChips}</div>
       </div>
@@ -3273,6 +3285,76 @@ async function renderMeetAdmin(){
         </table>
       </div>
     </div>`;
+}
+
+// ===== 班分け（自動割り当て）=====
+// テーブル＝経営層(1社1卓)。各参加者はチェックした経営層に必ず行け、巡目ごとに別テーブルへ移動、空き枠は均等配分。
+let _groupResult=null;
+function meetRoster(){
+  // 卓の顔ぶれ＝DB企業 ∪ 参加者が実際にチェックした未知ID（extraSpeakers等）。番号は1..N。
+  const cos=window._meetCos||[]; const rows=window._meetRows||[];
+  const known=new Map(); cos.forEach(c=>known.set(String(c.id),{id:String(c.id),ceo:c.ceo||'',name:c.name||''}));
+  rows.forEach(r=>(r.checks||[]).concat(r.deep||[],r.talk||[]).forEach(id=>{ id=String(id); if(!known.has(id)) known.set(id,{id,ceo:'',name:id}); }));
+  const arr=[...known.values()]; arr.forEach((t,i)=>t.no=i+1); return arr;
+}
+function computeGroups(rows, tables, R){
+  const byId={}; tables.forEach(t=>byId[t.id]=t);
+  const counts=Array.from({length:R},()=>({})); // counts[r][tableId]=人数
+  const inc=(r,id)=>{ counts[r][id]=(counts[r][id]||0)+1; };
+  const cntOf=(r,id)=>counts[r][id]||0;
+  // 希望が多い人＝満たしにくい人から先に処理
+  const people=[...rows].filter(r=>r.name).sort((a,b)=>(b.checks||[]).length-(a.checks||[]).length);
+  const out={}; // id -> [{no,ceo,name}]
+  people.forEach(p=>{
+    const desired=(p.checks||[]).map(String).filter(id=>byId[id]); // 卓が存在する希望のみ
+    const visited=new Set(); const sched=[];
+    for(let r=0;r<R;r++){
+      let pick=null;
+      // ① 未訪問の希望を最優先（希望は必ず行ける＝容量無視。空いてる卓を優先）
+      const dcand=desired.filter(id=>!visited.has(id)).sort((a,b)=>cntOf(r,a)-cntOf(r,b));
+      if(dcand.length) pick=dcand[0];
+      // ② 希望を満たし終えたら、未訪問の全卓から最も空いている卓
+      if(!pick){ const all=tables.filter(t=>!visited.has(t.id)).sort((a,b)=>cntOf(r,a.id)-cntOf(r,b.id)); if(all.length) pick=all[0].id; }
+      if(!pick) break;
+      visited.add(pick); inc(r,pick);
+      const t=byId[pick]; sched.push({no:t.no, ceo:t.ceo, name:t.name});
+    }
+    out[p.id]={name:p.name, sched, desired};
+  });
+  return {out, counts, tables, R};
+}
+function computeGroupsUI(){
+  const rows=window._meetRows||[]; const tables=meetRoster();
+  const R=parseInt(document.getElementById('grpRotations').value)||3;
+  if(!rows.filter(r=>r.name).length){ toast('登録者がいません'); return; }
+  if(!tables.length){ toast('テーブル（経営層）がありません'); return; }
+  _groupResult=computeGroups(rows, tables, R);
+  document.getElementById('grpSaveBtn').style.display='inline-block';
+  const g=_groupResult;
+  // 卓×巡の人数分布
+  const dist='<table style="border-collapse:collapse;font-size:11px;margin-top:8px;"><thead><tr><th style="padding:4px 8px;text-align:left;color:var(--text3)">テーブル</th>'
+    +Array.from({length:g.R},(_,r)=>`<th style="padding:4px 8px;color:var(--text3)">${r+1}巡</th>`).join('')+'</tr></thead><tbody>'
+    +g.tables.map(t=>`<tr><td style="padding:4px 8px;"><b>${t.no}</b> ${escA(t.ceo||t.name)}</td>`
+      +Array.from({length:g.R},(_,r)=>`<td style="padding:4px 8px;text-align:center;">${g.counts[r][t.id]||0}</td>`).join('')+'</tr>').join('')+'</tbody></table>';
+  // 希望が卓に無く割り当て不可だった件数
+  let unmet=0; Object.values(g.out).forEach(o=>{ const got=new Set(o.sched.map(s=>s.no)); o.desired.forEach(id=>{ const t=g.tables.find(x=>x.id===id); if(t&&!got.has(t.no)) unmet++; }); });
+  document.getElementById('grpPreview').innerHTML=
+    `<div style="font-size:12px;color:var(--navy);font-weight:700;margin-bottom:4px;">プレビュー：${Object.keys(g.out).length}名を${g.tables.length}卓×${g.R}巡に配置${unmet?`（⚠️希望未充足 ${unmet}件＝希望が同卓集中）`:'（全員の希望を充足）'}</div>`
+    +dist
+    +`<div style="font-size:11px;color:var(--text3);margin-top:8px;">この内容で問題なければ「保存して各参加者に反映」を押してください。</div>`;
+}
+async function saveGroupsUI(btn){
+  if(!_groupResult){ toast('先に自動計算してください'); return; }
+  const entries=Object.entries(_groupResult.out);
+  btn.disabled=true; let ok=0, ng=0;
+  for(const [id,o] of entries){
+    try{
+      const r=await fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,set:{groups:o.sched}})});
+      const d=await r.json(); if(d&&d.ok) ok++; else ng++;
+    }catch(e){ ng++; }
+  }
+  btn.disabled=false;
+  toast(`班分けを保存：成功${ok}件${ng?` / 失敗${ng}件`:''}。参加者は当日ページで確認できます`);
 }
 
 // ===== MEET LP 文言編集（/meet/ の EV を読み込み→編集→site_settings.meet_lp に保存。LPが起動時にマージ） =====

@@ -59,6 +59,9 @@ var EV = {
   dateLabel: '2026.7.30（木）18:30〜',
   maxChecks: 3,
   companyIds: [],                       // 空=掲載中の全経営層。絞る場合は company id を列挙
+  // 記事がまだ無い登壇者もここに書けば選べる（DB未登録でOK）。id は班分けでも使う安定値にする。
+  // 例: {id:'ev_hinode', ceo:'日野出 太郎', name:'日野出株式会社', catchphrase:'（当日語ります）'}
+  extraSpeakers: [],
   appUrl: 'https://app.sokonara.co.jp'  // 経営層記事の本体アプリ
 };
 var SUPA_URL='https://ypwwuylcvjwcyazvpibd.supabase.co';
@@ -88,6 +91,13 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
     <div id="regDone" style="display:none;">
       <div style="font-size:14px;color:var(--navy);"><b id="regName"></b> さんで登録済み ✓</div>
       <button class="btn btn-o" style="margin-top:8px;font-size:12px;padding:9px;" onclick="editName()">名前を変更する</button>
+    </div>
+    <!-- 班分けスケジュール（運営が割り当て後に表示） -->
+    <div id="groupBox" style="display:none;margin-top:14px;background:var(--teal-bg);border-radius:10px;padding:14px 16px;">
+      <div class="step" style="margin-bottom:4px;">YOUR TABLES — 当日の席</div>
+      <div style="font-size:13px;font-weight:900;color:var(--navy);margin-bottom:2px;">あなたの巡回スケジュール</div>
+      <div class="note" style="margin-bottom:8px;">希望した経営層は必ず含まれています。各巡目でこの番号のテーブルへどうぞ。</div>
+      <div id="groupList"></div>
     </div>
   </div>
 
@@ -153,13 +163,32 @@ function loadM(){ try{ M=JSON.parse(localStorage.getItem('sn_meet')||'null'); }c
 function saveM(){ localStorage.setItem('sn_meet',JSON.stringify(M)); }
 // サーバ保存（service_role API経由・PIIはmeet_entriesのみに保持）
 function push(set){ if(!M.name) return; try{ fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:M.id,set:Object.assign({event_id:EV.eventId},set)})}).catch(function(){}); }catch(e){} }
+// 運営が割り当てた自分の班スケジュール（groups=[{no,ceo,name},...]）を取得して表示。本人分のみ返る。
+function loadMyGroups(){
+  if(!M||!M.id) return;
+  try{ fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:M.id,action:'get'})})
+    .then(function(r){return r.json();}).then(function(d){ paintGroups(d&&d.groups); }).catch(function(){}); }catch(e){}
+}
+function paintGroups(groups){
+  var box=document.getElementById('groupBox'), list=document.getElementById('groupList');
+  if(!box||!list) return;
+  if(!groups||!groups.length){ box.style.display='none'; return; }
+  list.innerHTML=groups.map(function(g,i){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.06);">'
+      +'<span style="flex-shrink:0;font-size:11px;color:var(--text2);width:44px;">'+(i+1)+'巡目</span>'
+      +'<span style="flex-shrink:0;width:34px;height:34px;border-radius:8px;background:var(--navy);color:#fff;font-weight:900;font-size:15px;display:flex;align-items:center;justify-content:center;">'+esc(g.no)+'</span>'
+      +'<span style="font-size:13px;color:var(--navy);font-weight:700;">'+esc(g.ceo||g.name||'')+'<span style="font-size:11px;color:var(--text2);font-weight:400;"> '+esc(g.name||'')+'</span></span>'
+      +'</div>';
+  }).join('');
+  box.style.display='block';
+}
 
 function register(){
   var v=(document.getElementById('nameIn').value||'').trim();
   if(v.length<2){ toast('氏名を入力してください'); return; }
   M.name=v; saveM();
   push({name:M.name,checks:M.checks});
-  paintReg(); toast('登録しました。気になる経営層にチェックを！');
+  paintReg(); loadMyGroups(); toast('登録しました。気になる経営層にチェックを！');
 }
 function editName(){ document.getElementById('regForm').style.display='block'; document.getElementById('regDone').style.display='none'; document.getElementById('nameIn').value=M.name; }
 function paintReg(){
@@ -262,6 +291,7 @@ function paintThanks(){
   document.getElementById('maxLbl').textContent=EV.maxChecks;
   document.getElementById('ckMax').textContent=EV.maxChecks;
   loadM(); paintReg();
+  if(M.name) loadMyGroups();
   if(M.done) paintThanks();
   fetch(SUPA_URL+'/rest/v1/companies?select=*&order=sort.asc.nullslast,created_at.asc',{headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY}})
     .then(function(r){return r.json();})
@@ -269,10 +299,12 @@ function paintThanks(){
       rows=(rows||[]).filter(function(c){ return (c.status||'active')==='active'; });
       if(EV.companyIds.length) rows=rows.filter(function(c){ return EV.companyIds.indexOf(String(c.id))>=0; });
       COS=rows.map(function(c){ c.id=String(c.id); return c; });
+      // 記事なし登壇者（extraSpeakers）を末尾に合流＝DB未登録でも選択・班分け対象に
+      (EV.extraSpeakers||[]).forEach(function(s){ if(s&&s.id&&!COS.some(function(c){return c.id===String(s.id);})){ COS.push({id:String(s.id),ceo:s.ceo||'',name:s.name||'',catchphrase:s.catchphrase||'',photoUrl:s.photoUrl||'',body:''}); } });
       paintCos();
-      if(M.done) document.getElementById('svRadar').innerHTML=radar(centroid());
+      if(M.done){ document.getElementById('svRadar').innerHTML=radar(centroid()); loadMyGroups(); }
     })
-    .catch(function(){ paintCos(); });
+    .catch(function(){ (EV.extraSpeakers||[]).forEach(function(s){ if(s&&s.id) COS.push({id:String(s.id),ceo:s.ceo||'',name:s.name||'',catchphrase:s.catchphrase||'',body:''}); }); paintCos(); });
 })();
 </script>
 </body>

@@ -12,7 +12,7 @@ const cors = {
 
 // 書き込みを許可する列（任意の列を書かれないようホワイトリスト化）
 const ALLOWED = new Set([
-  'event_id', 'name', 'checks', 'deep', 'talk', 'consent', 'rtags', 'comment', 'survey_done',
+  'event_id', 'name', 'checks', 'deep', 'talk', 'consent', 'rtags', 'comment', 'survey_done', 'groups',
 ]);
 
 export default async function handler(req) {
@@ -25,6 +25,17 @@ export default async function handler(req) {
 
   const id = (body && body.id != null) ? String(body.id) : '';
   if (!id || id.length > 80 || !/^meet_/.test(id)) return json({ error: 'invalid id' }, 400);
+
+  // 本人の班分けスケジュールのみ返す（PIIは返さない。id＝端末秘匿値なので本人限定の読取）
+  if (body && body.action === 'get') {
+    const U = process.env.SUPABASE_URL, K = process.env.SUPABASE_SERVICE_KEY;
+    if (!U || !K) return json({ error: 'Supabase not configured' }, 500);
+    try {
+      const r = await fetch(`${U}/rest/v1/meet_entries?id=eq.${encodeURIComponent(id)}&select=groups`, { headers: { apikey: K, Authorization: `Bearer ${K}` } });
+      const rows = await r.json();
+      return json({ ok: true, groups: (rows && rows[0] && rows[0].groups) || null });
+    } catch (e) { return json({ ok: false, error: String(e && e.message || e) }, 200); }
+  }
 
   const src = (body && typeof body.set === 'object' && body.set) ? body.set : {};
   const row = { id };
