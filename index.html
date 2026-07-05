@@ -2844,6 +2844,7 @@ function goScreen(id) {
   if(target) target.classList.add('active');
   S.screen = id;
   if(id==='p2' && typeof updateQProgress==='function') updateQProgress();
+  if(id==='p-list' && typeof renderDiagReentry==='function') renderDiagReentry(); // 診断済みならTOPに再入口バー
   // ブラウザの戻る対応：画面が変わったら履歴に積む（popstate中は積まない）
   if(!_suppressHistoryPush && id !== _prev){
     try { history.pushState({ sn:id }, ''); } catch(e) {}
@@ -2956,8 +2957,28 @@ function pickQ3(el, val) {
 async function submitEmpathy() {
   S.free = document.getElementById('freeText').value;
   logResonance(false); // 刺さった言葉等はここで記録（AI閲覧とは分離）
+  _saveFbCache();      // 診断入力を24hキャッシュ＝スワイプで戻ってもTOPの再入口から見返せる
   saveSession();
   openWellbeing();
+}
+
+// 診断済みユーザーのTOP再入口バー（戻る操作で診断が見れなくなる問題への対応）
+function renderDiagReentry(){
+  const host=document.getElementById('p-list'); if(!host) return;
+  let bar=document.getElementById('diagReentry');
+  const has=(typeof S!=='undefined')&&(((S.q2||[]).length&&S.sal)||S.fb);
+  if(!has){ if(bar) bar.style.display='none'; return; }
+  if(!bar){
+    bar=document.createElement('div'); bar.id='diagReentry';
+    const hero=host.firstElementChild;
+    if(hero&&hero.insertAdjacentElement) hero.insertAdjacentElement('afterend',bar); else host.prepend(bar);
+  }
+  const reg=(typeof isLineRegistered==='function')&&isLineRegistered();
+  bar.style.cssText='background:var(--teal-bg);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;';
+  bar.innerHTML='<span style="font-size:12px;color:var(--teal-d);font-weight:700;">📋 診断済み</span>'
+    +'<button onclick="openWellbeing()" style="font-size:12px;font-weight:700;padding:7px 14px;border:1px solid var(--teal);background:#fff;color:var(--teal-d);border-radius:20px;cursor:pointer;font-family:inherit;">あなたの“仕事の軸”を見る →</button>'
+    +((S.fb&&reg)?'<button onclick="openDetailReport()" style="font-size:12px;font-weight:700;padding:7px 14px;border:none;background:var(--navy);color:#fff;border-radius:20px;cursor:pointer;font-family:inherit;">詳細レポート</button>':'');
+  bar.style.display='flex';
 }
 // LINE特典：AIの文章診断（詳細レポート）。未登録はLINEへ、登録済みは生成して表示。
 function openDetailReport(){
@@ -3124,6 +3145,7 @@ function _saveFbCache(){
       companyId: selectedCompanyId,
       fb: S.fb,
       q1: S.q1, q2: S.q2, about: S.about, q3: S.q3, free: S.free,
+      moya: S.moya||[], sal: S.sal||'', busy: S.busy||'',
       ts: Date.now()
     }));
   } catch(e) {}
@@ -3839,6 +3861,16 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(async ()=>{
     }catch(e){ console.warn('restore failed:', e); }
   }
 
+  // 診断キャッシュ（24h）からのハイドレート：リロードや戻る操作後も、TOPの再入口から仕事の軸/レポートを見返せる
+  try{
+    const _dc=JSON.parse(localStorage.getItem('sn_fb_cache')||'null');
+    if(_dc && _dc.ts && (Date.now()-_dc.ts)<86400000 && !(S.q2||[]).length && !S.fb){
+      S.q1=_dc.q1||''; S.q2=_dc.q2||[]; S.about=_dc.about||[]; S.q3=_dc.q3||''; S.free=_dc.free||'';
+      S.moya=_dc.moya||[]; S.sal=_dc.sal||''; S.busy=_dc.busy||''; S.fb=_dc.fb||null;
+      if(!selectedCompanyId && _dc.companyId) selectedCompanyId=_dc.companyId;
+    }
+  }catch(e){}
+
   const params = new URLSearchParams(window.location.search);
   const hasDirectParam = Boolean(params.get('cid') || params.get('company'));
   const matched = loadPrimaryCompany();
@@ -4093,8 +4125,21 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var w={meaning:52,agency:52,people:52,local:52,time:52,econ:50};
     ((typeof S!=='undefined'&&S.moya)||[]).forEach(function(id){ var ax=MOYA_AX[id]; if(ax) w[ax]=clamp(w[ax]+22); });
     ((typeof S!=='undefined'&&S.q2)||[]).forEach(function(label){ var ax=Q2_AX[label]; if(ax) w[ax]=clamp(w[ax]+12); });
-    if(co){ var cw=companyWB(co); AX.forEach(function(a){ w[a.k]=clamp(w[a.k]+(cw[a.k]-58)*0.28); }); }
+    // 企業環境の影響は価値4軸のみ。時間・経済は「あなたが求めるものとして選んだか」だけで決まる
+    //（＝重心の経済がなぜこの点なのか説明できない、というFBへの対応。選ばなければ低め＝こだわり控えめの表現）
+    if(co){ var cw=companyWB(co); AX.forEach(function(a){ if(a.k==='time'||a.k==='econ') return; w[a.k]=clamp(w[a.k]+(cw[a.k]-58)*0.28); }); }
     return w;
+  }
+  // 比較の前提（年収帯・忙しさ）をその場で変更→即再計算（「Q3の回答」と言われても覚えていない、への対応）
+  window.wbSalChange=function(code){ if(typeof S!=='undefined'){ S.sal=code||''; try{_saveFbCache();}catch(e){} } wbCompare(); };
+  window.wbSetBusy=function(code){ if(typeof S!=='undefined'){ S.busy=code; try{_saveFbCache();}catch(e){} } renderBusyChips(); wbCompare(); };
+  function renderBusyChips(){
+    var box=document.getElementById('wbBusyChips'); if(!box) return;
+    var cur=(typeof S!=='undefined'&&S.busy)||'';
+    box.innerHTML=[['b1','多忙気味'],['b2','ふつう'],['b3','ゆとりあり']].map(function(b){
+      var on=(b[0]===cur);
+      return '<span onclick="wbSetBusy(\''+b[0]+'\')" style="cursor:pointer;font-size:12px;border:1px solid '+(on?'var(--teal)':'var(--border)')+';background:'+(on?'var(--teal)':'#fff')+';color:'+(on?'#fff':'var(--text)')+';border-radius:20px;padding:6px 14px;user-select:none;">'+b[1]+'</span>';
+    }).join('');
   }
   // 立体感のあるレーダー：層状の同心フィル＋グラデ塗り＋ソフトシャドウ＋頂点ドット
   var _radarUid=0;
@@ -4139,10 +4184,12 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
       +'<div id="wbDetailCta" style="margin-bottom:22px;"></div>'
       +'<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:22px;">'
         +'<div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:4px;">いまの仕事と、比べてみる</div>'
-        +'<div style="font-size:11px;color:var(--text3);margin-bottom:12px;">「いまの仕事」の線はQ3の回答（年収帯・忙しさ）から自動反映。足りないものを選ぶと“いまの線”だけが下がり、この環境で埋まる幅が見えます。</div>'
-        +'<div style="font-size:11px;color:var(--text2);margin-bottom:4px;">今の年収帯</div>'
-        +'<select id="wbSalary" style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:12px;background:#fff;"></select>'
-        +'<div style="font-size:11px;color:var(--text2);margin-bottom:6px;">いまの仕事で“足りない”と感じるもの（任意・時間と収入はQ3の回答を使用）</div>'
+        +'<div style="font-size:11px;color:var(--text3);margin-bottom:12px;">「いまの仕事」の線は、下の前提から作っています。前提を変えると再計算。足りないものを選ぶと“いまの線”だけが下がり、この環境で埋まる幅が見えます。</div>'
+        +'<div style="font-size:11px;color:var(--text2);margin-bottom:4px;">前提①：いまの年収帯</div>'
+        +'<select id="wbSalary" onchange="wbSalChange(this.value)" style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:12px;background:#fff;"></select>'
+        +'<div style="font-size:11px;color:var(--text2);margin-bottom:4px;">前提②：いまの忙しさ</div>'
+        +'<div id="wbBusyChips" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;"></div>'
+        +'<div style="font-size:11px;color:var(--text2);margin-bottom:6px;">（任意）いまの仕事で“足りない”と感じるもの</div>'
         +'<div id="wbLackChips" style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;"></div>'
         +'<button class="btn-primary" style="width:100%;justify-content:center;font-size:14px;" onclick="wbCompare()">現状と比較する →</button>'
         +'<div id="wbCompareResult" style="margin-top:16px;"></div>'
@@ -4184,9 +4231,10 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var totCur=wavg(cur,weight), totFut=wavg(fut,weight), delta=totFut-totCur;
     // 比較レーダーは結果ボックス内に描画（上段の「あなたの軸」レーダーは置き換えない＝重心と比較を同時に見られる）
     var cmpRadar=radar(fut,cur,'rgba(226,114,91,0.75)')
-      +'<div style="display:flex;gap:16px;justify-content:center;font-size:11px;color:var(--text2);margin:2px 0 12px;">'
+      +'<div style="display:flex;gap:16px;justify-content:center;font-size:11px;color:var(--text2);margin:2px 0 4px;">'
       +'<span><span style="display:inline-block;width:10px;height:10px;border:1.5px solid rgba(226,114,91,0.85);border-radius:2px;margin-right:4px;"></span>いまの仕事</span>'
-      +'<span><span style="display:inline-block;width:10px;height:10px;background:rgba(47,156,141,0.6);border-radius:2px;margin-right:4px;"></span>共鳴後の想定</span></div>';
+      +'<span><span style="display:inline-block;width:10px;height:10px;background:rgba(47,156,141,0.6);border-radius:2px;margin-right:4px;"></span>共鳴後の想定</span></div>'
+      +'<div style="text-align:center;font-size:11px;color:var(--text3);margin-bottom:12px;">前提：年収帯 '+(SAL_LABEL[salCode]||'未設定')+'・忙しさ '+(BUSY_LABEL[(typeof S!=='undefined'&&S.busy)||'']||'ふつう')+'（下で変更できます）</div>';
     var chips=AX.map(function(a){ var d=fut[a.k]-cur[a.k];
       if(d>=8) return '<span style="font-size:11px;background:var(--teal-bg);color:var(--teal-d);border-radius:20px;padding:4px 11px;font-weight:700;">'+escapeHtml(a.label)+' +'+d+'</span>';
       if(d<=-8) return '<span style="font-size:11px;background:rgba(0,0,0,0.05);color:var(--text2);border-radius:20px;padding:4px 11px;">'+escapeHtml(a.label)+' '+d+'</span>';
@@ -4291,7 +4339,7 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var hasFacts=(typeof S!=='undefined')&&S.sal&&S.busy;
     if(typeof S!=='undefined'&&(S.q2||[]).length) basis.push('求めるもの<b>「'+(S.q2||[]).map(escapeHtml).join('・')+'」</b>');
     document.getElementById('wbBasis').innerHTML = basis.length
-      ? '<span style="color:var(--teal-d);font-weight:700;font-size:10px;font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">この軸の導き方</span><br>'+basis.join('、')+' から導いています。'+(hasFacts?'下の比較レーダーには、あなたの年収帯・忙しさを反映済みです。':'下の「いまの仕事と、比べてみる」に答えると、さらにあなた仕様になります。')
+      ? '<span style="color:var(--teal-d);font-weight:700;font-size:10px;font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">この軸の導き方</span><br>'+basis.join('、')+' から導いています。時間・収入の軸は「求めるもの」で選んだときだけ高くなります（こだわりの強さを表すため）。'+(hasFacts?'':'下の「いまの仕事と、比べてみる」に答えると、さらにあなた仕様になります。')
       : '';
     document.getElementById('wbBasis').style.display = basis.length?'':'none';
     var blocks='';
@@ -4312,6 +4360,7 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var _sal=document.getElementById('wbSalary'); if(_sal){ _sal.innerHTML=SALARY.map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>';}).join(''); if(typeof S!=='undefined'&&S.sal) _sal.value=S.sal; }
     var _lc=document.getElementById('wbLackChips'); if(_lc) _lc.innerHTML=AX.filter(function(a){return a.k!=='time'&&a.k!=='econ';}).map(function(a){return '<span class="wb-lack" data-k="'+a.k+'" data-on="0" onclick="var v=this.getAttribute(\'data-on\')===\'1\';this.setAttribute(\'data-on\',v?\'0\':\'1\');this.style.background=v?\'\':\'var(--teal)\';this.style.color=v?\'\':\'#fff\';this.style.borderColor=v?\'var(--border)\':\'var(--teal)\';" style="cursor:pointer;font-size:12px;border:1px solid var(--border);border-radius:20px;padding:6px 12px;user-select:none;">'+a.label+'</span>';}).join('');
     var _cr=document.getElementById('wbCompareResult'); if(_cr) _cr.innerHTML='';
+    renderBusyChips();
     if(hasFacts){ try{ wbCompare(); }catch(e){} }
     try{ if(typeof SN_CARDS!=='undefined'&&SN_CARDS&&SN_CARDS.logId&&typeof patchCardLog==='function') patchCardLog({wb_view:true}); }catch(e){}
     goScreen('p-wb');
