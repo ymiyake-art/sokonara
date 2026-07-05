@@ -3305,8 +3305,8 @@ async function renderMeetBannerEditor(){
     <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;cursor:pointer;">
       <input type="checkbox" id="mb-active" ${v.active?'checked':''} style="width:16px;height:16px;cursor:pointer;"> バナーを表示する（ON）
     </label>
-    ${inp('mb-label','1行目（あおり）',v.label,'＼ 7月30日(木)19時〜開催 ／')}
-    ${inp('mb-title','2行目（イベント名）',v.title,'ソコナラMEET＠福岡・大名')}
+    ${inp('mb-label','1行目（あおり）',v.label||'＼ 7月30日(木)19時〜開催 ／')}
+    ${inp('mb-title','2行目（イベント名）',v.title||'ソコナラMEET＠福岡・大名')}
     ${inp('mb-cta','ボタン文言',v.cta||'参加する','参加する')}
     ${inp('mb-url','リンク先',v.url||'/meet/','/meet/')}
     <div style="font-size:11px;color:var(--text2);margin:10px 0 4px;">対象の経営層（未選択＝全記事に表示）</div>
@@ -3319,8 +3319,8 @@ async function renderMeetBannerEditor(){
 async function saveMeetBanner(btn){
   const value={
     active: document.getElementById('mb-active').checked,
-    label: document.getElementById('mb-label').value.trim(),
-    title: document.getElementById('mb-title').value.trim(),
+    label: document.getElementById('mb-label').value.trim()||'＼ 7月30日(木)19時〜開催 ／',
+    title: document.getElementById('mb-title').value.trim()||'ソコナラMEET＠福岡・大名',
     cta: document.getElementById('mb-cta').value.trim()||'参加する',
     url: document.getElementById('mb-url').value.trim()||'/meet/',
     companyIds: [...document.querySelectorAll('.mb-co:checked')].map(el=>el.value)

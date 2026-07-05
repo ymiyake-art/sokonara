@@ -1459,6 +1459,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div style="height:150px;flex-shrink:0;" aria-hidden="true"></div>
 
     <div class="cta-sticky" id="p1CtaSticky">
+      <!-- イベント告知ミニバナー（スティッキーバー上段。admin MEET運営のバナー設定と連動） -->
+      <div id="meetBannerMini" style="display:none;"></div>
       <div class="cta-sticky-text">
         <strong>この経営層、気になりましたか？</strong>
         <span style="display:block;font-size:11px;color:var(--text2);margin-top:2px;font-weight:400;">あなたの興味が経営層に届きます（応募・選考ではありません）</span>
@@ -2647,19 +2649,34 @@ let MEET_BANNER=null;
   }
 }catch(e){} })();
 function applyMeetBanner(){
-  const mb=document.getElementById('meetBanner'); if(!mb) return;
+  const mb=document.getElementById('meetBanner');
+  const mini=document.getElementById('meetBannerMini');
   const b=MEET_BANNER, cid=String(selectedCompanyId||'');
   const targets=(b&&b.companyIds||[]).map(String).filter(Boolean);
   const on=!!(b&&b.active&&cid&&(!targets.length||targets.includes(cid)));
-  if(!on){ mb.style.display='none'; return; }
+  if(!on){ if(mb) mb.style.display='none'; if(mini) mini.style.display='none'; return; }
+  // 空欄でも「謎のボタン」にならないよう既定文言で補完
+  const label=(b.label||'').trim()||'＼ イベント開催 ／';
+  const title=(b.title||'').trim()||'ソコナラMEET';
+  const cta=(b.cta||'').trim()||'参加する';
   const base=b.url||'/meet/';
   const url=base+(base.includes('?')?'&':'?')+'utm_source=app&utm_medium=article_banner&utm_campaign=lp_meet0730';
-  mb.innerHTML='<a href="'+escapeHtml(url)+'" target="_blank" rel="noopener" style="display:block;text-decoration:none;background:#fff;border:2px solid #d43a2a;border-radius:12px;padding:16px 18px;text-align:center;box-shadow:0 6px 18px rgba(212,58,42,0.14);">'
-    +'<div style="font-size:13px;font-weight:700;color:#d43a2a;">'+escapeHtml(b.label||'')+'</div>'
-    +'<div style="font-size:15px;font-weight:900;color:var(--navy);margin:4px 0 10px;">'+escapeHtml(b.title||'')+'</div>'
-    +'<div style="display:inline-block;background:#d43a2a;color:#fff;font-size:14px;font-weight:900;padding:10px 36px;border-radius:8px;">'+escapeHtml(b.cta||'参加する')+'</div>'
-    +'</a>';
-  mb.style.display='block';
+  if(mb){
+    mb.innerHTML='<a href="'+escapeHtml(url)+'" target="_blank" rel="noopener" style="display:block;text-decoration:none;background:#fff;border:2px solid #d43a2a;border-radius:12px;padding:16px 18px;text-align:center;box-shadow:0 6px 18px rgba(212,58,42,0.14);">'
+      +'<div style="font-size:13px;font-weight:700;color:#d43a2a;">'+escapeHtml(label)+'</div>'
+      +'<div style="font-size:15px;font-weight:900;color:var(--navy);margin:4px 0 10px;">'+escapeHtml(title)+'</div>'
+      +'<div style="display:inline-block;background:#d43a2a;color:#fff;font-size:14px;font-weight:900;padding:10px 36px;border-radius:8px;">'+escapeHtml(cta)+'</div>'
+      +'</a>';
+    mb.style.display='block';
+  }
+  // スティッキーバー上段のコンパクト版（記事読了前から見える導線）
+  if(mini){
+    mini.innerHTML='<a href="'+escapeHtml(url)+'" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;background:#d43a2a;color:#fff;padding:8px 12px;border-radius:8px;margin-bottom:8px;">'
+      +'<span style="font-size:11.5px;font-weight:700;line-height:1.4;">'+escapeHtml(label.replace(/[＼／\\\/]/g,'').trim())+'　'+escapeHtml(title)+'</span>'
+      +'<span style="flex-shrink:0;font-size:11.5px;font-weight:900;background:#fff;color:#d43a2a;padding:4px 12px;border-radius:14px;">'+escapeHtml(cta)+' →</span>'
+      +'</a>';
+    mini.style.display='block';
+  }
 }
 function renderP1FromCompany(){
   // カード経由：記事を開いた＝結果画面を経て記事到達。article_read(③)＋reached_result(②)をindex.html側で確実に記録
