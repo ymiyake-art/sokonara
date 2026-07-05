@@ -136,6 +136,10 @@ h1, h2, h3, h4,
 
 /* ===== VIEWS ===== */
 .view { display: none; min-height: 100vh; padding-top: calc(48px + env(safe-area-inset-top)); }
+/* イベントリボン表示時はヘッダー＋リボン分だけコンテンツを下げる */
+body.sn-ribbon-on .view { padding-top: calc(48px + 40px + env(safe-area-inset-top)); }
+body.sn-ribbon-on #project { padding-top: calc(48px + 40px + env(safe-area-inset-top)) !important; }
+#meetRibbon { position: fixed; left:0; right:0; top: calc(48px + env(safe-area-inset-top)); z-index: 290; }
 /* スクロール先が固定ヘッダーに隠れないようにオフセット */
 #companyListBody { scroll-margin-top: calc(64px + env(safe-area-inset-top)); }
 #articlesSection { scroll-margin-top: calc(56px + env(safe-area-inset-top)); }
@@ -1267,6 +1271,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <button class="mode-btn" id="mb-meet" onclick="window.open('/meet/','_blank','noopener')">7/30 MEET</button>
   <!-- 管理画面・リセットは admin.html から直接アクセス（公開ナビからは非表示） -->
 </div>
+
+<!-- グローバルなイベント告知リボン（admin MEET運営のバナー設定をONにすると全画面に出現・スマホでも常時見える導線） -->
+<a id="meetRibbon" href="/meet/" target="_blank" rel="noopener" style="display:none;"></a>
 
 <!-- ===== PROGRESS (user only) ===== -->
 <div class="progress-rail" id="progressRail" style="display:none">
@@ -2644,10 +2651,26 @@ let MEET_BANNER=null;
   if(typeof supabaseClient!=='undefined'&&supabaseClient){
     supabaseClient.from('site_settings').select('value').eq('key','meet_banner').then(r=>{
       const v=r&&r.data&&r.data[0]&&r.data[0].value;
-      if(v&&typeof v==='object'){ MEET_BANNER=v; applyMeetBanner(); }
+      if(v&&typeof v==='object'){ MEET_BANNER=v; applyMeetBanner(); applyMeetRibbon(); }
     });
   }
 }catch(e){} })();
+// グローバル告知リボン（ONなら全画面・全経営層で表示＝スマホでヘッダーの7/30 MEETに届かない問題への常設導線）
+function applyMeetRibbon(){
+  const el=document.getElementById('meetRibbon'); if(!el) return;
+  const b=MEET_BANNER;
+  if(!(b&&b.active)){ el.style.display='none'; document.body.classList.remove('sn-ribbon-on'); return; }
+  const label=(b.label||'').replace(/[＼／\\\/]/g,'').trim()||'イベント開催';
+  const title=(b.title||'').trim()||'ソコナラMEET';
+  const cta=(b.cta||'').trim()||'参加する';
+  const base=b.url||'/meet/';
+  el.href=base+(base.includes('?')?'&':'?')+'utm_source=app&utm_medium=global_ribbon&utm_campaign=lp_meet0730';
+  document.body.classList.add('sn-ribbon-on');
+  el.style.cssText='position:fixed;left:0;right:0;top:calc(48px + env(safe-area-inset-top));z-index:290;display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;background:linear-gradient(90deg,#d43a2a,#e8623a);color:#fff;padding:9px 14px;font-family:inherit;box-shadow:0 2px 8px rgba(212,58,42,0.25);';
+  el.innerHTML='<span style="font-size:13px;">🎪</span>'
+    +'<span style="font-size:12.5px;font-weight:700;line-height:1.35;">'+escapeHtml(label)+'　<b style="font-weight:900;">'+escapeHtml(title)+'</b></span>'
+    +'<span style="flex-shrink:0;font-size:12px;font-weight:900;background:#fff;color:#d43a2a;padding:4px 14px;border-radius:16px;">'+escapeHtml(cta)+' →</span>';
+}
 function applyMeetBanner(){
   const mb=document.getElementById('meetBanner');
   const mini=document.getElementById('meetBannerMini');
