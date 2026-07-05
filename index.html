@@ -140,6 +140,13 @@ h1, h2, h3, h4,
 body.sn-ribbon-on .view { padding-top: calc(48px + 40px + env(safe-area-inset-top)); }
 body.sn-ribbon-on #project { padding-top: calc(48px + 40px + env(safe-area-inset-top)) !important; }
 #meetRibbon { position: fixed; left:0; right:0; top: calc(48px + env(safe-area-inset-top)); z-index: 290; }
+/* イベント告知の共通アクセント（深紅グラデ＋わずかな透過＋立体感）。3導線で共通利用 */
+.ev-ribbon { background:linear-gradient(135deg, rgba(233,90,58,0.97), rgba(190,45,22,0.97)); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 4px 16px rgba(150,30,15,0.30); }
+.ev-card { background:#fff; border:1.5px solid rgba(212,58,42,0.30); box-shadow:0 10px 26px rgba(190,45,22,0.14); }
+.ev-btn { background:linear-gradient(135deg, #ef5f3d, #c0341a); box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 5px 14px rgba(176,40,20,0.38); }
+.ev-btn:active { transform: translateY(1px); }
+.ev-pill { background:rgba(255,255,255,0.96); color:#c0341a; box-shadow:0 2px 6px rgba(0,0,0,0.14); }
+.ev-title-accent { color:#c0341a; }
 /* スクロール先が固定ヘッダーに隠れないようにオフセット */
 #companyListBody { scroll-margin-top: calc(64px + env(safe-area-inset-top)); }
 #articlesSection { scroll-margin-top: calc(56px + env(safe-area-inset-top)); }
@@ -2666,10 +2673,11 @@ function applyMeetRibbon(){
   const base=b.url||'/meet/';
   el.href=base+(base.includes('?')?'&':'?')+'utm_source=app&utm_medium=global_ribbon&utm_campaign=lp_meet0730';
   document.body.classList.add('sn-ribbon-on');
-  el.style.cssText='position:fixed;left:0;right:0;top:calc(48px + env(safe-area-inset-top));z-index:290;display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;background:linear-gradient(90deg,#d43a2a,#e8623a);color:#fff;padding:9px 14px;font-family:inherit;box-shadow:0 2px 8px rgba(212,58,42,0.25);';
+  el.className='ev-ribbon';
+  el.style.cssText='position:fixed;left:0;right:0;top:calc(48px + env(safe-area-inset-top));z-index:290;display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;color:#fff;padding:9px 14px;font-family:inherit;';
   el.innerHTML='<span style="font-size:13px;">🎪</span>'
-    +'<span style="font-size:12.5px;font-weight:700;line-height:1.35;">'+escapeHtml(label)+'　<b style="font-weight:900;">'+escapeHtml(title)+'</b></span>'
-    +'<span style="flex-shrink:0;font-size:12px;font-weight:900;background:#fff;color:#d43a2a;padding:4px 14px;border-radius:16px;">'+escapeHtml(cta)+' →</span>';
+    +'<span style="font-size:12.5px;font-weight:700;line-height:1.35;text-shadow:0 1px 2px rgba(120,20,10,0.35);">'+escapeHtml(label)+'　<b style="font-weight:900;">'+escapeHtml(title)+'</b></span>'
+    +'<span class="ev-pill" style="flex-shrink:0;font-size:12px;font-weight:900;padding:4px 14px;border-radius:16px;">'+escapeHtml(cta)+' →</span>';
 }
 function applyMeetBanner(){
   const mb=document.getElementById('meetBanner');
@@ -2685,18 +2693,18 @@ function applyMeetBanner(){
   const base=b.url||'/meet/';
   const url=base+(base.includes('?')?'&':'?')+'utm_source=app&utm_medium=article_banner&utm_campaign=lp_meet0730';
   if(mb){
-    mb.innerHTML='<a href="'+escapeHtml(url)+'" target="_blank" rel="noopener" style="display:block;text-decoration:none;background:#fff;border:2px solid #d43a2a;border-radius:12px;padding:16px 18px;text-align:center;box-shadow:0 6px 18px rgba(212,58,42,0.14);">'
-      +'<div style="font-size:13px;font-weight:700;color:#d43a2a;">'+escapeHtml(label)+'</div>'
-      +'<div style="font-size:15px;font-weight:900;color:var(--navy);margin:4px 0 10px;">'+escapeHtml(title)+'</div>'
-      +'<div style="display:inline-block;background:#d43a2a;color:#fff;font-size:14px;font-weight:900;padding:10px 36px;border-radius:8px;">'+escapeHtml(cta)+'</div>'
+    mb.innerHTML='<a class="ev-card" href="'+escapeHtml(url)+'" target="_blank" rel="noopener" style="display:block;text-decoration:none;border-radius:14px;padding:16px 18px;text-align:center;">'
+      +'<div style="font-size:13px;font-weight:700;letter-spacing:.02em;" class="ev-title-accent">'+escapeHtml(label)+'</div>'
+      +'<div style="font-size:15px;font-weight:900;color:var(--navy);margin:4px 0 12px;">'+escapeHtml(title)+'</div>'
+      +'<div class="ev-btn" style="display:inline-block;color:#fff;font-size:14px;font-weight:900;padding:11px 40px;border-radius:10px;text-shadow:0 1px 2px rgba(120,20,10,0.35);">'+escapeHtml(cta)+'</div>'
       +'</a>';
     mb.style.display='block';
   }
   // スティッキーバー上段のコンパクト版（記事読了前から見える導線）
   if(mini){
-    mini.innerHTML='<a href="'+escapeHtml(url)+'" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;background:#d43a2a;color:#fff;padding:8px 12px;border-radius:8px;margin-bottom:8px;">'
-      +'<span style="font-size:11.5px;font-weight:700;line-height:1.4;">'+escapeHtml(label.replace(/[＼／\\\/]/g,'').trim())+'　'+escapeHtml(title)+'</span>'
-      +'<span style="flex-shrink:0;font-size:11.5px;font-weight:900;background:#fff;color:#d43a2a;padding:4px 12px;border-radius:14px;">'+escapeHtml(cta)+' →</span>'
+    mini.innerHTML='<a class="ev-ribbon" href="'+escapeHtml(url)+'" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;color:#fff;padding:8px 12px;border-radius:9px;margin-bottom:8px;">'
+      +'<span style="font-size:11.5px;font-weight:700;line-height:1.4;text-shadow:0 1px 2px rgba(120,20,10,0.35);">'+escapeHtml(label.replace(/[＼／\\\/]/g,'').trim())+'　'+escapeHtml(title)+'</span>'
+      +'<span class="ev-pill" style="flex-shrink:0;font-size:11.5px;font-weight:900;padding:4px 12px;border-radius:14px;">'+escapeHtml(cta)+' →</span>'
       +'</a>';
     mini.style.display='block';
   }
