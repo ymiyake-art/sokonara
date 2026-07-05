@@ -33,6 +33,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
     html{scroll-behavior:smooth;}
     body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.9;-webkit-text-size-adjust:100%;padding-bottom:78px;overflow-x:hidden;}
+    /* 日本語の自然な位置で折り返す（助詞や単語の途中で切れる「変な改行」を抑制）。auto-phrase非対応環境でも無害 */
+    .h2,.lead,.hero-h1,.hero-lead,.hero-kick,.spk-intro,.spk h3,.spk p,.voice .q,.voice .body,.aud li,.facts .v,.why .it h4,.why .it p,.faq .q,.faq .a .in,.closing h2,.closing .sub,.tl h4,.tl p,.scene-cap,.scene-row figcaption{word-break:auto-phrase;line-break:strict;overflow-wrap:break-word;}
     .wrap{max-width:680px;margin:0 auto;padding:0 22px;}
     .sec{padding:58px 0;}
     a{color:inherit;}
@@ -70,7 +72,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     .datebox{display:inline-flex;align-items:stretch;border:1px solid rgba(255,255,255,0.32);border-radius:14px;overflow:hidden;margin-bottom:26px;backdrop-filter:blur(4px);background:rgba(255,255,255,0.06);}
     .datebox .d{padding:12px 18px;text-align:center;border-right:1px solid rgba(255,255,255,0.22);}
     .datebox .d .big{font-family:var(--mincho);font-weight:800;font-size:32px;line-height:1;color:#fff;}
-    .datebox .d .dow{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:#9fe7dc;margin-top:4px;}
+    .datebox .d .dow{font-family:var(--mono);font-size:15px;font-weight:700;letter-spacing:.14em;color:#9fe7dc;margin-top:5px;}
     .datebox .meta{padding:12px 18px;display:flex;flex-direction:column;justify-content:center;gap:3px;font-size:12.5px;}
     .datebox .meta b{font-weight:700;}
     .datebox .meta .free{color:#5fd3c2;font-weight:700;}

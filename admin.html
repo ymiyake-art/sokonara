@@ -3275,6 +3275,12 @@ async function renderMeetAdmin(){
           <button onclick="computeGroupsUI()" style="padding:8px 16px;background:var(--navy);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🧮 自動計算</button>
           <button id="grpSaveBtn" onclick="saveGroupsUI(this)" style="padding:8px 16px;background:var(--teal);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:none;">💾 保存して各参加者に反映</button>
         </div>
+        <div style="border-top:1px dashed var(--border);padding-top:10px;margin-bottom:10px;">
+          <span style="font-size:11px;color:var(--text3)">🧪 テスト用：</span>
+          <select id="grpDummyN" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:11px;"><option>12</option><option selected>24</option><option>40</option></select>
+          <button onclick="grpDummyPreview()" style="padding:6px 12px;background:#fff;color:var(--text2);border:1px solid var(--border);border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit;">ダミーで班分けを試す（保存なし）</button>
+          <span style="font-size:10px;color:var(--text3)">実データを使わず、仮の参加者で分布だけ確認できます。</span>
+        </div>
         <div id="grpPreview"></div>
       </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
@@ -3375,21 +3381,42 @@ function computeGroupsUI(){
   if(!tables.length){ toast('テーブル（経営層）がありません'); return; }
   _groupResult=computeGroups(rows, tables, R);
   document.getElementById('grpSaveBtn').style.display='inline-block';
-  const g=_groupResult;
-  // 卓×巡の人数分布
+  renderGroupPreview(false);
+}
+// テスト用：ダミー参加者で班分け分布だけ確認（保存はしない＝実データ・DBに触れない）
+function grpDummyPreview(){
+  const tables=meetRoster();
+  if(!tables.length){ toast('テーブル（経営層）がありません。企業を登録してください'); return; }
+  const N=parseInt(document.getElementById('grpDummyN').value)||24;
+  const R=parseInt(document.getElementById('grpRotations').value)||3;
+  const dummy=[];
+  for(let i=0;i<N;i++){
+    const k=1+Math.floor(Math.random()*Math.min(3,tables.length));
+    const ch=[]; while(ch.length<k){ const t=tables[Math.floor(Math.random()*tables.length)].id; if(!ch.includes(t))ch.push(t); }
+    dummy.push({id:'meet_dummy_'+i, name:'テスト'+(i+1), checks:ch});
+  }
+  _groupResult=computeGroups(dummy, tables, R);
+  document.getElementById('grpSaveBtn').style.display='none'; // ダミーは保存不可
+  renderGroupPreview(true);
+}
+function renderGroupPreview(isDummy){
+  const g=_groupResult; if(!g) return;
   const dist='<table style="border-collapse:collapse;font-size:11px;margin-top:8px;"><thead><tr><th style="padding:4px 8px;text-align:left;color:var(--text3)">テーブル</th>'
     +Array.from({length:g.R},(_,r)=>`<th style="padding:4px 8px;color:var(--text3)">${r+1}巡</th>`).join('')+'</tr></thead><tbody>'
     +g.tables.map(t=>`<tr><td style="padding:4px 8px;"><b>${t.no}</b> ${escA(t.ceo||t.name)}</td>`
       +Array.from({length:g.R},(_,r)=>`<td style="padding:4px 8px;text-align:center;">${g.counts[r][t.id]||0}</td>`).join('')+'</tr>').join('')+'</tbody></table>';
-  // 希望が卓に無く割り当て不可だった件数
   let unmet=0; Object.values(g.out).forEach(o=>{ const got=new Set(o.sched.map(s=>s.no)); o.desired.forEach(id=>{ const t=g.tables.find(x=>x.id===id); if(t&&!got.has(t.no)) unmet++; }); });
+  const sampleNames=Object.values(g.out).slice(0,4);
+  const sample=sampleNames.map(o=>`<div style="font-size:11px;color:var(--text2);margin-top:3px;"><b style="color:var(--navy)">${escA(o.name)}</b>：${o.sched.map(s=>s.no+'番('+escA(s.ceo||s.name)+')').join(' → ')}</div>`).join('');
   document.getElementById('grpPreview').innerHTML=
-    `<div style="font-size:12px;color:var(--navy);font-weight:700;margin-bottom:4px;">プレビュー：${Object.keys(g.out).length}名を${g.tables.length}卓×${g.R}巡に配置${unmet?`（⚠️希望未充足 ${unmet}件＝希望が同卓集中）`:'（全員の希望を充足）'}</div>`
+    `<div style="font-size:12px;color:var(--navy);font-weight:700;margin-bottom:4px;">${isDummy?'🧪 ダミー結果：':'プレビュー：'}${Object.keys(g.out).length}名を${g.tables.length}卓×${g.R}巡に配置${unmet?`（⚠️希望未充足 ${unmet}件）`:'（全員の希望を充足）'}</div>`
     +dist
-    +`<div style="font-size:11px;color:var(--text3);margin-top:8px;">この内容で問題なければ「保存して各参加者に反映」を押してください。</div>`;
+    +`<div style="margin-top:10px;font-size:11px;color:var(--text3)">個人スケジュール例：</div>`+sample
+    +(isDummy?`<div style="font-size:11px;color:var(--text3);margin-top:8px;">※ ダミーデータのため保存はされません。実データは上の「自動計算」から。</div>`:`<div style="font-size:11px;color:var(--text3);margin-top:8px;">この内容で問題なければ「保存して各参加者に反映」を押してください。</div>`);
 }
 async function saveGroupsUI(btn){
   if(!_groupResult){ toast('先に自動計算してください'); return; }
+  if(Object.keys(_groupResult.out).some(id=>id.startsWith('meet_dummy_'))){ toast('ダミー結果は保存できません。実データで「自動計算」してください'); return; }
   const entries=Object.entries(_groupResult.out);
   btn.disabled=true; let ok=0, ng=0;
   for(const [id,o] of entries){
