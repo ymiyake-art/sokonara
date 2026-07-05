@@ -3249,6 +3249,11 @@ async function renderMeetAdmin(){
         <span id="mlpStatus" style="font-size:11px;color:var(--text3);margin-left:10px;"></span>
         <div id="mlpForm" style="display:none;margin-top:14px;"></div>
       </div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px;">📣 記事内イベント告知バナー</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.7;">対象経営層の記事末尾に申込バナーを表示。<b>イベントが終わったらONを外して保存</b>すれば全記事から消えます（コード変更不要）。</div>
+        <div id="mbEditor" style="font-size:12px;color:var(--text3);">読み込み中…</div>
+      </div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
         ${[['登録者',nAll],['チェックあり',nCk],['アンケ回答',nSv],['共有同意',nCs]].map(([l,n])=>`<div style="flex:1;min-width:120px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px;"><div style="font-size:11px;color:var(--text2)">${l}</div><div style="font-size:22px;font-weight:700;color:var(--navy)">${n}</div></div>`).join('')}
       </div>
@@ -3285,6 +3290,46 @@ async function renderMeetAdmin(){
         </table>
       </div>
     </div>`;
+  renderMeetBannerEditor();
+}
+
+// ===== 記事内イベント告知バナー（site_settings.meet_banner → アプリが記事末尾に表示）=====
+async function renderMeetBannerEditor(){
+  const box=document.getElementById('mbEditor'); if(!box) return;
+  let v={};
+  try{ const {data}=await supabaseClient.from('site_settings').select('value').eq('key','meet_banner'); v=(data&&data[0]&&data[0].value)||{}; }catch(e){}
+  const cos=loadCompanies();
+  const ids=(v.companyIds||[]).map(String);
+  const inp=(id,label,val,ph)=>`<div style="margin-bottom:8px;"><div style="font-size:11px;color:var(--text2);margin-bottom:2px;">${label}</div><input type="text" id="${id}" value="${escA(val||'')}" placeholder="${escA(ph||'')}" style="width:100%;max-width:420px;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:12.5px;font-family:inherit;"></div>`;
+  box.innerHTML=`
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;cursor:pointer;">
+      <input type="checkbox" id="mb-active" ${v.active?'checked':''} style="width:16px;height:16px;cursor:pointer;"> バナーを表示する（ON）
+    </label>
+    ${inp('mb-label','1行目（あおり）',v.label,'＼ 7月30日(木)19時〜開催 ／')}
+    ${inp('mb-title','2行目（イベント名）',v.title,'ソコナラMEET＠福岡・大名')}
+    ${inp('mb-cta','ボタン文言',v.cta||'参加する','参加する')}
+    ${inp('mb-url','リンク先',v.url||'/meet/','/meet/')}
+    <div style="font-size:11px;color:var(--text2);margin:10px 0 4px;">対象の経営層（未選択＝全記事に表示）</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:12px;">
+      ${cos.map(c=>`<label style="font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" class="mb-co" value="${escA(String(c.id))}" ${ids.includes(String(c.id))?'checked':''}> ${escA(c.ceo||c.name||'')}</label>`).join('')}
+    </div>
+    <button onclick="saveMeetBanner(this)" style="padding:9px 18px;background:var(--teal);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">💾 バナー設定を保存</button>
+    <span style="font-size:11px;color:var(--text3);margin-left:8px;">保存後、アプリは再読み込みで反映</span>`;
+}
+async function saveMeetBanner(btn){
+  const value={
+    active: document.getElementById('mb-active').checked,
+    label: document.getElementById('mb-label').value.trim(),
+    title: document.getElementById('mb-title').value.trim(),
+    cta: document.getElementById('mb-cta').value.trim()||'参加する',
+    url: document.getElementById('mb-url').value.trim()||'/meet/',
+    companyIds: [...document.querySelectorAll('.mb-co:checked')].map(el=>el.value)
+  };
+  btn.disabled=true; btn.textContent='保存中…';
+  const r=await adminWrite('site_settings','upsert',{rows:[{key:'meet_banner',value,updated_at:new Date().toISOString()}]});
+  btn.disabled=false; btn.textContent='💾 バナー設定を保存';
+  if(!r.ok){ toast('保存失敗: '+String(r.error||r.status).slice(0,60)); return; }
+  toast(value.active?'バナーをONで保存しました':'バナーをOFFにしました（全記事から非表示）');
 }
 
 // ===== 班分け（自動割り当て）=====

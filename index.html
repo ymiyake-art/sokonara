@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KW8RTRQB');</script>
+<!-- End Google Tag Manager -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ソコナラ</title>
@@ -1208,6 +1215,10 @@ h1, h2, h3, h4,
 <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KW8RTRQB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 <div id="topPage" style="display:none;min-height:100vh;background-color:#1C2A54;background-image:linear-gradient(rgba(28,42,84,0.55),rgba(28,42,84,0.80) 52%,rgba(28,42,84,0.95) 100%),url('/images/TOP.jpg');background-size:cover;background-position:center top;background-repeat:no-repeat;align-items:flex-end;justify-content:center;padding:40px;">
   <div style="max-width:420px;width:100%;text-align:center;">
     <img src="https://raw.githubusercontent.com/ymiyake-art/sokonara/main/images/logo-02.png" alt="ソコナラ" style="height:48px;width:auto;display:block;margin:0 auto 24px;">
@@ -1421,6 +1432,9 @@ h1, h2, h3, h4,
         <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:10px;" id="wantedTitle">こんな人と出会いたい</div>
         <div id="wantedText" style="font-size:14px;line-height:1.9;color:var(--text);white-space:pre-line;"></div>
       </div>
+
+      <!-- イベント告知バナー（admin「MEET運営」からON/OFF・文言・対象経営層を操作＝site_settings.meet_banner） -->
+      <div id="meetBanner" style="display:none;margin-top:26px;"></div>
     </div>
 
     <!-- 共感ボタン → 2段階で「話を聞いてみる」へ -->
@@ -2622,10 +2636,36 @@ function renderHeroLeaders(){
   }).join('');
 }
 
+// 記事内イベント告知バナー（admin「MEET運営」で ON/OFF・文言・対象経営層を編集＝site_settings.meet_banner）
+let MEET_BANNER=null;
+(function loadMeetBanner(){ try{
+  if(typeof supabaseClient!=='undefined'&&supabaseClient){
+    supabaseClient.from('site_settings').select('value').eq('key','meet_banner').then(r=>{
+      const v=r&&r.data&&r.data[0]&&r.data[0].value;
+      if(v&&typeof v==='object'){ MEET_BANNER=v; applyMeetBanner(); }
+    });
+  }
+}catch(e){} })();
+function applyMeetBanner(){
+  const mb=document.getElementById('meetBanner'); if(!mb) return;
+  const b=MEET_BANNER, cid=String(selectedCompanyId||'');
+  const targets=(b&&b.companyIds||[]).map(String).filter(Boolean);
+  const on=!!(b&&b.active&&cid&&(!targets.length||targets.includes(cid)));
+  if(!on){ mb.style.display='none'; return; }
+  const base=b.url||'/meet/';
+  const url=base+(base.includes('?')?'&':'?')+'utm_source=app&utm_medium=article_banner&utm_campaign=lp_meet0730';
+  mb.innerHTML='<a href="'+escapeHtml(url)+'" target="_blank" rel="noopener" style="display:block;text-decoration:none;background:#fff;border:2px solid #d43a2a;border-radius:12px;padding:16px 18px;text-align:center;box-shadow:0 6px 18px rgba(212,58,42,0.14);">'
+    +'<div style="font-size:13px;font-weight:700;color:#d43a2a;">'+escapeHtml(b.label||'')+'</div>'
+    +'<div style="font-size:15px;font-weight:900;color:var(--navy);margin:4px 0 10px;">'+escapeHtml(b.title||'')+'</div>'
+    +'<div style="display:inline-block;background:#d43a2a;color:#fff;font-size:14px;font-weight:900;padding:10px 36px;border-radius:8px;">'+escapeHtml(b.cta||'参加する')+'</div>'
+    +'</a>';
+  mb.style.display='block';
+}
 function renderP1FromCompany(){
   // カード経由：記事を開いた＝結果画面を経て記事到達。article_read(③)＋reached_result(②)をindex.html側で確実に記録
   // （pf遷移時の単発PATCHは速いタップで中断され得るため、遷移後の安定環境で押さえる）
   try{ if(SN_CARDS && SN_CARDS.logId) patchCardLog({ article_read:true, reached_result:true }); }catch(e){}
+  try{ applyMeetBanner(); }catch(e){}
   const list = loadCompanies();
   const co = selectedCompanyId
     ? list.find(c=>String(c.id||'')===String(selectedCompanyId)) || null
@@ -3880,7 +3920,10 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(async ()=>{
     if(_dc && _dc.ts && (Date.now()-_dc.ts)<86400000 && !(S.q2||[]).length && !S.fb){
       S.q1=_dc.q1||''; S.q2=_dc.q2||[]; S.about=_dc.about||[]; S.q3=_dc.q3||''; S.free=_dc.free||'';
       S.moya=_dc.moya||[]; S.sal=_dc.sal||''; S.busy=_dc.busy||''; S.fb=_dc.fb||null;
-      if(!selectedCompanyId && _dc.companyId) selectedCompanyId=_dc.companyId;
+      // ⚠️URLで経営層が指定されている時は復元しない（loadPrimaryCompanyはselectedCompanyIdを?cidより優先するため、
+      //   復元すると「pfで別の人を選び直したのに前の人の記事が開く」リグレッションになる＝2026-07-05実害）
+      const _uq=new URLSearchParams(window.location.search);
+      if(!selectedCompanyId && _dc.companyId && !_uq.get('cid') && !_uq.get('company')) selectedCompanyId=_dc.companyId;
     }
   }catch(e){}
 
