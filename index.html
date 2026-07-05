@@ -2894,8 +2894,9 @@ window.addEventListener('scroll', updateRead);
 
 // ===== SHARE URL =====
 function copyArticleUrl() {
-  const url = 'https://app.sokonara.co.jp/?cid=' + encodeURIComponent(selectedCompanyId || '');
-  navigator.clipboard.writeText(url).then(() => toast('URLをコピーしました')).catch(() => {
+  // 共有ページ(/s)経由＝X/LINEで経営層の顔＋キャッチのOGカードが展開される（人間は即アプリへリダイレクト）
+  const url = 'https://app.sokonara.co.jp/s?cid=' + encodeURIComponent(selectedCompanyId || '');
+  navigator.clipboard.writeText(url).then(() => toast('シェア用URLをコピーしました')).catch(() => {
     prompt('URLをコピーしてください', url);
   });
 }
@@ -4148,8 +4149,14 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var t=axisType(userWeights(getCo()));
     return '私の仕事の軸は『'+t+'』タイプでした。年収や知名度だけが、キャリアの正解じゃない。 #ソコナラ';
   }
-  window.wbShareX=function(){ window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(shareText())+'&url='+encodeURIComponent('https://app.sokonara.co.jp/'),'_blank','noopener'); };
-  window.wbShareLine=function(){ window.open('https://line.me/R/share?text='+encodeURIComponent(shareText()+' https://app.sokonara.co.jp/'),'_blank','noopener'); };
+  // 共有URL(/s)＝動的OGP付き。Xに貼ると自分のレーダー＋タイプ名のカードが展開される
+  function shareUrl(){
+    var w=userWeights(getCo());
+    var d=['meaning','agency','people','local','time','econ'].map(function(k){return Math.round(w[k]);}).join('.');
+    return 'https://app.sokonara.co.jp/s?d='+d+'&t='+encodeURIComponent(axisType(w));
+  }
+  window.wbShareX=function(){ window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(shareText())+'&url='+encodeURIComponent(shareUrl()),'_blank','noopener'); };
+  window.wbShareLine=function(){ window.open('https://line.me/R/share?text='+encodeURIComponent(shareText()+' '+shareUrl()),'_blank','noopener'); };
   // 詳細レポート直前の自由記述（Q4から移設＝「書く→すぐAIが読む」の隣接）
   window.wbFreeInput=function(el){ if(typeof S!=='undefined') S.free=el.value; };
   // 比較の前提（年収帯・忙しさ）をその場で変更→即再計算（「Q3の回答」と言われても覚えていない、への対応）

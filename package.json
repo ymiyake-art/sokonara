@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "comment": "静的サイト＋Edge Functions構成。dependenciesは/api/og.js（動的OG画像生成）専用。buildスクリプトは置かない（Vercelの静的配信を維持）",
+  "dependencies": {
+    "@vercel/og": "^0.6.5"
+  }
+}
