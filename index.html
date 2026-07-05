@@ -4278,13 +4278,13 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var salEl=document.getElementById('wbSalary');
     var salCode=(salEl&&salEl.value)||((typeof S!=='undefined'&&S.sal)||'');
     var salEcon=SAL_ECON[salCode]; if(salEcon==null) salEcon=55;
-    // 将来（共鳴後の想定）は事実ベース（年収帯・忙しさ＋中立66）から算出＝固定。
-    // 「足りない」チップは“いまの線”だけを下げる（両方動くと意味が読めない、というFBへの対応）。
-    var base={}; AX.forEach(function(a){ base[a.k]=66; }); base.econ=salEcon;
-    if(typeof S!=='undefined' && S.busy && BUSY_TIME[S.busy]!=null) base.time=BUSY_TIME[S.busy];
-    var fut=projectWB(base,comp);
+    // ★共鳴後（未来線）＝この環境が提供する6軸そのもの（＝comp）。あなたの現状を混ぜない。
+    //   → 年収帯・忙しさ・足りないチップを変えても未来線は動かず、いまの線だけが動く（両方動く不具合の根治）。
+    var fut={}; AX.forEach(function(a){ fut[a.k]=comp[a.k]; });
+    // いまの仕事（現状線）＝あなたの事実：econ=年収帯・time=忙しさ・価値4軸=中立66（足りないと選べば35）。
     var lack={}; document.querySelectorAll('#wbLackChips .wb-lack[data-on="1"]').forEach(function(el){ lack[el.getAttribute('data-k')]=1; });
-    var cur={}; AX.forEach(function(a){ cur[a.k]=base[a.k]; });
+    var cur={}; AX.forEach(function(a){ cur[a.k]=66; }); cur.econ=salEcon;
+    if(typeof S!=='undefined' && S.busy && BUSY_TIME[S.busy]!=null) cur.time=BUSY_TIME[S.busy];
     ['meaning','agency','people','local'].forEach(function(k){ if(lack[k]) cur[k]=35; });
     var totCur=wavg(cur,weight), totFut=wavg(fut,weight), delta=totFut-totCur;
     // 比較レーダーは結果ボックス内に描画（上段の「あなたの軸」レーダーは置き換えない＝重心と比較を同時に見られる）
