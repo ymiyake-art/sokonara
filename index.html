@@ -4240,15 +4240,29 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
   }
   // Q2（求めるもの）の選択肢→軸マッピング。設問が軸に直接効く配線（+12。モヤモヤ+22とQ2で最大+34）
   var Q2_AX={'社会や誰かの役に立つ実感':'meaning','自分で決めて動ける裁量':'agency','一緒に熱くなれる仲間':'people','地元・地域とのつながり':'local','自分の時間や暮らしのゆとり':'time','納得できる収入':'econ'};
-  // Q1（刺さった言葉）→軸マッピング。企業のq1配列は[Why,Who,What,Life]の順（Notion必須フォーマット）。
-  // 「記事のそこに共鳴した＝そこを求めている」＝共鳴を求める軸に加算（+10）。
-  // Lifeは生き方への共感＝意味軸へ。時間・経済には効かせない（「時間・収入はQ2で選んだ時だけ」の透明性ルールを維持）。
-  var Q1_AX_BY_INDEX=['meaning','people','agency','meaning'];
+  // Q1（刺さった言葉）→軸。①企業がq1axで軸を明示していればそれ ②なければ文言のキーワードから推定。
+  // ＝スロット位置(Why/Who/What/Life)の決め打ちをやめ、「刺さった“中身”」と軸を一致させる（順序・スロットに非依存）。
+  // time/econは対象外＝Q2で選んだときだけ高い、の透明性ルールを維持。
+  var Q1_KW={
+    meaning:['意味','使命','貢献','理念','志','社会','世界','役に立','誇り','自慢'],
+    agency:['裁量','挑戦','新し','立ち上げ','変革','事業開発','自分で決','任せ','冒険','進化','革新','ワクワク','前へ','成長','変え'],
+    people:['仲間','チーム','一緒','共に','右腕','対話','家族','人と'],
+    local:['地域','地元','まち','ローカル','地方','故郷','糸島']
+  };
+  function q1KeywordAxis(text){
+    if(!text) return null; var best=null,bs=0;
+    ['meaning','agency','people','local'].forEach(function(ax){
+      var s=0; Q1_KW[ax].forEach(function(k){ if(text.indexOf(k)>=0) s++; });
+      if(s>bs){ bs=s; best=ax; }
+    });
+    return best;
+  }
   function q1Axis(co){
     try{
       if(typeof S==='undefined'||!S.q1||!co||!Array.isArray(co.q1)) return null;
-      var i=co.q1.indexOf(S.q1); if(i<0||i>3) return null;
-      return Q1_AX_BY_INDEX[i];
+      var i=co.q1.indexOf(S.q1);
+      if(i>=0 && Array.isArray(co.q1ax) && co.q1ax[i]) return co.q1ax[i]; // ①企業が明示した軸を最優先
+      return q1KeywordAxis(S.q1); // ②無ければ文言から推定
     }catch(e){ return null; }
   }
   function userWeights(co){

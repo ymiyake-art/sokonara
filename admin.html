@@ -2193,7 +2193,7 @@ function toCompanyRow(c){
     id:c.id,name:c.name,ceo:c.ceo,type:c.type,plan:c.plan,articleType:c.articleType,
     photoUrl:c.photoUrl||'',heroUrl:c.heroUrl||'',
     industry:c.industry||'',employeeSize:c.employeeSize||'',companyIntro:c.companyIntro||'',
-    tags:c.tags||[],title:c.title||'',quote:c.quote||'',body:c.body||'',q1:c.q1||[],fee:c.fee||'',
+    tags:c.tags||[],title:c.title||'',quote:c.quote||'',body:c.body||'',q1:c.q1||[],q1ax:Array.isArray(c.q1ax)?c.q1ax:[],fee:c.fee||'',
     catchphrase:c.catchphrase||'',cc_what:c.cc_what||'',cc_value:c.cc_value||'',cc_life:c.cc_life||'',cardLabel:c.cardLabel||'',wantedProfile:c.wantedProfile||'',summaryComment:c.summaryComment||'',
     btags:Array.isArray(c.btags)?c.btags:[],rtags:Array.isArray(c.rtags)?c.rtags:[],wb:(c.wb&&typeof c.wb==='object')?c.wb:{},
     sort:(c.sort==null||c.sort==='')?null:(parseInt(c.sort)||null),
@@ -2218,8 +2218,8 @@ async function saveCompanies(arr){
   const rows = companiesCache.map(toCompanyRow);
   // service_role API経由で保存（anon書込はDB側で禁止）
   let r=await adminWrite('companies','upsert',{rows});
-  if(!r.ok && r.error && /catchphrase|cardLabel|card_label|wantedProfile|summaryComment|cc_what|cc_value|cc_life|btags|rtags|wb|sort|pf_weight|column/.test(r.error)){
-    const minRows = rows.map(rw=>{ const {catchphrase,cardLabel,heroUrl,wantedProfile,summaryComment,cc_what,cc_value,cc_life,btags,rtags,wb,sort,pf_weight,...rest}=rw; return rest; });
+  if(!r.ok && r.error && /catchphrase|cardLabel|card_label|wantedProfile|summaryComment|cc_what|cc_value|cc_life|btags|rtags|wb|sort|pf_weight|q1ax|column/.test(r.error)){
+    const minRows = rows.map(rw=>{ const {catchphrase,cardLabel,heroUrl,wantedProfile,summaryComment,cc_what,cc_value,cc_life,btags,rtags,wb,sort,pf_weight,q1ax,...rest}=rw; return rest; });
     const r2=await adminWrite('companies','upsert',{rows:minRows});
     if(!r2.ok){ toast('⚠️ DB保存失敗。SQL Editorで supabase_setup.sql を実行してください。'); return false; }
     else { toast('⚠️ 一部カラム未追加のため除外して保存。SQL Editorでカラム追加を推奨。'); return false; }
@@ -3761,7 +3761,7 @@ function renderArticleEditor(){
           </div>
           <div>
             <div style="margin-bottom:5px">
-              <label style="font-size:11px;color:var(--text2)">Q1 選択肢（1行ずつ、最大4つ）<span style="color:var(--text3)"> ※読者が記事の中で選ぶ選択肢</span></label>
+              <label style="font-size:11px;color:var(--text2)">Q1 選択肢（1行ずつ、最大4つ）<span style="color:var(--text3)"> ※読者が記事の中で選ぶ選択肢。各行「軸：選択肢」で軸を指定（軸＝意味/裁量/人/地域）。軸を省くと選択肢の文言から自動推定。刺さった選択肢は求める軸に+9されます</span></label>
             </div>
             <textarea id="art-q1" rows="4" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;resize:vertical"></textarea>
           </div>
@@ -3970,6 +3970,7 @@ function onArtCompanyChange(id){
         summaryComment: co.summaryComment||'',
         wantedProfile: co.wantedProfile||'',
         q1: co.q1||[],
+        q1ax: co.q1ax||[],
         cardLabel: co.cardLabel||''
       });
       toast('既存のデータを読み込みました');
@@ -3996,11 +3997,18 @@ function parseNotionPaste(){
   }
 }
 
+// Q1選択肢→軸。ラベル（意味/裁量/人/地域/時間/経済）→軸キー。無ければ文言のキーワードから推定。
+// ＝スロット位置(Why/Who/What/Life)の決め打ちをやめ「刺さった中身」と軸を一致させる。Why/Who/What/Lifeは軸ラベルとして扱わない（''→文言推定へ）。
+const AXIS_JP={meaning:'意味',agency:'裁量',people:'人',local:'地域',time:'時間',econ:'経済'};
+const _AX_LABEL={'意味':'meaning','使命':'meaning','裁量':'agency','挑戦':'agency','人':'people','仲間':'people','地域':'local','つながり':'local','時間':'time','ゆとり':'time','経済':'econ','年収':'econ','収入':'econ'};
+function labelToAxis(label){ if(!label) return ''; const s=String(label).trim(); return _AX_LABEL[s]||''; }
+const _Q1_KW={meaning:['意味','使命','貢献','理念','志','社会','世界','役に立','誇り','自慢'],agency:['裁量','挑戦','新し','立ち上げ','変革','事業開発','自分で決','任せ','冒険','進化','革新','ワクワク','前へ','成長','変え'],people:['仲間','チーム','一緒','共に','右腕','対話','家族','人と'],local:['地域','地元','まち','ローカル','地方','故郷','糸島']};
+function q1KeywordAxis(text){ if(!text) return ''; let best='',bs=0; ['meaning','agency','people','local'].forEach(ax=>{ let s=0; _Q1_KW[ax].forEach(k=>{ if(text.indexOf(k)>=0) s++; }); if(s>bs){ bs=s; best=ax; } }); return best; }
 function parseNotion(text){
   const lines = text.split('\n');
   let title = '';
   const sections = [];
-  const meta = { tags:[], quote:'', catchphrase:'', q1:[], companyIntro:'', summaryComment:'', wantedProfile:'', catchTitles:[] };
+  const meta = { tags:[], quote:'', catchphrase:'', q1:[], q1ax:[], companyIntro:'', summaryComment:'', wantedProfile:'', catchTitles:[] };
   // **key** の直後が空の場合、次の **key** / ## 見出し までを値として回収（複数行対応）
   const collectBlock = (startIdx)=>{
     let j=startIdx+1; const parts=[];
@@ -4107,9 +4115,12 @@ function parseNotion(text){
         }
       }
       if(inQ1 && line.startsWith('- ')){
-        // "- Why：なぜ..." → "なぜ..."（Why: などのプレフィックスを除去）
-        const choice = line.slice(2).replace(/^[^：：:]+[：：:]\s*/,'').trim();
-        if(choice) meta.q1.push(choice);
+        // "- 裁量：本文" → 軸=裁量, 本文（Why/Who/What/Life等のラベルは軸として扱わず''→後で文言推定）
+        const raw = line.slice(2);
+        const m = raw.match(/^([^：:]{1,8})[：:]\s*(.+)$/);
+        let choice = raw.trim(), ax = '';
+        if(m){ ax = labelToAxis(m[1].trim()); choice = m[2].trim(); }
+        if(choice){ meta.q1.push(choice); meta.q1ax.push(ax); }
       }
       continue;
     }
@@ -4161,12 +4172,15 @@ function fillMeta(meta){
   set('art-summary-comment', meta.summaryComment||'');
   set('art-wanted', meta.wantedProfile||'');
   const q1El=document.getElementById('art-q1');
-  if(q1El) q1El.value=(meta.q1||[]).join('\n');
+  if(q1El) q1El.value=(meta.q1||[]).map((t,i)=>{ let ax=(meta.q1ax||[])[i]; if(!ax) ax=q1KeywordAxis(t); return (ax&&AXIS_JP[ax]?AXIS_JP[ax]+'：':'')+t; }).join('\n');
 }
 
+// Q1行を「軸プレフィックス」と「本文」に分離。軸ラベルが無ければ prefix='' 。
+function _splitQ1(line){ const m=String(line).match(/^([^：:]{1,8})[：:]\s*(.+)$/); if(m){ const ax=labelToAxis(m[1].trim()); if(ax) return {pre:AXIS_JP[ax]+'：', text:m[2].trim()}; } return {pre:'', text:String(line).trim()}; }
 async function rewriteQ1Taiigen(){
   const q1El=document.getElementById('art-q1');
-  const lines=(q1El?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  const rawLines=(q1El?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  const _parts=rawLines.map(_splitQ1); const _pre=_parts.map(p=>p.pre); const lines=_parts.map(p=>p.text);
   if(!lines.length){ toast('Q1選択肢を入力してください'); return; }
   const btn=document.getElementById('q1-rewrite-btn');
   if(btn){ btn.textContent='変換中…'; btn.disabled=true; }
@@ -4181,7 +4195,7 @@ async function rewriteQ1Taiigen(){
     let rewritten;
     try{ rewritten=JSON.parse(text); }catch(e){ rewritten=null; }
     if(Array.isArray(rewritten?.lines) && rewritten.lines.length){
-      q1El.value=rewritten.lines.join('\n');
+      q1El.value=rewritten.lines.map((t,i)=>(_pre[i]||'')+t).join('\n');
       q1El.dispatchEvent(new Event('input'));
       toast('体言止めに変換しました');
     } else {
@@ -4193,7 +4207,7 @@ async function rewriteQ1Taiigen(){
 
 function refreshCardLabelChips(){
   const q1El=document.getElementById('art-q1');
-  const choices=(q1El?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  const choices=(q1El?.value||'').split('\n').map(s=>s.trim()).filter(Boolean).map(l=>_splitQ1(l).text);
   const current=document.getElementById('art-card-label')?.value||'';
   const container=document.getElementById('art-card-label-chips');
   if(!container) return;
@@ -4532,7 +4546,9 @@ async function saveArticle(){
   const companyIntro=document.getElementById('art-intro')?.value.trim()||'';
   const summaryComment=document.getElementById('art-summary-comment')?.value.trim()||'';
   const wantedProfile=document.getElementById('art-wanted')?.value.trim()||'';
-  const q1=(document.getElementById('art-q1')?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  const _q1lines=(document.getElementById('art-q1')?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  const q1=[], q1ax=[];
+  _q1lines.forEach(line=>{ const m=line.match(/^([^：:]{1,8})[：:]\s*(.+)$/); const ax=m?labelToAxis(m[1].trim()):''; if(m&&ax){ q1ax.push(ax); q1.push(m[2].trim()); } else { q1.push(line); q1ax.push(q1KeywordAxis(line)); } });
   const cardLabel=(document.getElementById('art-card-label-edit')?.value||document.getElementById('art-card-label')?.value||'').trim();
   // 基本情報
   const coName=document.getElementById('art-co-name')?.value.trim()||'';
@@ -4559,7 +4575,7 @@ async function saveArticle(){
     title: _articleTitle||companies[idx].title,
     body: JSON.stringify(_articleSections),
     tags, catchphrase, quote,
-    companyIntro, summaryComment, wantedProfile, q1, cardLabel,
+    companyIntro, summaryComment, wantedProfile, q1, q1ax, cardLabel,
     photoUrl, heroUrl, type, plan, articleType, btags, rtags, wb, pf_weight
   };
   saveCompanies(companies);
