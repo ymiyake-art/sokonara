@@ -2328,11 +2328,13 @@ function updateHeroPhotoPreview(){
 }
 
 async function handleHeroPhotoSelect(event){
-  const file = event.target.files?.[0];
+  let file = event.target.files?.[0];
   if(!file || !supabaseClient) return;
   const statusEl = document.getElementById('art-hero-photo-status');
+  if(statusEl) statusEl.textContent = '画像を最適化中...';
+  file = await normalizeImage(file, 1920, 0.85);
   if(statusEl) statusEl.textContent = 'アップロード中...';
-  const ext = file.name.split('.').pop();
+  const ext = (file.name.split('.').pop()||'jpg');
   const path = `articles/${Date.now()}.${ext}`;
   const { error } = await supabaseClient.storage.from('article-images').upload(path, file, { upsert: true });
   if(error){ if(statusEl) statusEl.textContent = '失敗: ' + error.message; return; }
@@ -2344,11 +2346,13 @@ async function handleHeroPhotoSelect(event){
 }
 
 async function handleProfilePhotoSelect(event){
-  const file = event.target.files?.[0];
+  let file = event.target.files?.[0];
   if(!file || !supabaseClient) return;
   const statusEl = document.getElementById('art-profile-photo-status');
+  if(statusEl) statusEl.textContent = '画像を最適化中...';
+  file = await normalizeImage(file);
   if(statusEl) statusEl.textContent = 'アップロード中...';
-  const ext = file.name.split('.').pop();
+  const ext = (file.name.split('.').pop()||'jpg');
   const path = `companies/${Date.now()}.${ext}`;
   const { data, error } = await supabaseClient.storage.from('company-photos').upload(path, file, { upsert: true });
   if(error){ if(statusEl) statusEl.textContent = '失敗: ' + error.message; return; }
@@ -2648,8 +2652,31 @@ async function handlePhotoSelect(e){
   e.target.value = '';
 }
 
+// アップロード画像をcanvasで標準JPEGに再エンコード（＋長辺1600pxへ縮小）。
+// 目的：MPO(マルチピクチャJPEG=一部スマホの3D/連写)はブラウザで描画できないことがある→canvas経由で単一フレームの安全なJPEGに変換。
+// 巨大画像の圧縮も兼ねる。デコード不可など失敗時は元ファイルでフォールバック。
+async function normalizeImage(file, maxEdge=1600, quality=0.85){
+  try{
+    if(!file || !file.type || file.type.indexOf('image')<0) return file;
+    const url=URL.createObjectURL(file);
+    const img=await new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=url; });
+    let w=img.naturalWidth, h=img.naturalHeight;
+    if(!w||!h){ URL.revokeObjectURL(url); return file; }
+    const scale=Math.min(1, maxEdge/Math.max(w,h));
+    const cw=Math.max(1,Math.round(w*scale)), ch=Math.max(1,Math.round(h*scale));
+    const cv=document.createElement('canvas'); cv.width=cw; cv.height=ch;
+    const ctx=cv.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,cw,ch); ctx.drawImage(img,0,0,cw,ch);
+    URL.revokeObjectURL(url);
+    const blob=await new Promise(res=>cv.toBlob(res,'image/jpeg',quality));
+    if(!blob) return file;
+    const base=(String(file.name||'photo').replace(/\.[^.]+$/,'')||'photo');
+    return new File([blob], base+'.jpg', {type:'image/jpeg'});
+  }catch(e){ return file; }
+}
+
 async function uploadPhoto(file){
   if(!supabaseClient) throw new Error('Supabaseが初期化されていません');
+  file = await normalizeImage(file);
   const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
   const path = `companies/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
   const { error: upErr } = await supabaseClient.storage
@@ -4465,12 +4492,13 @@ async function uploadPhotos(files){
   // Storage → New bucket → 名前: article-images → Public: ON
 
   const uploaded=[];
-  for(const file of Array.from(files)){
+  for(let file of Array.from(files)){
     if(!file.type.startsWith('image/')){ continue; }
     try{
       let url='';
       if(supabaseClient){
-        const ext=file.name.split('.').pop().toLowerCase();
+        file=await normalizeImage(file, 1920, 0.85);
+        const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
         const path=`articles/${_articleCompanyId||'misc'}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
         const {error:upErr}=await supabaseClient.storage.from('article-images').upload(path,file,{contentType:file.type,upsert:false});
         if(upErr) throw upErr;
