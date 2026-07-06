@@ -293,7 +293,7 @@ body{
 .leader-card-profile{ display:flex; align-items:center; gap:10px; }
 .leader-photo{ width:44px; height:44px; border-radius:50%; background:var(--navy); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:#fff; background-size:cover; background-position:center; flex-shrink:0; border:2px solid rgba(28,42,84,0.18); }
 .leader-meta{ flex:1; min-width:0; }
-.leader-name{ font-size:15px; font-weight:700; color:var(--navy); }
+.leader-name{ font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif; font-size:16px; font-weight:900; color:var(--navy); letter-spacing:.01em; }
 .leader-company{ font-size:10px; color:#8a92a0; margin-top:2px; }
 .leader-tags{ display:flex; flex-wrap:wrap; gap:4px; }
 .leader-tag{ font-size:9px; padding:2px 7px; border-radius:20px; }
@@ -301,8 +301,17 @@ body{
 .leader-tag-1{ background:rgba(28,42,84,0.10); color:var(--navy); border:1px solid rgba(28,42,84,0.22); }
 .leader-tag-2{ background:rgba(176,120,24,0.10); color:#8a6010; border:1px solid rgba(176,120,24,0.30); }
 .leader-cta{ margin-top:auto; padding-top:10px; font-size:12px; color:var(--teal); font-weight:700; text-align:right; letter-spacing:.02em; }
-/* 最終結果 */
+/* 最終結果：選ばれたカードは額装風に格上げ（金ヘアライン＋多層シャドウ＋ポップイン＋一度きりの光沢スイープ） */
 #vsFinal{ max-width:330px; margin:0 auto 4px; }
+#vsFinal .leader-card{ position:relative; animation:champPop .55s cubic-bezier(.2,.85,.3,1.15) both; box-shadow:0 0 0 1.5px #c9a95c, 0 14px 44px rgba(28,42,84,.34); }
+#vsFinal .leader-card-top{ height:230px; }
+#vsFinal .leader-phrase{ font-size:18px; }
+.champBadge{ position:absolute; top:12px; right:12px; z-index:4; background:linear-gradient(135deg,#e8cf8f,#c9a95c); color:#3a2b06; font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; letter-spacing:1.5px; padding:4px 11px; border-radius:20px; box-shadow:0 2px 8px rgba(0,0,0,.28); }
+.champShine{ position:absolute; inset:0; z-index:3; pointer-events:none; overflow:hidden; }
+.champShine::before{ content:''; position:absolute; top:-50%; left:-70%; width:45%; height:200%; background:linear-gradient(100deg,transparent,rgba(255,255,255,0.55),transparent); transform:rotate(9deg); animation:champSweep 1.05s ease-out .28s 1 both; }
+@keyframes champPop{ from{opacity:0; transform:scale(.92) translateY(12px);} to{opacity:1; transform:scale(1) translateY(0);} }
+@keyframes champSweep{ from{left:-70%;} to{left:135%;} }
+@media(prefers-reduced-motion:reduce){ #vsFinal .leader-card{ animation:none; } .champShine::before{ animation:none; display:none; } }
 @media(max-width:480px){ .leader-phrase{ font-size:15px; } .vsTitle{ font-size:18px; } }
 /* ===== デスクトップ：没入レイアウト（PCでも主役級） ===== */
 @media(min-width:760px){
@@ -566,11 +575,14 @@ function leaderCardHTML(c, opts){
   const tags=Array.isArray(c.tags)?c.tags.filter(t=>t&&t.trim()!=='/').slice(0,3):[];
   const tagsHtml=tags.length?`<div class="leader-tags">${tags.map((t,i)=>`<span class="leader-tag leader-tag-${i}">${esc(t)}</span>`).join('')}</div>`:'';
   const enterCls = opts.enter==='up'?' vsEnter vsUp':opts.enter==='fromL'?' vsEnter vsFromL':opts.enter==='fromR'?' vsEnter vsFromR':'';
+  const champExtra = opts.champion ? `<div class="champBadge">YOUR PICK</div><div class="champShine"></div>` : '';
+  const cta = opts.champion ? `<div class="leader-cta">この経営層の想いを読む →</div>` : '';
   return `<div class="leader-card${enterCls}" data-id="${esc(String(c.id||''))}">
-    <div class="leader-card-top">${photoBg}<div class="leader-phrase">${phrase}</div></div>
+    <div class="leader-card-top">${photoBg}${champExtra}<div class="leader-phrase">${phrase}</div></div>
     <div class="leader-card-bottom">
       <div class="leader-card-profile">${av}<div class="leader-meta"><div class="leader-name">${esc(name)}</div><div class="leader-company">${esc(company)}</div></div></div>
       ${tagsHtml}
+      ${cta}
     </div></div>`;
 }
 function renderVersus(){
@@ -642,7 +654,7 @@ function finishVersus(champ, champArm){
   stage.innerHTML=`
     <div class="vsArena">
       <div class="vsHead"><div class="vsKicker">YOUR CHOICE</div><div class="vsTitle">あなたが惹かれた経営層</div></div>
-      <div id="vsFinal">${leaderCardHTML(champ, {arm:champArm||'what'})}</div>
+      <div id="vsFinal">${leaderCardHTML(champ, {arm:champArm||'what', champion:true})}</div>
       <button class="btn-primary" style="max-width:330px;margin:18px auto 0;display:block;" onclick="openLeaderArticle('${esc(String(champ.id||''))}')">この経営層の記事を読む →</button>
       <button class="btn-text" style="display:block;margin:10px auto 0;background:none;border:none;color:var(--text3);font-size:12px;text-decoration:underline;cursor:pointer;" onclick="restart()">もう一度選ぶ</button>
     </div>`;
