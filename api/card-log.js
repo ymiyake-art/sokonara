@@ -18,7 +18,7 @@ const ALLOWED = new Set([
   'recommended_company', 'recommended_card',
   'q1_phrase', 'reason', 'memo_chips', 'memo_text',
   'article_read', 'ai_viewed', 'line_registered', 'contact_cta', 'form_open',
-  'wb_view', 'wb_compare',
+  'wb_view', 'wb_compare', 'wb_cta',
   'ai_summary', 'ai_message', 'ai_bridge',
   'reached_result', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content',
   'variant', 'copy_arm', 'arm_events',
