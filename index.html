@@ -114,6 +114,17 @@ h1, h2, h3, h4,
 }
 .mode-reset:hover { color: rgba(255,255,255,0.6); border-color: rgba(255,255,255,0.3); }
 
+/* スマホ：ヘッダーの項目が固定幅で溢れて右側(一覧・MEET)が見えない問題。
+   横スクロール可＋余白/文字を圧縮して全項目に届くように。右端フェードで続きがあると示す。 */
+@media (max-width: 640px){
+  .mode-bar{ padding-left:12px; padding-right:0; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; scrollbar-width:none; -ms-overflow-style:none; }
+  .mode-bar::-webkit-scrollbar{ display:none; }
+  .mode-bar::after{ content:''; position:sticky; right:0; flex:0 0 20px; align-self:stretch; margin-left:-20px; pointer-events:none; background:linear-gradient(90deg,rgba(28,42,84,0),var(--navy)); }
+  .mode-brand{ margin-right:12px; }
+  .mode-brand img{ height:26px; }
+  .mode-btn{ padding:0 11px; font-size:12px; flex-shrink:0; }
+}
+
 /* ===== PROGRESS ===== */
 .progress-rail {
   position: fixed; top: 48px; left: 0; right: 0;
@@ -4133,8 +4144,11 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var n=document.getElementById('moyaNext'); if(n) n.disabled = (S.moya.length===0);
   };
   function tagset(c){ var s=[]; ['rtags','btags','tags'].forEach(function(k){ if(Array.isArray(c[k])) s=s.concat(c[k].map(function(x){return String(x).toLowerCase();})); }); return s; }
-  function blob(c){ return [c.catchphrase,c.quote,c.title,c.companyIntro,c.intro,(Array.isArray(c.tags)?c.tags.join(' '):''),String(c.body||'').slice(0,700)].filter(Boolean).join(' '); }
-  function score(c,picks){ var ts=tagset(c),tx=blob(c),total=0,per={}; picks.forEach(function(m){ var s=0; m.tags.forEach(function(t){ if(ts.indexOf(t)>=0) s+=3; }); m.kw.forEach(function(k){ if(tx.indexOf(k)>=0) s+=1; }); per[m.id]=s; total+=s; }); return {score:total,per:per}; }
+  function blob(c){ return [c.catchphrase,c.quote,c.title,c.companyIntro,c.intro,(Array.isArray(c.tags)?c.tags.join(' '):''),String(c.body||'').slice(0,3000)].filter(Boolean).join(' '); }
+  function countOcc(hay,needle){ if(!needle) return 0; var n=0,i=0; while((i=hay.indexOf(needle,i))>=0){ n++; i+=needle.length; } return n; }
+  // タグ(btags/rtags)一致＝+4（強）／キーワードは出現回数で加点(上限3)＝「その軸に濃い」企業が上位に来る。
+  // タグ未設定でもキーワードの濃さで拾えるよう回数重み。btags/rtagsを入れれば更に確実（推奨）。
+  function score(c,picks){ var ts=tagset(c),tx=blob(c),total=0,per={}; picks.forEach(function(m){ var s=0; m.tags.forEach(function(t){ if(ts.indexOf(t)>=0) s+=4; }); m.kw.forEach(function(k){ s+=Math.min(3, countOcc(tx,k)); }); per[m.id]=s; total+=s; }); return {score:total,per:per}; }
   function bestReason(x,picks){ var best=null,bs=-1; picks.forEach(function(m){ var s=(x.per&&x.per[m.id])||0; if(s<=0) return; var adj=s-(m.id==='local'?0.6:0); if(adj>bs){ bs=adj; best=m; } }); return best?best.reason:'あなたに響き合う経営層'; }
 
   window.runMoyaMatch=function(){

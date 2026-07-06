@@ -545,6 +545,13 @@ function initProg(){
 // 「経営層一覧」と完全同一のカードデザインを流用。気になる方をタップ→選んだ側は同位置で残り、相手側だけ新カードに入替（5回）。
 let vsPool=[], vsLeft=null, vsRight=null, vsLeftArm='what', vsRightArm='what', armEvents=[], vsPtr=0, vsRound=0, VS_ROUNDS=5;
 function shuffleArr(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+// 重み付きシャッフル（Efraimidis-Spirakis）：companies.pf_weight が大きいほど前方に来やすい＝偶然カードで高頻度出現。
+// pf_weight 未設定/1=通常、3-4=約3-4倍出やすい。key=random^(1/w) を降順ソート。
+function weightedShuffle(a){
+  return a.map(function(c){ var w=Math.max(0.1, parseFloat(c&&c.pf_weight)||1); return {c:c, k:Math.pow(Math.random(), 1/w)}; })
+          .sort(function(x,y){ return y.k-x.k; })
+          .map(function(o){ return o.c; });
+}
 function leaderCardHTML(c, opts){
   opts=opts||{};
   const name=c.ceo||'経営層';
@@ -572,7 +579,7 @@ function renderVersus(){
   document.getElementById('prog').style.display='none';
   const sg=document.querySelector('.swipeGuide'); if(sg) sg.style.display='none';
   const headEl=document.querySelector('.head'); if(headEl) headEl.style.display='none';
-  vsPool=shuffleArr(Object.values(COMPANIES_MAP).filter(c=>c&&(c.ceo||c.name)));
+  vsPool=weightedShuffle(Object.values(COMPANIES_MAP).filter(c=>c&&(c.ceo||c.name)));
   if(vsPool.length<2){ // 経営層データ不足時は課題版にフォールバック
     if(headEl) headEl.style.display='';
     document.getElementById('actions').style.display='flex';

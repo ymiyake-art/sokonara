@@ -2199,6 +2199,7 @@ function toCompanyRow(c){
     catchphrase:c.catchphrase||'',cc_what:c.cc_what||'',cc_value:c.cc_value||'',cc_life:c.cc_life||'',cardLabel:c.cardLabel||'',wantedProfile:c.wantedProfile||'',summaryComment:c.summaryComment||'',
     btags:Array.isArray(c.btags)?c.btags:[],rtags:Array.isArray(c.rtags)?c.rtags:[],wb:(c.wb&&typeof c.wb==='object')?c.wb:{},
     sort:(c.sort==null||c.sort==='')?null:(parseInt(c.sort)||null),
+    pf_weight:(c.pf_weight==null||c.pf_weight==='')?null:(parseFloat(c.pf_weight)||null),
     status:c.status||'active',created_at:c.created_at||new Date().toISOString(),reactions:c.reactions||0,cta:c.cta||0
   };
 }
@@ -2219,8 +2220,8 @@ async function saveCompanies(arr){
   const rows = companiesCache.map(toCompanyRow);
   // service_role API経由で保存（anon書込はDB側で禁止）
   let r=await adminWrite('companies','upsert',{rows});
-  if(!r.ok && r.error && /catchphrase|cardLabel|card_label|wantedProfile|summaryComment|cc_what|cc_value|cc_life|btags|rtags|wb|sort|column/.test(r.error)){
-    const minRows = rows.map(rw=>{ const {catchphrase,cardLabel,heroUrl,wantedProfile,summaryComment,cc_what,cc_value,cc_life,btags,rtags,wb,sort,...rest}=rw; return rest; });
+  if(!r.ok && r.error && /catchphrase|cardLabel|card_label|wantedProfile|summaryComment|cc_what|cc_value|cc_life|btags|rtags|wb|sort|pf_weight|column/.test(r.error)){
+    const minRows = rows.map(rw=>{ const {catchphrase,cardLabel,heroUrl,wantedProfile,summaryComment,cc_what,cc_value,cc_life,btags,rtags,wb,sort,pf_weight,...rest}=rw; return rest; });
     const r2=await adminWrite('companies','upsert',{rows:minRows});
     if(!r2.ok){ toast('⚠️ DB保存失敗。SQL Editorで supabase_setup.sql を実行してください。'); return false; }
     else { toast('⚠️ 一部カラム未追加のため除外して保存。SQL Editorでカラム追加を推奨。'); return false; }
@@ -3636,6 +3637,10 @@ function renderArticleEditor(){
             </select>
           </div>
         </div>
+        <div style="margin-top:12px;max-width:280px">
+          <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">偶然カードの出現倍率 <span style="font-size:10px;color:var(--text3)">（「経営層と出会う」の抽選。1=通常／3-4=約3-4倍出やすい・空=通常）</span></label>
+          <input id="art-pf-weight" type="number" min="0" step="0.5" placeholder="1" style="width:100px;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;outline:none">
+        </div>
       </div>
     </div>
 
@@ -3919,6 +3924,7 @@ function onArtCompanyChange(id){
   updateHeroPhotoPreview();
   setVal('art-type', co.type||'manager');
   setVal('art-plan', co.plan||'light');
+  setVal('art-pf-weight', (co.pf_weight==null?'':co.pf_weight));
   setVal('art-article-type', co.articleType||'light');
   updateProfilePhotoPreview();
   renderArtTags(co.btags, co.rtags); // 逆引きタグを復元（未設定なら空）
@@ -4513,6 +4519,8 @@ async function saveArticle(){
   const btags=[...document.querySelectorAll('.art-bt:checked')].map(e=>e.value);
   const rtags=[...document.querySelectorAll('.art-rt:checked')].map(e=>e.value);
   const wb={}; document.querySelectorAll('.art-wb').forEach(e=>{ wb[e.getAttribute('data-k')]=parseInt(e.value)||0; });
+  const pfwRaw=document.getElementById('art-pf-weight')?.value.trim()||'';
+  const pf_weight = pfwRaw==='' ? null : (parseFloat(pfwRaw)||null);
 
   const companies=loadCompanies();
   const idx=companies.findIndex(c=>String(c.id)===String(companyId));
@@ -4526,7 +4534,7 @@ async function saveArticle(){
     body: JSON.stringify(_articleSections),
     tags, catchphrase, quote,
     companyIntro, summaryComment, wantedProfile, q1, cardLabel,
-    photoUrl, heroUrl, type, plan, articleType, btags, rtags, wb
+    photoUrl, heroUrl, type, plan, articleType, btags, rtags, wb, pf_weight
   };
   saveCompanies(companies);
   if(statusEl) statusEl.textContent='✓ 保存しました！';
