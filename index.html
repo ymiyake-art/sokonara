@@ -152,12 +152,13 @@ body.sn-ribbon-on .view { padding-top: calc(48px + 40px + env(safe-area-inset-to
 body.sn-ribbon-on #project { padding-top: calc(48px + 40px + env(safe-area-inset-top)) !important; }
 #meetRibbon { position: fixed; left:0; right:0; top: calc(48px + env(safe-area-inset-top)); z-index: 290; }
 /* イベント告知の共通アクセント（深紅グラデ＋わずかな透過＋立体感）。3導線で共通利用 */
-.ev-ribbon { background:linear-gradient(135deg, rgba(233,90,58,0.97), rgba(190,45,22,0.97)); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 4px 16px rgba(150,30,15,0.30); }
-.ev-card { background:#fff; border:1.5px solid rgba(212,58,42,0.30); box-shadow:0 10px 26px rgba(190,45,22,0.14); }
-.ev-btn { background:linear-gradient(135deg, #ef5f3d, #c0341a); box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 5px 14px rgba(176,40,20,0.38); }
+/* イベント導線＝ネイビー+ゴールド（“特別な招待”。ティールは本文CTAに温存・赤のキャンペーン感を排除。MEET LPの金額装と統一）。色替えはこの5クラスのみ。 */
+.ev-ribbon { background:#243a6b; border-top:1px solid rgba(201,169,92,0.55); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); box-shadow: 0 3px 14px rgba(14,22,50,0.30); }
+.ev-card { background:#fff; border:1.5px solid rgba(201,169,92,0.45); box-shadow:0 10px 26px rgba(28,42,84,0.12); }
+.ev-btn { background:#1C2A54; border:1px solid rgba(201,169,92,0.65); box-shadow: 0 4px 12px rgba(28,42,84,0.28); }
 .ev-btn:active { transform: translateY(1px); }
-.ev-pill { background:rgba(255,255,255,0.96); color:#c0341a; box-shadow:0 2px 6px rgba(0,0,0,0.14); }
-.ev-title-accent { color:#c0341a; }
+.ev-pill { background:transparent; color:#f2dda6; border:1px solid #c9a95c; box-shadow:none; }
+.ev-title-accent { color:#a6801f; }
 /* スクロール先が固定ヘッダーに隠れないようにオフセット */
 #companyListBody { scroll-margin-top: calc(64px + env(safe-area-inset-top)); }
 #articlesSection { scroll-margin-top: calc(56px + env(safe-area-inset-top)); }
@@ -2684,9 +2685,9 @@ function applyMeetRibbon(){
   document.body.classList.add('sn-ribbon-on');
   el.className='ev-ribbon';
   el.style.cssText='position:fixed;left:0;right:0;top:calc(48px + env(safe-area-inset-top));z-index:290;display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;color:#fff;padding:9px 14px;font-family:inherit;';
-  el.innerHTML='<span style="font-size:13px;">🎪</span>'
-    +'<span style="font-size:12.5px;font-weight:700;line-height:1.35;text-shadow:0 1px 2px rgba(120,20,10,0.35);">'+escapeHtml(label)+'　<b style="font-weight:900;">'+escapeHtml(title)+'</b></span>'
-    +'<span class="ev-pill" style="flex-shrink:0;font-size:12px;font-weight:900;padding:4px 14px;border-radius:16px;">'+escapeHtml(cta)+' →</span>';
+  el.innerHTML='<span style="font-size:13px;filter:saturate(0.85);">🎪</span>'
+    +'<span style="font-size:12.5px;font-weight:700;line-height:1.35;text-shadow:0 1px 2px rgba(10,18,48,0.45);">'+escapeHtml(label)+'　<b style="font-weight:900;color:#f2dda6;">'+escapeHtml(title)+'</b></span>'
+    +'<span class="ev-pill" style="flex-shrink:0;font-size:12px;font-weight:700;padding:4px 14px;border-radius:16px;">'+escapeHtml(cta)+' →</span>';
 }
 function applyMeetBanner(){
   const mb=document.getElementById('meetBanner');
@@ -2705,7 +2706,7 @@ function applyMeetBanner(){
     mb.innerHTML='<a class="ev-card" href="'+escapeHtml(url)+'" target="_blank" rel="noopener" style="display:block;text-decoration:none;border-radius:14px;padding:16px 18px;text-align:center;">'
       +'<div style="font-size:13px;font-weight:700;letter-spacing:.02em;" class="ev-title-accent">'+escapeHtml(label)+'</div>'
       +'<div style="font-size:15px;font-weight:900;color:var(--navy);margin:4px 0 12px;">'+escapeHtml(title)+'</div>'
-      +'<div class="ev-btn" style="display:inline-block;color:#fff;font-size:14px;font-weight:900;padding:11px 40px;border-radius:10px;text-shadow:0 1px 2px rgba(120,20,10,0.35);">'+escapeHtml(cta)+'</div>'
+      +'<div class="ev-btn" style="display:inline-block;color:#fff;font-size:14px;font-weight:900;padding:11px 40px;border-radius:10px;text-shadow:0 1px 2px rgba(10,18,48,0.4);">'+escapeHtml(cta)+' →</div>'
       +'</a>';
     mb.style.display='block';
   }
