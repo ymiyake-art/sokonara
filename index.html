@@ -1083,7 +1083,7 @@ body.sn-ribbon-on #project { padding-top: calc(48px + 40px + env(safe-area-inset
 .leader-card-top::before{
   content:'';position:absolute;inset:0;z-index:1;
   background:
-    linear-gradient(to top, rgba(10,18,48,0.88) 0%, rgba(10,18,48,0.55) 38%, transparent 62%),
+    linear-gradient(to top, rgba(10,18,48,0.93) 0%, rgba(10,18,48,0.62) 42%, transparent 68%),
     linear-gradient(162deg, transparent 30%, rgba(28,42,84,0.45) 60%, rgba(14,22,50,0.65) 100%);
 }
 /* テール色アクセントライン（テキスト帯より上に配置） */
@@ -1100,10 +1100,8 @@ body.sn-ribbon-on #project { padding-top: calc(48px + 40px + env(safe-area-inset
   /* インパクト重視でDela Gothic One（元サイズ）。視認性は"濃紺のふち取り"で確保＝明暗どちらの写真でも白文字が読める */
   font-family:'Dela Gothic One','Zen Kaku Gothic New','Noto Sans JP',sans-serif;
   font-size:18px;color:#fff;line-height:1.6;letter-spacing:.04em;
-  text-shadow:
-    -1px -1px 0 rgba(14,22,50,0.95), 1px -1px 0 rgba(14,22,50,0.95),
-    -1px 1px 0 rgba(14,22,50,0.95), 1px 1px 0 rgba(14,22,50,0.95),
-    0 0 4px rgba(14,22,50,0.9), 0 2px 12px rgba(0,0,0,0.5);
+  /* 硬いふち取りはやめ、柔らかい暗ハロー（ぼかし影）で自然に立たせる。写真下部の暗がかりと合わせて視認性を確保 */
+  text-shadow:0 0 5px rgba(12,20,45,0.75), 0 1px 4px rgba(0,0,0,0.7), 0 2px 14px rgba(0,0,0,0.55);
   display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;
   /* 日本語の自然な位置で折り返す（助詞だけが行頭/行末に来にくい） */
   word-break:auto-phrase; line-break:strict; overflow-wrap:break-word;
