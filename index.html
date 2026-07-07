@@ -26,7 +26,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ソコナラ">
 <link rel="apple-touch-icon" href="/images/icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@400;600;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&family=Dela+Gothic+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@400;600;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
   --teal:     #42AD9F;
@@ -1097,14 +1097,14 @@ body.sn-ribbon-on #project { padding-top: calc(48px + 40px + env(safe-area-inset
 /* フレーズは写真下部に重ねる */
 .leader-phrase{
   position:absolute;bottom:12px;left:12px;right:12px;z-index:3;
-  font-family:'Dela Gothic One','Zen Kaku Gothic New','Noto Sans JP',sans-serif;
-  font-size:18px;color:#fff;line-height:1.55;letter-spacing:.03em;
-  text-shadow:0 1px 4px rgba(0,0,0,0.9), 0 2px 12px rgba(0,0,0,0.7);
+  font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;
+  font-size:16px;color:#fff;font-weight:900;line-height:1.65;letter-spacing:.05em;
+  text-shadow:0 1px 4px rgba(0,0,0,0.95), 0 2px 14px rgba(0,0,0,0.8);
   display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;
   /* 日本語の自然な位置で折り返す（助詞だけが行頭/行末に来にくい） */
   word-break:auto-phrase; line-break:strict; overflow-wrap:break-word;
 }
-@media(max-width:480px){.leader-phrase{font-size:16px;}}
+@media(max-width:480px){.leader-phrase{font-size:15px;}}
 
 /* ボトムエリア：ネイビー派生クールグレー交互 */
 .leader-card-bottom{padding:12px 14px 14px;display:flex;flex-direction:column;gap:7px;flex:1;}
