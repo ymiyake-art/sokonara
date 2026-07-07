@@ -1287,6 +1287,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <button class="mode-btn" id="mb-project" onclick="goCards()">経営層と出会う</button>
   <button class="mode-btn" id="mb-moya" onclick="enterMoya()">モヤモヤから探す</button>
   <button class="mode-btn" id="mb-leaders" onclick="goLeaders()">経営層一覧</button>
+  <button class="mode-btn" id="mb-cases" onclick="goCasesPage()">採用事例</button>
   <button class="mode-btn" id="mb-meet" onclick="window.open('/meet/','_blank','noopener')">7/30 MEET</button>
   <!-- 管理画面・リセットは admin.html から直接アクセス（公開ナビからは非表示） -->
 </div>
@@ -4591,6 +4592,65 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     try{ renderWbMain(); }catch(e){}
     try{ if(typeof SN_CARDS!=='undefined'&&SN_CARDS&&SN_CARDS.logId&&typeof patchCardLog==='function') patchCardLog({wb_view:true}); }catch(e){}
     goScreen('p-wb');
+  };
+})();
+</script>
+<script>
+/* ===== 採用事例ページ（p-cases）＝casesテーブル（personal LPと同じ）をアプリ内でも表示。ヘッダー「採用事例」から。
+   実際に出会って入社/移住した人の実例＝何よりの説得力。 */
+(function(){
+  if(typeof SCREENS!=='undefined' && SCREENS.indexOf('p-cases')<0) SCREENS.push('p-cases');
+  function esc(s){ return (typeof escapeHtml==='function')?escapeHtml(String(s==null?'':s)):String(s==null?'':s); }
+  function card(c){
+    var facts=(Array.isArray(c.facts)?c.facts:[]).map(function(f){ return '<div style="display:flex;gap:6px;font-size:12px;color:var(--text2);line-height:1.6;"><span style="color:var(--teal);font-weight:700;flex-shrink:0;">✔</span><span>'+esc(f)+'</span></div>'; }).join('');
+    var px=(c.pos_x!=null?c.pos_x:50), py=(c.pos_y!=null?c.pos_y:40), z=Math.max(110,(c.zoom!=null?c.zoom:115));
+    return '<div style="background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(28,42,84,0.06);">'
+      +'<div style="position:relative;aspect-ratio:3/2;overflow:hidden;background:#14213f;"><img src="'+esc(c.photo_url||'')+'" loading="lazy" style="position:absolute;left:'+px+'%;top:'+py+'%;width:'+z+'%;height:'+z+'%;object-fit:cover;object-position:center;transform:translate(-'+px+'%,-'+py+'%);display:block;" onerror="this.style.display=\'none\'"></div>'
+      +'<div style="padding:16px 16px 18px;"><div style="font-family:\'Zen Kaku Gothic New\',\'Noto Sans JP\',sans-serif;font-size:15px;font-weight:900;color:var(--navy);line-height:1.55;margin-bottom:12px;">'+esc(c.headline||'')+'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:6px;">'+facts+'</div>'
+      +'<div style="font-size:11px;color:var(--text3);margin-top:12px;">'+esc(c.name_label||'')+'</div></div></div>';
+  }
+  function ensureScreen(){
+    if(document.getElementById('p-cases')) return;
+    var user=document.getElementById('user'); if(!user) return;
+    var d=document.createElement('div'); d.id='p-cases'; d.className='screen';
+    d.innerHTML='<div style="max-width:900px;margin:0 auto;padding:32px 20px 80px;">'
+      +'<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;letter-spacing:2px;color:var(--teal-d);margin-bottom:10px;">REAL STORIES</div>'
+      +'<h1 style="font-family:\'Zen Kaku Gothic New\',\'Noto Sans JP\',sans-serif;font-weight:900;font-size:23px;color:var(--navy);line-height:1.5;margin-bottom:8px;">ソコナラで出会って、<br>実際にこうなりました</h1>'
+      +'<div style="font-size:13px;color:var(--text2);line-height:1.85;margin-bottom:26px;">条件ではなく“想い”でつながった人たちの、その後です。</div>'
+      +'<div id="casesGridApp" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;"></div>'
+      +'<div style="text-align:center;margin-top:34px;"><button class="btn-primary" style="justify-content:center;max-width:360px;" onclick="goCards()">あなたも経営層と出会う →</button></div>'
+      +'</div>';
+    user.appendChild(d);
+  }
+  window.goCasesPage=function(){
+    ensureScreen();
+    // switchModeは最後にp-listを強制するので使わず、user viewを手動で有効化＋nav active
+    try{
+      if(typeof S!=='undefined') S.mode='user';
+      document.getElementById('user').classList.add('active');
+      var pj=document.getElementById('project'); if(pj) pj.classList.remove('active');
+      var ad=document.getElementById('admin'); if(ad) ad.classList.remove('active');
+      document.querySelectorAll('.mode-btn').forEach(function(b){ b.classList.remove('active'); });
+      var mb=document.getElementById('mb-cases'); if(mb) mb.classList.add('active');
+      document.getElementById('progressRail').style.display='none';
+      document.getElementById('stepDots').style.display='none';
+    }catch(e){}
+    var g=document.getElementById('casesGridApp');
+    if(g && !g.dataset.loaded){
+      g.innerHTML='<div style="grid-column:1/-1;color:var(--text3);font-size:13px;padding:20px;text-align:center;">読み込み中…</div>';
+      try{
+        if(typeof supabaseClient!=='undefined' && supabaseClient){
+          supabaseClient.from('cases').select('*').eq('active',true).order('sort',{ascending:true}).then(function(res){
+            var rows=res&&res.data;
+            if(Array.isArray(rows)&&rows.length){ g.innerHTML=rows.map(card).join(''); g.dataset.loaded='1'; }
+            else { g.innerHTML='<div style="grid-column:1/-1;color:var(--text3);text-align:center;padding:20px;">準備中です</div>'; }
+          });
+        } else { g.innerHTML='<div style="grid-column:1/-1;color:var(--text3);text-align:center;padding:20px;">準備中です</div>'; }
+      }catch(e){ g.innerHTML='<div style="grid-column:1/-1;color:var(--text3);text-align:center;padding:20px;">読み込みに失敗しました</div>'; }
+    }
+    goScreen('p-cases');
+    window.scrollTo(0,0);
   };
 })();
 </script>
