@@ -1133,6 +1133,7 @@ body.sn-ribbon-on #project { padding-top: calc(48px + 40px + env(safe-area-inset
 @keyframes wbGrow{from{transform:scale(.45);opacity:0}to{transform:scale(1);opacity:1}}
 @media (prefers-reduced-motion: reduce){.wbGrow,.wbGrowSec{animation:none;}}
 @media(min-width:980px){.leaders-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media(max-width:600px){#casesGridTop,#casesGridApp{grid-template-columns:1fr !important;}}
 
 /* ===== INTEREST FORM MODAL ===== */
 #interestModal{position:fixed;inset:0;z-index:2000;display:none;align-items:flex-end;justify-content:center;background:rgba(28,42,84,0.55);}
@@ -1376,9 +1377,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div style="background:#fff;padding:44px 20px 20px;">
       <div style="max-width:920px;margin:0 auto;text-align:center;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:14px;">Real Stories</div>
-        <h2 style="font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:clamp(19px,4.5vw,24px);font-weight:900;color:var(--navy);line-height:1.55;margin:0 0 10px;">出会って、実際にこうなった人たち</h2>
-        <p style="font-size:13.5px;color:var(--text2);line-height:1.9;margin:0 auto 32px;max-width:520px;">条件ではなく“想い”でつながった人たちの、その後です。</p>
-        <div id="casesGridTop" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;text-align:left;"></div>
+        <h2 style="font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:clamp(19px,4.5vw,24px);font-weight:900;color:var(--navy);line-height:1.55;margin:0 0 10px;">出会いのあとに、動き出した人たち</h2>
+        <p style="font-size:13.5px;color:var(--text2);line-height:1.9;margin:0 auto 32px;max-width:560px;">経営者の話を直接聞いたことが、移住・入社・幹部候補への挑戦につながりました。</p>
+        <div id="casesGridTop" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;text-align:left;max-width:760px;margin:0 auto;"></div>
       </div>
     </div>
 
@@ -4629,9 +4630,9 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var d=document.createElement('div'); d.id='p-cases'; d.className='screen';
     d.innerHTML='<div style="max-width:900px;margin:0 auto;padding:32px 20px 80px;">'
       +'<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;letter-spacing:2px;color:var(--teal-d);margin-bottom:10px;">REAL STORIES</div>'
-      +'<h1 style="font-family:\'Zen Kaku Gothic New\',\'Noto Sans JP\',sans-serif;font-weight:900;font-size:23px;color:var(--navy);line-height:1.5;margin-bottom:8px;">ソコナラで出会って、<br>実際にこうなりました</h1>'
-      +'<div style="font-size:13px;color:var(--text2);line-height:1.85;margin-bottom:26px;">条件ではなく“想い”でつながった人たちの、その後です。</div>'
-      +'<div id="casesGridApp" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;"></div>'
+      +'<h1 style="font-family:\'Zen Kaku Gothic New\',\'Noto Sans JP\',sans-serif;font-weight:900;font-size:23px;color:var(--navy);line-height:1.5;margin-bottom:8px;">出会いのあとに、<br>動き出した人たち</h1>'
+      +'<div style="font-size:13px;color:var(--text2);line-height:1.85;margin-bottom:26px;">経営者の話を直接聞いたことが、移住・入社・幹部候補への挑戦につながりました。</div>'
+      +'<div id="casesGridApp" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;max-width:760px;margin:0 auto;"></div>'
       +'<div style="text-align:center;margin-top:34px;"><button class="btn-primary" style="justify-content:center;max-width:360px;" onclick="goCards()">あなたも経営層と出会う →</button></div>'
       +'</div>';
     user.appendChild(d);
