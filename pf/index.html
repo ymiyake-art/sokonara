@@ -13,7 +13,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <title>ソコナラ｜経営層と出会う</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=JetBrains+Mono:wght@400;700&family=Dela+Gothic+One&display=swap" rel="stylesheet">
 <style>
 :root{
   --teal:#42AD9F; --teal-d:#2e8c7f; --teal-bg:rgba(66,173,159,0.08); --teal-mid:rgba(66,173,159,0.16);
@@ -284,9 +284,9 @@ body{
 .leader-card-top{ position:relative; height:210px; overflow:hidden; background:var(--navy); flex-shrink:0; }
 .leader-card-photo-bg{ position:absolute; inset:0; background-size:cover; background-position:center top; transition:transform .4s; }
 .leader-card:hover .leader-card-photo-bg{ transform:scale(1.06); }
-.leader-card-top::before{ content:''; position:absolute; inset:0; z-index:1; background:linear-gradient(to top, rgba(10,18,48,0.9) 0%, rgba(10,18,48,0.55) 40%, transparent 66%),linear-gradient(162deg, transparent 30%, rgba(28,42,84,0.45) 60%, rgba(14,22,50,0.65) 100%); }
+.leader-card-top::before{ content:''; position:absolute; inset:0; z-index:1; background:linear-gradient(to top, rgba(10,18,48,0.93) 0%, rgba(10,18,48,0.62) 42%, transparent 68%),linear-gradient(162deg, transparent 30%, rgba(28,42,84,0.45) 60%, rgba(14,22,50,0.65) 100%); }
 .leader-card-top::after{ content:''; position:absolute; z-index:2; bottom:44%; left:-8%; width:116%; height:2px; background:var(--teal); transform:rotate(-8deg); opacity:.9; }
-.leader-phrase{ position:absolute; bottom:12px; left:14px; right:14px; z-index:3; font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif; font-weight:900; font-size:17px; color:#fff; line-height:1.5; letter-spacing:.02em; text-shadow:0 1px 4px rgba(0,0,0,0.9),0 2px 12px rgba(0,0,0,0.7); display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; word-break:auto-phrase; line-break:strict; overflow-wrap:break-word; }
+.leader-phrase{ position:absolute; bottom:12px; left:14px; right:14px; z-index:3; font-family:'Dela Gothic One','Zen Kaku Gothic New','Noto Sans JP',sans-serif; font-size:18px; color:#fff; line-height:1.6; letter-spacing:.04em; text-shadow:0 0 5px rgba(12,20,45,0.75),0 1px 4px rgba(0,0,0,0.7),0 2px 14px rgba(0,0,0,0.55); display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; word-break:auto-phrase; line-break:strict; overflow-wrap:break-word; }
 .leader-card-bottom{ padding:13px 15px 15px; display:flex; flex-direction:column; gap:7px; flex:1; }
 .leader-card:nth-child(odd)  .leader-card-bottom{ background:#E7EAEF; }
 .leader-card:nth-child(even) .leader-card-bottom{ background:#D3D8E3; }
@@ -312,7 +312,7 @@ body{
 @keyframes champPop{ from{opacity:0; transform:scale(.92) translateY(12px);} to{opacity:1; transform:scale(1) translateY(0);} }
 @keyframes champSweep{ from{left:-70%;} to{left:135%;} }
 @media(prefers-reduced-motion:reduce){ #vsFinal .leader-card{ animation:none; } .champShine::before{ animation:none; display:none; } }
-@media(max-width:480px){ .leader-phrase{ font-size:15px; } .vsTitle{ font-size:18px; } }
+@media(max-width:480px){ .leader-phrase{ font-size:16px; } .vsTitle{ font-size:18px; } }
 /* ===== デスクトップ：没入レイアウト（PCでも主役級） ===== */
 @media(min-width:760px){
   body.vmode .wrap{ max-width:1040px; }
