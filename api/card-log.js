@@ -22,6 +22,7 @@ const ALLOWED = new Set([
   'ai_summary', 'ai_message', 'ai_bridge',
   'reached_result', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content',
   'variant', 'copy_arm', 'arm_events',
+  'is_internal',
 ]);
 
 export default async function handler(req) {

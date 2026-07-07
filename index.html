@@ -2005,6 +2005,9 @@ const Q2_DIST = [
 
 // ===== STATE =====
 const S = { q1:'', q2:[], about:[], q3:'', free:'', sal:'', busy:'', memoChips:[], fb:null, screen:'p-list', mode:'user', adminTab:'dash' };
+// 内部テスト端末フラグ：?test=1 でその端末を「内部」化→card_logsをis_internal=trueにしadminファネルで集計除外。?test=0で解除。
+window.SN_INTERNAL=(function(){ try{ var q=new URLSearchParams(location.search); if(q.get('test')==='1'||q.get('internal')==='1') localStorage.setItem('sn_internal','1'); if(q.get('test')==='0'||q.get('internal')==='0') localStorage.removeItem('sn_internal'); return localStorage.getItem('sn_internal')==='1'; }catch(e){ return false; } })();
+function _snInt(){ return window.SN_INTERNAL?{is_internal:true}:{}; }
 const MEMO_CHIPS=['業務改善','IT・DX','新規事業','営業・販路開拓','組織づくり','採用・育成','商品企画','広報・発信','海外展開','まだ分からない'];
 function buildMemoChips(){
   const box=document.getElementById('memoChips'); if(!box||box.dataset.built) return;
@@ -2168,7 +2171,7 @@ async function logMoyaStart(cid, moyaLabels){
     SN_CARDS={ logId:id, cid:String(cid||''), variant:'moya' };
     try{ localStorage.setItem('sn_card_ctx', JSON.stringify(Object.assign({},SN_CARDS,{_ts:Date.now()}))); }catch(e){}
     await fetch('/api/card-log',{ method:'POST', keepalive:true, headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ id, set:{ started:true, variant:'moya', recommended_company:String(cid||''), reason:String(moyaLabels||'').slice(0,200), article_read:true } }) });
+      body:JSON.stringify({ id, set:Object.assign({ started:true, variant:'moya', recommended_company:String(cid||''), reason:String(moyaLabels||'').slice(0,200), article_read:true }, _snInt()) }) });
   }catch(e){}
 }
 // P5「フォームを開く」でform_open(CV)を送るためのlogId退避先。clearCardCtxでSN_CARDS=nullになる前に保持する。
@@ -2184,9 +2187,9 @@ function logDirectArticle(cid){
     const q=new URLSearchParams(location.search);
     const id='art_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
     fetch('/api/card-log',{method:'POST', keepalive:true, headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ id, set:{ started:true, variant:'direct', started_at:new Date().toISOString(),
+      body:JSON.stringify({ id, set:Object.assign({ started:true, variant:'direct', started_at:new Date().toISOString(),
         recommended_company:String(cid||''), article_read:true, reached_result:true,
-        utm_source:q.get('utm_source')||null, utm_medium:q.get('utm_medium')||null, utm_campaign:q.get('utm_campaign')||null, utm_content:q.get('utm_content')||null }})});
+        utm_source:q.get('utm_source')||null, utm_medium:q.get('utm_medium')||null, utm_campaign:q.get('utm_campaign')||null, utm_content:q.get('utm_content')||null }, _snInt())})});
   }catch(e){}
 }
 async function patchCardLog(fields){
@@ -2195,7 +2198,7 @@ async function patchCardLog(fields){
     // 保存はサーバーAPI(service_role)経由＝RLS非依存で確実に反映
     await fetch('/api/card-log',{ method:'POST', keepalive:true,
       headers:{ 'Content-Type':'application/json' },
-      body:JSON.stringify({ id:SN_CARDS.logId, set:fields||{} }) });
+      body:JSON.stringify({ id:SN_CARDS.logId, set:Object.assign({}, fields||{}, _snInt()) }) });
   }catch(e){}
 }
 
@@ -2504,7 +2507,7 @@ function openCompanyArticle(id){
       const lid='list_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
       SN_CARDS={ logId:lid, cid:String(id||''), variant:'list' };
       try{ localStorage.setItem('sn_card_ctx', JSON.stringify(Object.assign({},SN_CARDS,{_ts:Date.now()}))); }catch(e){}
-      fetch('/api/card-log',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify({id:lid,set:{started:true,variant:'list',recommended_company:String(id||''),article_read:true}})});
+      fetch('/api/card-log',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify({id:lid,set:Object.assign({started:true,variant:'list',recommended_company:String(id||''),article_read:true},_snInt())})});
     } else if(SN_CARDS.variant==='list'){
       SN_CARDS.cid=String(id||'');
       patchCardLog({recommended_company:String(id||''),article_read:true});
@@ -3739,7 +3742,7 @@ function logFormOpen(){
     if(_formOpenLogId){
       fetch('/api/card-log',{ method:'POST', keepalive:true,
         headers:{ 'Content-Type':'application/json' },
-        body:JSON.stringify({ id:_formOpenLogId, set:{ form_open:true } }) });
+        body:JSON.stringify({ id:_formOpenLogId, set:Object.assign({ form_open:true }, _snInt()) }) });
     }
   }catch(e){}
   window.open(WEBCAS_FORM_URL,'_blank'); // ユーザー操作内で同期的に開く（ポップアップブロック回避）

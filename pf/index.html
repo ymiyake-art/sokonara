@@ -520,6 +520,15 @@ const SN_UTM=(function(){
     return u;
   }catch(e){ return {source:'',medium:'',campaign:''}; }
 })();
+// 内部テスト端末フラグ：?test=1 で一度開くとその端末を「内部」としてタグ付け→以降のcard_logsをis_internal=trueにし、adminファネルで集計除外。?test=0で解除。
+const SN_INTERNAL=(function(){
+  try{
+    const q=new URLSearchParams(location.search);
+    if(q.get('test')==='1'||q.get('internal')==='1') localStorage.setItem('sn_internal','1');
+    if(q.get('test')==='0'||q.get('internal')==='0') localStorage.removeItem('sn_internal');
+    return localStorage.getItem('sn_internal')==='1';
+  }catch(e){ return false; }
+})();
 // 既定＝人物(偶然性)版。?v=challenge で旧課題版を温存(比較/テスト用)。card_logsのvariantに記録。
 // 回遊(index→/pf)でも維持できるよう localStorage(sn_variant) に保存・復元する。
 const SN_VARIANT=(function(){
@@ -918,10 +927,11 @@ function maskPII(s){
 // card_logsへの保存はすべてサーバーAPI(service_role)経由＝RLS非依存で確実に保存。upsertなので初回INSERT/以降UPDATE。
 async function _saveLog(set){
   if(!logId) return false;
+  const _set=Object.assign({}, set||{}); if(SN_INTERNAL) _set.is_internal=true; // 内部端末はis_internalで集計除外
   try{
     const res=await fetch('/api/card-log',{method:'POST', keepalive:true,
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ id:logId, set:set||{} })});
+      body:JSON.stringify({ id:logId, set:_set })});
     const j=await res.json().catch(()=>({}));
     return res.ok && j.ok!==false;
   }catch(e){ return false; }
