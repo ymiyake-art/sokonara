@@ -561,6 +561,17 @@ function weightedShuffle(a){
           .sort(function(x,y){ return y.k-x.k; })
           .map(function(o){ return o.c; });
 }
+// 1社に経営層が複数いる場合（例：増田桐箱店の藤井/中村）でも、VSでは同じ会社を出さない＝会社名で重複排除（先勝ち＝シャッフル順でランダムに1人）。
+function dedupeByCompany(arr){
+  const seen=new Set(), out=[];
+  for(const c of arr){
+    const k=(c&&(c.name||c.company)||'').trim();
+    if(k && seen.has(k)) continue;
+    if(k) seen.add(k);
+    out.push(c);
+  }
+  return out;
+}
 function leaderCardHTML(c, opts){
   opts=opts||{};
   const name=c.ceo||'経営層';
@@ -591,7 +602,7 @@ function renderVersus(){
   document.getElementById('prog').style.display='none';
   const sg=document.querySelector('.swipeGuide'); if(sg) sg.style.display='none';
   const headEl=document.querySelector('.head'); if(headEl) headEl.style.display='none';
-  vsPool=weightedShuffle(Object.values(COMPANIES_MAP).filter(c=>c&&(c.ceo||c.name)));
+  vsPool=dedupeByCompany(weightedShuffle(Object.values(COMPANIES_MAP).filter(c=>c&&(c.ceo||c.name))));
   if(vsPool.length<2){ // 経営層データ不足時は課題版にフォールバック
     if(headEl) headEl.style.display='';
     document.getElementById('actions').style.display='flex';
