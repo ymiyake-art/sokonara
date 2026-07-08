@@ -3001,38 +3001,37 @@ function renderCoList(){
   try{ initCoDrag(); }catch(e){}
 }
 
-// 掲載企業の並べ替え＝ドラッグ（つまみ⠿）。pointer eventsでマウス/タッチ両対応。離した順でsortを10刻み再採番して保存。
+// 掲載企業の並べ替え＝ドラッグ（つまみ⠿）。move/upは document に付ける＝カーソルがつまみから外れても確実に追従（pointer capture非依存）。離した順でsortを10刻み再採番して保存。
 function initCoDrag(){
   const list=document.getElementById('coSortList');
-  if(!list) return;
-  let dragEl=null;
-  list.querySelectorAll('.co-drag').forEach(handle=>{
-    handle.addEventListener('pointerdown', e=>{
-      e.preventDefault();
-      dragEl=handle.closest('.co-row');
+  if(!list || list.dataset.dragInit) return;
+  list.dataset.dragInit='1';
+  let dragEl=null, move=null, up=null;
+  list.addEventListener('pointerdown', e=>{
+    const handle=e.target.closest('.co-drag');
+    if(!handle) return;
+    e.preventDefault();
+    dragEl=handle.closest('.co-row');
+    if(!dragEl) return;
+    dragEl.style.opacity='0.55'; dragEl.style.boxShadow='0 6px 20px rgba(28,42,84,0.25)';
+    document.body.style.userSelect='none';
+    move=ev=>{
       if(!dragEl) return;
-      dragEl.style.opacity='0.55'; dragEl.style.boxShadow='0 6px 20px rgba(28,42,84,0.25)';
-      handle.style.cursor='grabbing';
-      try{ handle.setPointerCapture(e.pointerId); }catch(_){}
-      const move=ev=>{
-        if(!dragEl) return;
-        const rows=[...list.querySelectorAll('.co-row')].filter(r=>r!==dragEl);
-        let after=null;
-        for(const r of rows){ const b=r.getBoundingClientRect(); if(ev.clientY < b.top + b.height/2){ after=r; break; } }
-        if(after) list.insertBefore(dragEl, after); else list.appendChild(dragEl);
-      };
-      const up=ev=>{
-        handle.removeEventListener('pointermove', move);
-        handle.removeEventListener('pointerup', up);
-        try{ handle.releasePointerCapture(e.pointerId); }catch(_){}
-        handle.style.cursor='grab';
-        if(dragEl){ dragEl.style.opacity=''; dragEl.style.boxShadow=''; }
-        dragEl=null;
-        commitCoOrder();
-      };
-      handle.addEventListener('pointermove', move);
-      handle.addEventListener('pointerup', up);
-    });
+      const rows=[...list.querySelectorAll('.co-row')].filter(r=>r!==dragEl);
+      let after=null;
+      for(const r of rows){ const b=r.getBoundingClientRect(); if(ev.clientY < b.top + b.height/2){ after=r; break; } }
+      if(after) list.insertBefore(dragEl, after); else list.appendChild(dragEl);
+    };
+    up=()=>{
+      document.removeEventListener('pointermove', move);
+      document.removeEventListener('pointerup', up);
+      document.body.style.userSelect='';
+      if(dragEl){ dragEl.style.opacity=''; dragEl.style.boxShadow=''; }
+      dragEl=null;
+      commitCoOrder();
+    };
+    document.addEventListener('pointermove', move);
+    document.addEventListener('pointerup', up);
   });
 }
 async function commitCoOrder(){
