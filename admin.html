@@ -2688,6 +2688,33 @@ async function uploadPhoto(file){
   return data.publicUrl;
 }
 
+// ===== 保存済み写真から選ぶ（同じStorageバケットをブラウズして差し替え） =====
+async function openPhotoPicker(bucket, prefix, urlInputId, previewFn){
+  if(!supabaseClient){ toast('Supabase未接続です'); return; }
+  const { data, error } = await supabaseClient.storage.from(bucket).list(prefix, { limit:300, sortBy:{ column:'created_at', order:'desc' } });
+  if(error){ toast('写真一覧の取得に失敗: '+(error.message||error)); return; }
+  const files=(data||[]).filter(f=>f.name && !f.name.startsWith('.') && /\.(jpe?g|png|webp|gif)$/i.test(f.name));
+  const grid=files.map(f=>{
+    const url=supabaseClient.storage.from(bucket).getPublicUrl(prefix+'/'+f.name).data.publicUrl;
+    return `<div onclick="__pickPhoto('${urlInputId}','${previewFn}','${url}')" style="cursor:pointer;border:2px solid transparent;border-radius:6px;overflow:hidden;background:#f0f0f0;" onmouseover="this.style.borderColor='var(--teal)'" onmouseout="this.style.borderColor='transparent'"><img src="${url}" loading="lazy" style="width:100%;height:110px;object-fit:cover;display:block;background:#e5e5e5;"></div>`;
+  }).join('');
+  const ov=document.createElement('div');
+  ov.setAttribute('data-ppov','1');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.onclick=(e)=>{ if(e.target===ov) ov.remove(); };
+  ov.innerHTML=`<div style="background:#fff;border-radius:10px;max-width:760px;width:100%;max-height:82vh;overflow:auto;padding:18px;font-family:inherit;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><div style="font-weight:700;font-size:14px;">📁 保存済みの写真から選ぶ（${files.length}枚・${bucket}）</div><button onclick="this.closest('[data-ppov]').remove()" style="border:none;background:none;font-size:22px;cursor:pointer;line-height:1;color:#666;">×</button></div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">クリックで選択 → 下のプレビューを確認して「Supabaseに保存する」で確定。</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;">${grid||'<div style="color:#999;font-size:13px;padding:20px;">この場所に写真がありません</div>'}</div></div>`;
+  document.body.appendChild(ov);
+}
+window.__pickPhoto=function(urlInputId, previewFn, url){
+  const inp=document.getElementById(urlInputId); if(inp) inp.value=url;
+  try{ if(typeof window[previewFn]==='function') window[previewFn](); }catch(e){}
+  const ov=document.querySelector('[data-ppov]'); if(ov) ov.remove();
+  toast('写真を選択しました。プレビューを確認し、保存を忘れずに。');
+};
+
 function saveCo(){
   const name=document.getElementById('co-name').value.trim();
   const ceo=document.getElementById('co-ceo').value.trim();
@@ -3714,6 +3741,7 @@ function renderArticleEditor(){
             <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
               <input id="co-photo-file-art" type="file" accept="image/*" style="display:none" onchange="handleProfilePhotoSelect(event)">
               <button type="button" onclick="document.getElementById('co-photo-file-art').click()" style="padding:6px 14px;background:var(--navy);color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;border-radius:2px;font-family:inherit;white-space:nowrap">アップロード</button>
+              <button type="button" onclick="openPhotoPicker('company-photos','companies','art-profile-photo-url','updateProfilePhotoPreview')" style="padding:6px 12px;background:#fff;border:1px solid var(--navy);color:var(--navy);font-size:11px;font-weight:700;cursor:pointer;border-radius:2px;font-family:inherit;white-space:nowrap">📁 保存済みから選ぶ</button>
               <span id="art-profile-photo-status" style="font-size:11px;color:var(--text3)">またはURL</span>
             </div>
             <input id="art-profile-photo-url" type="url" placeholder="https://..." style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit;margin-bottom:8px" oninput="updateProfilePhotoPreview()">
@@ -3727,6 +3755,7 @@ function renderArticleEditor(){
             <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
               <input id="art-hero-photo-file" type="file" accept="image/*" style="display:none" onchange="handleHeroPhotoSelect(event)">
               <button type="button" onclick="document.getElementById('art-hero-photo-file').click()" style="padding:6px 14px;background:var(--teal);color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;border-radius:2px;font-family:inherit;white-space:nowrap">アップロード</button>
+              <button type="button" onclick="openPhotoPicker('article-images','articles','art-hero-photo-url','updateHeroPhotoPreview')" style="padding:6px 12px;background:#fff;border:1px solid var(--teal-d);color:var(--teal-d);font-size:11px;font-weight:700;cursor:pointer;border-radius:2px;font-family:inherit;white-space:nowrap">📁 保存済みから選ぶ</button>
               <button type="button" onclick="deleteStoragePhoto('art-hero-photo-url','art-hero-photo-status','art-hero-photo-preview','article-images')" style="padding:6px 12px;background:none;border:1px solid rgba(192,52,26,0.35);color:var(--hot);font-size:11px;cursor:pointer;border-radius:2px;font-family:inherit;white-space:nowrap">🗑 画像を削除</button>
               <span id="art-hero-photo-status" style="font-size:11px;color:var(--text3)">またはURL</span>
             </div>
