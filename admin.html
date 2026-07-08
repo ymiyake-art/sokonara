@@ -3842,6 +3842,15 @@ function renderArticleEditor(){
               <textarea id="art-catchphrase" rows="5" placeholder="Notion解析後に自動入力されます。改行位置をここで調整してください。" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:13px;font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-weight:700;resize:vertical;line-height:1.7"></textarea>
             </div>
           </div>
+          <div style="margin-bottom:14px;border:1px solid var(--border);border-radius:6px;padding:12px;background:var(--bg);">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:8px;font-weight:700">カードA/B文言（人物マッチで出し分け・空欄ならキャッチフレーズを使用／Enterで改行）</div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px">What（事業・役割で選ぶ／〜な人へ）</div>
+            <textarea id="art-cc-what" rows="2" placeholder="例：紙の会社を、データで“勝てる”会社に変えたい人へ" style="width:100%;box-sizing:border-box;padding:7px 9px;border:1px solid var(--border);border-radius:2px;font-size:13px;font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-weight:700;resize:vertical;line-height:1.7;margin-bottom:8px"></textarea>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px">Why+Who（価値観・人で共鳴／〜な人へ）</div>
+            <textarea id="art-cc-value" rows="2" placeholder="例：“◯◯”に共感して働きたい人へ" style="width:100%;box-sizing:border-box;padding:7px 9px;border:1px solid var(--border);border-radius:2px;font-size:13px;font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-weight:700;resize:vertical;line-height:1.7;margin-bottom:8px"></textarea>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px">Life（転機の一言・一人称／“〜な人へ”にしない）</div>
+            <textarea id="art-cc-life" rows="2" placeholder="例：父の病をきっかけに、家業を継いだ。" style="width:100%;box-sizing:border-box;padding:7px 9px;border:1px solid var(--border);border-radius:2px;font-size:13px;font-family:'Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-weight:700;resize:vertical;line-height:1.7"></textarea>
+          </div>
           <div style="margin-bottom:14px">
             <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:5px">引用フレーズ</label>
             <input id="art-quote" type="text" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:12px;font-family:inherit">
@@ -4070,6 +4079,7 @@ function onArtCompanyChange(id){
       fillMeta({
         tags: co.tags||[],
         catchphrase: co.catchphrase||'',
+        cc_what: co.cc_what||'', cc_value: co.cc_value||'', cc_life: co.cc_life||'',
         quote: co.quote||'',
         companyIntro: co.companyIntro||'',
         summaryComment: co.summaryComment||'',
@@ -4259,6 +4269,9 @@ function fillMeta(meta){
   const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=v||''; };
   set('art-tags', (meta.tags||[]).join(', '));
   set('art-catchphrase', meta.catchphrase||'');
+  if('cc_what' in meta) set('art-cc-what', meta.cc_what||'');
+  if('cc_value' in meta) set('art-cc-value', meta.cc_value||'');
+  if('cc_life' in meta) set('art-cc-life', meta.cc_life||'');
   // カードタイトル候補（3案）：クリックで1案に絞る（Notionの必須ルール「登録前に1案へ」をここで受ける）
   {
     const cp=document.getElementById('art-catchphrase');
@@ -4647,6 +4660,9 @@ async function saveArticle(){
 
   const tags=(document.getElementById('art-tags')?.value||'').split(/[,、,\s　]+/).filter(Boolean);
   const catchphrase=document.getElementById('art-catchphrase')?.value.trim()||'';
+  const cc_what=document.getElementById('art-cc-what')?.value.trim()||'';
+  const cc_value=document.getElementById('art-cc-value')?.value.trim()||'';
+  const cc_life=document.getElementById('art-cc-life')?.value.trim()||'';
   const quote=document.getElementById('art-quote')?.value.trim()||'';
   const companyIntro=document.getElementById('art-intro')?.value.trim()||'';
   const summaryComment=document.getElementById('art-summary-comment')?.value.trim()||'';
@@ -4679,7 +4695,7 @@ async function saveArticle(){
     ceo: coCeo||companies[idx].ceo,
     title: _articleTitle||companies[idx].title,
     body: JSON.stringify(_articleSections),
-    tags, catchphrase, quote,
+    tags, catchphrase, cc_what, cc_value, cc_life, quote,
     companyIntro, summaryComment, wantedProfile, q1, q1ax, cardLabel,
     photoUrl, heroUrl, type, plan, articleType, btags, rtags, wb, pf_weight
   };
