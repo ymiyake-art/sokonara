@@ -11,7 +11,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ソコナラ｜地域経営層と、キャリアを共に創る。</title>
-  <meta name="description" content="地域で挑戦する経営層との“偶然の出会い”から、自分のはたらく価値観と次の一歩を見つける——個人向けのキャリア共創サービス。想いに触れて、「この人と働きたい」から始めるキャリアの選び方。">
+  <meta name="description" content="地域で挑戦する経営層との偶然の出会いから、自分のはたらく価値観と次の一歩を見つける——個人向けのキャリア共創サービス。想いに触れて、「この人と働きたい」から始めるキャリアの選び方。">
   <meta property="og:title" content="ソコナラ｜会社を動かす人との、偶然の出会いから。">
   <meta property="og:description" content="経営層との偶然の出会いから、自分の価値観に合う働き方を見つける。個人利用は無料。">
   <meta property="og:image" content="https://app.sokonara.co.jp/images/OGP.jpg">
@@ -90,7 +90,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     #problem { background: white; }
     .problem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 48px; }
     .problem-card { background: var(--bg); border-radius: 16px; padding: 28px 24px; border-left: 4px solid var(--teal); }
-    .problem-num { font-family: 'JetBrains Mono', monospace; font-size: 30px; color: rgba(66,173,159,0.35); line-height: 1; margin-bottom: 12px; }
+    .problem-num { font-weight: 800; font-size: 30px; color: rgba(66,173,159,0.35); line-height: 1; margin-bottom: 12px; }
     .problem-title { font-weight: 700; font-size: 15px; margin-bottom: 8px; color: var(--navy); }
     .problem-text { font-size: 13px; color: var(--text2); line-height: 1.8; }
     @media (max-width: 768px) { .problem-grid { grid-template-columns: 1fr; } }
@@ -134,10 +134,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 52px; position: relative; }
     .steps::before { content: ''; position: absolute; top: 31px; left: 12.5%; right: 12.5%; height: 2px; background: var(--border); z-index: 0; }
     .step { text-align: center; position: relative; z-index: 1; padding: 0 12px; }
-    .step-num { width: 62px; height: 62px; border-radius: 50%; background: var(--navy); color: white; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 20px; margin: 0 auto 20px; border: 4px solid var(--bg); }
+    .step-num { width: 62px; height: 62px; border-radius: 50%; background: var(--navy); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px; margin: 0 auto 20px; border: 4px solid var(--bg); }
     .step-title { font-weight: 700; font-size: 14px; color: var(--navy); margin-bottom: 8px; }
     .step-text { font-size: 12px; color: var(--text2); line-height: 1.75; }
     @media (max-width: 640px) { .steps { grid-template-columns: repeat(2, 1fr); gap: 36px; } .steps::before { display: none; } }
+    #casesGrid { grid-template-columns: repeat(4, minmax(0,1fr)); }
+    @media (max-width: 900px) { #casesGrid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 520px) { #casesGrid { grid-template-columns: 1fr; } }
 
     /* FAQ */
     #faq { background: var(--bg); }
@@ -209,10 +212,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <span class="hero-eyebrow">FOR INDIVIDUALS / 個人の方へ</span>
       <h1 class="hero-title">
         <span style="display:inline-block;">条件だけでは、</span><span style="display:inline-block;">出会えなかった。</span><br>
-        <span style="display:inline-block;">福岡・九州の<em>経営層</em>と、</span><span style="display:inline-block;"><em>“偶然”</em>、出会う。</span>
+        <span style="display:inline-block;">福岡・九州の<em>経営層</em>と、</span><span style="display:inline-block;"><em>偶然</em>、出会う。</span>
       </h1>
       <p class="hero-sub">
-        地域で挑戦する“経営層”の想いや会社のストーリーに触れて、<br>
+        地域で挑戦する経営層の想いや会社のストーリーに触れて、<br>
         <strong style="color:#fff;font-weight:700;">これからの働き方を考えるきっかけ</strong>を。<br>
         実際に、社長の話に惹かれて動いた人がいます。
       </p>
@@ -249,17 +252,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="feature-item fade-in">
         <div class="feature-icon"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11.5" cy="11" r="4"/><path d="M4.5 25c0-3.9 3.1-7 7-7s7 3.1 7 7"/><circle cx="22.5" cy="13" r="3"/><path d="M20 25c.2-3 2.5-5.2 5.5-5.2c1 0 1.9.2 2.7.6"/></svg></div>
         <div class="feature-label">出会いから始まる</div>
-        <div class="feature-desc">肩書きや条件ではなく、ピンときた“経営層”を入口に。直感で選ぶところから始まります。</div>
+        <div class="feature-desc">肩書きや条件ではなく、ピンときた経営層を入口に。直感で選ぶところから始まります。</div>
       </div>
       <div class="feature-item fade-in">
         <div class="feature-icon"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 27c0-6 3-9.5 7-11.5"/><path d="M27 27c0-6-3-9.5-7-11.5"/><path d="M16 3l1.7 4.3L22 9l-4.3 1.7L16 15l-1.7-4.3L10 9l4.3-1.7z" fill="var(--teal)" stroke="none"/></svg></div>
         <div class="feature-label">偶然の出会い</div>
-        <div class="feature-desc">計画的に“偶然”を起こすことが、キャリアが動くきっかけになります。</div>
+        <div class="feature-desc">計画的に偶然を起こすことが、キャリアが動くきっかけになります。</div>
       </div>
       <div class="feature-item fade-in">
         <div class="feature-icon"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="14" r="8.5"/><path d="M20.5 20.5L28 28"/><path d="M14 11.2c-1.1-1.5-3.4-.8-3.4 1c0 1.7 2.2 3 3.4 4.1c1.2-1.1 3.4-2.4 3.4-4.1c0-1.8-2.3-2.5-3.4-1z" fill="var(--teal)" stroke="none"/></svg></div>
         <div class="feature-label">自分を発見する</div>
-        <div class="feature-desc">何に惹かれたかで、あなたの“はたらく価値観”が見えてきます。</div>
+        <div class="feature-desc">何に惹かれたかで、あなたのはたらく価値観が見えてきます。</div>
       </div>
     </div>
   </div>
@@ -271,15 +274,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="text-center fade-in">
       <span class="section-tag">REAL STORIES</span>
       <h2 class="section-title">実際に、出会いは生まれています。</h2>
-      <p class="section-lead">条件ではなく“人”に惹かれた先に、新しいキャリアが始まっています。</p>
+      <p class="section-lead">条件ではなく人に惹かれた先に、新しいキャリアが始まっています。</p>
     </div>
-    <div id="casesGrid" class="fade-in" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:20px;margin-top:48px;">
+    <div id="casesGrid" class="fade-in" style="display:grid;gap:20px;margin-top:48px;">
       <div style="background:var(--bg);border-radius:16px;overflow:hidden;">
         <div style="position:relative;aspect-ratio:3/2;overflow:hidden;background:#14213f;">
           <img src="/images/case1.webp" alt="出会いの実例 ①" loading="lazy" style="width:100%;height:100%;object-fit:contain;display:block;" onerror="this.style.display='none'">
         </div>
         <div style="padding:16px 16px 18px;">
-          <div style="font-size:13.5px;font-weight:700;color:var(--navy);line-height:1.55;margin-bottom:10px;">“人”に惹かれて、愛知から古賀へ移住。</div>
+          <div style="font-size:13.5px;font-weight:700;color:var(--navy);line-height:1.55;margin-bottom:10px;">人に惹かれて、愛知から古賀へ移住。</div>
           <div style="display:flex;flex-direction:column;gap:5px;">
             <div style="display:flex;gap:6px;font-size:11.5px;color:var(--text2);line-height:1.55;"><span style="color:var(--teal);font-weight:700;flex-shrink:0;">✔</span><span>愛知県瀬戸市 → 古賀市へ移住</span></div>
             <div style="display:flex;gap:6px;font-size:11.5px;color:var(--text2);line-height:1.55;"><span style="color:var(--teal);font-weight:700;flex-shrink:0;">✔</span><span>正社員として、社長の右腕に</span></div>
@@ -296,8 +299,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <div style="font-size:13.5px;font-weight:700;color:var(--navy);line-height:1.55;margin-bottom:10px;">まず話を聞いてみたら、道がひらけた。</div>
           <div style="display:flex;flex-direction:column;gap:5px;">
             <div style="display:flex;gap:6px;font-size:11.5px;color:var(--text2);line-height:1.55;"><span style="color:var(--teal);font-weight:700;flex-shrink:0;">✔</span><span>学習塾の運営・企画 → G's福岡校の運営＋研修企画</span></div>
-            <div style="display:flex;gap:6px;font-size:11.5px;color:var(--text2);line-height:1.55;"><span style="color:var(--teal);font-weight:700;flex-shrink:0;">✔</span><span>条件より“ミッション共感”で決めた</span></div>
-            <div style="display:flex;gap:6px;font-size:11.5px;color:var(--text2);line-height:1.55;"><span style="color:var(--teal);font-weight:700;flex-shrink:0;">✔</span><span>“もっと話を聞きたい”から面談→入社</span></div>
+            <div style="display:flex;gap:6px;font-size:11.5px;color:var(--text2);line-height:1.55;"><span style="color:var(--teal);font-weight:700;flex-shrink:0;">✔</span><span>条件よりミッション共感で決めた</span></div>
+            <div style="display:flex;gap:6px;font-size:11.5px;color:var(--text2);line-height:1.55;"><span style="color:var(--teal);font-weight:700;flex-shrink:0;">✔</span><span>もっと話を聞きたいから面談→入社</span></div>
           </div>
           <div style="font-size:11px;color:var(--text3);margin-top:10px;">海部さん</div>
         </div>
@@ -323,7 +326,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div style="padding:16px 16px 18px;">
           <div style="font-size:13.5px;font-weight:700;color:var(--navy);line-height:1.55;margin-bottom:10px;">価値観の合う場所で、二人とも正社員に。</div>
           <div style="display:flex;flex-direction:column;gap:5px;">
-            <div style="display:flex;gap:6px;font-size:11.5px;color:var(--text2);line-height:1.55;"><span style="color:var(--teal);font-weight:700;flex-shrink:0;">✔</span><span>スキルより“価値観の親和性”で採用</span></div>
+            <div style="display:flex;gap:6px;font-size:11.5px;color:var(--text2);line-height:1.55;"><span style="color:var(--teal);font-weight:700;flex-shrink:0;">✔</span><span>スキルより価値観の親和性で採用</span></div>
             <div style="display:flex;gap:6px;font-size:11.5px;color:var(--text2);line-height:1.55;"><span style="color:var(--teal);font-weight:700;flex-shrink:0;">✔</span><span>早川さん＝営業／北川さん＝SE（挑戦採用）</span></div>
             <div style="display:flex;gap:6px;font-size:11.5px;color:var(--text2);line-height:1.55;"><span style="color:var(--teal);font-weight:700;flex-shrink:0;">✔</span><span>2025年、ともに入社</span></div>
           </div>
@@ -342,10 +345,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <h2 class="section-title">こんな方へ</h2>
     </div>
     <div class="fade-in" style="max-width:560px;margin:32px auto 0;display:flex;flex-direction:column;gap:12px;">
-      <div style="display:flex;align-items:center;gap:12px;background:var(--bg);border-radius:12px;padding:15px 18px;"><span style="color:var(--teal);font-weight:900;font-size:18px;flex-shrink:0;">✓</span><span style="font-size:14.5px;color:var(--text);line-height:1.6;">今の仕事に、なんとなく違和感がある</span></div>
-      <div style="display:flex;align-items:center;gap:12px;background:var(--bg);border-radius:12px;padding:15px 18px;"><span style="color:var(--teal);font-weight:900;font-size:18px;flex-shrink:0;">✓</span><span style="font-size:14.5px;color:var(--text);line-height:1.6;">地域で、自分の力を試してみたい</span></div>
-      <div style="display:flex;align-items:center;gap:12px;background:var(--bg);border-radius:12px;padding:15px 18px;"><span style="color:var(--teal);font-weight:900;font-size:18px;flex-shrink:0;">✓</span><span style="font-size:14.5px;color:var(--text);line-height:1.6;">経営層と直接、話してみたい</span></div>
-      <div style="display:flex;align-items:center;gap:12px;background:var(--bg);border-radius:12px;padding:15px 18px;"><span style="color:var(--teal);font-weight:900;font-size:18px;flex-shrink:0;">✓</span><span style="font-size:14.5px;color:var(--text);line-height:1.6;">転職するか、迷っている</span></div>
+      <div style="display:flex;align-items:center;gap:12px;background:var(--bg);border-radius:12px;padding:15px 18px;"><span style="color:var(--teal);font-weight:900;font-size:18px;flex-shrink:0;">✓</span><span style="font-size:14.5px;color:var(--text);line-height:1.6;">今の仕事は悪くない。でも、これでいいのかと時々思う</span></div>
+      <div style="display:flex;align-items:center;gap:12px;background:var(--bg);border-radius:12px;padding:15px 18px;"><span style="color:var(--teal);font-weight:900;font-size:18px;flex-shrink:0;">✓</span><span style="font-size:14.5px;color:var(--text);line-height:1.6;">福岡・九州で、自分の力を試せる場所を探している</span></div>
+      <div style="display:flex;align-items:center;gap:12px;background:var(--bg);border-radius:12px;padding:15px 18px;"><span style="color:var(--teal);font-weight:900;font-size:18px;flex-shrink:0;">✓</span><span style="font-size:14.5px;color:var(--text);line-height:1.6;">求人票よりも、経営層の人柄や本音を知りたい</span></div>
+      <div style="display:flex;align-items:center;gap:12px;background:var(--bg);border-radius:12px;padding:15px 18px;"><span style="color:var(--teal);font-weight:900;font-size:18px;flex-shrink:0;">✓</span><span style="font-size:14.5px;color:var(--text);line-height:1.6;">転職するか決めきれず、まず情報だけ集めたい</span></div>
     </div>
   </div>
 </section>
@@ -355,19 +358,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="container">
     <div class="text-center fade-in">
       <span class="section-tag">PROBLEM</span>
-      <h2 class="section-title">こんな気持ち、ありませんか？</h2>
-      <p class="section-lead">まだ出会えていないだけ、かもしれません。</p>
+      <h2 class="section-title">思い当たること、ありませんか？</h2>
+      <p class="section-lead">まだ、出会えていないだけかもしれません。</p>
     </div>
     <div class="problem-grid fade-in">
       <div class="problem-card">
         <div class="problem-num">01</div>
-        <div class="problem-title">“誰と働くか”で選べていない</div>
+        <div class="problem-title">働く相手で、選べていない</div>
         <div class="problem-text">年収や条件は分かっても、「この人と働きたい」で選んだ経験は意外と少ない。価値観の相性は、後回しになりがち。</div>
       </div>
       <div class="problem-card">
         <div class="problem-num">02</div>
-        <div class="problem-title">出会いが“いつもの円”の中だけ</div>
-        <div class="problem-text">学校・職場・業界——同じような人とばかり。人生を変える“予想しなかった出会い”は、待っていても起きにくい。</div>
+        <div class="problem-title">出会いが、同じ顔ぶれの中だけ</div>
+        <div class="problem-text">学校・職場・業界——気づけば、似た人とばかり。人生を動かす予想外の出会いは、待っているだけでは起きにくい。</div>
       </div>
       <div class="problem-card">
         <div class="problem-num">03</div>
@@ -384,19 +387,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="text-center fade-in">
       <span class="section-tag">FEATURES</span>
       <h2 class="section-title">ソコナラの、はじまり方。</h2>
-      <p class="section-lead">よくある転職と“どちらか”ではありません。両方使ってOK。入口の違いをまとめました。</p>
+      <p class="section-lead">肩書きや条件よりも、まず人から。ソコナラならではの5つの特徴です。</p>
     </div>
-    <div class="compare-wrap fade-in">
-      <table class="compare">
-        <thead><tr><th></th><th class="th-sokonara">ソコナラ</th><th class="th-other">一般的な転職活動</th></tr></thead>
-        <tbody>
-          <tr><td>はじまり方</td><td class="sokonara"><strong style="color:var(--teal-d)">経営層の想いを知ることから</strong></td><td>求人情報から</td></tr>
-          <tr><td>選ぶ軸</td><td class="sokonara"><strong style="color:var(--teal-d)">想い・価値観</strong></td><td>年収・条件</td></tr>
-          <tr><td>出会い方</td><td class="sokonara"><strong style="color:var(--teal-d)">“偶然”の出会い</strong></td><td>検索して絞り込む</td></tr>
-          <tr><td>話す相手</td><td class="sokonara"><strong style="color:var(--teal-d)">経営層 本人</strong></td><td>採用担当</td></tr>
-          <tr><td>費用（個人）</td><td class="sokonara"><strong style="color:var(--teal-d)">無料</strong></td><td>サービスにより異なる</td></tr>
-        </tbody>
-      </table>
+    <div class="fade-in" style="max-width:640px;margin:40px auto 0;display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;gap:16px;align-items:baseline;background:var(--bg);border-radius:12px;padding:16px 20px;"><span style="flex-shrink:0;min-width:92px;font-size:12.5px;color:var(--text2);font-weight:700;">はじまり方</span><span style="font-size:15px;color:var(--navy);font-weight:700;line-height:1.6;">経営層の想いを知ることから</span></div>
+      <div style="display:flex;gap:16px;align-items:baseline;background:var(--bg);border-radius:12px;padding:16px 20px;"><span style="flex-shrink:0;min-width:92px;font-size:12.5px;color:var(--text2);font-weight:700;">選ぶ軸</span><span style="font-size:15px;color:var(--navy);font-weight:700;line-height:1.6;">条件よりも、想い・価値観</span></div>
+      <div style="display:flex;gap:16px;align-items:baseline;background:var(--bg);border-radius:12px;padding:16px 20px;"><span style="flex-shrink:0;min-width:92px;font-size:12.5px;color:var(--text2);font-weight:700;">出会い方</span><span style="font-size:15px;color:var(--navy);font-weight:700;line-height:1.6;">検索ではなく、偶然の出会い</span></div>
+      <div style="display:flex;gap:16px;align-items:baseline;background:var(--bg);border-radius:12px;padding:16px 20px;"><span style="flex-shrink:0;min-width:92px;font-size:12.5px;color:var(--text2);font-weight:700;">話す相手</span><span style="font-size:15px;color:var(--navy);font-weight:700;line-height:1.6;">まず経営層本人へ（内容により採用担当の場合も）</span></div>
+      <div style="display:flex;gap:16px;align-items:baseline;background:var(--bg);border-radius:12px;padding:16px 20px;"><span style="flex-shrink:0;min-width:92px;font-size:12.5px;color:var(--text2);font-weight:700;">費用（個人）</span><span style="font-size:15px;color:var(--navy);font-weight:700;line-height:1.6;">無料</span></div>
     </div>
   </div>
 </section>
@@ -418,11 +416,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p class="section-lead">ソコナラMEET 参加者アンケートより。</p>
     </div>
     <div class="fade-in" style="max-width:900px;margin:36px auto 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;">
-      <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 18px;"><div style="color:var(--teal);font-size:22px;line-height:1;margin-bottom:8px;">“</div><div style="font-size:14px;color:var(--text);line-height:1.8;font-weight:700;">社風だけでなく、経営者の人となりを知ることができた。</div></div>
-      <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 18px;"><div style="color:var(--teal);font-size:22px;line-height:1;margin-bottom:8px;">“</div><div style="font-size:14px;color:var(--text);line-height:1.8;font-weight:700;">経験がないのがコンプレックスだったが、自分にもできることがあると自信がついた。</div></div>
-      <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 18px;"><div style="color:var(--teal);font-size:22px;line-height:1;margin-bottom:8px;">“</div><div style="font-size:14px;color:var(--text);line-height:1.8;font-weight:700;">門外漢だった世界を知れて、これからどう働くかの解像度が上がった。</div></div>
-      <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 18px;"><div style="color:var(--teal);font-size:22px;line-height:1;margin-bottom:8px;">“</div><div style="font-size:14px;color:var(--text);line-height:1.8;font-weight:700;">同年代の考え方やビジョンを聞けて、良い刺激を受けた。</div></div>
-    </div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 18px;"><div style="font-size:14px;color:var(--text);line-height:1.8;font-weight:700;">社風だけでなく、経営者の人となりを知ることができた。</div></div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 18px;"><div style="font-size:14px;color:var(--text);line-height:1.8;font-weight:700;">経験がないのがコンプレックスだったが、自分にもできることがあると自信がついた。</div></div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 18px;"><div style="font-size:14px;color:var(--text);line-height:1.8;font-weight:700;">門外漢だった世界を知れて、これからどう働くかの解像度が上がった。</div></div>    </div>
   </div>
 </section>
 
@@ -431,28 +427,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="container">
     <div class="text-center fade-in">
       <span class="section-tag">ENCOUNTERS</span>
-      <h2 class="section-title">あなたを待っているのは、<br>まだ出会っていない“人”。</h2>
+      <h2 class="section-title">あなたを待っているのは、<br>まだ出会っていない人。</h2>
       <p class="section-lead">地域で挑戦する経営層が、一緒に向き合う仲間を探しています。<br>ピンときた人から、その物語を読んでみてください。</p>
     </div>
     <div class="themes-grid fade-in">
       <div class="theme-card">
-        <div class="phrase">“学びが当たり前”の文化を、社会につくりたい。</div>
+        <div class="phrase">学びが当たり前の文化を、社会につくりたい。</div>
         <div><div class="theme-tags"><span class="theme-tag">学び</span><span class="theme-tag">地方創生</span></div><div class="meta"><span class="who">福岡・ある教育系事業の経営層</span></div></div>
       </div>
       <div class="theme-card">
-        <div class="phrase">AIに置き換わらない“自分の価値”を、チームで問い直す。</div>
+        <div class="phrase">AIに置き換わらない自分の価値を、チームで問い直す。</div>
         <div><div class="theme-tags"><span class="theme-tag">IT・DX</span><span class="theme-tag">組織・人づくり</span></div><div class="meta"><span class="who">福岡・ある開発会社の経営層</span></div></div>
       </div>
       <div class="theme-card">
-        <div class="phrase">“建材で地球を救う”を、仲間と本気でやりたい。</div>
+        <div class="phrase">建材で地球を救うを、仲間と本気でやりたい。</div>
         <div><div class="theme-tags"><span class="theme-tag">新規事業</span><span class="theme-tag">技術を磨く</span></div><div class="meta"><span class="who">福岡・あるものづくり事業の経営層</span></div></div>
       </div>
       <div class="theme-card">
-        <div class="phrase">紙の会社を、データで“勝てる”会社に変えたい。</div>
+        <div class="phrase">紙の会社を、データで勝てる会社に変えたい。</div>
         <div><div class="theme-tags"><span class="theme-tag">IT・DX</span><span class="theme-tag">専門性を極める</span></div><div class="meta"><span class="who">福岡・ある老舗企業の経営層</span></div></div>
       </div>
     </div>
-    <p class="themes-note">※ 経営層の氏名・社名は、アプリで“ピンときた”あとに開きます（先入観なく、直感で選んでいただくため）。</p>
+    <p class="themes-note">※ 経営層の氏名・社名は、アプリでピンときたあとに開きます（先入観なく、直感で選んでいただくため）。</p>
     <div class="themes-more">
       <a href="https://app.sokonara.co.jp/?utm_source=personal_lp&utm_medium=lp&utm_campaign=lp_personal&utm_content=themes_cta" class="btn-primary">無料で経営層カードを見てみる</a>
     </div>
@@ -461,7 +457,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 
 <!-- HOW -->
-<section id="how" class="section"
+<section id="how" class="section">
   <div class="container">
     <div class="text-center fade-in">
       <span class="section-tag">HOW IT WORKS</span>
@@ -472,7 +468,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="step"><div style="height:200px;overflow:hidden;border-radius:12px;margin-bottom:14px;border:1px solid var(--border);"><img src="/images/app_leaders.jpg" loading="lazy" alt="経営層を選ぶ画面" style="width:100%;height:100%;object-fit:cover;object-position:top;display:block;"></div><div class="step-num">01</div><div class="step-title">直感で経営層を選ぶ</div><div class="step-text">出てくる経営層から、ピンとくる方をタップ。直感でOKです。</div></div>
       <div class="step"><div style="height:200px;overflow:hidden;border-radius:12px;margin-bottom:14px;border:1px solid var(--border);"><img src="/images/app_article.jpg" loading="lazy" alt="経営層の記事を読む画面" style="width:100%;height:100%;object-fit:cover;object-position:top;display:block;"></div><div class="step-num">02</div><div class="step-title">想いを、記事で知る</div><div class="step-text">選んだ経営層の想い・転機・事業を、記事で深く知ることができます。</div></div>
       <div class="step"><div style="height:200px;overflow:hidden;border-radius:12px;margin-bottom:14px;border:1px solid var(--border);"><img src="/images/app_article.jpg" loading="lazy" alt="経営層に想いを届ける画面" style="width:100%;height:100%;object-fit:cover;object-position:bottom;display:block;"></div><div class="step-num">03</div><div class="step-title">「いいな」を届ける</div><div class="step-text">話を聞いてみたいと思ったら、カジュアルに一言。応募・選考ではありません。</div></div>
-      <div class="step"><div style="height:200px;overflow:hidden;border-radius:12px;margin-bottom:14px;border:1px solid var(--border);"><img src="/images/app_wb.jpg" loading="lazy" alt="はたらく価値観レポート画面" style="width:100%;height:100%;object-fit:cover;object-position:top;display:block;"></div><div class="step-num">04</div><div class="step-title">はたらく価値観が見える</div><div class="step-text">無意識に選んだ傾向から、あなたの“はたらく価値観”が見えてきます。</div></div>
+      <div class="step"><div style="height:200px;overflow:hidden;border-radius:12px;margin-bottom:14px;border:1px solid var(--border);"><img src="/images/app_wb.jpg" loading="lazy" alt="はたらく価値観レポート画面" style="width:100%;height:100%;object-fit:cover;object-position:top;display:block;"></div><div class="step-num">04</div><div class="step-title">はたらく価値観が見える</div><div class="step-text">無意識に選んだ傾向から、あなたのはたらく価値観が見えてきます。</div></div>
     </div>
   </div>
 </section>
@@ -483,23 +479,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="text-center fade-in"><span class="section-tag">FAQ</span><h2 class="section-title">よくある質問</h2></div>
     <div class="faq-list fade-in">
       <div class="faq-item"><div class="faq-q"><div class="faq-q-label">本当に無料で使えますか？</div><span class="faq-arrow">▾</span></div><div class="faq-a">はい、個人の方は完全無料です。経営層を選ぶ・記事を読む・自己分析（はたらく価値観診断）を受けるところまで、費用は一切かかりません。ソコナラは掲載企業（法人）側で成り立つモデルのため、個人の方は無料でご利用いただけます。</div></div>
-      <div class="faq-item"><div class="faq-q"><div class="faq-q-label">最初に会員登録は必要ですか？</div><span class="faq-arrow">▾</span></div><div class="faq-a">いいえ。まずは登録なしで、経営層マッチと記事まで体験できます。自己分析（はたらく価値観診断）や経営層との接点に進みたくなったタイミングで、LINEのご登録をご案内します。</div></div>
-      <div class="faq-item"><div class="faq-q"><div class="faq-q-label">どうやって経営層と出会えるのですか？</div><span class="faq-arrow">▾</span></div><div class="faq-a">2人ずつ出てくる経営層から直感で選ぶと、その人の記事（物語）が読めます。読んで「話を聞いてみたい」と思ったら、経営層との接点（カジュアル面談など）に進めます。</div></div>
-      <div class="faq-item"><div class="faq-q"><div class="faq-q-label">転職しないと使えませんか？</div><span class="faq-arrow">▾</span></div><div class="faq-a">転職は前提ではありません。副業・週末の関わり・プロジェクト参画など、関わり方はさまざまです。まずは話してみることを大切にしています。</div></div>
-      <div class="faq-item"><div class="faq-q"><div class="faq-q-label">地方移住は必要ですか？</div><span class="faq-arrow">▾</span></div><div class="faq-a">必須ではありません。リモートから始められることも多くあります。ただ、現場の空気を知るために、一度は訪れてみることをおすすめしています。</div></div>
-      <div class="faq-item"><div class="faq-q"><div class="faq-q-label">在職中でも使えますか？</div><span class="faq-arrow">▾</span></div><div class="faq-a">はい。在職中の方も多くご利用です。まずは情報収集・対話からで大丈夫。すぐに転職を決める場ではありません。</div></div>
-      <div class="faq-item"><div class="faq-q"><div class="faq-q-label">匿名で使えますか？</div><span class="faq-arrow">▾</span></div><div class="faq-a">経営層を選ぶ・記事を読む段階は匿名（登録不要）です。お名前などは「話を聞いてみたい」と思ったときに、申込フォームでだけご入力いただきます。</div></div>
-      <div class="faq-item"><div class="faq-q"><div class="faq-q-label">「話を聞いてみる」は応募になりますか？</div><span class="faq-arrow">▾</span></div><div class="faq-a">いいえ。カジュアルに話を聞く場で、応募・選考ではありません。経営層が「話したい」と思った場合に、ご連絡が届く形です。</div></div>
-      <div class="faq-item"><div class="faq-q"><div class="faq-q-label">福岡以外でも使えますか？</div><span class="faq-arrow">▾</span></div><div class="faq-a">現在は福岡・九州の経営層が中心ですが、リモートでの関わりも可能です。掲載エリアは順次拡大していきます。</div></div>
-    </div>
+      <div class="faq-item"><div class="faq-q"><div class="faq-q-label">最初に会員登録は必要ですか？</div><span class="faq-arrow">▾</span></div><div class="faq-a">いいえ。まずは登録なしで、経営層マッチと記事まで体験できます。自己分析（はたらく価値観診断）や経営層との接点に進みたくなったタイミングで、LINEのご登録をご案内します。</div></div>      <div class="faq-item"><div class="faq-q"><div class="faq-q-label">転職しないと使えませんか？</div><span class="faq-arrow">▾</span></div><div class="faq-a">転職は前提ではありません。副業・週末の関わり・プロジェクト参画など、関わり方はさまざまです。まずは話してみることを大切にしています。</div></div>      <div class="faq-item"><div class="faq-q"><div class="faq-q-label">匿名で使えますか？</div><span class="faq-arrow">▾</span></div><div class="faq-a">経営層を選ぶ・記事を読む段階は匿名（登録不要）です。お名前などは「話を聞いてみたい」と思ったときに、申込フォームでだけご入力いただきます。</div></div>
+      <div class="faq-item"><div class="faq-q"><div class="faq-q-label">「話を聞いてみる」は応募になりますか？</div><span class="faq-arrow">▾</span></div><div class="faq-a">いいえ。カジュアルに話を聞く場で、応募・選考ではありません。経営層が「話したい」と思った場合に、ご連絡が届く形です。</div></div>    </div>
   </div>
 </section>
 
 <!-- FINAL CTA -->
 <section id="final-cta">
   <div class="container">
-    <h2 class="cta-title fade-in">ピンとくる経営層に出会うと、<br>自分の“はたらく価値観”が見えてくる。</h2>
-    <p class="cta-sub fade-in">まずは約1分・無料。“この人と話してみたい”から始めてみませんか？</p>
+    <h2 class="cta-title fade-in">ピンとくる経営層に出会うと、<br>自分のはたらく価値観が見えてくる。</h2>
+    <p class="cta-sub fade-in">まずは約1分・無料。この人と話してみたいから始めてみませんか？</p>
     <div class="cta-btns fade-in">
       <a href="https://app.sokonara.co.jp/?utm_source=personal_lp&utm_medium=lp&utm_campaign=lp_personal&utm_content=final_app" class="btn-white">無料で経営層カードを見てみる</a>
     </div>
