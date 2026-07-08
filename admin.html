@@ -214,6 +214,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
         <div class="nav-item" id="ni-cards" onclick="switchTab('cards')"><div class="nav-dot" style="background:#9b59b6"></div>🗂️ 課題カード(v2)</div>
         <div class="nav-item" id="ni-utmlinks" onclick="switchTab('utmlinks')"><div class="nav-dot" style="background:#16a085"></div>🔗 配信リンク・UTM</div>
         <div class="nav-item" id="ni-cases" onclick="switchTab('cases')"><div class="nav-dot" style="background:#e74c3c"></div>✨ 出会いの実例(LP)</div>
+        <div class="nav-item" id="ni-plptext" onclick="switchTab('plptext')"><div class="nav-dot" style="background:#06C755"></div>👤 個人LP文言</div>
       </div>
       <div class="admin-nav" style="border-top:1px solid rgba(255,255,255,0.07);padding-top:12px;">
         <div class="admin-nav-label">リファレンス</div>
@@ -351,7 +352,7 @@ function switchTab(tab){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const ni=document.getElementById('ni-'+tab);
   if(ni) ni.classList.add('active');
-  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',biz:'🏢 法人問い合わせ',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',meetops:'🎪 MEET運営（班分け・興味データ）',article:'📝 記事管理',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧',wbmatrix:'📈 Well-beingマトリクス',cards:'🗂️ 課題カード(v2)',resonance:'📊 共鳴データ(v2)',utmlinks:'🔗 配信リンク・UTM',cases:'✨ 出会いの実例(LP)',philosophy:'🧭 設計思想'};
+  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',biz:'🏢 法人問い合わせ',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',meetops:'🎪 MEET運営（班分け・興味データ）',article:'📝 記事管理',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧',wbmatrix:'📈 Well-beingマトリクス',cards:'🗂️ 課題カード(v2)',resonance:'📊 共鳴データ(v2)',utmlinks:'🔗 配信リンク・UTM',cases:'✨ 出会いの実例(LP)',plptext:'👤 個人LP文言（/personal/）',philosophy:'🧭 設計思想'};
   document.getElementById('tabTitle').textContent=titles[tab]||tab;
   if(tab === 'interests'){
     // 既読としてマーク
@@ -362,7 +363,7 @@ function switchTab(tab){
     localStorage.setItem('snLastSeenBiz', new Date().toISOString());
     setBizBadge(0);
   }
-  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,biz:renderBiz,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,meetops:renderMeetAdmin,article:renderArticleEditor,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList,wbmatrix:renderWBMatrix,cards:renderCardsAdmin,resonance:renderResonance,utmlinks:renderUtmLinks,cases:renderCases,philosophy:renderPhilosophy};
+  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,biz:renderBiz,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,meetops:renderMeetAdmin,article:renderArticleEditor,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList,wbmatrix:renderWBMatrix,cards:renderCardsAdmin,resonance:renderResonance,utmlinks:renderUtmLinks,cases:renderCases,plptext:renderPlpText,philosophy:renderPhilosophy};
   fns[tab]?.();
 }
 
@@ -3586,6 +3587,56 @@ async function meetLpSave(){
     return;
   }
   toast('LP文言を保存しました。/meet/ を再読み込みすると反映されます');
+}
+
+// ===== 個人LP文言編集（/personal/ の [data-lp] を読み込み→編集→site_settings.personal_lp に保存。LPが起動時にマージ） =====
+let _plp=null, _plpFields=null;
+function renderPlpText(){
+  const box=document.getElementById('adminContent');
+  box.innerHTML=`<div style="padding:24px;max-width:960px">
+    <div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.7">個人向けLP（/personal/）の文言を編集して公開します。<b>① 現在の文言を読み込む → ② 直したい欄だけ編集 → ③ 保存して公開</b>（/personal/ を再読み込みで反映）。<br><span style="color:var(--text3);font-size:12px">※ ラベルに(br可)(em可)等がある欄は &lt;br&gt;（改行）や &lt;em&gt;（強調）タグをそのまま含められます。<b>空欄で保存するとコード既定に戻ります</b>。メインCTAは全ボタン連動。</span></div>
+    <button onclick="plpLoad()" style="padding:9px 18px;background:var(--navy);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;border-radius:5px;font-family:inherit;">📥 現在の文言を読み込む</button>
+    <span id="plpStatus" style="font-size:11px;color:var(--text3);margin-left:10px;"></span>
+    <div id="plpForm" style="display:none;margin-top:16px;"></div>
+  </div>`;
+}
+async function plpLoad(){
+  const st=document.getElementById('plpStatus'); if(st) st.textContent='読み込み中…';
+  try{
+    const res=await fetch('/personal/?cb='+Date.now()); const t=await res.text();
+    const doc=new DOMParser().parseFromString(t,'text/html');
+    const seen={}, fields=[];
+    doc.querySelectorAll('[data-lp]').forEach(el=>{ const k=el.getAttribute('data-lp'); if(seen[k])return; seen[k]=1;
+      fields.push({key:k, label:el.getAttribute('data-lp-label')||k, def:(el.innerHTML||'').trim()}); });
+    let saved={};
+    if(supabaseClient){ const {data}=await supabaseClient.from('site_settings').select('value').eq('key','personal_lp'); const v=data&&data[0]&&data[0].value; if(v&&typeof v==='object') saved=v; }
+    _plpFields=fields; _plp=saved; plpForm();
+    if(st) st.textContent='読み込みました（'+fields.length+'項目・保存済みの編集は反映済み）';
+  }catch(e){ if(st) st.textContent=''; toast('読込失敗: '+(e.message||e)); }
+}
+function plpForm(){
+  const box=document.getElementById('plpForm'); if(!box||!_plpFields) return;
+  const cell=(f)=>{ const val=(_plp[f.key]!=null?_plp[f.key]:f.def);
+    return `<div style="margin-bottom:9px;break-inside:avoid;"><div style="font-size:11px;color:var(--text2);margin-bottom:3px;">${escA(f.label)}</div>`
+      +`<textarea id="plp_${escA(f.key)}" rows="2" style="width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:4px;font-size:12.5px;font-family:inherit;background:#fff;resize:vertical;">${escA(val)}</textarea></div>`; };
+  box.innerHTML=`<div style="columns:2;column-gap:24px;">${_plpFields.map(cell).join('')}</div>`
+    +`<div style="margin-top:14px;"><button onclick="plpSave()" style="padding:10px 22px;background:var(--teal);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;border-radius:5px;font-family:inherit;">💾 保存して公開</button>`
+    +`<span style="font-size:11px;color:var(--text3);margin-left:10px;">保存後、/personal/ を再読み込みで反映</span></div>`;
+  box.style.display='block';
+}
+async function plpSave(){
+  if(!_plpFields){ toast('先に「現在の文言を読み込む」を押してください'); return; }
+  const out=Object.assign({},_plp);
+  _plpFields.forEach(f=>{ const el=document.getElementById('plp_'+f.key); if(!el) return; const v=el.value;
+    if(v.trim()===''||v.trim()===f.def.trim()) delete out[f.key];  // 空 or 既定と同じ → 上書きしない（既定に戻す）
+    else out[f.key]=v; });
+  const r=await adminWrite('site_settings','upsert',{rows:[{key:'personal_lp',value:out,updated_at:new Date().toISOString()}]});
+  if(!r.ok){
+    if(/site_settings|relation|schema/.test(String(r.error||''))) toast('保存失敗: site_settings テーブル未作成。SQL Editorで site_settings_setup.sql を実行してください');
+    else toast('保存失敗: '+String(r.error||r.status).slice(0,80));
+    return;
+  }
+  _plp=out; toast('個人LP文言を保存しました（'+Object.keys(out).length+'項目上書き）。/personal/ を再読み込みで反映されます');
 }
 
 // ===== 記事管理 =====
