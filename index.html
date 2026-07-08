@@ -4605,6 +4605,16 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var _lc=document.getElementById('wbLackChips'); if(_lc) _lc.innerHTML=AX.filter(function(a){return a.k!=='time'&&a.k!=='econ';}).map(function(a){return '<span class="wb-lack" data-k="'+a.k+'" data-on="0" onclick="var v=this.getAttribute(\'data-on\')===\'1\';this.setAttribute(\'data-on\',v?\'0\':\'1\');this.style.background=v?\'\':\'var(--teal)\';this.style.color=v?\'\':\'#fff\';this.style.borderColor=v?\'var(--border)\':\'var(--teal)\';wbCompare();" style="cursor:pointer;font-size:12px;border:1px solid var(--border);border-radius:20px;padding:6px 12px;user-select:none;">'+a.label+'</span>';}).join('');
     renderBusyChips();
     _cmpOn=!!hasFacts;
+    // 都度連携：この経営層のwb（＋逆引きタグ）をSupabaseから最新取得して差し替え→再描画（adminマトリクスの変更を即反映）
+    try{
+      var _wid=(typeof selectedCompanyId!=='undefined'&&selectedCompanyId)||'';
+      if(_wid && typeof supabaseClient!=='undefined' && supabaseClient){
+        supabaseClient.from('companies').select('wb,btags,rtags').eq('id',_wid).then(function(res){
+          var d=res&&res.data&&res.data[0]; if(!d) return;
+          var c=getCo(); if(c){ c.wb=d.wb; if(d.btags)c.btags=d.btags; if(d.rtags)c.rtags=d.rtags; try{ renderWbMain(); }catch(e){} }
+        }).catch(function(){});
+      }
+    }catch(e){}
     try{ renderWbMain(); }catch(e){}
     try{ if(typeof SN_CARDS!=='undefined'&&SN_CARDS&&SN_CARDS.logId&&typeof patchCardLog==='function') patchCardLog({wb_view:true}); }catch(e){}
     goScreen('p-wb');
