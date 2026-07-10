@@ -380,12 +380,12 @@ const EV = {
   spkTitle:'登壇する、6人の経営層。',
   spkIntro:'地域で挑戦する後継ぎ・変革型リーダーが登壇。業種も世代もさまざま。※社名・お顔は当日のお楽しみ（会場で直接お会いいただけます）。',
   speakers:[
-    {tag:'商社 / DX', h:'老舗企業をデータで進化させる、変革型の若手社長', p:'包装資材の商社として流通現場を支える企業を牽引。物流網と営業力にDXを掛け合わせ、勘と経験の組織を進化させている。'},
-    {tag:'印刷 / 販促', h:'印刷会社を総合販促企業へ進化させる、40代社長', p:'印刷・DM・Web・動画まで横断し、企業の販促課題を支援。創業45年以上の企業を率い、新たな事業領域を切り拓く。'},
-    {tag:'製造 / 自動化', h:'自動化で現場を支える、30代前半の次期社長', p:'食品工場から自動車まで、幅広い産業向け自動化装置を提供。創業50年以上の老舗装置メーカーで、次のものづくりに挑む。'},
-    {tag:'物流 / 梱包', h:'福岡の物流インフラを支える、若手後継者', p:'国内・輸出梱包や精密機器輸送を担い、産業の裏側を支える。創業50年以上の現場基盤を活かし、次の物流のあり方に挑む。'},
-    {tag:'建設 / まちづくり', h:'建設の枠を越えてまちづくりを営む、女性社長', p:'建設会社から、ホテル・観光・まちづくりへ展開。星野リゾートでの経験も活かし、地域企業の可能性を広げている。'},
-    {tag:'伝統産業 / M&A', h:'伝統産業の枠を壊す、老舗企業の若手経営層', p:'伝統技術を活かした商品を国内外へ広げ、福祉事業のM&Aやコンサル事業にも挑戦。老舗の可能性を次の時代へ広げる。'},
+    {tag:'商社 / DX', photo:'/images/meet-spk-01.jpg', h:'老舗企業をデータで進化させる、変革型の若手社長', p:'包装資材の商社として流通現場を支える企業を牽引。物流網と営業力にDXを掛け合わせ、勘と経験の組織を進化させている。'},
+    {tag:'印刷 / 販促', photo:'/images/meet-spk-02.jpg', h:'印刷会社を総合販促企業へ進化させる、40代社長', p:'印刷・DM・Web・動画まで横断し、企業の販促課題を支援。創業45年以上の企業を率い、新たな事業領域を切り拓く。'},
+    {tag:'製造 / 自動化', photo:'/images/meet-spk-03.jpg', h:'自動化で現場を支える、30代前半の次期社長', p:'食品工場から自動車まで、幅広い産業向け自動化装置を提供。創業50年以上の老舗装置メーカーで、次のものづくりに挑む。'},
+    {tag:'物流 / 梱包', photo:'/images/meet-spk-04.jpg', h:'福岡の物流インフラを支える、若手後継者', p:'国内・輸出梱包や精密機器輸送を担い、産業の裏側を支える。創業50年以上の現場基盤を活かし、次の物流のあり方に挑む。'},
+    {tag:'建設 / まちづくり', photo:'/images/meet-spk-05.jpg', h:'建設の枠を越えてまちづくりを営む、女性社長', p:'建設会社から、ホテル・観光・まちづくりへ展開。星野リゾートでの経験も活かし、地域企業の可能性を広げている。'},
+    {tag:'伝統産業 / M&A', photo:'/images/meet-spk-06.jpg', h:'伝統産業の枠を壊す、老舗企業の若手経営層', p:'伝統技術を活かした商品を国内外へ広げ、福祉事業のM&Aやコンサル事業にも挑戦。老舗の可能性を次の時代へ広げる。'},
   ],
   positions:['法人営業','新規事業','ITエンジニア','施工管理','右腕','マネージャー','人事戦略','DX推進','経営戦略','技術開発','ホテル運営','その他'],
   timetable:[
@@ -486,11 +486,13 @@ function renderLP(){
 }
 (function(){
   var SUPA='https://ypwwuylcvjwcyazvpibd.supabase.co', KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd3d1eWxjdmp3Y3lhenZwaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTY1MTMsImV4cCI6MjA5MjI3MjUxM30.7YseXt8libEzFsSAv4bI46l36kZ2lFz_jnh1JphVpvA';
+  // 登壇者写真はコード側で管理（git管理・admin文言編集で消えない）。DB上書き後にindexで補完する
+  var _codePhotos=(EV.speakers||[]).map(function(s){return s&&s.photo;});
   fetch(SUPA+'/rest/v1/site_settings?key=eq.meet_lp&select=value',{headers:{apikey:KEY,Authorization:'Bearer '+KEY}})
     .then(function(r){return r.ok?r.json():null;})
     .then(function(rows){ var v=rows&&rows[0]&&rows[0].value; if(v&&typeof v==='object'){ Object.keys(v).forEach(function(k){ if(v[k]!=null) EV[k]=v[k]; }); } })
     .catch(function(){})
-    .then(function(){ renderLP(); });
+    .then(function(){ if(Array.isArray(EV.speakers)) EV.speakers.forEach(function(s,i){ if(s&&!s.photo&&_codePhotos[i]) s.photo=_codePhotos[i]; }); renderLP(); });
 })();
 
 // 実例(CASES)を個人LPと同じ cases テーブルから取得（単一ソース＝admin編集で両LP同時更新）
