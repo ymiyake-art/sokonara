@@ -113,8 +113,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     .spk{display:flex;gap:16px;padding:20px 0;border-top:1px solid var(--line);}
     .spk:last-child{border-bottom:1px solid var(--line);}
     .spk .no{flex:0 0 auto;font-family:var(--mincho);font-weight:700;font-size:20px;color:var(--teal);width:30px;line-height:1.4;}
-    .spk-av{flex:0 0 auto;position:relative;width:52px;height:52px;border-radius:50%;background:var(--teal-soft);display:flex;align-items:center;justify-content:center;}
-    .spk-av svg{width:30px;height:30px;color:var(--teal);}
+    .spk-av{flex:0 0 auto;position:relative;width:56px;height:56px;border-radius:50%;background:var(--teal-soft);display:flex;align-items:center;justify-content:center;overflow:visible;}
+    .spk-av svg{width:32px;height:32px;color:var(--teal);}
+    .spk-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;}
     .spk-av .spk-no{position:absolute;bottom:-3px;right:-4px;background:var(--navy);color:#fff;font-family:var(--mono);font-size:9px;font-weight:700;min-width:19px;height:19px;padding:0 3px;border-radius:10px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;}
     .spk .tag{display:inline-block;font-family:var(--gothic);font-weight:700;font-size:10.5px;letter-spacing:.05em;color:var(--teal-d);background:var(--teal-soft);padding:3px 9px;border-radius:5px;margin-bottom:7px;}
     .spk h3{font-family:var(--gothic);font-weight:700;font-size:15.5px;color:var(--navy);line-height:1.55;margin-bottom:6px;}
@@ -441,7 +442,8 @@ function renderLP(){
   $('spkIntro').textContent=E.spkIntro;
   $('spkList').innerHTML=E.speakers.map(function(s,i){
     var n=(i+1<10?'0':'')+(i+1);
-    return '<div class="spk"><div class="spk-av"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5 0-9 2.6-9 6v2h18v-2c0-3.4-4-6-9-6z"/></svg><span class="spk-no">'+n+'</span></div><div><span class="tag">'+s.tag+'</span><h3>'+s.h+'</h3><p>'+s.p+'</p></div></div>';
+    var ph=s.photo?'<img src="'+s.photo+'" alt="登壇者" loading="lazy" onerror="this.remove();">':'';
+    return '<div class="spk"><div class="spk-av">'+ph+'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5 0-9 2.6-9 6v2h18v-2c0-3.4-4-6-9-6z"/></svg><span class="spk-no">'+n+'</span></div><div><span class="tag">'+s.tag+'</span><h3>'+s.h+'</h3><p>'+s.p+'</p></div></div>';
   }).join('');
   // positions
   $('posCloud').innerHTML=E.positions.map(function(p){return '<span class="pos">'+p+'</span>';}).join('');
