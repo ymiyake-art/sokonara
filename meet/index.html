@@ -71,13 +71,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     .hero-lead{font-size:14px;line-height:1.95;color:rgba(255,255,255,0.9);max-width:430px;margin-bottom:26px;text-shadow:0 1px 10px rgba(0,0,0,0.5);}
 
     /* date lockup */
-    .datebox{display:inline-flex;align-items:stretch;border:1px solid rgba(255,255,255,0.32);border-radius:14px;overflow:hidden;margin-bottom:26px;backdrop-filter:blur(4px);background:rgba(255,255,255,0.06);}
-    .datebox .d{padding:14px 20px;text-align:center;border-right:1px solid rgba(255,255,255,0.22);display:flex;flex-direction:column;justify-content:center;align-items:center;}
-    .datebox .d .big{font-family:var(--round);font-weight:900;font-size:38px;line-height:1;color:#fff;letter-spacing:.5px;}
-    .datebox .d .dow{font-family:var(--gothic);font-size:12px;font-weight:700;letter-spacing:.08em;color:#9fe7dc;margin-top:8px;padding:2px 11px;border:1px solid rgba(159,231,220,0.45);border-radius:11px;line-height:1.5;}
-    .datebox .meta{padding:14px 20px;display:flex;flex-direction:column;justify-content:center;gap:4px;font-size:12.5px;}
-    .datebox .meta b{font-weight:700;}
-    .datebox .meta .free{color:#5fd3c2;font-weight:700;}
+    .datebox{display:inline-flex;align-items:stretch;border:1px solid rgba(255,255,255,0.28);border-radius:16px;overflow:hidden;margin-bottom:26px;backdrop-filter:blur(9px);background:rgba(16,22,40,0.52);box-shadow:0 10px 30px rgba(0,0,0,0.28);}
+    .datebox .d{padding:15px 22px;text-align:center;border-right:1px solid rgba(255,255,255,0.18);display:flex;flex-direction:column;justify-content:center;align-items:center;}
+    .datebox .d .yr{font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.14em;color:#9fe7dc;margin-bottom:5px;}
+    .datebox .d .big{font-family:var(--round);font-weight:900;font-size:41px;line-height:.9;color:#fff;letter-spacing:.5px;}
+    .datebox .d .dow{font-family:var(--gothic);font-size:12px;font-weight:700;letter-spacing:.08em;color:#9fe7dc;margin-top:9px;padding:2px 12px;border:1px solid rgba(159,231,220,0.5);border-radius:11px;line-height:1.5;}
+    .datebox .meta{padding:15px 20px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:10px;}
+    .datebox .meta .tm{font-size:13.5px;font-weight:700;color:#fff;line-height:1.45;}
+    .datebox .meta .free{color:#fff;background:var(--teal);font-weight:800;font-size:12px;padding:4px 12px;border-radius:9px;letter-spacing:.02em;}
 
     /* buttons */
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--gothic);font-weight:700;text-decoration:none;border-radius:12px;border:none;cursor:pointer;transition:transform .15s ease,background .2s,box-shadow .2s;}
@@ -136,12 +137,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
     /* scene gallery — 白マット＋金のヘアライン＋ソフトシャドウの“額装”仕上げ */
     .scene-feat{border-radius:14px;background:#fff;border:1px solid var(--line);padding:10px;box-shadow:0 16px 36px rgba(22,34,63,0.10);line-height:0;}
-    .scene-feat img{width:100%;height:auto;display:block;border-radius:8px;outline:1px solid rgba(201,162,74,0.38);outline-offset:-1px;}
+    .scene-feat img{width:100%;height:auto;display:block;border-radius:8px;}
     .scene-cap{font-family:var(--gothic);font-size:11px;color:var(--muted);letter-spacing:.02em;padding:11px 4px 0;line-height:1.5;}
-    .scene-cap::before{content:'';display:inline-block;width:14px;height:1px;background:var(--gold);margin-right:8px;vertical-align:middle;}
+    .scene-cap::before{content:'';display:inline-block;width:14px;height:1px;background:var(--teal);margin-right:8px;vertical-align:middle;}
     .scene-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;}
     .scene-row figure{margin:0;background:#fff;border:1px solid var(--line);border-radius:12px;padding:7px 7px 9px;box-shadow:0 9px 24px rgba(22,34,63,0.08);}
-    .scene-row img{width:100%;height:148px;object-fit:cover;display:block;border-radius:7px;outline:1px solid rgba(201,162,74,0.32);outline-offset:-1px;}
+    .scene-row img{width:100%;height:148px;object-fit:cover;display:block;border-radius:7px;}
     .scene-row figcaption{font-family:var(--gothic);font-size:10.5px;color:var(--muted);margin-top:8px;padding:0 3px;line-height:1.5;}
     .scene-vid{display:inline-flex;align-items:center;gap:9px;margin-top:20px;font-family:var(--gothic);font-weight:700;font-size:13px;color:var(--teal-d);text-decoration:none;}
     .scene-vid::before{content:'';background:var(--teal) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M8 5v14l11-7z'/%3E%3C/svg%3E") center/10px no-repeat;width:24px;height:24px;border-radius:50%;display:inline-flex;flex-shrink:0;}
@@ -170,7 +171,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     .why{display:flex;flex-direction:column;gap:0;}
     .why .it{padding:22px 0;border-top:1px solid var(--line);}
     .why .it:last-child{border-bottom:1px solid var(--line);}
-    .why .it h4{font-family:var(--mincho);font-weight:700;font-size:18px;color:var(--navy);margin-bottom:6px;}
+    .why .wn{font-family:var(--mono);font-weight:500;font-size:12px;color:var(--teal);letter-spacing:.1em;margin-bottom:4px;}
+    .why .it h4{font-family:var(--gothic);font-weight:800;font-size:18px;color:var(--navy);margin-bottom:6px;letter-spacing:-.01em;}
     .why .it p{font-size:13.5px;color:var(--muted);line-height:1.9;}
 
     /* faq */
@@ -426,8 +428,8 @@ function renderLP(){
   $('heroH1').innerHTML=E.heroH1;
   $('heroLead').textContent=E.heroLead;
   $('heroProof').textContent=E.proofLine;
-  $('dateBox').innerHTML='<div class="d"><div class="big">'+E.date.num+'</div><div class="dow">'+_dw+'</div></div>'+
-    '<div class="meta"><b>'+E.date.year+'</b>'+E.date.time+'<span class="free">'+E.fee+'</span></div>';
+  $('dateBox').innerHTML='<div class="d"><div class="yr">'+E.date.year+'</div><div class="big">'+E.date.num+'</div><div class="dow">'+_dw+'</div></div>'+
+    '<div class="meta"><div class="tm">'+E.date.time+'</div><span class="free">'+E.fee+'</span></div>';
   $('closeWhen').textContent=E.date.year+'.'+E.date.num+'('+_dw+') '+E.date.time+' ／ '+E.venue.area+' ／ '+E.fee;
   $('scarBar').textContent='【'+E.scarcity+'】 '+E.date.num+'('+_dw+') '+E.venue.area;
   // trust
@@ -461,7 +463,7 @@ function renderLP(){
   // voices
   loadMeetCases(); // 実例は個人LPと共通の cases テーブルから取得
   // why
-  $('whyList').innerHTML=E.why.map(function(w){return '<div class="it"><h4>'+w.h+'</h4><p>'+w.d+'</p></div>';}).join('');
+  $('whyList').innerHTML=E.why.map(function(w,i){return '<div class="it"><div class="wn">0'+(i+1)+'</div><h4>'+w.h+'</h4><p>'+w.d+'</p></div>';}).join('');
   // faq
   $('faqList').innerHTML=E.faq.map(function(f){return '<div class="it"><div class="q">'+f.q+'<span class="pm">+</span></div><div class="a"><div class="in">'+f.a+'</div></div></div>';}).join('');
   // faq accordion
