@@ -3320,6 +3320,8 @@ async function renderMeetAdmin(){
   }
   const cos=loadCompanies();
   const coName=id=>{ const c=cos.find(x=>String(x.id)===String(id)); return c?(c.ceo||c.name||id):id; };
+  // 登壇企業（＝卓）の選択を読み込む（site_settings.meet_speakers）
+  try{ const {data}=await supabaseClient.from('site_settings').select('value').eq('key','meet_speakers'); const v=(data&&data[0]&&data[0].value)||{}; window._meetSpeakerIds=Array.isArray(v.ids)?v.ids.map(String):[]; }catch(e){ window._meetSpeakerIds=window._meetSpeakerIds||[]; }
   // イベント別に絞り込み（最新イベントを既定）
   const evs=[...new Set(rows.map(r=>r.event_id).filter(Boolean))];
   const curEv=window._meetEv||evs[0]||'';
@@ -3375,19 +3377,29 @@ async function renderMeetAdmin(){
         </table>
       </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px;">🎤 登壇企業（＝卓）を選択</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.7;">ここでチェックした企業が班分けの<b>卓</b>になります。保存すると<b>当日ページ（参加者のチェック画面）にも同じ企業だけ</b>が表示されます（卓と選択肢が一致）。</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:12px;">
+          ${cos.map(c=>`<label style="font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" class="msp-co" value="${escA(String(c.id))}" ${(window._meetSpeakerIds||[]).map(String).includes(String(c.id))?'checked':''}> ${escA(c.ceo||c.name||'')}<span style="color:var(--text3)">（${escA(c.name||'')}）</span></label>`).join('')}
+        </div>
+        <button onclick="saveMeetSpeakers(this)" style="padding:9px 18px;background:var(--teal);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">💾 登壇企業を保存（卓＆当日ページに反映）</button>
+        <span style="font-size:11px;color:var(--text3);margin-left:8px;">選択中: <b>${(window._meetSpeakerIds||[]).length}</b> 社</span>
+      </div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
         <div style="font-weight:700;font-size:13px;margin-bottom:4px;">🧩 班分け（自動割り当て）</div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.7;">テーブル＝経営層（1社1卓）。各参加者は巡目ごとに別テーブルへ移動し、<b>チェックした経営層には必ず行けます</b>。空き枠は各卓が均等になるよう自動配分。①巡数を選ぶ→②計算→③保存で各参加者の当日ページに番号が出ます。</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.7;">卓＝上で選択した登壇企業。各参加者は巡目ごとに別の卓へ移動します。<b>卓あたりの人数は参加人数で均等割り（各卓の人数差は最大1名）を最優先</b>し、チェックした登壇企業へは<b>なるべく</b>行けるよう配分（定員が埋まっていれば行けない場合もあります）。①巡数→②自動計算→③保存で各参加者の当日ページに番号が出ます。</div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
-          <span style="font-size:12px;color:var(--text2)">巡数（1人が回るテーブル数）</span>
+          <span style="font-size:12px;color:var(--text2)">巡数（1人が回る卓数）</span>
           <select id="grpRotations" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;"><option value="3">3巡</option><option value="4">4巡</option></select>
           <button onclick="computeGroupsUI()" style="padding:8px 16px;background:var(--navy);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🧮 自動計算</button>
           <button id="grpSaveBtn" onclick="saveGroupsUI(this)" style="padding:8px 16px;background:var(--teal);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:none;">💾 保存して各参加者に反映</button>
         </div>
         <div style="border-top:1px dashed var(--border);padding-top:10px;margin-bottom:10px;">
-          <span style="font-size:11px;color:var(--text3)">🧪 テスト用：</span>
-          <select id="grpDummyN" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:11px;"><option>12</option><option selected>24</option><option>40</option></select>
-          <button onclick="grpDummyPreview()" style="padding:6px 12px;background:#fff;color:var(--text2);border:1px solid var(--border);border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit;">ダミーで班分けを試す（保存なし）</button>
-          <span style="font-size:10px;color:var(--text3)">実データを使わず、仮の参加者で分布だけ確認できます。</span>
+          <span style="font-size:11px;color:var(--text3)">🧪 テスト参加者（本番前の動作確認）：</span>
+          <select id="grpTestN" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:11px;"><option>12</option><option selected>24</option><option>40</option></select>
+          <button onclick="createTestParticipants(this)" style="padding:6px 12px;background:#fff;color:var(--text2);border:1px solid var(--border);border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit;">🧪 テスト参加者を作成</button>
+          <button onclick="deleteTestParticipants(this)" style="padding:6px 12px;background:#fff;color:#c0392b;border:1px solid var(--border);border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit;">🗑 テスト参加者を削除</button>
+          <div style="font-size:10px;color:var(--text3);margin-top:6px;line-height:1.6;">テスト1〜N を実データとして作成（登壇企業からランダムにチェック）。作成後、上の「自動計算→保存」で割当→当日ページ／下の「参加者一覧」で結果を確認できます。<b>本番前に必ず削除</b>してください。</div>
         </div>
         <div id="grpPreview"></div>
       </div>
@@ -3399,8 +3411,8 @@ async function renderMeetAdmin(){
         <div style="font-weight:700;font-size:13px;margin-bottom:4px;">参加者一覧（${nAll}名）</div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">⚠️ 氏名はイベント運営・班分け専用。企業共有は「共有✓」の本人のみ。</div>
         <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <thead><tr>${th('氏名')}${th('チェック')}${th('詳しく')}${th('話したい')}${th('共有',1)}${th('コメント')}</tr></thead>
-          <tbody>${rows.map(r=>`<tr>${td('<b style="color:var(--navy)">'+escA(r.name||'（無名）')+'</b>')}${td('<span style="font-size:11px">'+escA((r.checks||[]).map(coName).join('、'))+'</span>')}${td('<span style="font-size:11px">'+escA((r.deep||[]).map(coName).join('、'))+'</span>')}${td('<span style="font-size:11px;color:#2e8c7f;font-weight:700">'+escA((r.talk||[]).map(coName).join('、'))+'</span>')}${td(r.consent===true?'✓':(r.consent===false?'×':'—'),1)}${td('<span style="font-size:11px;color:var(--text2)">'+escA((r.comment||'').slice(0,60))+'</span>')}</tr>`).join('')||'<tr><td colspan="6" style="padding:16px;color:var(--text3);font-size:12px;">まだ登録がありません。</td></tr>'}</tbody>
+          <thead><tr>${th('氏名')}${th('班（巡目→）')}${th('チェック')}${th('詳しく')}${th('話したい')}${th('共有',1)}${th('コメント')}</tr></thead>
+          <tbody>${rows.map(r=>`<tr>${td('<b style="color:var(--navy)">'+escA(r.name||'（無名）')+'</b>')}${td((r.groups&&r.groups.length)?('<span style="font-size:11px;color:var(--navy);font-weight:700" title="'+escA(r.groups.map(g=>g.no+'番 '+(g.ceo||g.name||'')).join(' / '))+'">'+escA(r.groups.map(g=>g.no).join('→'))+'</span>'):'<span style="font-size:11px;color:var(--text3)">未割当</span>')}${td('<span style="font-size:11px">'+escA((r.checks||[]).map(coName).join('、'))+'</span>')}${td('<span style="font-size:11px">'+escA((r.deep||[]).map(coName).join('、'))+'</span>')}${td('<span style="font-size:11px;color:#2e8c7f;font-weight:700">'+escA((r.talk||[]).map(coName).join('、'))+'</span>')}${td(r.consent===true?'✓':(r.consent===false?'×':'—'),1)}${td('<span style="font-size:11px;color:var(--text2)">'+escA((r.comment||'').slice(0,60))+'</span>')}</tr>`).join('')||'<tr><td colspan="7" style="padding:16px;color:var(--text3);font-size:12px;">まだ登録がありません。</td></tr>'}</tbody>
         </table>
       </div>
     </div>`;
@@ -3450,91 +3462,159 @@ async function saveMeetBanner(btn){
 // テーブル＝経営層(1社1卓)。各参加者はチェックした経営層に必ず行け、巡目ごとに別テーブルへ移動、空き枠は均等配分。
 let _groupResult=null;
 function meetRoster(){
-  // 卓の顔ぶれ＝DB企業 ∪ 参加者が実際にチェックした未知ID（extraSpeakers等）。番号は1..N。
-  const cos=window._meetCos||[]; const rows=window._meetRows||[];
-  const known=new Map(); cos.forEach(c=>known.set(String(c.id),{id:String(c.id),ceo:c.ceo||'',name:c.name||''}));
-  rows.forEach(r=>(r.checks||[]).concat(r.deep||[],r.talk||[]).forEach(id=>{ id=String(id); if(!known.has(id)) known.set(id,{id,ceo:'',name:id}); }));
-  const arr=[...known.values()]; arr.forEach((t,i)=>t.no=i+1); return arr;
+  // 卓＝管理画面で選択した「登壇企業」だけ（site_settings.meet_speakers）。番号は選択順で1..N。
+  const cos=window._meetCos||[]; const sel=(window._meetSpeakerIds||[]).map(String);
+  const list=sel.map(id=>cos.find(c=>String(c.id)===id)).filter(Boolean);
+  return list.map((c,i)=>({id:String(c.id), ceo:c.ceo||'', name:c.name||'', no:i+1}));
 }
+// ローテーション割当。卓あたり定員＝参加人数÷卓数の均等割り(cap)を最優先し（各巡の人数差は最大1）、
+// チェックした登壇企業へは「なるべく」行けるように best-effort（定員が埋まっていれば行けない場合もある）。
+// 手順：①均等優先グリーディ（最少人数の卓＝希望はタイブレーク）②各巡の偏りを交換で spread<=1 まで修復。
 function computeGroups(rows, tables, R){
-  const byId={}; tables.forEach(t=>byId[t.id]=t);
+  const people=[...rows].filter(r=>r.name);
+  const N=people.length, T=tables.length;
+  if(!N||!T) return {out:{}, counts:[], tables, R:Math.max(1,Math.min(R,T||1)), cap:0, N:0};
+  R=Math.max(1, Math.min(R, T)); // 巡数は卓数を超えられない（同じ卓は再訪しない）
+  const cap=Math.max(1, Math.ceil(N/T)); // 1卓・1巡あたりの定員（均等割り）
+  const tindex={}; tables.forEach((t,i)=>{ tindex[t.id]=i; });
+  const desired=people.map(p=>new Set((p.checks||[]).map(String).filter(id=>tindex[id]!=null)));
+  const assign=people.map(()=>new Array(R).fill(null));
   const counts=Array.from({length:R},()=>({})); // counts[r][tableId]=人数
-  const inc=(r,id)=>{ counts[r][id]=(counts[r][id]||0)+1; };
   const cntOf=(r,id)=>counts[r][id]||0;
-  // 希望が多い人＝満たしにくい人から先に処理
-  const people=[...rows].filter(r=>r.name).sort((a,b)=>(b.checks||[]).length-(a.checks||[]).length);
-  const out={}; // id -> [{no,ceo,name}]
-  people.forEach(p=>{
-    const desired=(p.checks||[]).map(String).filter(id=>byId[id]); // 卓が存在する希望のみ
-    const visited=new Set(); const sched=[];
-    for(let r=0;r<R;r++){
-      let pick=null;
-      // ① 未訪問の希望を最優先（希望は必ず行ける＝容量無視。空いてる卓を優先）
-      const dcand=desired.filter(id=>!visited.has(id)).sort((a,b)=>cntOf(r,a)-cntOf(r,b));
-      if(dcand.length) pick=dcand[0];
-      // ② 希望を満たし終えたら、未訪問の全卓から最も空いている卓
-      if(!pick){ const all=tables.filter(t=>!visited.has(t.id)).sort((a,b)=>cntOf(r,a.id)-cntOf(r,b.id)); if(all.length) pick=all[0].id; }
-      if(!pick) break;
-      visited.add(pick); inc(r,pick);
-      const t=byId[pick]; sched.push({no:t.no, ceo:t.ceo, name:t.name});
+  const visited=people.map(()=>new Set());
+  // ① 均等優先グリーディ（未充足の希望が多い人から）
+  for(let r=0;r<R;r++){
+    const order=people.map((_,k)=>k).sort((a,b)=>{
+      const da=[...desired[a]].filter(d=>!visited[a].has(d)).length;
+      const db=[...desired[b]].filter(d=>!visited[b].has(d)).length;
+      return db-da;
+    });
+    order.forEach(k=>{
+      let cand=tables.filter(t=>!visited[k].has(t.id) && cntOf(r,t.id)<cap);
+      if(!cand.length) cand=tables.filter(t=>!visited[k].has(t.id)); // 全て定員なら(稀)定員無視
+      if(!cand.length) return;
+      const minc=Math.min.apply(null, cand.map(t=>cntOf(r,t.id)));
+      const least=cand.filter(t=>cntOf(r,t.id)===minc);
+      const des=least.filter(t=>desired[k].has(t.id));
+      const pick=(des.length?des:least)[0];
+      assign[k][r]=pick.id; visited[k].add(pick.id); counts[r][pick.id]=cntOf(r,pick.id)+1;
+    });
+  }
+  // ② 修復：各巡の人数差を交換で spread<=1 まで詰める（超過卓→不足卓へ、未訪問者を移す）
+  for(let r=0;r<R;r++){
+    for(let guard=0; guard<1000; guard++){
+      const vals=tables.map(t=>cntOf(r,t.id));
+      const mx=Math.max.apply(null,vals), mn=Math.min.apply(null,vals);
+      if(mx-mn<=1) break;
+      const overs=tables.filter(t=>cntOf(r,t.id)===mx).map(t=>t.id);
+      const unders=tables.filter(t=>cntOf(r,t.id)===mn).map(t=>t.id);
+      let moved=false;
+      for(const O of overs){ for(const U of unders){
+        for(let k=0;k<N;k++){
+          if(assign[k][r]===O && !visited[k].has(U)){
+            assign[k][r]=U; visited[k].delete(O); visited[k].add(U);
+            counts[r][O]--; counts[r][U]=(counts[r][U]||0)+1;
+            moved=true; break;
+          }
+        }
+        if(moved) break;
+      } if(moved) break; }
+      if(!moved) break;
     }
-    out[p.id]={name:p.name, sched, desired};
+  }
+  const out={}; // id -> {name, sched:[{no,ceo,name}], desired}
+  people.forEach((p,k)=>{
+    const sched=[];
+    for(let r=0;r<R;r++){ const tid=assign[k][r]; if(tid==null) continue; const t=tables[tindex[tid]]; sched.push({no:t.no, ceo:t.ceo, name:t.name}); }
+    out[p.id]={name:p.name, sched, desired:[...desired[k]]};
   });
-  return {out, counts, tables, R};
+  return {out, counts, tables, R, cap, N};
 }
+const MEET_EVENT_ID='meet_2026_07_30';
 function computeGroupsUI(){
   const rows=window._meetRows||[]; const tables=meetRoster();
   const R=parseInt(document.getElementById('grpRotations').value)||3;
-  if(!rows.filter(r=>r.name).length){ toast('登録者がいません'); return; }
-  if(!tables.length){ toast('テーブル（経営層）がありません'); return; }
+  if(!tables.length){ toast('先に「登壇企業（＝卓）」を選択して保存してください'); return; }
+  if(!rows.filter(r=>r.name).length){ toast('参加者がいません（テスト参加者を作成するか、当日登録をお待ちください）'); return; }
   _groupResult=computeGroups(rows, tables, R);
   document.getElementById('grpSaveBtn').style.display='inline-block';
-  renderGroupPreview(false);
+  renderGroupPreview();
 }
-// テスト用：ダミー参加者で班分け分布だけ確認（保存はしない＝実データ・DBに触れない）
-function grpDummyPreview(){
+// 登壇企業（＝卓）を保存＝site_settings.meet_speakers。当日ページ(day.html)もこれを読んで同じ企業だけ表示。
+async function saveMeetSpeakers(btn){
+  const ids=[...document.querySelectorAll('.msp-co:checked')].map(el=>el.value);
+  const ev=window._meetEvId||MEET_EVENT_ID;
+  btn.disabled=true; const ot=btn.textContent; btn.textContent='保存中…';
+  const r=await adminWrite('site_settings','upsert',{rows:[{key:'meet_speakers',value:{eventId:ev, ids},updated_at:new Date().toISOString()}]});
+  btn.disabled=false; btn.textContent=ot;
+  if(!r.ok){ toast('保存失敗: '+String(r.error||r.status).slice(0,60)); return; }
+  window._meetSpeakerIds=ids;
+  toast('登壇企業を保存しました（'+ids.length+'社＝卓）。当日ページにも反映されます');
+  renderMeetAdmin();
+}
+// テスト参加者（テスト1..N）を実データとして作成＝本番前の割当動作確認用。本番前に削除すること。
+async function createTestParticipants(btn){
   const tables=meetRoster();
-  if(!tables.length){ toast('テーブル（経営層）がありません。企業を登録してください'); return; }
-  const N=parseInt(document.getElementById('grpDummyN').value)||24;
-  const R=parseInt(document.getElementById('grpRotations').value)||3;
-  const dummy=[];
-  for(let i=0;i<N;i++){
+  if(!tables.length){ toast('先に「登壇企業（＝卓）」を選択して保存してください'); return; }
+  const N=parseInt(document.getElementById('grpTestN').value)||24;
+  const ev=window._meetEvId||MEET_EVENT_ID;
+  if(!confirm('テスト参加者を'+N+'名作成します（テスト1〜テスト'+N+'）。よろしいですか？')) return;
+  btn.disabled=true; const ot=btn.textContent; btn.textContent='作成中…';
+  let ok=0, ng=0;
+  for(let i=1;i<=N;i++){
     const k=1+Math.floor(Math.random()*Math.min(3,tables.length));
-    const ch=[]; while(ch.length<k){ const t=tables[Math.floor(Math.random()*tables.length)].id; if(!ch.includes(t))ch.push(t); }
-    dummy.push({id:'meet_dummy_'+i, name:'テスト'+(i+1), checks:ch});
+    const ch=[]; while(ch.length<k){ const t=tables[Math.floor(Math.random()*tables.length)].id; if(ch.indexOf(t)<0) ch.push(t); }
+    try{
+      const r=await fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:'meet_test_'+i, set:{event_id:ev, name:'テスト'+i, checks:ch}})});
+      const d=await r.json(); if(d&&d.ok) ok++; else ng++;
+    }catch(e){ ng++; }
   }
-  _groupResult=computeGroups(dummy, tables, R);
-  document.getElementById('grpSaveBtn').style.display='none'; // ダミーは保存不可
-  renderGroupPreview(true);
+  btn.disabled=false; btn.textContent=ot;
+  toast('テスト参加者を作成：成功'+ok+'件'+(ng?(' / 失敗'+ng+'件'):''));
+  renderMeetAdmin();
 }
-function renderGroupPreview(isDummy){
+async function deleteTestParticipants(btn){
+  const rows=(window._meetRows||[]).filter(r=>String(r.id||'').indexOf('meet_test_')===0);
+  if(!rows.length){ toast('テスト参加者はいません'); return; }
+  if(!confirm('テスト参加者 '+rows.length+'名を削除します。よろしいですか？')) return;
+  btn.disabled=true; const ot=btn.textContent; btn.textContent='削除中…';
+  let ok=0, ng=0;
+  for(const r of rows){ const res=await adminWrite('meet_entries','delete',{id:r.id}); if(res.ok) ok++; else ng++; }
+  btn.disabled=false; btn.textContent=ot;
+  toast('テスト参加者を削除：成功'+ok+'件'+(ng?(' / 失敗'+ng+'件'):''));
+  renderMeetAdmin();
+}
+function renderGroupPreview(){
   const g=_groupResult; if(!g) return;
-  const dist='<table style="border-collapse:collapse;font-size:11px;margin-top:8px;"><thead><tr><th style="padding:4px 8px;text-align:left;color:var(--text3)">テーブル</th>'
+  const names=Object.values(g.out);
+  const dist='<table style="border-collapse:collapse;font-size:11px;margin-top:8px;"><thead><tr><th style="padding:4px 8px;text-align:left;color:var(--text3)">卓</th>'
     +Array.from({length:g.R},(_,r)=>`<th style="padding:4px 8px;color:var(--text3)">${r+1}巡</th>`).join('')+'</tr></thead><tbody>'
     +g.tables.map(t=>`<tr><td style="padding:4px 8px;"><b>${t.no}</b> ${escA(t.ceo||t.name)}</td>`
       +Array.from({length:g.R},(_,r)=>`<td style="padding:4px 8px;text-align:center;">${g.counts[r][t.id]||0}</td>`).join('')+'</tr>').join('')+'</tbody></table>';
-  let unmet=0; Object.values(g.out).forEach(o=>{ const got=new Set(o.sched.map(s=>s.no)); o.desired.forEach(id=>{ const t=g.tables.find(x=>x.id===id); if(t&&!got.has(t.no)) unmet++; }); });
-  const sampleNames=Object.values(g.out).slice(0,4);
-  const sample=sampleNames.map(o=>`<div style="font-size:11px;color:var(--text2);margin-top:3px;"><b style="color:var(--navy)">${escA(o.name)}</b>：${o.sched.map(s=>s.no+'番('+escA(s.ceo||s.name)+')').join(' → ')}</div>`).join('');
+  let tot=0, met=0; names.forEach(o=>{ const got=new Set(o.sched.map(s=>s.no)); o.desired.forEach(id=>{ const t=g.tables.find(x=>x.id===id); tot++; if(t&&got.has(t.no)) met++; }); });
+  let maxSpread=0; for(let r=0;r<g.R;r++){ const vals=g.tables.map(t=>g.counts[r][t.id]||0); maxSpread=Math.max(maxSpread, Math.max.apply(null,vals)-Math.min.apply(null,vals)); }
+  const roster=names.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),'ja')).map(o=>`<tr><td style="padding:3px 8px;border-bottom:1px solid var(--border);"><b style="color:var(--navy)">${escA(o.name)}</b></td><td style="padding:3px 8px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text2)">${o.sched.map(s=>'<span style="white-space:nowrap">'+s.no+'番('+escA(s.ceo||s.name)+')</span>').join(' → ')}</td></tr>`).join('');
   document.getElementById('grpPreview').innerHTML=
-    `<div style="font-size:12px;color:var(--navy);font-weight:700;margin-bottom:4px;">${isDummy?'🧪 ダミー結果：':'プレビュー：'}${Object.keys(g.out).length}名を${g.tables.length}卓×${g.R}巡に配置${unmet?`（⚠️希望未充足 ${unmet}件）`:'（全員の希望を充足）'}</div>`
+    `<div style="font-size:12px;color:var(--navy);font-weight:700;margin-bottom:4px;">プレビュー：${names.length}名を${g.tables.length}卓×${g.R}巡に配置（1卓の定員 ${g.cap}名／各巡の人数差 最大${maxSpread}名）</div>`
+    +`<div style="font-size:11px;color:var(--text3);margin-bottom:6px;">チェックした登壇企業への訪問：${tot?Math.round(met/tot*100):100}%（${met}/${tot}）を充足（均等割り優先のため100%にならない場合があります）</div>`
     +dist
-    +`<div style="margin-top:10px;font-size:11px;color:var(--text3)">個人スケジュール例：</div>`+sample
-    +(isDummy?`<div style="font-size:11px;color:var(--text3);margin-top:8px;">※ ダミーデータのため保存はされません。実データは上の「自動計算」から。</div>`:`<div style="font-size:11px;color:var(--text3);margin-top:8px;">この内容で問題なければ「保存して各参加者に反映」を押してください。</div>`);
+    +`<div style="margin-top:12px;font-size:11px;color:var(--text3);margin-bottom:4px;">名簿（誰がどの卓か・全${names.length}名）：</div>`
+    +`<div style="max-height:320px;overflow:auto;border:1px solid var(--border);border-radius:6px;"><table style="width:100%;border-collapse:collapse;"><thead><tr><th style="text-align:left;padding:4px 8px;font-size:10px;color:var(--text3);position:sticky;top:0;background:#fff;">氏名</th><th style="text-align:left;padding:4px 8px;font-size:10px;color:var(--text3);position:sticky;top:0;background:#fff;">巡目（卓番号→）</th></tr></thead><tbody>${roster}</tbody></table></div>`
+    +`<div style="font-size:11px;color:var(--text3);margin-top:8px;">この内容で問題なければ「💾 保存して各参加者に反映」を押してください。保存後は下の「参加者一覧」にも反映されます。</div>`;
 }
 async function saveGroupsUI(btn){
   if(!_groupResult){ toast('先に自動計算してください'); return; }
-  if(Object.keys(_groupResult.out).some(id=>id.startsWith('meet_dummy_'))){ toast('ダミー結果は保存できません。実データで「自動計算」してください'); return; }
   const entries=Object.entries(_groupResult.out);
-  btn.disabled=true; let ok=0, ng=0;
+  btn.disabled=true; const ot=btn.textContent; btn.textContent='保存中…'; let ok=0, ng=0;
   for(const [id,o] of entries){
     try{
       const r=await fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,set:{groups:o.sched}})});
       const d=await r.json(); if(d&&d.ok) ok++; else ng++;
     }catch(e){ ng++; }
   }
-  btn.disabled=false;
-  toast(`班分けを保存：成功${ok}件${ng?` / 失敗${ng}件`:''}。参加者は当日ページで確認できます`);
+  btn.disabled=false; btn.textContent=ot;
+  toast(`班分けを保存：成功${ok}件${ng?` / 失敗${ng}件`:''}。当日ページ＆下の「参加者一覧」で確認できます`);
+  renderMeetAdmin();
 }
 
 // ===== MEET LP 文言編集（/meet/ の EV を読み込み→編集→site_settings.meet_lp に保存。LPが起動時にマージ） =====
