@@ -105,11 +105,14 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
       <div style="font-size:14px;color:var(--navy);"><b id="regName"></b> さんで登録済み ✓</div>
       <button class="btn btn-o" style="margin-top:8px;font-size:12px;padding:9px;" onclick="editName()">名前を変更する</button>
     </div>
-    <!-- 班分けスケジュール（運営が割り当て後に表示） -->
+    <!-- 班分けスケジュール（登録後は常時表示。運営の割り当て前は「まだ発表されていません」） -->
     <div id="groupBox" style="display:none;margin-top:14px;background:var(--teal-bg);border-radius:10px;padding:14px 16px;">
-      <div class="step" style="margin-bottom:4px;">YOUR TABLES — 当日の席</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;">
+        <div class="step" style="margin-bottom:0;">YOUR TABLES — 当日の席</div>
+        <button id="grpRefreshBtn" onclick="refreshGroups()" style="flex-shrink:0;font-size:12px;font-weight:700;color:var(--navy);background:#fff;border:1px solid rgba(0,0,0,0.12);border-radius:8px;padding:7px 14px;cursor:pointer;font-family:inherit;">🔄 更新</button>
+      </div>
       <div style="font-size:13px;font-weight:900;color:var(--navy);margin-bottom:2px;">あなたの巡回スケジュール</div>
-      <div class="note" style="margin-bottom:8px;">希望した経営層は必ず含まれています。各巡目でこの番号のテーブルへどうぞ。</div>
+      <div class="note" id="groupNote" style="margin-bottom:8px;">班分けはまだ発表されていません。運営の案内があったら「🔄 更新」を押してください。</div>
       <div id="groupList"></div>
     </div>
   </div>
@@ -177,15 +180,34 @@ function saveM(){ localStorage.setItem('sn_meet',JSON.stringify(M)); }
 // サーバ保存（service_role API経由・PIIはmeet_entriesのみに保持）
 function push(set){ if(!M.name) return; try{ fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:M.id,set:Object.assign({event_id:EV.eventId},set)})}).catch(function(){}); }catch(e){} }
 // 運営が割り当てた自分の班スケジュール（groups=[{no,ceo,name},...]）を取得して表示。本人分のみ返る。
-function loadMyGroups(){
-  if(!M||!M.id) return;
+function loadMyGroups(cb){
+  if(!M||!M.id||!M.name){ if(cb)cb(null); return; }
+  paintGroups(window._myGroups||null); // まず現状を表示（未発表なら案内＋更新ボタンが出る）
   try{ fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:M.id,action:'get'})})
-    .then(function(r){return r.json();}).then(function(d){ paintGroups(d&&d.groups); }).catch(function(){}); }catch(e){}
+    .then(function(r){return r.json();})
+    .then(function(d){ window._myGroups=(d&&d.groups)||null; paintGroups(window._myGroups); if(cb)cb(window._myGroups); })
+    .catch(function(){ if(cb)cb(null); }); }catch(e){ if(cb)cb(null); }
+}
+// 参加者が手動で最新の班分けを取得（運営の保存タイミングに依存しないように）
+function refreshGroups(){
+  var b=document.getElementById('grpRefreshBtn');
+  if(b){ b.disabled=true; b.textContent='取得中…'; }
+  loadMyGroups(function(groups){
+    if(b){ b.disabled=false; b.textContent='🔄 更新'; }
+    toast(groups&&groups.length?'班分けを更新しました':'班分けはまだ発表されていません。発表後にもう一度お試しください');
+  });
 }
 function paintGroups(groups){
-  var box=document.getElementById('groupBox'), list=document.getElementById('groupList');
+  var box=document.getElementById('groupBox'), list=document.getElementById('groupList'), note=document.getElementById('groupNote');
   if(!box||!list) return;
-  if(!groups||!groups.length){ box.style.display='none'; return; }
+  if(!M||!M.name){ box.style.display='none'; return; }
+  box.style.display='block';
+  if(!groups||!groups.length){
+    if(note) note.textContent='班分けはまだ発表されていません。運営の案内があったら「🔄 更新」を押してください。';
+    list.innerHTML='';
+    return;
+  }
+  if(note) note.textContent='チェックした経営層になるべく行けるよう配分しています。各巡目でこの番号のテーブルへどうぞ。';
   list.innerHTML=groups.map(function(g,i){
     return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.06);">'
       +'<span style="flex-shrink:0;font-size:11px;color:var(--text2);width:44px;">'+(i+1)+'巡目</span>'
@@ -193,7 +215,6 @@ function paintGroups(groups){
       +'<span style="font-size:13px;color:var(--navy);font-weight:700;">'+esc(g.ceo||g.name||'')+'<span style="font-size:11px;color:var(--text2);font-weight:400;"> '+esc(g.name||'')+'</span></span>'
       +'</div>';
   }).join('');
-  box.style.display='block';
 }
 
 function register(){
