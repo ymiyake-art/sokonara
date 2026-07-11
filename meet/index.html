@@ -92,7 +92,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     /* trust strip */
     .trust{background:var(--navy);color:#fff;}
     .trust .wrap{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 26px;padding:16px 22px;}
-    .trust span{font-size:12.5px;color:rgba(255,255,255,0.82);position:relative;padding-left:18px;}
+    .trust span{font-size:12.5px;color:rgba(255,255,255,0.82);position:relative;padding-left:18px;white-space:nowrap;}
     .trust span::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:7px;height:7px;border-radius:50%;background:var(--teal);}
 
     /* fact sheet */
@@ -194,6 +194,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     .closing h2 em{color:#5fd3c2;}
     .closing .sub{font-size:13.5px;color:rgba(255,255,255,0.8);margin-bottom:8px;}
     .closing .when{font-family:var(--gothic);font-weight:700;font-size:12.5px;color:#9fe7dc;letter-spacing:.04em;margin-bottom:26px;}
+    .nw{white-space:nowrap;}
     .closing .hero-cta{align-items:center;}
     .closing .btn-line{color:#cfe9e4;}
 
@@ -308,7 +309,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <section class="closing">
   <div class="in fade">
     <h2>あなたの転機は、<br><em>まだ出会っていない人</em>に。</h2>
-    <div class="sub">まずは情報収集でOK。その場で応募する必要はありません。</div>
+    <div class="sub"><span class="nw">まずは情報収集でOK。</span><wbr><span class="nw">その場で応募する必要はありません。</span></div>
     <div class="when" id="closeWhen"></div>
     <div class="hero-cta">
       <a class="btn btn-apply" id="closeApply" href="#">今すぐ参加申込 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="margin-left:5px;vertical-align:middle;flex-shrink:0"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
@@ -320,7 +321,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <footer>
   <div class="wrap">
     運営会社｜株式会社ソコナラ<br>
-    〒810-0001 福岡市中央区天神2丁目5番28号 天神西通りセンタービル6F<br>
+    〒810-0001 <span class="nw">福岡市中央区天神2丁目5番28号</span> <span class="nw">天神西通りセンタービル6F</span><br>
     HP｜<a href="https://sokonara.co.jp" target="_blank" rel="noopener">sokonara.co.jp</a>
     <div class="fl">
       <a href="/legal/terms.pdf" target="_blank" rel="noopener">利用規約</a>
@@ -428,11 +429,11 @@ function renderLP(){
   $('heroKick').insertAdjacentHTML('beforeend',E.heroKick);
   $('heroH1').innerHTML=E.heroH1;
   $('heroLead').textContent=E.heroLead;
-  $('heroProof').textContent=E.proofLine;
+  $('heroProof').innerHTML=String(E.proofLine||'').split('／').map(function(x){return '<span class="nw">'+x.trim()+'</span>';}).join(' ／ ');
   $('dateBox').innerHTML='<div class="d"><div class="yr">'+E.date.year+'</div><div class="big">'+E.date.num+'</div><div class="dow">'+_dw+'</div></div>'+
     '<div class="meta"><div class="tm">'+E.date.time+'</div><span class="free">'+E.fee+'</span></div>';
-  $('closeWhen').textContent=E.date.year+'.'+E.date.num+'('+_dw+') '+E.date.time+' ／ '+E.venue.area+' ／ '+E.fee;
-  $('scarBar').textContent='【'+E.scarcity+'】 '+E.date.num+'('+_dw+') '+E.venue.area;
+  $('closeWhen').innerHTML='<span class="nw">'+E.date.year+'.'+E.date.num+'('+_dw+')</span> <span class="nw">'+E.date.time+'</span> ／ <span class="nw">'+E.venue.area+'</span> ／ <span class="nw">'+E.fee+'</span>';
+  $('scarBar').innerHTML='<span class="nw">【'+E.scarcity+'】</span> <span class="nw">'+E.date.num+'('+_dw+')</span> <span class="nw">'+E.venue.area+'</span>';
   // trust
   $('trustRow').innerHTML=E.trust.map(function(t){return '<span>'+t+'</span>';}).join('');
   // audience
