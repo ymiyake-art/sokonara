@@ -3359,9 +3359,18 @@ async function renderMeetAdmin(){
         <span id="mlpStatus" style="font-size:11px;color:var(--text3);margin-left:10px;"></span>
         <div id="mlpForm" style="display:none;margin-top:14px;"></div>
       </div>
+      <div style="background:#fff;border:2px solid var(--teal);border-radius:10px;padding:18px;margin-bottom:20px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px;">🎤 登壇企業（＝卓）を選択</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.7;">ここでチェックした企業が班分けの<b>卓</b>になり、<b>当日ページ（参加者のチェック画面）にも同じ企業だけ</b>が表示されます（卓と選択肢が一致）。⚠️ 下の「📣 バナー」の対象チェックとは別物です。</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:12px;">
+          ${cos.map(c=>`<label style="font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" class="msp-co" value="${escA(String(c.id))}" ${(window._meetSpeakerIds||[]).map(String).includes(String(c.id))?'checked':''}> ${escA(c.ceo||c.name||'')}<span style="color:var(--text3)">（${escA(c.name||'')}）</span></label>`).join('')}
+        </div>
+        <button onclick="saveMeetSpeakers(this)" style="padding:9px 18px;background:var(--teal);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">💾 登壇企業を保存（卓＆当日ページに反映）</button>
+        <span style="font-size:11px;color:${(window._meetSpeakerIds||[]).length?'var(--text3)':'#c0392b'};margin-left:8px;">${(window._meetSpeakerIds||[]).length?('現在の保存: <b>'+(window._meetSpeakerIds||[]).length+'</b> 社'):'<b>未保存＝当日ページは全社表示のままです</b>'}</span>
+      </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
         <div style="font-weight:700;font-size:13px;margin-bottom:4px;">📣 記事内イベント告知バナー</div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.7;">対象経営層の記事末尾に申込バナーを表示。<b>イベントが終わったらONを外して保存</b>すれば全記事から消えます（コード変更不要）。</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.7;">対象経営層の記事末尾に申込バナーを表示。<b>イベントが終わったらONを外して保存</b>すれば全記事から消えます（コード変更不要）。⚠️ ここの「対象の経営層」は<b>バナーを出す記事の選択</b>で、班分けの卓・当日ページには影響しません（卓は上の「🎤 登壇企業」で）。</div>
         <div id="mbEditor" style="font-size:12px;color:var(--text3);">読み込み中…</div>
       </div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
@@ -3375,15 +3384,6 @@ async function renderMeetAdmin(){
           <tbody>${cos.map(c=>{ const a=agg[String(c.id)]||{ck:0,deep:0,talk:0,names:[],talks:[]};
             return `<tr>${td('<b style="color:var(--navy)">'+escA(c.ceo||c.name||'')+'</b><div style="font-size:10px;color:var(--text3)">'+escA(c.name||'')+'</div>')}${td(a.ck,1)}${td(a.deep,1)}${td(a.talk,1,a.talk>0)}${td('<span style="font-size:11px;color:var(--text2)">'+escA(a.names.join('、'))+(a.talks.length?'<br><span style="color:#2e8c7f">話したい: '+escA(a.talks.join('、'))+'</span>':'')+'</span>')}</tr>`; }).join('')}</tbody>
         </table>
-      </div>
-      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
-        <div style="font-weight:700;font-size:13px;margin-bottom:4px;">🎤 登壇企業（＝卓）を選択</div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.7;">ここでチェックした企業が班分けの<b>卓</b>になります。保存すると<b>当日ページ（参加者のチェック画面）にも同じ企業だけ</b>が表示されます（卓と選択肢が一致）。</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:12px;">
-          ${cos.map(c=>`<label style="font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" class="msp-co" value="${escA(String(c.id))}" ${(window._meetSpeakerIds||[]).map(String).includes(String(c.id))?'checked':''}> ${escA(c.ceo||c.name||'')}<span style="color:var(--text3)">（${escA(c.name||'')}）</span></label>`).join('')}
-        </div>
-        <button onclick="saveMeetSpeakers(this)" style="padding:9px 18px;background:var(--teal);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">💾 登壇企業を保存（卓＆当日ページに反映）</button>
-        <span style="font-size:11px;color:var(--text3);margin-left:8px;">選択中: <b>${(window._meetSpeakerIds||[]).length}</b> 社</span>
       </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
         <div style="font-weight:700;font-size:13px;margin-bottom:4px;">🧩 班分け（自動割り当て）</div>
