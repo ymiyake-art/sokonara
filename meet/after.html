@@ -125,7 +125,7 @@ function renderMsgs(){
   if(!COS.length){ box.innerHTML='<div class="note">（登壇企業を取得できませんでした）</div>'; return; }
   box.innerHTML=COS.map(function(c){
     return '<div style="margin-bottom:12px;"><div style="font-size:12.5px;font-weight:700;color:var(--navy);margin-bottom:4px;">'+esc(c.ceo||c.name||'')+'<span style="font-size:10.5px;color:var(--text3);font-weight:400;"> '+esc(c.name||'')+'</span></div>'
-      +'<textarea id="msg_'+esc(c.id)+'" placeholder="'+esc((c.ceo||'この経営層')+'さんへ、あれば')+'" style="min-height:54px;"></textarea></div>';
+      +'<textarea id="msg_'+esc(c.id)+'" placeholder="（任意）" style="min-height:54px;"></textarea></div>';
   }).join('');
 }
 function loadSpeakers(){
