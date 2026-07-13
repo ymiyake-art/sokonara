@@ -2588,17 +2588,26 @@ function openCompanyArticleFromCard(el){
   openCompanyArticle(id);
 }
 
-// ===== MEET「あなたの仕事の軸」モーダル（/meet/axis.js＝当日ページと同一計算式・端末内データのみで完結） =====
+// ===== 「あなたの仕事の軸」モーダル（/meet/axis.js＝累積軸。記事診断＋MEETの記録を端末内で合算・サーバー送信なし） =====
 function openMeetAxis(){
   if(!window.SN_AXIS){ return; }
   let m=null; try{ m=JSON.parse(localStorage.getItem('sn_meet')||'null'); }catch(e){}
-  if(!m){ return; }
   const cos=loadCompanies();
   const wbById={}; cos.forEach(c=>{ if(c.wb&&typeof c.wb==='object') wbById[String(c.id)]=c.wb; });
-  const w=SN_AXIS.centroid(m, wbById);
-  const checked=(m.checks||[]).map(id=>cos.find(c=>String(c.id)===String(id))).filter(Boolean);
-  const rxCount=Object.values(m.reactions||{}).reduce((n,a)=>n+(a||[]).length,0);
-  const listHtml=checked.length?checked.map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--navy);font-weight:700;cursor:pointer;" onclick="closeMeetAxis();openCompanyArticle('${escapeHtml(String(c.id))}')">${escapeHtml(c.ceo||c.name||'')}<span style="font-size:10.5px;color:var(--text2);font-weight:400;">${escapeHtml(c.name||'')}</span><span style="margin-left:auto;font-size:11px;color:var(--teal-d,#2e8c7f);">記事を読む →</span></div>`).join(''):'';
+  const w=SN_AXIS.cumulative(wbById);
+  const log=SN_AXIS.readLog();
+  const nHits=Object.values(log.ax||{}).reduce((a,b)=>a+b,0)
+    +(m?Object.values(m.reactions||{}).reduce((n,a)=>n+(a||[]).length,0):0);
+  // レコメンド＝軸と重なる経営層 上位3（数字は出さず、重なった軸名で説明）
+  const known={}; if(m) (m.checks||[]).forEach(id=>known[String(id)]=1); Object.keys(log.cos||{}).forEach(id=>known[id]=1);
+  const reco=SN_AXIS.matchTop(w, cos.filter(c=>(c.status||'active')==='active'), 3);
+  const recoHtml=reco.length?reco.map(r=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="closeMeetAxis();openCompanyArticle('${escapeHtml(String(r.c.id))}')">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;color:var(--navy);font-weight:700;">${escapeHtml(r.c.ceo||r.c.name||'')} <span style="font-size:10.5px;color:var(--text2);font-weight:400;">${escapeHtml(r.c.name||'')}</span>${known[String(r.c.id)]?'<span style="font-size:9.5px;color:var(--teal-d,#2e8c7f);margin-left:6px;">✓ 接点あり</span>':''}</div>
+        <div style="margin-top:3px;">${(r.hits.slice(0,3)).map(h=>`<span style="display:inline-block;font-size:10px;background:#e9f6f4;color:#2e8c7f;border-radius:10px;padding:2px 8px;margin-right:4px;">${escapeHtml(h)}</span>`).join('')||'<span style="font-size:10px;color:#9aa1ab;">幅広く重なります</span>'}</div>
+      </div>
+      <span style="font-size:11px;color:var(--teal-d,#2e8c7f);white-space:nowrap;">記事を読む →</span>
+    </div>`).join(''):'';
   const ov=document.createElement('div');
   ov.id='meetAxisModal';
   ov.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(16,22,40,0.55);display:flex;align-items:center;justify-content:center;padding:18px;';
@@ -2607,10 +2616,10 @@ function openMeetAxis(){
       <div style="font-size:15px;font-weight:900;color:var(--navy,#16223f);">🎯 あなたの「仕事の軸」</div>
       <button onclick="closeMeetAxis()" style="border:none;background:none;font-size:20px;color:#9aa1ab;cursor:pointer;line-height:1;">×</button>
     </div>
-    <div style="font-size:11px;color:#9aa1ab;line-height:1.7;margin-bottom:6px;">ソコナラMEETでのチェックと共感ポイント（${rxCount}件）から導出。年収や知名度だけが、キャリアの正解じゃない。</div>
+    <div style="font-size:11px;color:#9aa1ab;line-height:1.7;margin-bottom:6px;">記事での選択・MEETでの共感（これまで${nHits}件）が貯まるほど、軸ははっきりしていきます。年収や知名度だけが、キャリアの正解じゃない。</div>
     ${SN_AXIS.radar(w)}
     <div style="font-size:10.5px;color:#9aa1ab;text-align:center;">※参考値です。この端末の記録から計算しています。</div>
-    ${listHtml?`<div style="font-size:11px;font-weight:700;color:#6b7280;margin:14px 0 2px;">MEETで気になった経営層</div>${listHtml}`:''}
+    ${recoHtml?`<div style="font-size:12px;font-weight:900;color:var(--navy,#16223f);margin:16px 0 2px;">🧭 いまの軸に近い経営層</div><div style="font-size:10.5px;color:#9aa1ab;margin-bottom:2px;">読むほど、このおすすめも変わっていきます。</div>${recoHtml}`:''}
   </div>`;
   ov.addEventListener('click',closeMeetAxis);
   document.body.appendChild(ov);
@@ -2629,19 +2638,18 @@ function renderCompanyList(){
   // チェック済み経営層を先頭に並べ、バッジ表示＋「仕事の軸」バナー＝イベント後の再訪・読み返し導線（KPI:アプリ活用率/再訪率）
   let meetChecks=[], meetM=null;
   try{ meetM=JSON.parse(localStorage.getItem('sn_meet')||'null'); if(meetM&&Array.isArray(meetM.checks)) meetChecks=meetM.checks.map(String); }catch(e){}
-  const meetHasData = meetM && (meetChecks.length || Object.keys(meetM.reactions||{}).length);
   if(meetChecks.length){
     list=[...list].sort((a,b)=>(meetChecks.indexOf(String(b.id))>=0?1:0)-(meetChecks.indexOf(String(a.id))>=0?1:0));
   }
-  // 「あなたの仕事の軸」バナー（MEETの記録がある端末のみ・重複挿入ガード）
+  // 「あなたの仕事の軸」バナー＝累積軸（記事診断＋MEET）がある端末のみ。タップで軸レーダー＋軸に合う経営層のレコメンド
   const oldBn=document.getElementById('meetAxisBanner'); if(oldBn) oldBn.remove();
-  if(meetHasData && window.SN_AXIS){
+  if(window.SN_AXIS && SN_AXIS.hasData()){
     el.insertAdjacentHTML('beforebegin',
       `<div id="meetAxisBanner" onclick="openMeetAxis()" style="display:flex;align-items:center;gap:12px;background:linear-gradient(120deg,#16223f,#22335c);color:#fff;border-radius:10px;padding:14px 16px;margin-bottom:14px;cursor:pointer;box-shadow:0 4px 14px rgba(22,34,63,0.25);">
         <div style="font-size:22px;">🎯</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:13.5px;font-weight:900;">ソコナラMEETでの、あなたの「仕事の軸」</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:2px;">チェックと共感ポイントから、仕事に求めるものをレーダーで表示します</div>
+          <div style="font-size:13.5px;font-weight:900;">あなたの「仕事の軸」と、軸に合う経営層</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:2px;">記事やMEETでの選択が貯まるほど、軸とおすすめが明確になります</div>
         </div>
         <div style="font-size:12px;font-weight:700;color:#7fd8cb;white-space:nowrap;">見る →</div>
       </div>`);
@@ -3134,6 +3142,11 @@ function pickQ3(el, val) {
 // AIの文章診断（WORKING HINT＋詳細）はLINE特典としてp-wbの導線から（openDetailReport）。
 async function submitEmpathy() {
   logResonance(false); // 刺さった言葉等はここで記録（AI閲覧とは分離。自由記述は詳細レポート直前で入力）
+  // 明示反応を端末内の累積「軸の記録」へ（追記49＝記事を読むほど軸が明確になる配線。logIdで二重記録防止）
+  try{
+    var _co=(loadCompanies()||[]).find(function(c){ return String(c.id)===String(selectedCompanyId||''); });
+    if(typeof SN_WB_LOGAXIS==='function') SN_WB_LOGAXIS(_co, (window.SN_CARDS&&SN_CARDS.logId)||('diag_'+Date.now()));
+  }catch(e){}
   _saveFbCache();      // 診断入力を24hキャッシュ＝スワイプで戻ってもTOPの再入口から見返せる
   saveSession();
   openWellbeing();
@@ -4342,6 +4355,19 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
       return q1KeywordAxis(S.q1); // ②無ければ文言から推定
     }catch(e){ return null; }
   }
+  // 診断の明示反応（Q2求めるもの・モヤモヤ・刺さった言葉の軸）を端末内の累積「軸の記録」(sn_axis)へ追記（追記49）。
+  // 診断レポート自体は従来どおり単発のスナップショット＝この追記は累積軸（アプリの軸モーダル・レコメンド・MEET）にだけ効く。
+  // dedupeKey=診断ログID＝同じ診断の再表示・復元では二重記録しない。
+  window.SN_WB_LOGAXIS=function(co, dedupeKey){
+    try{
+      if(!window.SN_AXIS) return;
+      var hits=[];
+      ((typeof S!=='undefined'&&S.q2)||[]).forEach(function(label){ var ax=Q2_AX[label]; if(ax) hits.push(ax); });
+      ((typeof S!=='undefined'&&S.moya)||[]).forEach(function(id){ var ax=MOYA_AX[id]; if(ax) hits.push(ax); });
+      var q1ax=q1Axis(co); if(q1ax) hits.push(q1ax);
+      if(hits.length||co) SN_AXIS.appendHits('diag', co&&co.id, hits, dedupeKey);
+    }catch(e){}
+  };
   function userWeights(co){
     var w={meaning:48,agency:48,people:48,local:48,time:50,econ:50};
     // 価値4軸のベース＝共鳴した経営層の環境（adminのWBマトリクス＝companies.wb）。

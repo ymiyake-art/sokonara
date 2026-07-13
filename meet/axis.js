@@ -48,5 +48,61 @@ window.SN_AXIS = (function(){
     for(var k=0;k<6;k++){ var lp=pt(k,128); s+='<text x="'+lp[0].toFixed(1)+'" y="'+lp[1].toFixed(1)+'" font-size="9.5" font-weight="700" fill="#3d4453" text-anchor="middle" dominant-baseline="middle">'+AX[k][1]+'</text>'; }
     return s+'</svg>';
   }
-  return { AX:AX, TAG_AX:TAG_AX, clamp:clamp, centroid:centroid, radar:radar };
+  // ===== 累積ストア（追記49）＝端末内の「軸の記録」。PIIなし：軸キーの回数と企業IDだけを持つ =====
+  // 記事診断（Q2求めるもの・モヤモヤ・刺さった言葉）とMEET（チェック・共感・アンケート）が同じ器に貯まり、
+  // 「記事を読めば読むほど軸が明確になる」を実現する。読み書きはこのモジュール経由のみ。
+  var LS_KEY='sn_axis';
+  function readLog(){
+    try{ var v=JSON.parse(localStorage.getItem(LS_KEY)||'null');
+      if(v&&typeof v==='object'){ v.ax=v.ax||{}; v.cos=v.cos||{}; v.done=v.done||{}; v.n=v.n||0; return v; }
+    }catch(e){}
+    return {ax:{},cos:{},done:{},n:0};
+  }
+  function writeLog(v){ try{ localStorage.setItem(LS_KEY, JSON.stringify(v)); }catch(e){} }
+  // 明示反応を追記。hits=[axisKey..]／coId=共鳴した経営層（wb重ね合わせ対象に加わる）／dedupeKey=同一診断の二重記録防止
+  function appendHits(src, coId, hits, dedupeKey){
+    var v=readLog();
+    if(dedupeKey){ if(v.done[dedupeKey]) return false; v.done[dedupeKey]=1;
+      var dk=Object.keys(v.done); if(dk.length>300) delete v.done[dk[0]]; }
+    (hits||[]).forEach(function(k){ if(TAG_AX[k]) v.ax[k]=(v.ax[k]||0)+1; });
+    if(coId) v.cos[String(coId)]=1;
+    v.n++; v.updated=Date.now(); writeLog(v); return true;
+  }
+  // 端末に軸の材料があるか（バナー・レコメンドの表示判定）
+  function hasData(){
+    var v=readLog(); if(v.n>0) return true;
+    var m=null; try{ m=JSON.parse(localStorage.getItem('sn_meet')||'null'); }catch(e){}
+    return !!(m&&((m.checks||[]).length||Object.keys(m.reactions||{}).length||((m.survey||{}).rtags||[]).length));
+  }
+  // 累積軸＝MEET(sn_meet)＋記事診断(sn_axis)を合算し、同じcentroidで計算
+  function cumulative(wbById){
+    var m=null; try{ m=JSON.parse(localStorage.getItem('sn_meet')||'null'); }catch(e){}
+    m=m||{};
+    var v=readLog();
+    var mm={ checks:(m.checks||[]).concat(Object.keys(v.cos)), reactions:m.reactions||{}, survey:m.survey||{} };
+    var w=centroid(mm, wbById);
+    // 記事診断の明示反応＝共感ポイントと同格(×0.7)。同じ軸は最大3回分まで効かせる（読むほど明確に、ただし飽和あり）
+    Object.keys(v.ax).forEach(function(k){
+      var mp=TAG_AX[k]; if(!mp) return;
+      var c=Math.min(v.ax[k],3);
+      Object.keys(mp).forEach(function(x){ w[x]=clamp(w[x]+Math.round(mp[x]*0.7)*c); });
+    });
+    return w;
+  }
+  // レコメンド：軸wと企業wb(companies.wb)の重なり。スコアは内部値＝UIには重なった軸名だけ出す（企業の点数化はしない）
+  function matchTop(w, cos, topN){
+    var ranked=(cos||[]).map(function(c){
+      var wb=(c.wb&&typeof c.wb==='object')?c.wb:null; if(!wb) return null;
+      var s=0, hits=[];
+      AX.forEach(function(a){
+        var uw=(w[a[0]]-50)/50, cw=((wb[a[0]]!=null?wb[a[0]]:60)-50)/50;
+        s+=uw*cw;
+        if(uw>0.12&&cw>0.2) hits.push(a[1]);
+      });
+      return {c:c, s:s, hits:hits};
+    }).filter(Boolean).sort(function(a,b){ return b.s-a.s; });
+    return ranked.slice(0, topN||3);
+  }
+  return { AX:AX, TAG_AX:TAG_AX, clamp:clamp, centroid:centroid, radar:radar,
+           readLog:readLog, appendHits:appendHits, hasData:hasData, cumulative:cumulative, matchTop:matchTop };
 })();

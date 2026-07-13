@@ -167,8 +167,8 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
       <div style="text-align:center;padding:8px 0 4px;"><div style="font-size:32px;">🎉</div><div style="font-size:15px;font-weight:900;color:var(--navy);margin-top:4px;">ご回答ありがとうございました</div></div>
       <div style="background:var(--teal-bg);border-radius:10px;padding:14px 16px;margin-top:12px;">
         <div class="step" style="margin-bottom:2px;">CAREER AXIS</div>
-        <div style="font-size:14px;font-weight:900;color:var(--navy);">今日のあなたの“仕事の軸”</div>
-        <div class="note" style="margin:4px 0 2px;">チェックした経営層と理由から導いた、あなたが仕事に求めるもの。年収や知名度だけが、キャリアの正解じゃない。</div>
+        <div style="font-size:14px;font-weight:900;color:var(--navy);">あなたの“仕事の軸”</div>
+        <div class="note" style="margin:4px 0 2px;">今日のチェック・共感（と、これまで記事で選んだもの）から導いた、あなたが仕事に求めるもの。年収や知名度だけが、キャリアの正解じゃない。</div>
         <div id="svRadar"></div>
         <div class="note" style="text-align:center;">※参考値です。企業を評価する数値ではありません。</div>
       </div>
@@ -327,10 +327,11 @@ function deleteMyData(){
     .then(function(r){return r.json();}).catch(function(){return {};})
     .then(function(){ try{ localStorage.removeItem('sn_meet'); }catch(e){} toast('削除しました'); setTimeout(function(){ location.reload(); },600); });
 }
-// ===== “仕事の軸”＝共通モジュール /meet/axis.js に委譲（アプリと同一計算式。PII不使用・派生値のみ） =====
+// ===== “仕事の軸”＝共通モジュール /meet/axis.js の累積軸（記事診断＋MEETを端末内で合算。アプリと同一計算式） =====
 function centroid(){
   var wbById={}; COS.forEach(function(c){ if(c.wb&&typeof c.wb==='object') wbById[String(c.id)]=c.wb; });
-  return SN_AXIS.centroid(M, wbById);
+  saveM(); // 累積計算はlocalStorageを読むため、直前の状態を確実に書いてから
+  return SN_AXIS.cumulative(wbById);
 }
 function radar(w){ return SN_AXIS.radar(w); }
 function paintThanks(){
