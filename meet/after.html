@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>ソコナラMEET 後日アンケート</title>
+<style>
+:root{ --navy:#16223f; --teal:#42ad9f; --teal-d:#2e8c7f; --teal-bg:#e9f6f4; --bg:#f4f5f7; --border:#e2e5ea; --text:#2b2f36; --text2:#6b7280; --text3:#9aa1ab; }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Noto Sans JP','Hiragino Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px 80px;}
+.hero{background:var(--navy);color:#fff;padding:26px 16px 22px;text-align:center;}
+.hero .mono{font-family:'Courier New',monospace;font-size:10px;letter-spacing:3px;color:var(--teal);margin-bottom:6px;}
+.hero h1{font-size:20px;font-weight:900;letter-spacing:1px;}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px;margin-top:16px;}
+.q{font-size:13.5px;font-weight:700;color:var(--navy);margin:20px 0 8px;}
+.q:first-child{margin-top:0;}
+.note{font-size:11px;color:var(--text3);line-height:1.8;}
+.btn{display:block;width:100%;padding:13px;border:none;border-radius:8px;background:var(--teal);color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;text-align:center;}
+.btn:disabled{opacity:0.45;}
+input[type=text],textarea{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;background:#fff;}
+textarea{min-height:64px;resize:vertical;}
+.sc-bar{display:flex;gap:5px;margin-bottom:8px;}
+.sc-seg{width:40px;height:38px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--text3);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;font-family:inherit;}
+.sc-seg.on{background:var(--teal);border-color:var(--teal);color:#fff;}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:12px;padding:10px 18px;border-radius:20px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:50;white-space:nowrap;}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="mono">SOKONARA MEET — AFTER SURVEY</div>
+  <h1>ご参加ありがとうございました</h1>
+  <div style="font-size:12px;color:rgba(255,255,255,0.8);margin-top:10px;line-height:1.9;">よりよい会にしていくため、率直なご感想をお聞かせください。<br><b style="color:#7fd8cb;">2〜3分</b>で終わります。ご協力をお願いします。</div>
+</div>
+
+<div class="wrap">
+  <div class="card" id="svCard">
+    <div id="hello" class="note" style="display:none;margin-bottom:12px;"></div>
+    <div id="nameBox" style="display:none;margin-bottom:14px;">
+      <div class="q">お名前（任意）</div>
+      <input type="text" id="nameIn" placeholder="氏名（空欄でもOK）" autocomplete="name">
+    </div>
+
+    <div class="q">① 経営層のプレゼンはいかがでしたか？（5点満点）</div>
+    <div class="sc-bar" id="barPres"></div>
+    <textarea id="cPres" placeholder="一言あれば（任意）"></textarea>
+
+    <div class="q">② テーブル交流はいかがでしたか？（5点満点）</div>
+    <div class="sc-bar" id="barTables"></div>
+    <textarea id="cTables" placeholder="一言あれば（任意）"></textarea>
+
+    <div class="q">③ 運営・進行はいかがでしたか？（5点満点）</div>
+    <div class="sc-bar" id="barOps"></div>
+    <textarea id="cOps" placeholder="一言あれば（任意）"></textarea>
+
+    <div class="q">④ 会全体の感想をお聞かせください（任意）</div>
+    <textarea id="cOverall" placeholder="印象に残ったこと・感じたことなど"></textarea>
+
+    <div class="q">⑤ 改善してほしい点・次回への要望（任意）</div>
+    <textarea id="cImprove" placeholder="率直にどうぞ"></textarea>
+
+    <button class="btn" style="margin-top:18px;" onclick="submitAfter(this)">送信する</button>
+    <div class="note" style="text-align:center;margin-top:8px;">回答は運営の改善と、登壇企業へのフィードバック（匿名の抜粋）に使わせていただきます。</div>
+  </div>
+
+  <div class="card" id="thanksCard" style="display:none;text-align:center;">
+    <div style="font-size:32px;">🙏</div>
+    <div style="font-size:15px;font-weight:900;color:var(--navy);margin-top:6px;">ご協力ありがとうございました</div>
+    <div class="note" style="margin-top:8px;">いただいた声は、次回のソコナラMEETに活かします。<br>経営層の記事は <a href="https://app.sokonara.co.jp/" style="color:var(--teal-d);">アプリ</a> からいつでも読み返せます。</div>
+  </div>
+
+  <div class="note" style="margin-top:20px;text-align:center;">運営：ソコナラ（株式会社ソコナラ）</div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+var EVENT_ID='meet_2026_07_30';
+var A={pres:null,tables:null,ops:null};
+var M=null; // 当日ページの記録（同じ端末なら回答が同じ行に紐づく）
+function toast(m){ var t=document.getElementById('toastEl'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(function(){t.classList.remove('show');},2400); }
+function bar(id,key){
+  var el=document.getElementById(id); var v=A[key];
+  var s=''; for(var n=1;n<=5;n++){ s+='<button type="button" class="sc-seg'+(v!=null&&n<=v?' on':'')+'" onclick="setA(\''+key+'\','+n+',\''+id+'\')">'+n+'</button>'; }
+  el.innerHTML=s;
+}
+function setA(key,n,id){ A[key]=(A[key]===n?null:n); bar(id,key); }
+function submitAfter(btn){
+  var after={
+    pres:{s:A.pres,c:(document.getElementById('cPres').value||'').slice(0,500)},
+    tables:{s:A.tables,c:(document.getElementById('cTables').value||'').slice(0,500)},
+    ops:{s:A.ops,c:(document.getElementById('cOps').value||'').slice(0,500)},
+    overall:(document.getElementById('cOverall').value||'').slice(0,800),
+    improve:(document.getElementById('cImprove').value||'').slice(0,800),
+    t:Date.now()
+  };
+  var id=(M&&M.id)||('meet_after_'+Date.now()+'_'+Math.random().toString(36).slice(2,8));
+  var set={event_id:EVENT_ID, after:after};
+  if(!(M&&M.name)){ var nm=(document.getElementById('nameIn').value||'').trim(); if(nm) set.name=nm; }
+  btn.disabled=true; var ot=btn.textContent; btn.textContent='送信中…';
+  fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id,set:set})})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d&&d.ok){ document.getElementById('svCard').style.display='none'; document.getElementById('thanksCard').style.display='block'; window.scrollTo(0,0); }
+      else{ throw new Error('ng'); }
+    })
+    .catch(function(){ btn.disabled=false; btn.textContent=ot; toast('送信できませんでした。電波の良い場所でもう一度お試しください'); });
+}
+(function(){
+  try{ M=JSON.parse(localStorage.getItem('sn_meet')||'null'); }catch(e){}
+  if(M&&M.name){ var h=document.getElementById('hello'); h.style.display='block'; h.innerHTML='<b style="color:var(--navy)">'+String(M.name).replace(/</g,'&lt;')+'</b> さん、当日はありがとうございました。'; }
+  else{ document.getElementById('nameBox').style.display='block'; }
+  bar('barPres','pres'); bar('barTables','tables'); bar('barOps','ops');
+})();
+</script>
+</body>
+</html>

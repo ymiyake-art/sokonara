@@ -3448,6 +3448,22 @@ async function renderMeetAdmin(){
         <div style="font-weight:700;font-size:13px;margin-bottom:10px;">理由タグの傾向（匿名集計＝企業レポート用）</div>
         <div style="display:flex;gap:7px;flex-wrap:wrap;">${tagChips}</div>
       </div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px;">📮 後日アンケート（/meet/after.html）</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.7;">LINE配信でURL <code style="background:var(--teal-bg);padding:1px 6px;border-radius:4px;">https://app.sokonara.co.jp/meet/after.html</code> を送るだけ。同じ端末なら当日の記録と同じ行に紐づきます。</div>
+        ${(()=>{ const af=rows.filter(r=>r.after&&typeof r.after==='object');
+          if(!af.length) return '<div style="font-size:12px;color:var(--text3);">まだ回答がありません。</div>';
+          const avg=k=>{ const v=af.map(r=>(r.after[k]||{}).s).filter(x=>typeof x==='number'); return v.length?( (v.reduce((a,b)=>a+b,0)/v.length).toFixed(1)+' <span style="font-size:10px;color:var(--text3)">('+v.length+')</span>' ):'—'; };
+          const cmts=[]; af.forEach(r=>{ const a=r.after; const nm=escA(r.name||'（無名）');
+            [['pres','プレゼン'],['tables','交流'],['ops','運営']].forEach(([k,l])=>{ const c=((a[k]||{}).c||'').trim(); if(c) cmts.push(`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;"><span style="font-size:10px;color:var(--teal-d);font-weight:700;">[${l}]</span> ${escA(c)} <span style="font-size:10px;color:var(--text3)">— ${nm}</span></div>`); });
+            if((a.overall||'').trim()) cmts.push(`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;"><span style="font-size:10px;color:var(--navy);font-weight:700;">[全体]</span> ${escA(a.overall.trim())} <span style="font-size:10px;color:var(--text3)">— ${nm}</span></div>`);
+            if((a.improve||'').trim()) cmts.push(`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;"><span style="font-size:10px;color:#c0341a;font-weight:700;">[改善]</span> ${escA(a.improve.trim())} <span style="font-size:10px;color:var(--text3)">— ${nm}</span></div>`);
+          });
+          return `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+            ${[['回答数',af.length],['プレゼン',avg('pres')],['テーブル交流',avg('tables')],['運営・進行',avg('ops')]].map(([l,v])=>`<div style="flex:1;min-width:110px;border:1px solid var(--border);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--text2)">${l}</div><div style="font-size:19px;font-weight:700;color:var(--navy)">${v}</div></div>`).join('')}
+          </div>
+          <div style="max-height:300px;overflow:auto;">${cmts.join('')||'<div style="font-size:12px;color:var(--text3)">コメントはまだありません。</div>'}</div>`; })()}
+      </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;">
         <div style="font-weight:700;font-size:13px;margin-bottom:4px;">参加者一覧（${nAll}名）</div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">⚠️ 氏名はイベント運営・班分け専用。企業共有は「共有✓」の本人のみ。不要な行（テスト・重複など）は左のチェック→下の削除ボタンで消せます。</div>
@@ -3732,6 +3748,8 @@ function openMeetReport(){
   const evAvg=allN?(allSum/allN).toFixed(1):null;
   const tagCnt={}; rows.forEach(r=>(r.rtags||[]).forEach(t=>{ tagCnt[t]=(tagCnt[t]||0)+1; }));
   const topTags=Object.entries(tagCnt).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  // 後日アンケート（after.overall）＝会全体の声として匿名抜粋
+  const afOverall=rows.filter(r=>r.after&&typeof r.after==='object').map(r=>String(r.after.overall||'').trim()).filter(Boolean).slice(0,5);
   const AXL={meaning:'意味・使命（意義・ビジョン）',agency:'裁量・挑戦（変革）',people:'人・近さ（人柄・雰囲気）',local:'地域・つながり',time:'時間・ゆとり（働き方）',econ:'経済（条件・待遇）'};
   const today=new Date(); const dstr=today.getFullYear()+'.'+(today.getMonth()+1)+'.'+today.getDate();
   const stat=(l,v,s)=>`<div class="st"><div class="stl">${l}</div><div class="stv">${v}${s?`<span class="sts">${s}</span>`:''}</div></div>`;
@@ -3796,6 +3814,7 @@ function openMeetReport(){
     ${stat('友人に紹介したい（5点満点）', npsAvg||'—', npsArr.length?('回答'+npsArr.length+'名'):'')}
   </div>
   ${topTags.length?`<div style="margin-top:10px;"><div class="sub" style="margin-bottom:4px;">参加者が経営層に惹かれた理由（イベント全体・上位）</div><div class="tags">${topTags.map(([t,n])=>`<span>${esc(MEET_RTAGS[t]||t)} ${n}</span>`).join('')}</div></div>`:''}
+  ${afOverall.length?`<h2>参加者の声（会全体・匿名抜粋）</h2>${afOverall.map(c=>`<div class="quote">「${esc(c)}」</div>`).join('')}`:''}
   <div class="next"><b>この後の流れ：</b>「個別に話を聞きたい」参加者には、ソコナラから順次ご連絡し、貴社との個別接点（カジュアル面談等）を調整します。日程候補などは担当（三宅）よりご相談させてください。</div>
   <div class="foot">本レポートの数値は、ソコナラMEET当日ページでの参加者の任意入力に基づきます。個人が特定される情報の取り扱いは利用規約に基づきます。<br>運営：株式会社ソコナラ（関西電力グループ）｜ https://sokonara.co.jp</div>
   </body></html>`;
