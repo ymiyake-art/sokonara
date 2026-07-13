@@ -110,11 +110,16 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
     <div class="note" style="margin-bottom:12px;">気になる経営層へのチェック情報は、イベント運営および班分けのためにソコナラが利用します。企業向けレポートには匿名・集計情報として活用します。</div>
     <div id="regForm">
       <input type="text" id="nameIn" placeholder="氏名（フルネーム）" autocomplete="name" style="margin-bottom:10px;">
+      <label style="display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--text2);margin-bottom:12px;cursor:pointer;line-height:1.6;">
+        <input type="checkbox" id="obsIn" style="width:17px;height:17px;margin-top:2px;flex-shrink:0;cursor:pointer;">
+        <span>🎧 <b>傍聴のみ</b>で参加する（後半のテーブル交流・班分けには入りません。チェックや共感は自由にどうぞ）</span>
+      </label>
       <button class="btn" onclick="register()">同意して登録する</button>
     </div>
     <div id="regDone" style="display:none;">
-      <div style="font-size:14px;color:var(--navy);"><b id="regName"></b> さんで登録済み ✓</div>
-      <button class="btn btn-o" style="margin-top:8px;font-size:12px;padding:9px;" onclick="editName()">名前を変更する</button>
+      <div style="font-size:14px;color:var(--navy);"><b id="regName"></b> さんで登録済み ✓ <span id="regObs" style="display:none;font-size:11px;color:#b35c12;font-weight:700;">🎧 傍聴のみ</span></div>
+      <button class="btn btn-o" style="margin-top:8px;font-size:12px;padding:9px;" id="obsToggleBtn" onclick="toggleObserver()"></button>
+      <button class="btn btn-o" style="margin-top:6px;font-size:12px;padding:9px;" onclick="editName()">名前を変更する</button>
       <button class="btn btn-o" style="margin-top:6px;font-size:11px;padding:8px;color:var(--hot);border-color:rgba(192,52,26,0.3);" onclick="deleteMyData()">登録データを削除する（チェック・回答もすべて消えます）</button>
     </div>
     <!-- 班分けスケジュール（登録後は常時表示。運営の割り当て前は「まだ発表されていません」） -->
@@ -200,7 +205,7 @@ var M=null; // {id,name,checks,reactions:{coId:[axisKey..]},survey:{deep,talk,co
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function toast(m){ var t=document.getElementById('toastEl'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(function(){t.classList.remove('show');},2200); }
 function clamp(v){ return Math.max(0,Math.min(100,Math.round(v))); }
-function loadM(){ try{ M=JSON.parse(localStorage.getItem('sn_meet')||'null'); }catch(e){ M=null; } if(!M||!M.id) M={id:'meet_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),name:'',checks:[],reactions:{},survey:{deep:[],talk:[],consent:null,rtags:[],comment:''},done:false}; if(!M.survey) M.survey={deep:[],talk:[],consent:null,rtags:[],comment:''}; if(!M.reactions||typeof M.reactions!=='object') M.reactions={}; }
+function loadM(){ try{ M=JSON.parse(localStorage.getItem('sn_meet')||'null'); }catch(e){ M=null; } if(!M||!M.id) M={id:'meet_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),name:'',checks:[],reactions:{},observer:false,survey:{deep:[],talk:[],consent:null,rtags:[],comment:''},done:false}; if(!M.survey) M.survey={deep:[],talk:[],consent:null,rtags:[],comment:''}; if(!M.reactions||typeof M.reactions!=='object') M.reactions={}; if(typeof M.observer!=='boolean') M.observer=false; }
 function saveM(){ localStorage.setItem('sn_meet',JSON.stringify(M)); }
 // サーバ保存（service_role API経由・PIIはmeet_entriesのみに保持）
 function push(set){ if(!M.name) return; try{ fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:M.id,set:Object.assign({event_id:EV.eventId},set)})}).catch(function(){}); }catch(e){} }
@@ -212,7 +217,7 @@ function commitAll(btn){
   if(!M.name){ toast('先にSTEP1でお名前を登録してください'); return; }
   clearTimeout(_pushT);
   btn.disabled=true; var ot=btn.textContent; btn.textContent='送信中…';
-  var body={id:M.id, set:{event_id:EV.eventId, name:M.name, checks:M.checks, reactions:M.reactions}};
+  var body={id:M.id, set:{event_id:EV.eventId, name:M.name, checks:M.checks, reactions:M.reactions, observer:M.observer}};
   fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){ return r.json(); })
     .then(function(d){
@@ -252,6 +257,11 @@ function paintGroups(groups){
   if(!box||!list) return;
   if(!M||!M.name){ box.style.display='none'; return; }
   box.style.display='block';
+  if(M.observer){
+    if(note) note.textContent='🎧 傍聴のみで参加中のため、テーブル交流の班分けには入りません。（交流会に参加する場合は上の切り替えボタンから）';
+    list.innerHTML='';
+    return;
+  }
   if(!groups||!groups.length){
     if(note) note.textContent='班分けはまだ発表されていません。運営の案内があったら「🔄 更新」を押してください。';
     list.innerHTML='';
@@ -270,18 +280,30 @@ function paintGroups(groups){
 function register(){
   var v=(document.getElementById('nameIn').value||'').trim();
   if(v.length<2){ toast('氏名を入力してください'); return; }
-  M.name=v; saveM();
-  push({name:M.name,checks:M.checks});
-  paintReg(); loadMyGroups(); toast('登録しました。気になる経営層にチェックを！');
+  M.name=v;
+  var ob=document.getElementById('obsIn'); if(ob) M.observer=!!ob.checked;
+  saveM();
+  push({name:M.name,checks:M.checks,observer:M.observer});
+  paintReg(); loadMyGroups();
+  toast(M.observer?'傍聴として登録しました。チェックや共感は自由にどうぞ':'登録しました。気になる経営層にチェックを！');
 }
-function editName(){ document.getElementById('regForm').style.display='block'; document.getElementById('regDone').style.display='none'; document.getElementById('nameIn').value=M.name; }
+// 傍聴⇄参加（班分けあり）の切り替え。運営側の班分け計算は observer=true を除外する
+function toggleObserver(){
+  M.observer=!M.observer; saveM();
+  push({observer:M.observer});
+  paintReg(); paintGroups(window._myGroups||null);
+  toast(M.observer?'傍聴に切り替えました（班分けには入りません）':'参加（班分けあり）に切り替えました');
+}
+function editName(){ document.getElementById('regForm').style.display='block'; document.getElementById('regDone').style.display='none'; document.getElementById('nameIn').value=M.name; var ob=document.getElementById('obsIn'); if(ob) ob.checked=!!M.observer; }
 function paintReg(){
   var ok=!!M.name;
   document.getElementById('regForm').style.display=ok?'none':'block';
   document.getElementById('regDone').style.display=ok?'block':'none';
   if(ok) document.getElementById('regName').textContent=M.name;
+  var ro=document.getElementById('regObs'); if(ro) ro.style.display=M.observer?'inline':'none';
+  var ob=document.getElementById('obsToggleBtn'); if(ob) ob.textContent=M.observer?'参加（班分けあり）に切り替える':'🎧 傍聴のみに切り替える（班分けに入らない）';
   document.getElementById('ckbar').style.display='flex';
-  document.getElementById('ckName').textContent=ok?M.name+' さん':'未登録';
+  document.getElementById('ckName').textContent=ok?(M.name+' さん'+(M.observer?'（傍聴）':'')):'未登録';
   document.getElementById('ckCount').textContent=M.checks.length;
 }
 

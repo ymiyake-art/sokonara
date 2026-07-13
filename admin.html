@@ -3412,7 +3412,7 @@ async function renderMeetAdmin(){
       </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
         <div style="font-weight:700;font-size:13px;margin-bottom:4px;">🧩 班分け（自動割り当て）</div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.7;">卓＝上で選択した登壇企業。各参加者は巡目ごとに別の卓へ移動します。<b>卓あたりの人数は参加人数で均等割り（各卓の人数差は最大1名）を最優先</b>し、チェックした登壇企業へは<b>なるべく</b>行けるよう配分（定員が埋まっていれば行けない場合もあります）。①巡数→②自動計算→③保存で各参加者の当日ページに番号が出ます。</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.7;">卓＝上で選択した登壇企業。各参加者は巡目ごとに別の卓へ移動します。<b>卓あたりの人数は参加人数で均等割り（各卓の人数差は最大1名）を最優先</b>し、チェックした登壇企業へは<b>なるべく</b>行けるよう配分（定員が埋まっていれば行けない場合もあります）。<b>🎧傍聴のみの登録者は自動で除外</b>されます。①巡数→②自動計算→③保存で各参加者の当日ページに番号が出ます。</div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
           <span style="font-size:12px;color:var(--text2)">巡数（1人が回る卓数）</span>
           <select id="grpRotations" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;"><option value="3">3巡</option><option value="4">4巡</option></select>
@@ -3437,7 +3437,7 @@ async function renderMeetAdmin(){
         <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">⚠️ 氏名はイベント運営・班分け専用。企業共有は「共有✓」の本人のみ。不要な行（テスト・重複など）は左のチェック→下の削除ボタンで消せます。</div>
         <table style="width:100%;border-collapse:collapse;font-size:12px;">
           <thead><tr><th style="padding:8px 6px;border-bottom:1px solid var(--border);"><input type="checkbox" onchange="document.querySelectorAll('.mrow-del').forEach(c=>c.checked=this.checked)" title="全選択"></th>${th('氏名')}${th('班（巡目→）')}${th('チェック')}${th('詳しく')}${th('話したい')}${th('共有',1)}${th('コメント')}</tr></thead>
-          <tbody>${rows.map(r=>`<tr><td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:center;"><input type="checkbox" class="mrow-del" value="${escA(String(r.id||''))}"></td>${td('<b style="color:var(--navy)">'+escA(r.name||'（無名）')+'</b>')}${td((r.groups&&r.groups.length)?('<span style="font-size:11px;color:var(--navy);font-weight:700" title="'+escA(r.groups.map(g=>g.no+'番 '+(g.ceo||g.name||'')).join(' / '))+'">'+escA(r.groups.map(g=>g.no).join('→'))+'</span>'):'<span style="font-size:11px;color:var(--text3)">未割当</span>')}${td('<span style="font-size:11px">'+escA((r.checks||[]).map(coName).join('、'))+'</span>')}${td('<span style="font-size:11px">'+escA((r.deep||[]).map(coName).join('、'))+'</span>')}${td('<span style="font-size:11px;color:#2e8c7f;font-weight:700">'+escA((r.talk||[]).map(coName).join('、'))+'</span>')}${td(r.consent===true?'✓':(r.consent===false?'×':'—'),1)}${td('<span style="font-size:11px;color:var(--text2)">'+escA((r.comment||'').slice(0,60))+'</span>')}</tr>`).join('')||'<tr><td colspan="8" style="padding:16px;color:var(--text3);font-size:12px;">まだ登録がありません。</td></tr>'}</tbody>
+          <tbody>${rows.map(r=>`<tr><td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:center;"><input type="checkbox" class="mrow-del" value="${escA(String(r.id||''))}"></td>${td('<b style="color:var(--navy)">'+escA(r.name||'（無名）')+'</b>'+(r.observer===true?'<span style="font-size:10px;color:#b35c12;font-weight:700;margin-left:5px;">🎧傍聴</span>':''))}${td(r.observer===true?'<span style="font-size:11px;color:#b35c12;">傍聴＝班なし</span>':((r.groups&&r.groups.length)?('<span style="font-size:11px;color:var(--navy);font-weight:700" title="'+escA(r.groups.map(g=>g.no+'番 '+(g.ceo||g.name||'')).join(' / '))+'">'+escA(r.groups.map(g=>g.no).join('→'))+'</span>'):'<span style="font-size:11px;color:var(--text3)">未割当</span>'))}${td('<span style="font-size:11px">'+escA((r.checks||[]).map(coName).join('、'))+'</span>')}${td('<span style="font-size:11px">'+escA((r.deep||[]).map(coName).join('、'))+'</span>')}${td('<span style="font-size:11px;color:#2e8c7f;font-weight:700">'+escA((r.talk||[]).map(coName).join('、'))+'</span>')}${td(r.consent===true?'✓':(r.consent===false?'×':'—'),1)}${td('<span style="font-size:11px;color:var(--text2)">'+escA((r.comment||'').slice(0,60))+'</span>')}</tr>`).join('')||'<tr><td colspan="8" style="padding:16px;color:var(--text3);font-size:12px;">まだ登録がありません。</td></tr>'}</tbody>
         </table>
         <button onclick="deleteSelectedParticipants(this)" style="margin-top:12px;padding:8px 16px;background:#fff;color:#c0392b;border:1px solid var(--border);border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🗑 選択した参加者を削除</button>
       </div>
@@ -3500,7 +3500,7 @@ function meetRoster(){
 // チェックした登壇企業へは「なるべく」行けるように best-effort（定員が埋まっていれば行けない場合もある）。
 // 手順：①均等優先グリーディ（最少人数の卓＝希望はタイブレーク）②各巡の偏りを交換で spread<=1 まで修復。
 function computeGroups(rows, tables, R){
-  const people=[...rows].filter(r=>r.name);
+  const people=[...rows].filter(r=>r.name && r.observer!==true); // 🎧傍聴者は班分けに入れない（追記51）
   const N=people.length, T=tables.length;
   if(!N||!T) return {out:{}, counts:[], tables, R:Math.max(1,Math.min(R,T||1)), cap:0, N:0};
   R=Math.max(1, Math.min(R, T)); // 巡数は卓数を超えられない（同じ卓は再訪しない）
