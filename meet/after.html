@@ -61,6 +61,10 @@ textarea{min-height:64px;resize:vertical;}
     <div class="q">⑤ 改善してほしい点・次回への要望（任意）</div>
     <textarea id="cImprove" placeholder="率直にどうぞ"></textarea>
 
+    <div class="q">⑥ 気になった経営層へ、伝えたいこと（任意）</div>
+    <div class="note" style="margin-bottom:8px;">共感した点・聞いてみたいこと・仮に関わるなら何ができそうか など、あれば自由にどうぞ。<b>ご本人にお届けします</b>（お名前も添えて共有します）。</div>
+    <div id="msgBox"><div class="note">登壇企業を読み込み中…</div></div>
+
     <button class="btn" style="margin-top:18px;" onclick="submitAfter(this)">送信する</button>
     <div class="note" style="text-align:center;margin-top:8px;">回答は運営の改善と、登壇企業へのフィードバック（匿名の抜粋）に使わせていただきます。</div>
   </div>
@@ -78,8 +82,12 @@ textarea{min-height:64px;resize:vertical;}
 
 <script>
 var EVENT_ID='meet_2026_07_30';
+var SUPA_URL='https://ypwwuylcvjwcyazvpibd.supabase.co';
+var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd3d1eWxjdmp3Y3lhenZwaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTY1MTMsImV4cCI6MjA5MjI3MjUxM30.7YseXt8libEzFsSAv4bI46l36kZ2lFz_jnh1JphVpvA';
 var A={pres:null,tables:null,ops:null};
+var COS=[];
 var M=null; // 当日ページの記録（同じ端末なら回答が同じ行に紐づく）
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function toast(m){ var t=document.getElementById('toastEl'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(function(){t.classList.remove('show');},2400); }
 function bar(id,key){
   var el=document.getElementById(id); var v=A[key];
@@ -88,12 +96,15 @@ function bar(id,key){
 }
 function setA(key,n,id){ A[key]=(A[key]===n?null:n); bar(id,key); }
 function submitAfter(btn){
+  var msgs={};
+  COS.forEach(function(c){ var el=document.getElementById('msg_'+c.id); var v=el?(el.value||'').trim().slice(0,600):''; if(v) msgs[String(c.id)]=v; });
   var after={
     pres:{s:A.pres,c:(document.getElementById('cPres').value||'').slice(0,500)},
     tables:{s:A.tables,c:(document.getElementById('cTables').value||'').slice(0,500)},
     ops:{s:A.ops,c:(document.getElementById('cOps').value||'').slice(0,500)},
     overall:(document.getElementById('cOverall').value||'').slice(0,800),
     improve:(document.getElementById('cImprove').value||'').slice(0,800),
+    msgs:msgs,
     t:Date.now()
   };
   var id=(M&&M.id)||('meet_after_'+Date.now()+'_'+Math.random().toString(36).slice(2,8));
@@ -108,11 +119,36 @@ function submitAfter(btn){
     })
     .catch(function(){ btn.disabled=false; btn.textContent=ot; toast('送信できませんでした。電波の良い場所でもう一度お試しください'); });
 }
+// 登壇企業を読み込み、経営層ごとのメッセージ欄を描画（当日ページと同じ meet_speakers 順）
+function renderMsgs(){
+  var box=document.getElementById('msgBox'); if(!box) return;
+  if(!COS.length){ box.innerHTML='<div class="note">（登壇企業を取得できませんでした）</div>'; return; }
+  box.innerHTML=COS.map(function(c){
+    return '<div style="margin-bottom:12px;"><div style="font-size:12.5px;font-weight:700;color:var(--navy);margin-bottom:4px;">'+esc(c.ceo||c.name||'')+'<span style="font-size:10.5px;color:var(--text3);font-weight:400;"> '+esc(c.name||'')+'</span></div>'
+      +'<textarea id="msg_'+esc(c.id)+'" placeholder="'+esc((c.ceo||'この経営層')+'さんへ、あれば')+'" style="min-height:54px;"></textarea></div>';
+  }).join('');
+}
+function loadSpeakers(){
+  fetch(SUPA_URL+'/rest/v1/site_settings?key=eq.meet_speakers&select=value',{headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY}})
+    .then(function(r){return r.ok?r.json():null;}).catch(function(){return null;})
+    .then(function(ss){
+      var sel=(ss&&ss[0]&&ss[0].value&&Array.isArray(ss[0].value.ids))?ss[0].value.ids.map(String):[];
+      return fetch(SUPA_URL+'/rest/v1/companies?select=id,ceo,name,status',{headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY}})
+        .then(function(r){return r.json();})
+        .then(function(rows){
+          rows=(rows||[]).filter(function(c){ return (c.status||'active')==='active'; }).map(function(c){ c.id=String(c.id); return c; });
+          if(sel.length){ COS=sel.map(function(id){ return rows.find(function(c){return c.id===id;}); }).filter(Boolean); }
+          else COS=rows;
+          renderMsgs();
+        });
+    }).catch(function(){ var box=document.getElementById('msgBox'); if(box) box.innerHTML='<div class="note">（登壇企業を取得できませんでした）</div>'; });
+}
 (function(){
   try{ M=JSON.parse(localStorage.getItem('sn_meet')||'null'); }catch(e){}
   if(M&&M.name){ var h=document.getElementById('hello'); h.style.display='block'; h.innerHTML='<b style="color:var(--navy)">'+String(M.name).replace(/</g,'&lt;')+'</b> さん、当日はありがとうございました。'; }
   else{ document.getElementById('nameBox').style.display='block'; }
   bar('barPres','pres'); bar('barTables','tables'); bar('barOps','ops');
+  loadSpeakers();
 })();
 </script>
 </body>

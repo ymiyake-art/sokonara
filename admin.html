@@ -588,7 +588,8 @@ async function renderResonance(){
     const r=await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw,action:'list',table:'card_logs'})});
     if(!r.ok) throw new Error('API '+r.status);
     logs=await r.json(); if(!Array.isArray(logs)) logs=[];
-    // 内部テスト端末（?test=1でタグ付け）の行は集計から除外
+    // 内部テスト端末（?test=1でタグ付け）の行は集計から除外（除外したフォーム到達数は明細で表示）
+    window._resInternalForms=logs.filter(l=>l.is_internal && l.form_open).length;
     logs=logs.filter(l=> !l.is_internal);
     // 直接導線(values)の復元専用行（started=false・カード操作なし）は、カード経由の共鳴データから除外
     logs=logs.filter(l=> l.started===true || (Array.isArray(l.picked_cards)&&l.picked_cards.length) || (Array.isArray(l.dropped_cards)&&l.dropped_cards.length));
@@ -728,6 +729,28 @@ async function renderResonance(){
         ／ 閲覧なし ${wbNo.length}件 → CV <b>${pct(wbNoCv,wbNo.length)}%</b>（${wbNoCv}件）
         ／ 比較実行 ${fWbCmp}件
       </div>
+      ${(()=>{ const VAR={person:'ピンとくる',moya:'モヤモヤ逆引き',direct:'直接'};
+        const fo=logs.filter(l=>l.form_open).sort((a,b)=>Date.parse(b.started_at||b.created_at||0)-Date.parse(a.started_at||a.created_at||0));
+        const fmt=t=>{ const d=new Date(Date.parse(t||'')); return isNaN(d)?'—':((d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')); };
+        const intN=window._resInternalForms||0;
+        return `<div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--border);">
+          <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:6px;">フォーム到達（CV）の明細 <span style="font-weight:400;color:var(--text3)">— テストか本人か、日時・端末で見分けてください${intN?`（ほかに ?test=1 でタグ済みのテスト到達 ${intN}件を自動除外）`:''}</span></div>
+          ${fo.length?`<table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr>
+            <th style="text-align:left;padding:5px 8px;color:var(--text3);border-bottom:1px solid var(--border);">日時</th>
+            <th style="text-align:left;padding:5px 8px;color:var(--text3);border-bottom:1px solid var(--border);">対象の経営層</th>
+            <th style="text-align:left;padding:5px 8px;color:var(--text3);border-bottom:1px solid var(--border);">流入</th>
+            <th style="text-align:left;padding:5px 8px;color:var(--text3);border-bottom:1px solid var(--border);">utm</th>
+            <th style="text-align:left;padding:5px 8px;color:var(--text3);border-bottom:1px solid var(--border);">端末ID(先頭)</th>
+          </tr></thead><tbody>${fo.map(l=>`<tr>
+            <td style="padding:5px 8px;border-bottom:1px solid var(--border);white-space:nowrap;">${fmt(l.started_at||l.created_at)}</td>
+            <td style="padding:5px 8px;border-bottom:1px solid var(--border);">${escA(coName(l.recommended_company)||'—')}</td>
+            <td style="padding:5px 8px;border-bottom:1px solid var(--border);">${escA(VAR[l.variant]||l.variant||'—')}</td>
+            <td style="padding:5px 8px;border-bottom:1px solid var(--border);color:var(--text3);">${escA(l.utm_source||'—')}</td>
+            <td style="padding:5px 8px;border-bottom:1px solid var(--border);color:var(--text3);font-family:'JetBrains Mono',monospace;">${escA(String(l.id||'').slice(0,10))}</td>
+          </tr>`).join('')}</tbody></table>
+          <div style="font-size:10px;color:var(--text3);margin-top:6px;">※ 明らかにテストと分かる行は各行から削除できます（下の「共鳴データ一覧」で該当セッションを削除）。テスト時は <code>?test=1</code> を付けて開くと自動で除外されます。</div>`
+          :'<div style="font-size:11px;color:var(--text3);">まだフォーム到達はありません。</div>'}
+        </div>`; })()}
     </div>
 
     <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
@@ -3758,6 +3781,9 @@ async function openMeetReport(){
   const topTags=Object.entries(tagCnt).sort((a,b)=>b[1]-a[1]).slice(0,5);
   // 後日アンケート（after.overall）＝会全体の声として匿名抜粋
   const afOverall=rows.filter(r=>r.after&&typeof r.after==='object').map(r=>String(r.after.overall||'').trim()).filter(Boolean).slice(0,5);
+  // 後日アンケートで「この経営層へ伝えたいこと」（after.msgs[cid]）＝実名で貴社へお届け
+  const afMsgs=rows.filter(r=>r.after&&r.after.msgs&&String(r.after.msgs[cid]||'').trim())
+    .map(r=>({name:r.name||'（無名）', msg:String(r.after.msgs[cid]).trim()}));
   const AXL={meaning:'意味・使命（意義・ビジョン）',agency:'裁量・挑戦（変革）',people:'人・近さ（人柄・雰囲気）',local:'地域・つながり',time:'時間・ゆとり（働き方）',econ:'経済（条件・待遇）'};
   const today=new Date(); const dstr=today.getFullYear()+'.'+(today.getMonth()+1)+'.'+today.getDate();
   const stat=(l,v,s)=>`<div class="st"><div class="stl">${l}</div><div class="stv">${v}${s?`<span class="sts">${s}</span>`:''}</div></div>`;
@@ -3831,6 +3857,7 @@ async function openMeetReport(){
       ${talkWarn}
       ${talkList}
       ${cmList?`<h2>貴社に共鳴した参加者の声（共鳴度3点以上・抜粋）</h2>${cmList}`:''}
+      ${afMsgs.length?`<h2>参加者から貴社へのメッセージ（後日アンケート）</h2><div class="sub" style="margin-bottom:6px;">後日アンケートで、貴社に向けて書かれたメッセージです（実名）。</div>${afMsgs.map(m=>`<div class="person"><b>${esc(m.name)}</b> さんより<div class="pc">「${esc(m.msg)}」</div></div>`).join('')}`:''}
       <h2>イベント全体サマリー</h2>
       <div class="stats">
         ${stat('参加登録', nAll-nObs, '名'+(nObs?('（ほか傍聴'+nObs+'名）'):''))}
@@ -3841,7 +3868,7 @@ async function openMeetReport(){
       ${afOverall.length?`<h2>参加者の声（会全体・匿名抜粋）</h2>${afOverall.map(c=>`<div class="quote">「${esc(c)}」</div>`).join('')}`:''}
       <div class="next">
         <div class="nt">この後の流れ</div>
-        本レポートの参加者リストを基に、<b>貴社から直接ご連絡をお願いいたします</b>。極力、<b>経営層ご本人からのコミュニケーション</b>としていただけますと、熱量が高いうちに関係を築けます。ソコナラは強く介在いたしません（サポートが必要な場合のみ、担当・三宅までお声がけください）。
+        本レポートの参加者リストを基に、<b>貴社から直接ご連絡をお願いいたします</b>。極力、<b>経営層ご本人からのコミュニケーション</b>としていただけますと、熱量が高いうちに関係を築けます。
       </div>
     </div>
     <div class="foot">
