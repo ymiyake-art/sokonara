@@ -1241,6 +1241,7 @@ body.sn-ribbon-on #project { padding-top: calc(48px + 40px + env(safe-area-inset
 </style>
 <!-- Vercel Web Analytics（Cookie/PIIなし・訪問数/参照元計測） -->
 <script defer src="/_vercel/insights/script.js"></script>
+<script defer src="/meet/axis.js"></script>
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -2587,6 +2588,35 @@ function openCompanyArticleFromCard(el){
   openCompanyArticle(id);
 }
 
+// ===== MEET「あなたの仕事の軸」モーダル（/meet/axis.js＝当日ページと同一計算式・端末内データのみで完結） =====
+function openMeetAxis(){
+  if(!window.SN_AXIS){ return; }
+  let m=null; try{ m=JSON.parse(localStorage.getItem('sn_meet')||'null'); }catch(e){}
+  if(!m){ return; }
+  const cos=loadCompanies();
+  const wbById={}; cos.forEach(c=>{ if(c.wb&&typeof c.wb==='object') wbById[String(c.id)]=c.wb; });
+  const w=SN_AXIS.centroid(m, wbById);
+  const checked=(m.checks||[]).map(id=>cos.find(c=>String(c.id)===String(id))).filter(Boolean);
+  const rxCount=Object.values(m.reactions||{}).reduce((n,a)=>n+(a||[]).length,0);
+  const listHtml=checked.length?checked.map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--navy);font-weight:700;cursor:pointer;" onclick="closeMeetAxis();openCompanyArticle('${escapeHtml(String(c.id))}')">${escapeHtml(c.ceo||c.name||'')}<span style="font-size:10.5px;color:var(--text2);font-weight:400;">${escapeHtml(c.name||'')}</span><span style="margin-left:auto;font-size:11px;color:var(--teal-d,#2e8c7f);">記事を読む →</span></div>`).join(''):'';
+  const ov=document.createElement('div');
+  ov.id='meetAxisModal';
+  ov.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(16,22,40,0.55);display:flex;align-items:center;justify-content:center;padding:18px;';
+  ov.innerHTML=`<div style="background:#fff;border-radius:14px;max-width:420px;width:100%;max-height:86vh;overflow:auto;padding:20px 18px;" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div style="font-size:15px;font-weight:900;color:var(--navy,#16223f);">🎯 あなたの「仕事の軸」</div>
+      <button onclick="closeMeetAxis()" style="border:none;background:none;font-size:20px;color:#9aa1ab;cursor:pointer;line-height:1;">×</button>
+    </div>
+    <div style="font-size:11px;color:#9aa1ab;line-height:1.7;margin-bottom:6px;">ソコナラMEETでのチェックと共感ポイント（${rxCount}件）から導出。年収や知名度だけが、キャリアの正解じゃない。</div>
+    ${SN_AXIS.radar(w)}
+    <div style="font-size:10.5px;color:#9aa1ab;text-align:center;">※参考値です。この端末の記録から計算しています。</div>
+    ${listHtml?`<div style="font-size:11px;font-weight:700;color:#6b7280;margin:14px 0 2px;">MEETで気になった経営層</div>${listHtml}`:''}
+  </div>`;
+  ov.addEventListener('click',closeMeetAxis);
+  document.body.appendChild(ov);
+}
+function closeMeetAxis(){ const ov=document.getElementById('meetAxisModal'); if(ov) ov.remove(); }
+
 function renderCompanyList(){
   let list = loadCompanies();
   const el = document.getElementById('companyListBody');
@@ -2595,12 +2625,26 @@ function renderCompanyList(){
     el.innerHTML = '<div style="background:var(--white);border:1px solid var(--border);padding:26px;border-radius:2px;color:var(--text2);font-size:13px;">経営層データを準備中です。しばらくお待ちください。</div>';
     return;
   }
-  // ソコナラMEET当日ページ(/meet/day.html)のチェックを引き継ぐ（同一ドメイン＝localStorage共有）。
-  // チェック済み経営層を先頭に並べ、バッジ表示＝イベント後の再訪・読み返し導線（KPI:アプリ活用率/再訪率）
-  let meetChecks=[];
-  try{ const m=JSON.parse(localStorage.getItem('sn_meet')||'null'); if(m&&Array.isArray(m.checks)) meetChecks=m.checks.map(String); }catch(e){}
+  // ソコナラMEET当日ページ(/meet/day.html)のチェック・共感ポイントを引き継ぐ（同一ドメイン＝localStorage共有）。
+  // チェック済み経営層を先頭に並べ、バッジ表示＋「仕事の軸」バナー＝イベント後の再訪・読み返し導線（KPI:アプリ活用率/再訪率）
+  let meetChecks=[], meetM=null;
+  try{ meetM=JSON.parse(localStorage.getItem('sn_meet')||'null'); if(meetM&&Array.isArray(meetM.checks)) meetChecks=meetM.checks.map(String); }catch(e){}
+  const meetHasData = meetM && (meetChecks.length || Object.keys(meetM.reactions||{}).length);
   if(meetChecks.length){
     list=[...list].sort((a,b)=>(meetChecks.indexOf(String(b.id))>=0?1:0)-(meetChecks.indexOf(String(a.id))>=0?1:0));
+  }
+  // 「あなたの仕事の軸」バナー（MEETの記録がある端末のみ・重複挿入ガード）
+  const oldBn=document.getElementById('meetAxisBanner'); if(oldBn) oldBn.remove();
+  if(meetHasData && window.SN_AXIS){
+    el.insertAdjacentHTML('beforebegin',
+      `<div id="meetAxisBanner" onclick="openMeetAxis()" style="display:flex;align-items:center;gap:12px;background:linear-gradient(120deg,#16223f,#22335c);color:#fff;border-radius:10px;padding:14px 16px;margin-bottom:14px;cursor:pointer;box-shadow:0 4px 14px rgba(22,34,63,0.25);">
+        <div style="font-size:22px;">🎯</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13.5px;font-weight:900;">ソコナラMEETでの、あなたの「仕事の軸」</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:2px;">チェックと共感ポイントから、仕事に求めるものをレーダーで表示します</div>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:#7fd8cb;white-space:nowrap;">見る →</div>
+      </div>`);
   }
   el.className = 'leaders-grid';
   el.innerHTML = list.map(c=>{

@@ -3304,7 +3304,8 @@ async function wbSaveAll(){
 }
 
 // ===== 🎪 MEET運営（meet_entries＝PIIテーブル。閲覧はadmin-data listアクション＝認証必須のみ） =====
-const MEET_RTAGS={leader:'経営者に惹かれた',biz:'事業が面白い',exp:'経験活かせそう',local:'地域との関わり',growth:'成長機会',people:'人・雰囲気',cond:'条件面',undecided:'判断中'};
+// 新タグ＝仕事の軸6軸と1:1（追記48）。旧タグ(leader等)は過去データ表示用に残す
+const MEET_RTAGS={meaning:'意義・ビジョン',agency:'挑戦・変革',people:'人柄・雰囲気',local:'地域との関わり',time:'働き方',econ:'条件・待遇',undecided:'判断中',leader:'経営者に惹かれた(旧)',biz:'事業が面白い(旧)',exp:'経験活かせそう(旧)',growth:'成長機会(旧)',cond:'条件面(旧)'};
 async function renderMeetAdmin(){
   const box=document.getElementById('adminContent');
   box.innerHTML=`<div style="padding:24px"><div style="color:var(--text3);font-size:13px">参加者データを読み込み中…</div></div>`;
@@ -3333,11 +3334,13 @@ async function renderMeetAdmin(){
   const nCs=rows.filter(r=>r.consent===true).length;
   // 社別集計
   const agg={};
-  cos.forEach(c=>{ agg[String(c.id)]={ck:0,deep:0,talk:0,names:[],talks:[]}; });
+  cos.forEach(c=>{ agg[String(c.id)]={ck:0,deep:0,talk:0,names:[],talks:[],rx:{}}; });
   rows.forEach(r=>{
     (r.checks||[]).forEach(id=>{ if(agg[id]){ agg[id].ck++; agg[id].names.push(r.name||'（無名）'); } });
     (r.deep||[]).forEach(id=>{ if(agg[id]) agg[id].deep++; });
     (r.talk||[]).forEach(id=>{ if(agg[id]){ agg[id].talk++; agg[id].talks.push((r.name||'（無名）')+(r.consent===true?'':'（共有不可）')); } });
+    // 共感ポイント（reactions={coId:[axisKey..]}）＝どの軸に共感が集まったか（企業レポートの中核データ）
+    Object.entries(r.reactions||{}).forEach(([cid,arr])=>{ if(agg[cid]) (arr||[]).forEach(t=>{ agg[cid].rx[t]=(agg[cid].rx[t]||0)+1; }); });
   });
   // 理由タグ分布
   const tagCnt={};
@@ -3383,9 +3386,10 @@ async function renderMeetAdmin(){
         <div style="font-weight:700;font-size:13px;margin-bottom:4px;">社別の興味（班分け用）</div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">チェック＝気になる／詳しく＝詳しく知りたい／話したい＝個別接点希望（（共有不可）＝本人が氏名共有に不同意）。</div>
         <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <thead><tr>${th('経営層')}${th('チェック',1)}${th('詳しく',1)}${th('話したい',1)}${th('チェックした人')}</tr></thead>
-          <tbody>${cos.map(c=>{ const a=agg[String(c.id)]||{ck:0,deep:0,talk:0,names:[],talks:[]};
-            return `<tr>${td('<b style="color:var(--navy)">'+escA(c.ceo||c.name||'')+'</b><div style="font-size:10px;color:var(--text3)">'+escA(c.name||'')+'</div>')}${td(a.ck,1)}${td(a.deep,1)}${td(a.talk,1,a.talk>0)}${td('<span style="font-size:11px;color:var(--text2)">'+escA(a.names.join('、'))+(a.talks.length?'<br><span style="color:#2e8c7f">話したい: '+escA(a.talks.join('、'))+'</span>':'')+'</span>')}</tr>`; }).join('')}</tbody>
+          <thead><tr>${th('経営層')}${th('チェック',1)}${th('詳しく',1)}${th('話したい',1)}${th('共感ポイント')}${th('チェックした人')}</tr></thead>
+          <tbody>${cos.map(c=>{ const a=agg[String(c.id)]||{ck:0,deep:0,talk:0,names:[],talks:[],rx:{}};
+            const rxHtml=Object.entries(a.rx||{}).sort((x,y)=>y[1]-x[1]).map(([t,n])=>`<span style="display:inline-block;font-size:10px;background:var(--teal-bg);color:var(--teal-d);border-radius:10px;padding:2px 8px;margin:0 3px 3px 0;">${escA(MEET_RTAGS[t]||t)} <b>${n}</b></span>`).join('')||'<span style="font-size:10px;color:var(--text3)">—</span>';
+            return `<tr>${td('<b style="color:var(--navy)">'+escA(c.ceo||c.name||'')+'</b><div style="font-size:10px;color:var(--text3)">'+escA(c.name||'')+'</div>')}${td(a.ck,1)}${td(a.deep,1)}${td(a.talk,1,a.talk>0)}${td(rxHtml)}${td('<span style="font-size:11px;color:var(--text2)">'+escA(a.names.join('、'))+(a.talks.length?'<br><span style="color:#2e8c7f">話したい: '+escA(a.talks.join('、'))+'</span>':'')+'</span>')}</tr>`; }).join('')}</tbody>
         </table>
       </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
