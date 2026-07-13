@@ -31,29 +31,29 @@ body{font-family:'Noto Sans JP','Hiragino Sans',sans-serif;background:var(--bg);
 .btn-o{background:none;border:1px solid var(--border);color:var(--text2);font-weight:400;}
 input[type=text],textarea{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;background:#fff;}
 textarea{min-height:72px;resize:vertical;}
-/* 経営層カード（アプリの経営層一覧と同じ寸法＝2列グリッド・上部210px固定） */
-.lcard-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
-.lcard{border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(28,42,84,0.13);background:#fff;display:flex;flex-direction:column;}
-.lcard-top{position:relative;height:210px;overflow:hidden;background:linear-gradient(135deg,#1C2A54,#2e4080);background-size:cover;background-position:center top;flex-shrink:0;}
+/* 経営層カード（当日ページ専用の大型1列＝1画面に1枚くらい。プレゼンを聞きながら1人ずつ向き合う画面） */
+.lcard-grid{display:grid;grid-template-columns:1fr;gap:20px;}
+.lcard{border-radius:14px;overflow:hidden;box-shadow:0 4px 16px rgba(28,42,84,0.16);background:#fff;display:flex;flex-direction:column;}
+.lcard-top{position:relative;height:min(85vw,400px);overflow:hidden;background:linear-gradient(135deg,#1C2A54,#2e4080);background-size:cover;background-position:center top;flex-shrink:0;}
 .lcard-top::after{content:'';position:absolute;z-index:2;bottom:38%;left:-8%;width:116%;height:2px;background:var(--teal);transform:rotate(-8deg);opacity:0.9;}
-/* フレーズはアプリの経営層一覧（.leader-phrase）と同一タイポグラフィ＝改行位置を揃える */
-.lcard-phrase{position:absolute;bottom:12px;left:12px;right:12px;z-index:3;font-family:'Dela Gothic One','Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:18px;color:#fff;line-height:1.6;letter-spacing:.04em;text-shadow:0 0 5px rgba(12,20,45,0.75),0 1px 4px rgba(0,0,0,0.7),0 2px 14px rgba(0,0,0,0.55);display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;word-break:auto-phrase;line-break:strict;overflow-wrap:break-word;}
-@media(max-width:480px){.lcard-phrase{font-size:16px;}}
-.lcard-bottom{padding:12px 14px;background:#E7EAEF;flex:1;display:flex;flex-direction:column;}
+/* フレーズ＝この画面専用サイズ（大型1列カードに合わせて大きく。フォントはアプリと同じDela Gothic One） */
+.lcard-phrase{position:absolute;bottom:16px;left:16px;right:16px;z-index:3;font-family:'Dela Gothic One','Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:24px;color:#fff;line-height:1.55;letter-spacing:.04em;text-shadow:0 0 5px rgba(12,20,45,0.75),0 1px 4px rgba(0,0,0,0.7),0 2px 14px rgba(0,0,0,0.55);display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;word-break:auto-phrase;line-break:strict;overflow-wrap:break-word;}
+@media(max-width:400px){.lcard-phrase{font-size:21px;}}
+.lcard-bottom{padding:16px 18px;background:#E7EAEF;flex:1;display:flex;flex-direction:column;}
 .lcard:nth-child(even) .lcard-bottom{background:#D3D8E3;}
-.lcard-bottom .co-links{margin-top:auto;padding-top:10px;}
-.co-ph{width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--navy);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;border:2px solid rgba(28,42,84,0.18);}
-.co-name{font-size:15px;font-weight:700;color:var(--navy);}
-.co-corp{font-size:10px;color:#7d8593;}
-.co-links{display:flex;gap:10px;margin-top:10px;align-items:center;flex-wrap:wrap;}
-.co-art{font-size:12px;color:var(--teal-d);text-decoration:underline;font-weight:700;}
-.ck{font-size:12px;font-weight:700;padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;font-family:inherit;}
+.lcard-bottom .co-links{margin-top:auto;padding-top:12px;}
+.co-ph{width:56px;height:56px;border-radius:50%;object-fit:cover;background:var(--navy);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:20px;border:2px solid rgba(28,42,84,0.18);}
+.co-name{font-size:18px;font-weight:700;color:var(--navy);}
+.co-corp{font-size:12px;color:#7d8593;}
+.co-links{display:flex;gap:12px;margin-top:12px;align-items:center;flex-wrap:wrap;}
+.co-art{font-size:14px;color:var(--teal-d);text-decoration:underline;font-weight:700;}
+.ck{font-size:14px;font-weight:700;padding:10px 20px;border-radius:24px;border:1.5px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;font-family:inherit;}
 .ck.on{background:var(--teal);border-color:var(--teal);color:#fff;}
 /* カード内の共感ポイント（軸1:1のリアクション。チェックとは独立・全社に付けられる） */
-.rx{margin-top:10px;padding-top:9px;border-top:1px dashed rgba(0,0,0,0.09);}
-.rx-t{font-size:9.5px;color:var(--text3);letter-spacing:.02em;margin-bottom:5px;}
-.rx-chips{display:flex;flex-wrap:wrap;gap:4px;}
-.rxchip{font-size:10px;padding:4px 8px;border-radius:12px;border:1px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;user-select:none;line-height:1.4;}
+.rx{margin-top:12px;padding-top:11px;border-top:1px dashed rgba(0,0,0,0.09);}
+.rx-t{font-size:11px;color:var(--text3);letter-spacing:.02em;margin-bottom:6px;}
+.rx-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.rxchip{font-size:12.5px;padding:7px 12px;border-radius:16px;border:1px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;user-select:none;line-height:1.4;}
 .rxchip.on{background:var(--navy);border-color:var(--navy);color:#fff;}
 .chip{display:inline-block;font-size:12px;padding:7px 13px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;user-select:none;margin:0 6px 8px 0;}
 .chip.on{background:var(--navy);border-color:var(--navy);color:#fff;}
@@ -135,6 +135,11 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
     <div class="h2">気になる経営層にチェック（最大<span id="maxLbl">3</span>名）</div>
     <div class="note" style="margin-bottom:6px;">プレゼンを聞きながら、いつでも付け替えOK。記事はこの場でも、後日でも読み返せます。</div>
     <div id="coList"><div class="note" style="padding:20px 0;text-align:center;">読み込み中…</div></div>
+    <!-- 確定送信（自動保存はされるが、サーバー保存を明示確認できる安心ボタン） -->
+    <div style="margin-top:18px;">
+      <button class="btn" id="commitBtn" onclick="commitAll(this)">この内容で確定・送信する</button>
+      <div class="note" id="commitNote" style="text-align:center;margin-top:8px;">チェックや共感は自動保存されますが、このボタンで<b>サーバーへの保存を確認</b>できます。あとから変更もできます。</div>
+    </div>
   </div>
 
   <!-- ここから先はクロージング（交流会終了後）用 -->
@@ -199,6 +204,31 @@ function loadM(){ try{ M=JSON.parse(localStorage.getItem('sn_meet')||'null'); }c
 function saveM(){ localStorage.setItem('sn_meet',JSON.stringify(M)); }
 // サーバ保存（service_role API経由・PIIはmeet_entriesのみに保持）
 function push(set){ if(!M.name) return; try{ fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:M.id,set:Object.assign({event_id:EV.eventId},set)})}).catch(function(){}); }catch(e){} }
+// タップ連打の書込をまとめる（負荷対策：会場で数十人が同時にタップしてもリクエスト数を1/数十に圧縮）
+var _pushT=null;
+function pushSoon(){ clearTimeout(_pushT); _pushT=setTimeout(function(){ push({checks:M.checks, reactions:M.reactions}); },800); }
+// 確定・送信＝全量を送って応答を確認（途中の自動保存が万一落ちていてもここで全量上書き＝自己修復）
+function commitAll(btn){
+  if(!M.name){ toast('先にSTEP1でお名前を登録してください'); return; }
+  clearTimeout(_pushT);
+  btn.disabled=true; var ot=btn.textContent; btn.textContent='送信中…';
+  var body={id:M.id, set:{event_id:EV.eventId, name:M.name, checks:M.checks, reactions:M.reactions}};
+  fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d&&d.ok){
+        btn.textContent='✓ サーバーに保存されました';
+        btn.style.background='var(--navy)';
+        document.getElementById('commitNote').textContent='保存を確認しました。チェックや共感はこの後も変更できます（変更したら再度確定を）。';
+        toast('保存を確認しました');
+        setTimeout(function(){ btn.disabled=false; btn.textContent=ot; btn.style.background=''; },2500);
+      } else { throw new Error((d&&d.error)||'save failed'); }
+    })
+    .catch(function(){
+      btn.disabled=false; btn.textContent=ot;
+      toast('保存を確認できませんでした。電波の良い場所でもう一度お試しください');
+    });
+}
 // 運営が割り当てた自分の班スケジュール（groups=[{no,ceo,name},...]）を取得して表示。本人分のみ返る。
 function loadMyGroups(cb){
   if(!M||!M.id||!M.name){ if(cb)cb(null); return; }
@@ -263,7 +293,7 @@ function toggleCheck(id){
     M.checks.push(id);
   }
   saveM(); paintCos(); paintReg();
-  if(M.name) push({checks:M.checks}); else toast('お名前を登録すると保存されます');
+  if(M.name) pushSoon(); else toast('お名前を登録すると保存されます');
 }
 function coById(id){ return COS.filter(function(c){return String(c.id)===String(id);})[0]; }
 // 経営層カードの共感ポイント（どの社にも・いつでも・複数可。チェックとは独立＝プレゼンを聞きながら全社に付けられる）
@@ -274,7 +304,7 @@ function toggleReact(coId,axis,el){
   if(i>=0){ a.splice(i,1); } else { a.push(axis); }
   if(!a.length) delete M.reactions[coId];
   saveM(); el.classList.toggle('on');
-  if(M.name) push({reactions:M.reactions});
+  if(M.name) pushSoon();
 }
 function paintCos(){
   var el=document.getElementById('coList');
