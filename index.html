@@ -1107,6 +1107,8 @@ body.sn-ribbon-on #project { padding-top: calc(48px + 40px + env(safe-area-inset
   word-break:auto-phrase; line-break:strict; overflow-wrap:break-word;
 }
 @media(max-width:480px){.leader-phrase{font-size:16px;}}
+/* ソコナラMEETでチェックした経営層のバッジ（/meet/day.htmlのlocalStorage引き継ぎ） */
+.meet-badge{position:absolute;top:10px;left:10px;z-index:4;background:var(--teal,#12a58c);color:#fff;font-size:10px;font-weight:700;letter-spacing:.03em;padding:4px 10px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.25);}
 
 /* ボトムエリア：ネイビー派生クールグレー交互 */
 .leader-card-bottom{padding:12px 14px 14px;display:flex;flex-direction:column;gap:7px;flex:1;}
@@ -2586,15 +2588,23 @@ function openCompanyArticleFromCard(el){
 }
 
 function renderCompanyList(){
-  const list = loadCompanies();
+  let list = loadCompanies();
   const el = document.getElementById('companyListBody');
   if(!el) return;
   if(!Array.isArray(list) || list.length===0){
     el.innerHTML = '<div style="background:var(--white);border:1px solid var(--border);padding:26px;border-radius:2px;color:var(--text2);font-size:13px;">経営層データを準備中です。しばらくお待ちください。</div>';
     return;
   }
+  // ソコナラMEET当日ページ(/meet/day.html)のチェックを引き継ぐ（同一ドメイン＝localStorage共有）。
+  // チェック済み経営層を先頭に並べ、バッジ表示＝イベント後の再訪・読み返し導線（KPI:アプリ活用率/再訪率）
+  let meetChecks=[];
+  try{ const m=JSON.parse(localStorage.getItem('sn_meet')||'null'); if(m&&Array.isArray(m.checks)) meetChecks=m.checks.map(String); }catch(e){}
+  if(meetChecks.length){
+    list=[...list].sort((a,b)=>(meetChecks.indexOf(String(b.id))>=0?1:0)-(meetChecks.indexOf(String(a.id))>=0?1:0));
+  }
   el.className = 'leaders-grid';
   el.innerHTML = list.map(c=>{
+    const meetOn = meetChecks.indexOf(String(c.id))>=0;
     const name=c.ceo||'経営層名未設定';
     const company=c.name||c.company||'会社名未設定';
     const rawPhrase=(c.catchphrase||c.quote||'').trim();
@@ -2615,6 +2625,7 @@ function renderCompanyList(){
     return `<div class="leader-card" data-company-id="${escapeHtml(String(c.id||''))}" onclick="openCompanyArticleFromCard(this)">
       <div class="leader-card-top">
         ${photoBg}
+        ${meetOn?'<div class="meet-badge">MEETで気になる ✓</div>':''}
         <div class="leader-phrase">${phraseHtml}</div>
       </div>
       <div class="leader-card-bottom">
