@@ -47,14 +47,25 @@ textarea{min-height:72px;resize:vertical;}
 .co-corp{font-size:12px;color:#7d8593;}
 .co-links{display:flex;gap:12px;margin-top:12px;align-items:center;flex-wrap:wrap;}
 .co-art{font-size:14px;color:var(--teal-d);text-decoration:underline;font-weight:700;}
-.ck{font-size:14px;font-weight:700;padding:10px 20px;border-radius:24px;border:1.5px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;font-family:inherit;}
-.ck.on{background:var(--teal);border-color:var(--teal);color:#fff;}
-/* カード内の共感ポイント（軸1:1のリアクション。チェックとは独立・全社に付けられる） */
+/* 気になるボタン：未選択でも「押すもの」と分かる色に（グレー→teal縁取り）。選択＝teal塗り */
+.ck{font-size:14px;font-weight:700;padding:10px 20px;border-radius:24px;border:2px solid var(--teal);background:#fff;color:var(--teal-d);cursor:pointer;font-family:inherit;}
+.ck.on{background:var(--teal);border-color:var(--teal);color:#fff;box-shadow:0 3px 10px rgba(66,173,159,0.35);}
+/* カード内の共鳴ポイント（軸1:1のリアクション。チェックとは独立・全社に付けられる） */
 .rx{margin-top:12px;padding-top:11px;border-top:1px dashed rgba(0,0,0,0.09);}
 .rx-t{font-size:11px;color:var(--text3);letter-spacing:.02em;margin-bottom:6px;}
 .rx-chips{display:flex;flex-wrap:wrap;gap:6px;}
 .rxchip{font-size:12.5px;padding:7px 12px;border-radius:16px;border:1px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;user-select:none;line-height:1.4;}
 .rxchip.on{background:var(--navy);border-color:var(--navy);color:#fff;}
+/* アンケートの共鳴度バー（1〜5のタップセグメント）とNPS */
+.sc-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.sc-who{flex:1;min-width:0;}
+.sc-name{font-size:13.5px;font-weight:700;color:var(--navy);line-height:1.4;}
+.sc-corp{font-size:10.5px;color:var(--text3);}
+.sc-bar{display:flex;gap:4px;flex-shrink:0;}
+.sc-seg{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--text3);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;font-family:inherit;}
+.sc-seg.on{background:var(--teal);border-color:var(--teal);color:#fff;}
+.sc-seg.hi{background:var(--navy);border-color:var(--navy);color:#fff;}
+@media(max-width:400px){.sc-seg{width:32px;height:34px;}}
 .chip{display:inline-block;font-size:12px;padding:7px 13px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;user-select:none;margin:0 6px 8px 0;}
 .chip.on{background:var(--navy);border-color:var(--navy);color:#fff;}
 .q{font-size:13px;font-weight:700;color:var(--navy);margin:18px 0 8px;}
@@ -112,7 +123,7 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
       <input type="text" id="nameIn" placeholder="氏名（フルネーム）" autocomplete="name" style="margin-bottom:10px;">
       <label style="display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--text2);margin-bottom:12px;cursor:pointer;line-height:1.6;">
         <input type="checkbox" id="obsIn" style="width:17px;height:17px;margin-top:2px;flex-shrink:0;cursor:pointer;">
-        <span>🎧 <b>傍聴のみ</b>で参加する（後半のテーブル交流・班分けには入りません。チェックや共感は自由にどうぞ）</span>
+        <span>🎧 <b>傍聴のみ</b>で参加する（後半のテーブル交流・班分けには入りません。チェックや共鳴は自由にどうぞ）</span>
       </label>
       <button class="btn" onclick="register()">同意して登録する</button>
     </div>
@@ -143,7 +154,7 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
     <!-- 確定送信（自動保存はされるが、サーバー保存を明示確認できる安心ボタン） -->
     <div style="margin-top:18px;">
       <button class="btn" id="commitBtn" onclick="commitAll(this)">この内容で確定・送信する</button>
-      <div class="note" id="commitNote" style="text-align:center;margin-top:8px;">チェックや共感は自動保存されますが、このボタンで<b>サーバーへの保存を確認</b>できます。あとから変更もできます。</div>
+      <div class="note" id="commitNote" style="text-align:center;margin-top:8px;">チェックや共鳴は自動保存されますが、このボタンで<b>サーバーへの保存を確認</b>できます。あとから変更もできます。</div>
     </div>
   </div>
 
@@ -161,16 +172,16 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
     <div class="note" style="margin-bottom:12px;"><b style="color:var(--navy)">交流会が終わったあと</b>、クロージングで運営の案内があったら回答してください。</div>
     <button class="btn btn-o" id="svOpenBtn" onclick="openSurvey()">アンケートを開く</button>
     <div id="svForm" style="display:none;">
-      <div class="q">① 詳しく知りたい経営層（複数可）</div>
-      <div id="svDeep"></div>
-      <div class="q">② 個別に話してみたい経営層（複数可）</div>
-      <div class="note" style="margin-bottom:6px;">選んだ方には、後日ソコナラから個別接点のご連絡をします。</div>
-      <div id="svTalk"></div>
-      <div class="q">③ 気になった理由（複数可）</div>
+      <div class="q">① 経営層ごとの「共鳴度」を教えてください（発表順・5点満点）</div>
+      <div class="note" style="margin-bottom:10px;">直感でOK。<b style="color:var(--navy)">4点以上</b>を付けた経営層には、後日ソコナラから個別のご案内を差し上げます（＝個別に話を聞きたい意思表示になります）。</div>
+      <div id="svScores"></div>
+      <div class="q">② 気になった理由（複数可）</div>
       <div id="svTags"></div>
-      <div class="q">④ 一言コメント（任意）</div>
+      <div class="q">③ 一言コメント（任意）</div>
       <textarea id="svComment" placeholder="印象に残った言葉・話してみた感想など"></textarea>
-      <button class="btn" style="margin-top:14px;" onclick="submitSurvey()">回答を送信する</button>
+      <div class="q">④ このイベント、友人にも紹介したいと思いますか？（5点満点）</div>
+      <div id="svNps"></div>
+      <button class="btn" style="margin-top:16px;" onclick="submitSurvey()">回答を送信する</button>
     </div>
     <!-- 送信後：お礼＋“仕事の軸”ミニレポート -->
     <div id="svThanks" style="display:none;">
@@ -178,7 +189,7 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
       <div style="background:var(--teal-bg);border-radius:10px;padding:14px 16px;margin-top:12px;">
         <div class="step" style="margin-bottom:2px;">CAREER AXIS</div>
         <div style="font-size:14px;font-weight:900;color:var(--navy);">あなたの“仕事の軸”</div>
-        <div class="note" style="margin:4px 0 2px;">今日のチェック・共感（と、これまで記事で選んだもの）から導いた、あなたが仕事に求めるもの。年収や知名度だけが、キャリアの正解じゃない。</div>
+        <div class="note" style="margin:4px 0 2px;">今日のチェック・共鳴（と、これまで記事で選んだもの）から導いた、あなたが仕事に求めるもの。年収や知名度だけが、キャリアの正解じゃない。</div>
         <div id="svRadar"></div>
         <div class="note" style="text-align:center;">※参考値です。企業を評価する数値ではありません。</div>
       </div>
@@ -205,7 +216,7 @@ var M=null; // {id,name,checks,reactions:{coId:[axisKey..]},survey:{deep,talk,co
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function toast(m){ var t=document.getElementById('toastEl'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(function(){t.classList.remove('show');},2200); }
 function clamp(v){ return Math.max(0,Math.min(100,Math.round(v))); }
-function loadM(){ try{ M=JSON.parse(localStorage.getItem('sn_meet')||'null'); }catch(e){ M=null; } if(!M||!M.id) M={id:'meet_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),name:'',checks:[],reactions:{},observer:false,survey:{deep:[],talk:[],consent:null,rtags:[],comment:''},done:false}; if(!M.survey) M.survey={deep:[],talk:[],consent:null,rtags:[],comment:''}; if(!M.reactions||typeof M.reactions!=='object') M.reactions={}; if(typeof M.observer!=='boolean') M.observer=false; }
+function loadM(){ try{ M=JSON.parse(localStorage.getItem('sn_meet')||'null'); }catch(e){ M=null; } if(!M||!M.id) M={id:'meet_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),name:'',checks:[],reactions:{},observer:false,survey:{deep:[],talk:[],consent:null,rtags:[],comment:''},done:false}; if(!M.survey) M.survey={deep:[],talk:[],consent:null,rtags:[],comment:''}; if(!M.reactions||typeof M.reactions!=='object') M.reactions={}; if(typeof M.observer!=='boolean') M.observer=false; if(!M.survey.scores||typeof M.survey.scores!=='object') M.survey.scores={}; if(typeof M.survey.nps!=='number') M.survey.nps=null; }
 function saveM(){ localStorage.setItem('sn_meet',JSON.stringify(M)); }
 // サーバ保存（service_role API経由・PIIはmeet_entriesのみに保持）
 function push(set){ if(!M.name) return; try{ fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:M.id,set:Object.assign({event_id:EV.eventId},set)})}).catch(function(){}); }catch(e){} }
@@ -224,7 +235,7 @@ function commitAll(btn){
       if(d&&d.ok){
         btn.textContent='✓ サーバーに保存されました';
         btn.style.background='var(--navy)';
-        document.getElementById('commitNote').textContent='保存を確認しました。チェックや共感はこの後も変更できます（変更したら再度確定を）。';
+        document.getElementById('commitNote').textContent='保存を確認しました。チェックや共鳴はこの後も変更できます（変更したら再度確定を）。';
         toast('保存を確認しました');
         setTimeout(function(){ btn.disabled=false; btn.textContent=ot; btn.style.background=''; },2500);
       } else { throw new Error((d&&d.error)||'save failed'); }
@@ -285,7 +296,7 @@ function register(){
   saveM();
   push({name:M.name,checks:M.checks,observer:M.observer});
   paintReg(); loadMyGroups();
-  toast(M.observer?'傍聴として登録しました。チェックや共感は自由にどうぞ':'登録しました。気になる経営層にチェックを！');
+  toast(M.observer?'傍聴として登録しました。チェックや共鳴は自由にどうぞ':'登録しました。気になる経営層にチェックを！');
 }
 // 傍聴⇄参加（班分けあり）の切り替え。運営側の班分け計算は observer=true を除外する
 function toggleObserver(){
@@ -318,7 +329,7 @@ function toggleCheck(id){
   if(M.name) pushSoon(); else toast('お名前を登録すると保存されます');
 }
 function coById(id){ return COS.filter(function(c){return String(c.id)===String(id);})[0]; }
-// 経営層カードの共感ポイント（どの社にも・いつでも・複数可。チェックとは独立＝プレゼンを聞きながら全社に付けられる）
+// 経営層カードの共鳴ポイント（どの社にも・いつでも・複数可。チェックとは独立＝プレゼンを聞きながら全社に付けられる）
 function toggleReact(coId,axis,el){
   coId=String(coId);
   var a=M.reactions[coId]||(M.reactions[coId]=[]);
@@ -339,7 +350,7 @@ function paintCos(){
     var av=photo?'<img class="co-ph" src="'+esc(photo)+'" alt="">':'<div class="co-ph">'+esc((c.ceo||c.name||'?')[0])+'</div>';
     var topBg=photo?('background-image:linear-gradient(rgba(16,24,48,0.10),rgba(16,24,48,0.55)),url(\''+esc(photo)+'\');'):'';
     var myRx=M.reactions[String(c.id)]||[];
-    var rx='<div class="rx"><div class="rx-t">共感ポイント（任意・タップで選択）</div><div class="rx-chips">'
+    var rx='<div class="rx"><div class="rx-t">共鳴ポイント（任意・タップで選択）</div><div class="rx-chips">'
       +REACTS.map(function(t){ var ron=myRx.indexOf(t[0])>=0; return '<span class="rxchip'+(ron?' on':'')+'" onclick="toggleReact(\''+esc(c.id)+'\',\''+t[0]+'\',this)">'+t[1]+'</span>'; }).join('')
       +'</div></div>';
     return '<div class="lcard">'
@@ -354,22 +365,53 @@ function paintCos(){
 }
 
 // ===== アンケート =====
+// 共鳴度（1〜5）のセグメント描画。fnPrefix＝onclickの前半（例 "setScore('co_x',"）。hi=4点以上を紺で強調（個別に話したい意思表示）
+function scoreBar(fnPrefix, value){
+  var s='<div class="sc-bar">';
+  for(var n=1;n<=5;n++){
+    var cls='sc-seg'+(value!=null&&n<=value?(value>=4?' hi':' on'):'');
+    s+='<button type="button" class="'+cls+'" onclick="'+fnPrefix+n+')">'+n+'</button>';
+  }
+  return s+'</div>';
+}
+function paintScores(){
+  var el=document.getElementById('svScores'); if(!el) return;
+  el.innerHTML=COS.map(function(c){
+    var v=M.survey.scores[String(c.id)];
+    return '<div class="sc-row"><div class="sc-who"><div class="sc-name">'+esc(c.ceo||c.name||'')+'</div><div class="sc-corp">'+esc(c.name||'')+'</div></div>'
+      +scoreBar("setScore('"+esc(c.id)+"',", v)+'</div>';
+  }).join('');
+}
 function openSurvey(){
   document.getElementById('svOpenBtn').style.display='none';
   document.getElementById('svForm').style.display='block';
-  var mk=function(boxId,key){ document.getElementById(boxId).innerHTML=COS.map(function(c){ var on=M.survey[key].indexOf(String(c.id))>=0; return '<span class="chip'+(on?' on':'')+'" onclick="togArr(\''+key+'\',\''+esc(c.id)+'\',this)">'+esc(c.ceo||c.name)+'</span>'; }).join(''); };
-  mk('svDeep','deep'); mk('svTalk','talk');
+  paintScores(); paintNps();
   document.getElementById('svTags').innerHTML=RTAGS.map(function(t){ var on=M.survey.rtags.indexOf(t[0])>=0; return '<span class="chip'+(on?' on':'')+'" onclick="togArr(\'rtags\',\''+t[0]+'\',this)">'+t[1]+'</span>'; }).join('');
   document.getElementById('svComment').value=M.survey.comment||'';
 }
+function setScore(coId,n){
+  coId=String(coId);
+  if(M.survey.scores[coId]===n) delete M.survey.scores[coId]; // 同じ点をもう一度タップ＝取消
+  else M.survey.scores[coId]=n;
+  saveM(); paintScores();
+}
+function paintNps(){
+  var el=document.getElementById('svNps'); if(!el) return;
+  el.innerHTML='<div class="sc-row" style="border-bottom:none;"><div class="sc-who"><div class="sc-corp">1=紹介しない 〜 5=ぜひ紹介したい</div></div>'+scoreBar('setNps(', M.survey.nps)+'</div>';
+}
+function setNps(n){ M.survey.nps=(M.survey.nps===n?null:n); saveM(); paintNps(); }
 function togArr(key,val,el){ var a=M.survey[key]; var i=a.indexOf(val); if(i>=0)a.splice(i,1); else a.push(val); el.classList.toggle('on'); saveM(); }
 function submitSurvey(){
   if(!M.name){ toast('先にSTEP1でお名前を登録してください'); return; }
   M.survey.comment=(document.getElementById('svComment').value||'').slice(0,500);
+  // 共鳴度から従来フィールドを導出：4点以上＝個別に話したい(talk)／3点以上＝詳しく知りたい(deep)
+  var sc=M.survey.scores||{};
+  M.survey.talk=Object.keys(sc).filter(function(id){ return sc[id]>=4; });
+  M.survey.deep=Object.keys(sc).filter(function(id){ return sc[id]>=3; });
   // 氏名共有は利用規約で同意取得済みのため質問は廃止＝送信時に同意として記録（追記47）
   M.survey.consent=true;
   M.done=true; saveM();
-  push({name:M.name,checks:M.checks,deep:M.survey.deep,talk:M.survey.talk,consent:M.survey.consent,rtags:M.survey.rtags,comment:M.survey.comment,survey_done:true});
+  push({name:M.name,checks:M.checks,deep:M.survey.deep,talk:M.survey.talk,consent:M.survey.consent,rtags:M.survey.rtags,comment:M.survey.comment,scores:M.survey.scores,nps:M.survey.nps,survey_done:true});
   paintThanks();
 }
 // 参加者による自己データ削除（サーバ側も削除→端末の記録も消す）

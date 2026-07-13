@@ -1513,7 +1513,7 @@ function renderPhilosophy(){
         <thead><tr><th style="text-align:left;padding:7px 10px;color:var(--text3);font-size:10.5px;border-bottom:1px solid var(--border)">入力（ユーザーの行動）</th><th style="text-align:left;padding:7px 10px;color:var(--text3);font-size:10.5px;border-bottom:1px solid var(--border)">貯まる場所</th><th style="text-align:left;padding:7px 10px;color:var(--text3);font-size:10.5px;border-bottom:1px solid var(--border)">軸への効き方</th></tr></thead>
         <tbody>
           <tr><td style="padding:7px 10px;border-bottom:1px solid var(--border)">記事の診断フロー（Q2求めるもの・モヤモヤ・刺さった言葉）</td><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><code>sn_axis</code>（端末内・軸キーの回数と企業IDのみ＝PIIなし）</td><td style="padding:7px 10px;border-bottom:1px solid var(--border)">明示反応＝主役（同一軸は3回分まで＝読むほど明確に・飽和あり）</td></tr>
-          <tr><td style="padding:7px 10px;border-bottom:1px solid var(--border)">MEET当日（チェック・共感ポイント6種・アンケート理由タグ）</td><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><code>sn_meet</code>（端末内）＋meet_entries（運営のみ閲覧）</td><td style="padding:7px 10px;border-bottom:1px solid var(--border)">共感ポイント＝軸キーと1:1の直接シグナル</td></tr>
+          <tr><td style="padding:7px 10px;border-bottom:1px solid var(--border)">MEET当日（チェック・共鳴ポイント6種・アンケート理由タグ）</td><td style="padding:7px 10px;border-bottom:1px solid var(--border)"><code>sn_meet</code>（端末内）＋meet_entries（運営のみ閲覧）</td><td style="padding:7px 10px;border-bottom:1px solid var(--border)">共鳴ポイント＝軸キーと1:1の直接シグナル</td></tr>
           <tr><td style="padding:7px 10px;border-bottom:1px solid var(--border)">チェック・共鳴した経営層</td><td style="padding:7px 10px;border-bottom:1px solid var(--border)">同上</td><td style="padding:7px 10px;border-bottom:1px solid var(--border)">その企業のwb（adminマトリクス）を弱め(×0.35)に重ね合わせ＝間接シグナル</td></tr>
         </tbody>
       </table>
@@ -3350,15 +3350,19 @@ async function renderMeetAdmin(){
   const nCk=rows.filter(r=>(r.checks||[]).length).length;
   const nSv=rows.filter(r=>r.survey_done).length;
   const nCs=rows.filter(r=>r.consent===true).length;
+  const npsArr=rows.map(r=>r.nps).filter(v=>typeof v==='number');
+  const npsAvg=npsArr.length?(npsArr.reduce((a,b)=>a+b,0)/npsArr.length).toFixed(1)+' / 5':'—';
   // 社別集計
   const agg={};
-  cos.forEach(c=>{ agg[String(c.id)]={ck:0,deep:0,talk:0,names:[],talks:[],rx:{}}; });
+  cos.forEach(c=>{ agg[String(c.id)]={ck:0,deep:0,talk:0,names:[],talks:[],rx:{},scSum:0,scN:0}; });
   rows.forEach(r=>{
     (r.checks||[]).forEach(id=>{ if(agg[id]){ agg[id].ck++; agg[id].names.push(r.name||'（無名）'); } });
     (r.deep||[]).forEach(id=>{ if(agg[id]) agg[id].deep++; });
     (r.talk||[]).forEach(id=>{ if(agg[id]){ agg[id].talk++; agg[id].talks.push((r.name||'（無名）')+(r.consent===true?'':'（共有不可）')); } });
-    // 共感ポイント（reactions={coId:[axisKey..]}）＝どの軸に共感が集まったか（企業レポートの中核データ）
+    // 共鳴ポイント（reactions={coId:[axisKey..]}）＝どの軸に共鳴が集まったか（企業レポートの中核データ）
     Object.entries(r.reactions||{}).forEach(([cid,arr])=>{ if(agg[cid]) (arr||[]).forEach(t=>{ agg[cid].rx[t]=(agg[cid].rx[t]||0)+1; }); });
+    // 共鳴度（scores={coId:1..5}・アンケート①）＝社別の平均を出す
+    Object.entries(r.scores||{}).forEach(([cid,v])=>{ if(agg[cid]&&typeof v==='number'){ agg[cid].scSum+=v; agg[cid].scN++; } });
   });
   // 理由タグ分布
   const tagCnt={};
@@ -3398,16 +3402,17 @@ async function renderMeetAdmin(){
         <div id="mbEditor" style="font-size:12px;color:var(--text3);">読み込み中…</div>
       </div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
-        ${[['登録者',nAll],['チェックあり',nCk],['アンケ回答',nSv],['共有同意',nCs]].map(([l,n])=>`<div style="flex:1;min-width:120px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px;"><div style="font-size:11px;color:var(--text2)">${l}</div><div style="font-size:22px;font-weight:700;color:var(--navy)">${n}</div></div>`).join('')}
+        ${[['登録者',nAll],['チェックあり',nCk],['アンケ回答',nSv],['紹介したい度(平均)',npsAvg]].map(([l,n])=>`<div style="flex:1;min-width:120px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px;"><div style="font-size:11px;color:var(--text2)">${l}</div><div style="font-size:22px;font-weight:700;color:var(--navy)">${n}</div></div>`).join('')}
       </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
         <div style="font-weight:700;font-size:13px;margin-bottom:4px;">社別の興味（班分け用）</div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">チェック＝気になる／詳しく＝詳しく知りたい／話したい＝個別接点希望（（共有不可）＝本人が氏名共有に不同意）。</div>
         <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <thead><tr>${th('経営層')}${th('チェック',1)}${th('詳しく',1)}${th('話したい',1)}${th('共感ポイント')}${th('チェックした人')}</tr></thead>
-          <tbody>${cos.map(c=>{ const a=agg[String(c.id)]||{ck:0,deep:0,talk:0,names:[],talks:[],rx:{}};
+          <thead><tr>${th('経営層')}${th('チェック',1)}${th('共鳴度Ø',1)}${th('話したい(4点+)',1)}${th('共鳴ポイント')}${th('チェックした人')}</tr></thead>
+          <tbody>${cos.map(c=>{ const a=agg[String(c.id)]||{ck:0,deep:0,talk:0,names:[],talks:[],rx:{},scSum:0,scN:0};
             const rxHtml=Object.entries(a.rx||{}).sort((x,y)=>y[1]-x[1]).map(([t,n])=>`<span style="display:inline-block;font-size:10px;background:var(--teal-bg);color:var(--teal-d);border-radius:10px;padding:2px 8px;margin:0 3px 3px 0;">${escA(MEET_RTAGS[t]||t)} <b>${n}</b></span>`).join('')||'<span style="font-size:10px;color:var(--text3)">—</span>';
-            return `<tr>${td('<b style="color:var(--navy)">'+escA(c.ceo||c.name||'')+'</b><div style="font-size:10px;color:var(--text3)">'+escA(c.name||'')+'</div>')}${td(a.ck,1)}${td(a.deep,1)}${td(a.talk,1,a.talk>0)}${td(rxHtml)}${td('<span style="font-size:11px;color:var(--text2)">'+escA(a.names.join('、'))+(a.talks.length?'<br><span style="color:#2e8c7f">話したい: '+escA(a.talks.join('、'))+'</span>':'')+'</span>')}</tr>`; }).join('')}</tbody>
+            const scAvg=a.scN?(a.scSum/a.scN).toFixed(1)+'<span style="font-size:9px;color:var(--text3)"> ('+a.scN+')</span>':'—';
+            return `<tr>${td('<b style="color:var(--navy)">'+escA(c.ceo||c.name||'')+'</b><div style="font-size:10px;color:var(--text3)">'+escA(c.name||'')+'</div>')}${td(a.ck,1)}${td(scAvg,1)}${td(a.talk,1,a.talk>0)}${td(rxHtml)}${td('<span style="font-size:11px;color:var(--text2)">'+escA(a.names.join('、'))+(a.talks.length?'<br><span style="color:#2e8c7f">話したい: '+escA(a.talks.join('、'))+'</span>':'')+'</span>')}</tr>`; }).join('')}</tbody>
         </table>
       </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
