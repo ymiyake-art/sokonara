@@ -3726,8 +3726,8 @@ async function saveGroupsUI(btn){
   renderMeetAdmin();
 }
 
-// ===== 📄 企業向けレポート（登壇企業ごと・印刷→PDF配布用。追記53） =====
-function openMeetReport(){
+// ===== 📄 企業向けレポート（登壇企業ごと・印刷→PDF配布用。追記53／追記56デザイン刷新） =====
+async function openMeetReport(){
   const coId=(document.getElementById('mrCo')||{}).value;
   const withNames=!!(document.getElementById('mrNames')||{}).checked;
   const rows=window._meetRows||[], cos=window._meetCos||[];
@@ -3735,6 +3735,10 @@ function openMeetReport(){
   if(!co){ toast('企業を選択してください'); return; }
   const cid=String(co.id);
   const esc=escA;
+  // ロゴをdata URIで埋め込む（別窓document.writeは相対パス不可＝PDF保存後も確実に表示させるため）
+  let logoData='';
+  try{ const rp=await fetch('/images/logo-02.png'); const bl=await rp.blob(); logoData=await new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>res(''); fr.readAsDataURL(bl); }); }catch(e){}
+  const logoImg=logoData?`<img class="logo" src="${logoData}" alt="ソコナラ">`:'<div class="logo" style="font-weight:900;font-size:18px;">∞ ソコナラ</div>';
   // 貴社への反応
   const ckRows=rows.filter(r=>(r.checks||[]).map(String).includes(cid));
   const scRows=rows.filter(r=>r.scores&&typeof r.scores[cid]==='number');
@@ -3760,67 +3764,91 @@ function openMeetReport(){
   const rxBars=Object.keys(AXL).map(k=>{ const n=rx[k]||0; return `<div class="bar-row"><div class="bar-l">${AXL[k]}</div><div class="bar-t"><div class="bar-f" style="width:${Math.round(n/rxMax*100)}%"></div></div><div class="bar-n">${n}</div></div>`; }).join('');
   const talkList=talkRows.length?talkRows.map(r=>`<div class="person"><b>${withNames?esc(r.name||'（無名）'):'参加者'}</b>${(r.scores&&r.scores[cid])?` <span class="sc">共鳴度 ${r.scores[cid]}/5</span>`:''}${(r.comment||'').trim()?`<div class="pc">「${esc(r.comment.trim())}」</div>`:''}</div>`).join(''):'<div class="muted">今回のイベントでは該当者はいませんでした。</div>';
   const cmList=cmRows.length?cmRows.map(r=>`<div class="quote">「${esc(r.comment.trim())}」</div>`).join(''):'';
+  const talkWarn=(!withNames && talkRows.length)?'<div class="warn">⚠️ このプレビューは氏名を伏せています。貴社から直接ご連絡いただくには、出力欄の「個別希望者の氏名を含める」にチェックして再出力してください。</div>':'';
   const html=`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>ソコナラMEET レポート — ${esc(co.name||'')}</title>
   <style>
-    @page{size:A4;margin:16mm;}
+    @page{size:A4;margin:14mm;}
     *{margin:0;padding:0;box-sizing:border-box;}
-    body{font-family:'Noto Sans JP','Hiragino Sans',sans-serif;color:#2b2f36;line-height:1.8;font-size:12.5px;background:#fff;max-width:760px;margin:0 auto;padding:28px 24px;}
-    .head{border-bottom:3px solid #16223f;padding-bottom:14px;margin-bottom:20px;}
-    .mono{font-family:'Courier New',monospace;font-size:10px;letter-spacing:3px;color:#42ad9f;font-weight:700;}
-    h1{font-size:20px;color:#16223f;font-weight:900;margin-top:2px;}
-    .sub{font-size:11.5px;color:#6b7280;margin-top:4px;}
-    h2{font-size:14px;color:#16223f;font-weight:900;margin:22px 0 8px;padding-left:10px;border-left:4px solid #42ad9f;}
-    .stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
-    .st{flex:1;min-width:140px;border:1px solid #e2e5ea;border-radius:8px;padding:10px 12px;}
+    body{font-family:'Noto Sans JP','Hiragino Sans',sans-serif;color:#2b2f36;line-height:1.8;font-size:12.5px;background:#eef0f3;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .sheet{max-width:800px;margin:0 auto;background:#fff;}
+    .head{background:#16223f;color:#fff;padding:26px 30px 22px;position:relative;overflow:hidden;}
+    .head::after{content:'';position:absolute;right:-50px;top:-70px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(66,173,159,0.30),transparent 68%);}
+    .head .logo{height:22px;width:auto;margin-bottom:16px;position:relative;z-index:1;display:block;}
+    .head .rlabel{font-family:'Courier New',monospace;font-size:9px;letter-spacing:3px;color:#7fd8cb;font-weight:700;position:relative;z-index:1;}
+    .head h1{font-size:19px;font-weight:900;margin-top:5px;line-height:1.45;position:relative;z-index:1;}
+    .head .meta{font-size:11px;color:rgba(255,255,255,0.72);margin-top:9px;position:relative;z-index:1;}
+    .accent{height:4px;background:linear-gradient(90deg,#42ad9f 0%,#2e8c7f 45%,#16223f 100%);}
+    .pad{padding:8px 30px 30px;}
+    h2{font-size:14px;color:#16223f;font-weight:900;margin:24px 0 8px;display:flex;align-items:center;gap:9px;}
+    h2::before{content:'';flex-shrink:0;width:5px;height:17px;background:#42ad9f;border-radius:3px;}
+    .sub{font-size:11px;color:#6b7280;margin-top:2px;}
+    .stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+    .st{flex:1;min-width:140px;border:1px solid #e2e5ea;border-radius:10px;padding:12px 14px;background:#fbfcfd;}
     .stl{font-size:10px;color:#6b7280;}
-    .stv{font-size:22px;font-weight:900;color:#16223f;}
+    .stv{font-size:23px;font-weight:900;color:#16223f;line-height:1.3;}
     .sts{font-size:10.5px;color:#9aa1ab;font-weight:400;margin-left:4px;}
-    .bar-row{display:flex;align-items:center;gap:8px;margin:5px 0;}
-    .bar-l{flex:0 0 210px;font-size:11.5px;color:#2b2f36;}
-    .bar-t{flex:1;height:14px;background:#eef1f5;border-radius:7px;overflow:hidden;}
-    .bar-f{height:100%;background:linear-gradient(90deg,#42ad9f,#2e8c7f);border-radius:7px;}
-    .bar-n{flex:0 0 24px;text-align:right;font-weight:700;color:#16223f;font-size:12px;}
-    .person{padding:9px 0;border-bottom:1px solid #eef1f5;font-size:12.5px;}
-    .person .sc{font-size:10.5px;color:#2e8c7f;font-weight:700;background:#e9f6f4;border-radius:10px;padding:2px 8px;margin-left:6px;}
+    .bar-row{display:flex;align-items:center;gap:9px;margin:6px 0;}
+    .bar-l{flex:0 0 200px;font-size:11.5px;color:#2b2f36;}
+    .bar-t{flex:1;height:15px;background:#eef1f5;border-radius:8px;overflow:hidden;}
+    .bar-f{height:100%;background:linear-gradient(90deg,#42ad9f,#2e8c7f);border-radius:8px;}
+    .bar-n{flex:0 0 26px;text-align:right;font-weight:700;color:#16223f;font-size:12px;}
+    .person{padding:10px 0;border-bottom:1px solid #eef1f5;font-size:12.5px;}
+    .person .sc{font-size:10.5px;color:#2e8c7f;font-weight:700;background:#e9f6f4;border-radius:10px;padding:2px 9px;margin-left:6px;}
     .person .pc{font-size:11.5px;color:#4b5563;margin-top:3px;}
     .quote{font-size:12px;color:#374151;background:#f7f8fa;border-left:3px solid #42ad9f;border-radius:0 6px 6px 0;padding:8px 12px;margin:6px 0;}
-    .muted{font-size:11.5px;color:#9aa1ab;}
+    .muted{font-size:11.5px;color:#9aa1ab;padding:8px 0;}
+    .warn{font-size:11px;color:#b35c12;background:#fff6ec;border:1px solid #f0d6b5;border-radius:8px;padding:8px 12px;margin:6px 0;}
     .tags span{display:inline-block;font-size:11px;background:#e9f6f4;color:#2e8c7f;border-radius:12px;padding:3px 11px;margin:0 5px 5px 0;font-weight:700;}
-    .foot{margin-top:26px;padding-top:12px;border-top:1px solid #e2e5ea;font-size:10.5px;color:#9aa1ab;line-height:1.9;}
-    .next{background:#f0f7f6;border-radius:8px;padding:12px 14px;font-size:12px;margin-top:8px;}
-    .noprint{position:fixed;top:14px;right:14px;}
-    .noprint button{padding:10px 18px;background:#16223f;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
-    @media print{.noprint{display:none;}}
+    .next{background:#f0f7f6;border:1px solid #cfe9e4;border-radius:10px;padding:15px 17px;font-size:12px;margin-top:16px;line-height:1.95;}
+    .next .nt{font-weight:900;color:#16223f;font-size:12.5px;margin-bottom:4px;}
+    .foot{background:#16223f;color:rgba(255,255,255,0.72);padding:16px 30px;font-size:10px;line-height:1.9;}
+    .foot .fl{height:14px;width:auto;opacity:0.9;vertical-align:middle;margin-bottom:6px;display:block;}
+    .noprint{position:fixed;top:14px;right:14px;z-index:99;}
+    .noprint button{padding:10px 18px;background:#16223f;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(0,0,0,0.2);}
+    @media print{ body{background:#fff;} .sheet{max-width:none;} .noprint{display:none;} }
   </style></head><body>
   <div class="noprint"><button onclick="window.print()">🖨 印刷 / PDF保存</button></div>
-  <div class="head">
-    <div class="mono">SOKONARA MEET — COMPANY REPORT</div>
-    <h1>${esc(co.name||'')} 御中｜ソコナラMEET 参加者反応レポート</h1>
-    <div class="sub">登壇者：${esc(co.ceo||'')} ／ イベント：${esc(window._meetEvId||'')} ／ 発行：${dstr}・株式会社ソコナラ</div>
+  <div class="sheet">
+    <div class="head">
+      ${logoImg}
+      <div class="rlabel">SOKONARA MEET — REPORT FOR PARTNERS</div>
+      <h1>${esc(co.name||'')} 御中<br>ソコナラMEET 参加者反応レポート</h1>
+      <div class="meta">登壇者：${esc(co.ceo||'')}　／　イベント：${esc(window._meetEvId||'')}　／　発行：${dstr}・株式会社ソコナラ</div>
+    </div>
+    <div class="accent"></div>
+    <div class="pad">
+      <h2>貴社への反応サマリー</h2>
+      <div class="stats">
+        ${stat('「気になる」チェック', ckRows.length, '名')}
+        ${stat('共鳴度（5点満点）', scAvg!=null?scAvg.toFixed(1):'—', scRows.length?('回答'+scRows.length+'名'+(evAvg?('／全体平均 '+evAvg):'')):'')}
+        ${stat('話を聞きたい（4点以上）', talkRows.length, '名')}
+      </div>
+      <h2>どこに共鳴が集まったか（共鳴ポイント・6軸）</h2>
+      <div class="sub" style="margin-bottom:8px;">参加者が貴社カードにタップした「共鳴ポイント」の集計です。貴社の魅力がどの軸で伝わっているかを表します。</div>
+      ${rxBars}
+      <h2>直接ご連絡いただく参加者リスト（共鳴度4点以上）</h2>
+      <div class="sub" style="margin-bottom:6px;">共鳴度4点以上＝「個別に話を聞きたい」という意思表示です。下記の方へ、<b>貴社から直接ご連絡ください</b>。</div>
+      ${talkWarn}
+      ${talkList}
+      ${cmList?`<h2>貴社に共鳴した参加者の声（共鳴度3点以上・抜粋）</h2>${cmList}`:''}
+      <h2>イベント全体サマリー</h2>
+      <div class="stats">
+        ${stat('参加登録', nAll-nObs, '名'+(nObs?('（ほか傍聴'+nObs+'名）'):''))}
+        ${stat('アンケート回答', nSv, '名')}
+        ${stat('友人に紹介したい（5点満点）', npsAvg||'—', npsArr.length?('回答'+npsArr.length+'名'):'')}
+      </div>
+      ${topTags.length?`<div style="margin-top:12px;"><div class="sub" style="margin-bottom:5px;">参加者が経営層に惹かれた理由（イベント全体・上位）</div><div class="tags">${topTags.map(([t,n])=>`<span>${esc(MEET_RTAGS[t]||t)} ${n}</span>`).join('')}</div></div>`:''}
+      ${afOverall.length?`<h2>参加者の声（会全体・匿名抜粋）</h2>${afOverall.map(c=>`<div class="quote">「${esc(c)}」</div>`).join('')}`:''}
+      <div class="next">
+        <div class="nt">この後の流れ</div>
+        本レポートの参加者リストを基に、<b>貴社から直接ご連絡をお願いいたします</b>。極力、<b>経営層ご本人からのコミュニケーション</b>としていただけますと、熱量が高いうちに関係を築けます。ソコナラは強く介在いたしません（サポートが必要な場合のみ、担当・三宅までお声がけください）。
+      </div>
+    </div>
+    <div class="foot">
+      ${logoImg.replace('class="logo"','class="fl"')}
+      本レポートに記載の氏名等は、貴社が当該参加者へ直接ご連絡いただくためにソコナラが共有するものです。目的外の利用・第三者提供はご遠慮ください。数値は当日ページでの参加者の任意入力に基づきます。<br>運営：株式会社ソコナラ（関西電力グループ）　｜　https://sokonara.co.jp
+    </div>
   </div>
-  <h2>貴社への反応サマリー</h2>
-  <div class="stats">
-    ${stat('「気になる」チェック', ckRows.length, '名')}
-    ${stat('共鳴度（5点満点）', scAvg!=null?scAvg.toFixed(1):'—', scRows.length?('回答'+scRows.length+'名'+(evAvg?('／イベント平均 '+evAvg):'')):'')}
-    ${stat('個別に話を聞きたい（4点以上）', talkRows.length, '名')}
-  </div>
-  <h2>どこに共鳴が集まったか（共鳴ポイント・6軸）</h2>
-  <div class="sub" style="margin-bottom:6px;">参加者が貴社カードにタップした「共鳴ポイント」の集計です。貴社の魅力がどの軸で伝わっているかを示します。</div>
-  ${rxBars}
-  <h2>個別のご案内対象（共鳴度4点以上）</h2>
-  <div class="sub" style="margin-bottom:4px;">ソコナラが後日、個別接点（面談等）を調整のうえご連絡します。</div>
-  ${talkList}
-  ${cmList?`<h2>貴社に共鳴した参加者の声（共鳴度3点以上・抜粋）</h2>${cmList}`:''}
-  <h2>イベント全体サマリー</h2>
-  <div class="stats">
-    ${stat('参加登録', nAll-nObs, '名'+(nObs?('（ほか傍聴'+nObs+'名）'):''))}
-    ${stat('アンケート回答', nSv, '名')}
-    ${stat('友人に紹介したい（5点満点）', npsAvg||'—', npsArr.length?('回答'+npsArr.length+'名'):'')}
-  </div>
-  ${topTags.length?`<div style="margin-top:10px;"><div class="sub" style="margin-bottom:4px;">参加者が経営層に惹かれた理由（イベント全体・上位）</div><div class="tags">${topTags.map(([t,n])=>`<span>${esc(MEET_RTAGS[t]||t)} ${n}</span>`).join('')}</div></div>`:''}
-  ${afOverall.length?`<h2>参加者の声（会全体・匿名抜粋）</h2>${afOverall.map(c=>`<div class="quote">「${esc(c)}」</div>`).join('')}`:''}
-  <div class="next"><b>この後の流れ：</b>「個別に話を聞きたい」参加者には、ソコナラから順次ご連絡し、貴社との個別接点（カジュアル面談等）を調整します。日程候補などは担当（三宅）よりご相談させてください。</div>
-  <div class="foot">本レポートの数値は、ソコナラMEET当日ページでの参加者の任意入力に基づきます。個人が特定される情報の取り扱いは利用規約に基づきます。<br>運営：株式会社ソコナラ（関西電力グループ）｜ https://sokonara.co.jp</div>
   </body></html>`;
   const w=window.open('','_blank'); if(!w){ toast('ポップアップがブロックされました'); return; }
   w.document.write(html); w.document.close();
