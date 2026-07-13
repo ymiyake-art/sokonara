@@ -12,25 +12,45 @@ window.SN_AXIS = (function(){
     leader:{people:10}, biz:{meaning:8,agency:6}, exp:{agency:10}, growth:{agency:10}, cond:{econ:12}
   };
   function clamp(v){ return Math.max(0,Math.min(100,Math.round(v))); }
+  // ===== 計算の設計（追記61で改訂） =====
+  // 「形」＝ ①選んだ会社の偏り（全社平均との差分＝どの会社にもある共通の高さは効かせない）
+  //         ②本人の明示反応（共鳴ポイント・理由タグ・診断の選択）← 主役
+  // 「大きさ」＝ 関わった量（チェック・タップ・回答の回数）で全体を底上げ ＝「使うほど育つレーダー」
+  // これにより「無言でも大きな形が出る」「会社を選ぶほど全員似た形になる」を解消しつつ、レーダーが貧相にならない。
+  function _avg(wbById){
+    var avg={}; var ids=Object.keys(wbById||{});
+    AX.forEach(function(a){ var s=0,n=0; ids.forEach(function(i){ var wb=wbById[i]; if(wb&&wb[a[0]]!=null){ s+=wb[a[0]]; n++; } }); avg[a[0]]=n?(s/n):60; });
+    return avg;
+  }
   // m = {checks:[], reactions:{coId:[axisKey,..]}, survey:{deep:[],talk:[],rtags:[]}}
   // wbById = {coId: {meaning:60,...}}（companies.wb）
-  function centroid(m, wbById){
+  function _core(m, wbById){
     var w = {meaning:52,agency:52,people:52,local:52,time:52,econ:50};
     m = m || {}; var sv = m.survey || {};
+    var avg = _avg(wbById);
     var ids = {};
     (m.checks||[]).concat(sv.deep||[], sv.talk||[]).forEach(function(id){ ids[String(id)] = 1; });
+    var events = 0;
     Object.keys(ids).forEach(function(id){
+      events++;
       var wb = wbById && wbById[id]; if(!wb || typeof wb!=='object') return;
-      AX.forEach(function(a){ var v = (wb[a[0]]!=null)?wb[a[0]]:60; w[a[0]] = clamp(w[a[0]] + (v-58)*0.35); });
+      AX.forEach(function(a){ var v = (wb[a[0]]!=null)?wb[a[0]]:avg[a[0]]; w[a[0]] = clamp(w[a[0]] + (v-avg[a[0]])*0.5); });
     });
-    // 本人が直接タップした共感ポイント（経営層ごと・複数社で同じ軸なら積み上がる）
+    // 本人が直接タップした共鳴ポイント（経営層ごと・複数社で同じ軸なら積み上がる）
     var re = m.reactions || {};
     Object.keys(re).forEach(function(id){
-      (re[id]||[]).forEach(function(t){ var mm = TAG_AX[t]; if(mm) Object.keys(mm).forEach(function(k){ w[k] = clamp(w[k] + Math.round(mm[k]*0.7)); }); });
+      (re[id]||[]).forEach(function(t){ events++; var mm = TAG_AX[t]; if(mm) Object.keys(mm).forEach(function(k){ w[k] = clamp(w[k] + Math.round(mm[k]*0.7)); }); });
     });
-    (sv.rtags||[]).forEach(function(t){ var mm = TAG_AX[t]; if(mm) Object.keys(mm).forEach(function(k){ w[k] = clamp(w[k] + mm[k]); }); });
+    (sv.rtags||[]).forEach(function(t){ events++; var mm = TAG_AX[t]; if(mm) Object.keys(mm).forEach(function(k){ w[k] = clamp(w[k] + mm[k]); }); });
+    return { w:w, events:events };
+  }
+  // 大きさ＝関わった量（最大+15）。形は変えず全体を底上げ
+  function _lift(w, events){
+    var up = Math.min(events,10)*1.5;
+    AX.forEach(function(a){ w[a[0]] = clamp(w[a[0]] + up); });
     return w;
   }
+  function centroid(m, wbById){ var c=_core(m, wbById); return _lift(c.w, c.events); }
   function radar(w){
     var cx=130, cy=118, R=82;
     function pt(i,val){ var a=(-90+i*60)*Math.PI/180, r=R*clamp(val)/100; return [cx+r*Math.cos(a), cy+r*Math.sin(a)]; }
@@ -74,20 +94,22 @@ window.SN_AXIS = (function(){
     var m=null; try{ m=JSON.parse(localStorage.getItem('sn_meet')||'null'); }catch(e){}
     return !!(m&&((m.checks||[]).length||Object.keys(m.reactions||{}).length||((m.survey||{}).rtags||[]).length));
   }
-  // 累積軸＝MEET(sn_meet)＋記事診断(sn_axis)を合算し、同じcentroidで計算
+  // 累積軸＝MEET(sn_meet)＋記事診断(sn_axis)を合算し、同じ計算式（形＝相対差分＋明示反応／大きさ＝関わった量）で
   function cumulative(wbById){
     var m=null; try{ m=JSON.parse(localStorage.getItem('sn_meet')||'null'); }catch(e){}
     m=m||{};
     var v=readLog();
     var mm={ checks:(m.checks||[]).concat(Object.keys(v.cos)), reactions:m.reactions||{}, survey:m.survey||{} };
-    var w=centroid(mm, wbById);
-    // 記事診断の明示反応＝共感ポイントと同格(×0.7)。同じ軸は最大3回分まで効かせる（読むほど明確に、ただし飽和あり）
+    var c=_core(mm, wbById);
+    var w=c.w, events=c.events;
+    // 記事診断の明示反応＝共鳴ポイントと同格(×0.7)。同じ軸は最大3回分まで効かせる（読むほど明確に、ただし飽和あり）
     Object.keys(v.ax).forEach(function(k){
       var mp=TAG_AX[k]; if(!mp) return;
-      var c=Math.min(v.ax[k],3);
-      Object.keys(mp).forEach(function(x){ w[x]=clamp(w[x]+Math.round(mp[x]*0.7)*c); });
+      var cnt=Math.min(v.ax[k],3);
+      events+=cnt;
+      Object.keys(mp).forEach(function(x){ w[x]=clamp(w[x]+Math.round(mp[x]*0.7)*cnt); });
     });
-    return w;
+    return _lift(w, events);
   }
   // レコメンド：軸wと企業wb(companies.wb)の重なり。スコアは内部値＝UIには重なった軸名だけ出す（企業の点数化はしない）
   function matchTop(w, cos, topN){
