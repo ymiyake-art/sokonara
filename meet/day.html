@@ -12,6 +12,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
 <title>ソコナラMEET 当日ページ</title>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap" rel="stylesheet">
 <style>
 :root{ --navy:#16223f; --teal:#42ad9f; --teal-d:#2e8c7f; --teal-bg:#e9f6f4; --bg:#f4f5f7; --white:#fff; --border:#e2e5ea; --text:#2b2f36; --text2:#6b7280; --text3:#9aa1ab; --hot:#c0341a; }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -35,7 +36,9 @@ textarea{min-height:72px;resize:vertical;}
 .lcard{border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(28,42,84,0.13);background:#fff;display:flex;flex-direction:column;}
 .lcard-top{position:relative;height:210px;overflow:hidden;background:linear-gradient(135deg,#1C2A54,#2e4080);background-size:cover;background-position:center top;flex-shrink:0;}
 .lcard-top::after{content:'';position:absolute;z-index:2;bottom:38%;left:-8%;width:116%;height:2px;background:var(--teal);transform:rotate(-8deg);opacity:0.9;}
-.lcard-phrase{position:absolute;bottom:10px;left:12px;right:12px;z-index:3;font-weight:900;font-size:16px;color:#fff;line-height:1.5;text-shadow:0 1px 4px rgba(0,0,0,0.9),0 2px 12px rgba(0,0,0,0.7);}
+/* フレーズはアプリの経営層一覧（.leader-phrase）と同一タイポグラフィ＝改行位置を揃える */
+.lcard-phrase{position:absolute;bottom:12px;left:12px;right:12px;z-index:3;font-family:'Dela Gothic One','Zen Kaku Gothic New','Noto Sans JP',sans-serif;font-size:18px;color:#fff;line-height:1.6;letter-spacing:.04em;text-shadow:0 0 5px rgba(12,20,45,0.75),0 1px 4px rgba(0,0,0,0.7),0 2px 14px rgba(0,0,0,0.55);display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;word-break:auto-phrase;line-break:strict;overflow-wrap:break-word;}
+@media(max-width:480px){.lcard-phrase{font-size:16px;}}
 .lcard-bottom{padding:12px 14px;background:#E7EAEF;flex:1;display:flex;flex-direction:column;}
 .lcard:nth-child(even) .lcard-bottom{background:#D3D8E3;}
 .lcard-bottom .co-links{margin-top:auto;padding-top:10px;}
@@ -75,7 +78,8 @@ var EV = {
   // 記事がまだ無い登壇者もここに書けば選べる（DB未登録でOK）。id は班分けでも使う安定値にする。
   // 例: {id:'ev_hinode', ceo:'日野出 太郎', name:'日野出株式会社', catchphrase:'（当日語ります）'}
   extraSpeakers: [],
-  appUrl: 'https://app.sokonara.co.jp'  // 経営層記事の本体アプリ
+  appUrl: 'https://app.sokonara.co.jp',  // 経営層記事の本体アプリ
+  lineUrl: 'https://lin.ee/qT5A0zN'      // アンケート後のLINE友だち登録導線
 };
 var SUPA_URL='https://ypwwuylcvjwcyazvpibd.supabase.co';
 var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd3d1eWxjdmp3Y3lhenZwaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTY1MTMsImV4cCI6MjA5MjI3MjUxM30.7YseXt8libEzFsSAv4bI46l36kZ2lFz_jnh1JphVpvA';
@@ -96,7 +100,7 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
   <div class="card" id="regCard">
     <div class="step">STEP 1</div>
     <div class="h2">お名前の登録</div>
-    <div class="note" style="margin-bottom:12px;">気になる経営層へのチェック情報は、イベント運営および班分けのためにソコナラが利用します。企業向けレポートには匿名・集計情報として活用します。氏名や連絡先等を企業へ共有するのは、本人が個別接点を希望し、情報共有に同意した場合のみです。</div>
+    <div class="note" style="margin-bottom:12px;">気になる経営層へのチェック情報は、イベント運営および班分けのためにソコナラが利用します。企業向けレポートには匿名・集計情報として活用します。</div>
     <div id="regForm">
       <input type="text" id="nameIn" placeholder="氏名（フルネーム）" autocomplete="name" style="margin-bottom:10px;">
       <button class="btn" onclick="register()">同意して登録する</button>
@@ -104,6 +108,7 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
     <div id="regDone" style="display:none;">
       <div style="font-size:14px;color:var(--navy);"><b id="regName"></b> さんで登録済み ✓</div>
       <button class="btn btn-o" style="margin-top:8px;font-size:12px;padding:9px;" onclick="editName()">名前を変更する</button>
+      <button class="btn btn-o" style="margin-top:6px;font-size:11px;padding:8px;color:var(--hot);border-color:rgba(192,52,26,0.3);" onclick="deleteMyData()">登録データを削除する（チェック・回答もすべて消えます）</button>
     </div>
     <!-- 班分けスケジュール（登録後は常時表示。運営の割り当て前は「まだ発表されていません」） -->
     <div id="groupBox" style="display:none;margin-top:14px;background:var(--teal-bg);border-radius:10px;padding:14px 16px;">
@@ -125,23 +130,28 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
     <div id="coList"><div class="note" style="padding:20px 0;text-align:center;">読み込み中…</div></div>
   </div>
 
-  <!-- STEP3 アンケート -->
-  <div class="card" id="svCard">
-    <div class="step">STEP 3</div>
+  <!-- ここから先はクロージング（交流会終了後）用 -->
+  <div style="display:flex;align-items:center;gap:12px;margin-top:32px;">
+    <div style="flex:1;height:1px;background:var(--border);"></div>
+    <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1px;white-space:nowrap;">🕘 ここから先は交流会のあとで</div>
+    <div style="flex:1;height:1px;background:var(--border);"></div>
+  </div>
+
+  <!-- STEP3 アンケート（クロージング時） -->
+  <div class="card" id="svCard" style="border:1.5px dashed var(--border);background:#fbfcfd;">
+    <div class="step">STEP 3 — CLOSING</div>
     <div class="h2">最後のアンケート（1〜2分）</div>
-    <div class="note" style="margin-bottom:12px;">クロージングで案内があったら回答してください。</div>
+    <div class="note" style="margin-bottom:12px;"><b style="color:var(--navy)">交流会が終わったあと</b>、クロージングで運営の案内があったら回答してください。</div>
     <button class="btn btn-o" id="svOpenBtn" onclick="openSurvey()">アンケートを開く</button>
     <div id="svForm" style="display:none;">
       <div class="q">① 詳しく知りたい経営層（複数可）</div>
       <div id="svDeep"></div>
       <div class="q">② 個別に話してみたい経営層（複数可）</div>
+      <div class="note" style="margin-bottom:6px;">選んだ方には、後日ソコナラから個別接点のご連絡をします。</div>
       <div id="svTalk"></div>
-      <div class="q">③ ②を選んだ場合：あなたの氏名を、その経営層（企業）へ共有してよいですか？</div>
-      <div class="note" style="margin-bottom:8px;">「はい」の方には、後日ソコナラから個別接点のご連絡をします。連絡先等は本人確認のうえで扱います。</div>
-      <div><span class="chip" data-consent="1" onclick="setConsent(this)">はい、共有してよい</span><span class="chip" data-consent="0" onclick="setConsent(this)">いいえ（今回は見送る）</span></div>
-      <div class="q">④ 気になった理由（複数可）</div>
+      <div class="q">③ 気になった理由（複数可）</div>
       <div id="svTags"></div>
-      <div class="q">⑤ 一言コメント（任意）</div>
+      <div class="q">④ 一言コメント（任意）</div>
       <textarea id="svComment" placeholder="印象に残った言葉・話してみた感想など"></textarea>
       <button class="btn" style="margin-top:14px;" onclick="submitSurvey()">回答を送信する</button>
     </div>
@@ -155,8 +165,10 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
         <div id="svRadar"></div>
         <div class="note" style="text-align:center;">※参考値です。企業を評価する数値ではありません。</div>
       </div>
-      <div style="font-size:12.5px;line-height:1.9;color:var(--text);margin-top:12px;">個別に話したい企業を選んだ方には、後日ソコナラからご連絡します。経営層の記事はこの後もアプリで読み返せます。</div>
-      <a href="#" id="appLink" style="display:block;text-align:center;margin-top:10px;font-size:13px;color:var(--teal-d);text-decoration:underline;">アプリで経営層の記事を見返す →</a>
+      <div style="font-size:12.5px;line-height:1.9;color:var(--text);margin-top:12px;">個別に話したい企業を選んだ方には、後日ソコナラからご連絡します。</div>
+      <a href="#" id="lineLink" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;padding:13px;border-radius:8px;background:#06C755;color:#fff;font-size:14px;font-weight:700;text-decoration:none;">LINEで友だち登録して、今後の案内を受け取る</a>
+      <div class="note" style="text-align:center;margin-top:6px;">次回イベントや新しい経営層記事のお知らせが届きます。</div>
+      <a href="#" id="appLink" style="display:block;text-align:center;margin-top:10px;font-size:12px;color:var(--text2);text-decoration:underline;">アプリで経営層の記事を見返す →</a>
     </div>
   </div>
 
@@ -276,14 +288,21 @@ function openSurvey(){
   document.getElementById('svComment').value=M.survey.comment||'';
 }
 function togArr(key,val,el){ var a=M.survey[key]; var i=a.indexOf(val); if(i>=0)a.splice(i,1); else a.push(val); el.classList.toggle('on'); saveM(); }
-function setConsent(el){ M.survey.consent=el.getAttribute('data-consent')==='1'; saveM(); var ps=el.parentNode.querySelectorAll('.chip'); for(var i=0;i<ps.length;i++)ps[i].classList.remove('on'); el.classList.add('on'); }
 function submitSurvey(){
   if(!M.name){ toast('先にSTEP1でお名前を登録してください'); return; }
-  if(M.survey.talk.length && M.survey.consent==null){ toast('③ 氏名共有の可否を選んでください'); return; }
   M.survey.comment=(document.getElementById('svComment').value||'').slice(0,500);
+  // 氏名共有は利用規約で同意取得済みのため質問は廃止＝送信時に同意として記録（追記47）
+  M.survey.consent=true;
   M.done=true; saveM();
   push({name:M.name,checks:M.checks,deep:M.survey.deep,talk:M.survey.talk,consent:M.survey.consent,rtags:M.survey.rtags,comment:M.survey.comment,survey_done:true});
   paintThanks();
+}
+// 参加者による自己データ削除（サーバ側も削除→端末の記録も消す）
+function deleteMyData(){
+  if(!confirm('登録データ（お名前・チェック・アンケート回答）をすべて削除します。よろしいですか？')) return;
+  fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:M.id,action:'delete'})})
+    .then(function(r){return r.json();}).catch(function(){return {};})
+    .then(function(){ try{ localStorage.removeItem('sn_meet'); }catch(e){} toast('削除しました'); setTimeout(function(){ location.reload(); },600); });
 }
 // ===== “仕事の軸”（チェック企業のwb＋理由タグから導出。PII不使用・派生値のみ） =====
 function centroid(){
@@ -317,6 +336,7 @@ function paintThanks(){
   document.getElementById('svThanks').style.display='block';
   document.getElementById('svRadar').innerHTML=radar(centroid());
   document.getElementById('appLink').href=EV.appUrl+'/';
+  var ln=document.getElementById('lineLink'); if(ln) ln.href=EV.lineUrl;
 }
 
 // ===== 初期化 =====

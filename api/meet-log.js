@@ -37,6 +37,16 @@ export default async function handler(req) {
     } catch (e) { return json({ ok: false, error: String(e && e.message || e) }, 200); }
   }
 
+  // 本人による自己データ削除（id＝端末秘匿値なので本人しか呼べない）
+  if (body && body.action === 'delete') {
+    const U = process.env.SUPABASE_URL, K = process.env.SUPABASE_SERVICE_KEY;
+    if (!U || !K) return json({ error: 'Supabase not configured' }, 500);
+    try {
+      const r = await fetch(`${U}/rest/v1/meet_entries?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE', headers: { apikey: K, Authorization: `Bearer ${K}` } });
+      return json({ ok: r.ok, status: r.status });
+    } catch (e) { return json({ ok: false, error: String(e && e.message || e) }, 200); }
+  }
+
   const src = (body && typeof body.set === 'object' && body.set) ? body.set : {};
   const row = { id };
   for (const k of Object.keys(src)) {

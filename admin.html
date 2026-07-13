@@ -3322,6 +3322,7 @@ async function renderMeetAdmin(){
   const coName=id=>{ const c=cos.find(x=>String(x.id)===String(id)); return c?(c.ceo||c.name||id):id; };
   // 登壇企業（＝卓）の選択を読み込む（site_settings.meet_speakers）
   try{ const {data}=await supabaseClient.from('site_settings').select('value').eq('key','meet_speakers'); const v=(data&&data[0]&&data[0].value)||{}; window._meetSpeakerIds=Array.isArray(v.ids)?v.ids.map(String):[]; }catch(e){ window._meetSpeakerIds=window._meetSpeakerIds||[]; }
+  window._mspOrder=(window._meetSpeakerIds||[]).slice(); // 発表順の編集用ワーキングコピー
   // イベント別に絞り込み（最新イベントを既定）
   const evs=[...new Set(rows.map(r=>r.event_id).filter(Boolean))];
   const curEv=window._meetEv||evs[0]||'';
@@ -3361,10 +3362,12 @@ async function renderMeetAdmin(){
       </div>
       <div style="background:#fff;border:2px solid var(--teal);border-radius:10px;padding:18px;margin-bottom:20px;">
         <div style="font-weight:700;font-size:13px;margin-bottom:4px;">🎤 登壇企業（＝卓）を選択</div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.7;">ここでチェックした企業が班分けの<b>卓</b>になり、<b>当日ページ（参加者のチェック画面）にも同じ企業だけ</b>が表示されます（卓と選択肢が一致）。⚠️ 下の「📣 バナー」の対象チェックとは別物です。</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.7;">ここでチェックした企業が班分けの<b>卓</b>になり、<b>当日ページ（参加者のチェック画面）にも同じ企業だけ・同じ順番</b>で表示されます。⚠️ 下の「📣 バナー」の対象チェックとは別物です。</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:12px;">
-          ${cos.map(c=>`<label style="font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" class="msp-co" value="${escA(String(c.id))}" ${(window._meetSpeakerIds||[]).map(String).includes(String(c.id))?'checked':''}> ${escA(c.ceo||c.name||'')}<span style="color:var(--text3)">（${escA(c.name||'')}）</span></label>`).join('')}
+          ${cos.map(c=>`<label style="font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" class="msp-co" value="${escA(String(c.id))}" onchange="mspToggle(this)" ${(window._meetSpeakerIds||[]).map(String).includes(String(c.id))?'checked':''}> ${escA(c.ceo||c.name||'')}<span style="color:var(--text3)">（${escA(c.name||'')}）</span></label>`).join('')}
         </div>
+        <div style="font-size:11px;color:var(--text2);font-weight:700;margin-bottom:4px;">発表順（＝卓番号・カードの表示順）。↑↓で並べ替え：</div>
+        <div id="mspOrder" style="margin-bottom:12px;"></div>
         <button onclick="saveMeetSpeakers(this)" style="padding:9px 18px;background:var(--teal);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">💾 登壇企業を保存（卓＆当日ページに反映）</button>
         <span style="font-size:11px;color:${(window._meetSpeakerIds||[]).length?'var(--text3)':'#c0392b'};margin-left:8px;">${(window._meetSpeakerIds||[]).length?('現在の保存: <b>'+(window._meetSpeakerIds||[]).length+'</b> 社'):'<b>未保存＝当日ページは全社表示のままです</b>'}</span>
       </div>
@@ -3409,14 +3412,16 @@ async function renderMeetAdmin(){
       </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;">
         <div style="font-weight:700;font-size:13px;margin-bottom:4px;">参加者一覧（${nAll}名）</div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">⚠️ 氏名はイベント運営・班分け専用。企業共有は「共有✓」の本人のみ。</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">⚠️ 氏名はイベント運営・班分け専用。企業共有は「共有✓」の本人のみ。不要な行（テスト・重複など）は左のチェック→下の削除ボタンで消せます。</div>
         <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <thead><tr>${th('氏名')}${th('班（巡目→）')}${th('チェック')}${th('詳しく')}${th('話したい')}${th('共有',1)}${th('コメント')}</tr></thead>
-          <tbody>${rows.map(r=>`<tr>${td('<b style="color:var(--navy)">'+escA(r.name||'（無名）')+'</b>')}${td((r.groups&&r.groups.length)?('<span style="font-size:11px;color:var(--navy);font-weight:700" title="'+escA(r.groups.map(g=>g.no+'番 '+(g.ceo||g.name||'')).join(' / '))+'">'+escA(r.groups.map(g=>g.no).join('→'))+'</span>'):'<span style="font-size:11px;color:var(--text3)">未割当</span>')}${td('<span style="font-size:11px">'+escA((r.checks||[]).map(coName).join('、'))+'</span>')}${td('<span style="font-size:11px">'+escA((r.deep||[]).map(coName).join('、'))+'</span>')}${td('<span style="font-size:11px;color:#2e8c7f;font-weight:700">'+escA((r.talk||[]).map(coName).join('、'))+'</span>')}${td(r.consent===true?'✓':(r.consent===false?'×':'—'),1)}${td('<span style="font-size:11px;color:var(--text2)">'+escA((r.comment||'').slice(0,60))+'</span>')}</tr>`).join('')||'<tr><td colspan="7" style="padding:16px;color:var(--text3);font-size:12px;">まだ登録がありません。</td></tr>'}</tbody>
+          <thead><tr><th style="padding:8px 6px;border-bottom:1px solid var(--border);"><input type="checkbox" onchange="document.querySelectorAll('.mrow-del').forEach(c=>c.checked=this.checked)" title="全選択"></th>${th('氏名')}${th('班（巡目→）')}${th('チェック')}${th('詳しく')}${th('話したい')}${th('共有',1)}${th('コメント')}</tr></thead>
+          <tbody>${rows.map(r=>`<tr><td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:center;"><input type="checkbox" class="mrow-del" value="${escA(String(r.id||''))}"></td>${td('<b style="color:var(--navy)">'+escA(r.name||'（無名）')+'</b>')}${td((r.groups&&r.groups.length)?('<span style="font-size:11px;color:var(--navy);font-weight:700" title="'+escA(r.groups.map(g=>g.no+'番 '+(g.ceo||g.name||'')).join(' / '))+'">'+escA(r.groups.map(g=>g.no).join('→'))+'</span>'):'<span style="font-size:11px;color:var(--text3)">未割当</span>')}${td('<span style="font-size:11px">'+escA((r.checks||[]).map(coName).join('、'))+'</span>')}${td('<span style="font-size:11px">'+escA((r.deep||[]).map(coName).join('、'))+'</span>')}${td('<span style="font-size:11px;color:#2e8c7f;font-weight:700">'+escA((r.talk||[]).map(coName).join('、'))+'</span>')}${td(r.consent===true?'✓':(r.consent===false?'×':'—'),1)}${td('<span style="font-size:11px;color:var(--text2)">'+escA((r.comment||'').slice(0,60))+'</span>')}</tr>`).join('')||'<tr><td colspan="8" style="padding:16px;color:var(--text3);font-size:12px;">まだ登録がありません。</td></tr>'}</tbody>
         </table>
+        <button onclick="deleteSelectedParticipants(this)" style="margin-top:12px;padding:8px 16px;background:#fff;color:#c0392b;border:1px solid var(--border);border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🗑 選択した参加者を削除</button>
       </div>
     </div>`;
   renderMeetBannerEditor();
+  mspRenderOrder();
 }
 
 // ===== 記事内イベント告知バナー（site_settings.meet_banner → アプリが記事末尾に表示）=====
@@ -3435,10 +3440,12 @@ async function renderMeetBannerEditor(){
     ${inp('mb-title','2行目（イベント名）',v.title||'ソコナラMEET＠福岡・大名')}
     ${inp('mb-cta','ボタン文言',v.cta||'参加する','参加する')}
     ${inp('mb-url','リンク先',v.url||'/meet/','/meet/')}
-    <div style="font-size:11px;color:var(--text2);margin:10px 0 4px;">対象の経営層（未選択＝全記事に表示）</div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:12px;">
-      ${cos.map(c=>`<label style="font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" class="mb-co" value="${escA(String(c.id))}" ${ids.includes(String(c.id))?'checked':''}> ${escA(c.ceo||c.name||'')}</label>`).join('')}
-    </div>
+    <details style="margin:10px 0 12px;">
+      <summary style="font-size:11px;color:var(--text2);cursor:pointer;">対象の経営層を選ぶ（現在 ${ids.length||0} 件・未選択＝全記事に表示）⚠️ バナーを出す記事の選択です。班分けの卓・当日ページには影響しません</summary>
+      <div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;">
+        ${cos.map(c=>`<label style="font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" class="mb-co" value="${escA(String(c.id))}" ${ids.includes(String(c.id))?'checked':''}> ${escA(c.ceo||c.name||'')}</label>`).join('')}
+      </div>
+    </details>
     <button onclick="saveMeetBanner(this)" style="padding:9px 18px;background:var(--teal);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">💾 バナー設定を保存</button>
     <span style="font-size:11px;color:var(--text3);margin-left:8px;">保存後、アプリは再読み込みで反映</span>`;
 }
@@ -3540,16 +3547,48 @@ function computeGroupsUI(){
   document.getElementById('grpSaveBtn').style.display='inline-block';
   renderGroupPreview();
 }
-// 登壇企業（＝卓）を保存＝site_settings.meet_speakers。当日ページ(day.html)もこれを読んで同じ企業だけ表示。
+// 発表順の管理：window._mspOrder＝チェック済みidの並び（保存順＝卓番号＝当日ページの表示順）
+function mspToggle(cb){
+  window._mspOrder=window._mspOrder||[];
+  const id=cb.value;
+  if(cb.checked){ if(window._mspOrder.indexOf(id)<0) window._mspOrder.push(id); }
+  else{ window._mspOrder=window._mspOrder.filter(x=>x!==id); }
+  mspRenderOrder();
+}
+function mspMove(i,dir){
+  const o=window._mspOrder||[]; const j=i+dir;
+  if(j<0||j>=o.length) return;
+  const t=o[i]; o[i]=o[j]; o[j]=t;
+  mspRenderOrder();
+}
+function mspRenderOrder(){
+  const box=document.getElementById('mspOrder'); if(!box) return;
+  const cos=loadCompanies();
+  const o=window._mspOrder||[];
+  if(!o.length){ box.innerHTML='<div style="font-size:11px;color:var(--text3);">（上でチェックすると、ここに発表順として並びます）</div>'; return; }
+  box.innerHTML=o.map((id,i)=>{
+    const c=cos.find(x=>String(x.id)===String(id))||{};
+    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;margin-bottom:4px;background:#fafbfc;">
+      <span style="flex-shrink:0;width:22px;height:22px;border-radius:6px;background:var(--navy);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;">${i+1}</span>
+      <span style="flex:1;font-size:12px;color:var(--navy);font-weight:700;">${escA(c.ceo||c.name||id)}<span style="color:var(--text3);font-weight:400;">（${escA(c.name||'')}）</span></span>
+      <button onclick="mspMove(${i},-1)" ${i===0?'disabled':''} style="padding:3px 9px;border:1px solid var(--border);background:#fff;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;${i===0?'opacity:.3;':''}">↑</button>
+      <button onclick="mspMove(${i},1)" ${i===o.length-1?'disabled':''} style="padding:3px 9px;border:1px solid var(--border);background:#fff;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;${i===o.length-1?'opacity:.3;':''}">↓</button>
+    </div>`;
+  }).join('');
+}
+// 登壇企業（＝卓）を保存＝site_settings.meet_speakers。当日ページ(day.html)もこれを読んで同じ企業だけ・同じ順で表示。
 async function saveMeetSpeakers(btn){
-  const ids=[...document.querySelectorAll('.msp-co:checked')].map(el=>el.value);
+  const checked=[...document.querySelectorAll('.msp-co:checked')].map(el=>el.value);
+  // 発表順リストを正とし、チェック状態と同期（順序にない新規チェックは末尾へ）
+  let ids=(window._mspOrder||[]).filter(id=>checked.includes(id));
+  checked.forEach(id=>{ if(!ids.includes(id)) ids.push(id); });
   const ev=window._meetEvId||MEET_EVENT_ID;
   btn.disabled=true; const ot=btn.textContent; btn.textContent='保存中…';
   const r=await adminWrite('site_settings','upsert',{rows:[{key:'meet_speakers',value:{eventId:ev, ids},updated_at:new Date().toISOString()}]});
   btn.disabled=false; btn.textContent=ot;
   if(!r.ok){ toast('保存失敗: '+String(r.error||r.status).slice(0,60)); return; }
   window._meetSpeakerIds=ids;
-  toast('登壇企業を保存しました（'+ids.length+'社＝卓）。当日ページにも反映されます');
+  toast('登壇企業を保存しました（'+ids.length+'社＝卓・発表順）。当日ページにも反映されます');
   renderMeetAdmin();
 }
 // テスト参加者（テスト1..N）を実データとして作成＝本番前の割当動作確認用。本番前に削除すること。
@@ -3571,6 +3610,18 @@ async function createTestParticipants(btn){
   }
   btn.disabled=false; btn.textContent=ot;
   toast('テスト参加者を作成：成功'+ok+'件'+(ng?(' / 失敗'+ng+'件'):''));
+  renderMeetAdmin();
+}
+// 参加者一覧で選択した行を削除（テスト・重複・誤登録の整理用）
+async function deleteSelectedParticipants(btn){
+  const ids=[...document.querySelectorAll('.mrow-del:checked')].map(el=>el.value).filter(Boolean);
+  if(!ids.length){ toast('削除する参加者にチェックを入れてください'); return; }
+  if(!confirm('選択した参加者 '+ids.length+'名のデータを完全に削除します。よろしいですか？')) return;
+  btn.disabled=true; const ot=btn.textContent; btn.textContent='削除中…';
+  let ok=0, ng=0;
+  for(const id of ids){ const r=await adminWrite('meet_entries','delete',{id}); if(r.ok) ok++; else ng++; }
+  btn.disabled=false; btn.textContent=ot;
+  toast('参加者を削除：成功'+ok+'件'+(ng?(' / 失敗'+ng+'件'):''));
   renderMeetAdmin();
 }
 async function deleteTestParticipants(btn){
