@@ -215,6 +215,8 @@ var COS=[];
 var M=null; // {id,name,checks,reactions:{coId:[axisKey..]},survey:{deep,talk,consent,rtags,comment},done}
 
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+// 卓番号(1..)→アルファベット(A..)。班表示はA〜F。
+function tno(n){ n=parseInt(n,10); return (n>=1&&n<=26)?String.fromCharCode(64+n):String(n); }
 function toast(m){ var t=document.getElementById('toastEl'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(function(){t.classList.remove('show');},2200); }
 function clamp(v){ return Math.max(0,Math.min(100,Math.round(v))); }
 function loadM(){ try{ M=JSON.parse(localStorage.getItem('sn_meet')||'null'); }catch(e){ M=null; } if(!M||!M.id) M={id:'meet_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),name:'',checks:[],reactions:{},observer:false,survey:{deep:[],talk:[],consent:null,rtags:[],comment:''},done:false}; if(!M.survey) M.survey={deep:[],talk:[],consent:null,rtags:[],comment:''}; if(!M.reactions||typeof M.reactions!=='object') M.reactions={}; if(typeof M.observer!=='boolean') M.observer=false; if(!M.survey.scores||typeof M.survey.scores!=='object') M.survey.scores={}; if(typeof M.survey.nps!=='number') M.survey.nps=null; }
@@ -279,11 +281,11 @@ function paintGroups(groups){
     list.innerHTML='';
     return;
   }
-  if(note) note.textContent='チェックした経営層になるべく行けるよう配分しています。各巡目でこの番号のテーブルへどうぞ。';
+  if(note) note.textContent='チェックした経営層になるべく行けるよう配分しています。各巡目でこの班（テーブル）へどうぞ。';
   list.innerHTML=groups.map(function(g,i){
     return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.06);">'
       +'<span style="flex-shrink:0;font-size:11px;color:var(--text2);width:44px;">'+(i+1)+'巡目</span>'
-      +'<span style="flex-shrink:0;width:34px;height:34px;border-radius:8px;background:var(--navy);color:#fff;font-weight:900;font-size:15px;display:flex;align-items:center;justify-content:center;">'+esc(g.no)+'</span>'
+      +'<span style="flex-shrink:0;width:34px;height:34px;border-radius:8px;background:var(--navy);color:#fff;font-weight:900;font-size:15px;display:flex;align-items:center;justify-content:center;">'+esc(tno(g.no))+'</span>'
       +'<span style="font-size:13px;color:var(--navy);font-weight:700;">'+esc(g.ceo||g.name||'')+'<span style="font-size:11px;color:var(--text2);font-weight:400;"> '+esc(g.name||'')+'</span></span>'
       +'</div>';
   }).join('');
