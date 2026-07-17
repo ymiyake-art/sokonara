@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>移住シミュレーター β | ソコナラ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#16223f; --navy2:#243a6b; --gold:#c9a95c; --gold2:#a6801f;
+  --teal:#12a58c; --teal-d:#0d8471; --red:#c0392b; --amber:#b9770e;
+  --paper:#f7f6f2; --card:#ffffff; --line:#e5e1d8;
+  --text:#1c2333; --text2:#4a5268; --text3:#8a90a2;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Zen Kaku Gothic New',sans-serif;background:var(--paper);color:var(--text);line-height:1.75;-webkit-font-smoothing:antialiased}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px 80px}
+/* header */
+header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);color:#fff;padding:34px 16px 30px;border-bottom:3px solid var(--gold)}
+.h-in{max-width:860px;margin:0 auto}
+.h-kick{font-size:11.5px;letter-spacing:.22em;color:var(--gold);font-weight:700}
+h1{font-size:clamp(21px,5.4vw,29px);font-weight:900;letter-spacing:.02em;margin:6px 0 8px}
+.h-lead{font-size:13.5px;color:rgba(255,255,255,.85);line-height:1.9}
+.h-priv{display:inline-block;margin-top:12px;font-size:11.5px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:3px 12px;color:rgba(255,255,255,.9)}
+/* toolbar */
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 6px}
+.tbtn{font-family:inherit;font-size:12.5px;font-weight:700;padding:8px 14px;border-radius:9px;border:1.5px solid var(--line);background:#fff;color:var(--text2);cursor:pointer}
+.tbtn:hover{border-color:var(--teal);color:var(--teal-d)}
+.tbtn.demo{border-color:var(--gold);color:var(--gold2);background:#fffdf6}
+/* sections */
+.sec{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-top:16px;overflow:hidden}
+.sec>summary{list-style:none;cursor:pointer;padding:15px 18px;display:flex;align-items:center;gap:10px;user-select:none}
+.sec>summary::-webkit-details-marker{display:none}
+.sec>summary .num{width:26px;height:26px;border-radius:50%;background:var(--navy);color:var(--gold);font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center;flex:none}
+.sec>summary .st{font-size:15.5px;font-weight:900}
+.sec>summary .sd{font-size:11.5px;color:var(--text3);margin-left:auto;text-align:right}
+.sec>summary:after{content:'▾';color:var(--text3);margin-left:8px;transition:.2s}
+.sec[open]>summary:after{transform:rotate(180deg)}
+.sec-body{padding:2px 18px 18px;border-top:1px dashed var(--line)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin-top:14px}
+@media(max-width:560px){.grid{grid-template-columns:1fr}}
+.fld label{display:block;font-size:12px;font-weight:700;color:var(--text2);margin-bottom:4px}
+.fld .hint{font-weight:400;color:var(--text3);font-size:11px}
+.fld input[type=number],.fld input[type=text],.fld select{width:100%;font-family:inherit;font-size:15px;padding:9px 11px;border:1.5px solid var(--line);border-radius:9px;background:#fff;color:var(--text)}
+.fld input:focus,.fld select:focus{outline:none;border-color:var(--teal)}
+.unit{font-size:11.5px;color:var(--text3);margin-left:4px}
+.subnote{font-size:11.5px;color:var(--text3);margin-top:10px;line-height:1.7}
+.inline-note{font-size:11.5px;color:var(--amber);margin-top:6px}
+/* kids */
+.kid-row{display:grid;grid-template-columns:1fr 1.6fr auto;gap:8px;align-items:end;margin-top:8px}
+.kid-row .del{font-size:12px;border:none;background:none;color:var(--red);cursor:pointer;padding:9px 4px}
+.addbtn{margin-top:10px;font-family:inherit;font-size:12.5px;font-weight:700;color:var(--teal-d);background:none;border:1.5px dashed var(--teal);border-radius:9px;padding:7px 14px;cursor:pointer}
+/* results */
+#results{margin-top:26px}
+.res-h{font-size:12px;letter-spacing:.2em;color:var(--gold2);font-weight:900;margin:30px 0 8px}
+.verdict{border-radius:14px;padding:20px 18px;color:#fff;background:linear-gradient(135deg,var(--navy),var(--navy2));border:1px solid var(--gold)}
+.verdict .v-main{font-size:19px;font-weight:900;line-height:1.6}
+.verdict .v-sub{font-size:13px;color:rgba(255,255,255,.85);margin-top:8px;line-height:1.9}
+.badge{display:inline-block;font-size:12px;font-weight:900;border-radius:6px;padding:2px 10px;margin-right:8px;vertical-align:2px}
+.badge.ok{background:var(--teal);color:#fff}
+.badge.warn{background:#e67e22;color:#fff}
+.badge.ng{background:var(--red);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:12px}
+.card h3{font-size:14.5px;font-weight:900;margin-bottom:10px;padding-left:10px;border-left:3px solid var(--gold)}
+.rev-num{font-size:30px;font-weight:900;color:var(--navy);letter-spacing:.02em}
+.rev-num small{font-size:14px;font-weight:700;color:var(--text2)}
+/* monthly bars */
+.mrow{margin-top:12px}
+.mrow .mlabel{font-size:12.5px;font-weight:900;color:var(--text2)}
+.mbar{display:flex;height:26px;border-radius:6px;overflow:hidden;margin-top:4px;background:#f0ede6}
+.mbar span{display:block;height:100%}
+.mlegend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11px;color:var(--text2);margin-top:10px}
+.mlegend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.mnum{font-size:12px;color:var(--text2);margin-top:2px}
+.mnum b.plus{color:var(--teal-d)}
+.mnum b.minus{color:var(--red)}
+/* chart */
+.chart-box{overflow-x:auto}
+svg.chart{width:100%;min-width:560px;height:auto;display:block}
+.chart-legend{display:flex;gap:18px;font-size:12px;color:var(--text2);margin-top:6px}
+.chart-legend i{display:inline-block;width:18px;height:3px;margin-right:5px;vertical-align:3px;border-radius:2px}
+/* timeline */
+.tl{margin-top:6px}
+.tl-row{display:grid;grid-template-columns:86px 1fr;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.tl-row:last-child{border-bottom:none}
+.tl-age{font-weight:900;color:var(--navy);font-size:12.5px}
+.tl-age small{display:block;font-weight:500;color:var(--text3);font-size:10.5px}
+.tl-ev{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:11.5px;font-weight:700;border-radius:14px;padding:2px 10px;background:#eef4f3;color:var(--teal-d);border:1px solid #cfe5e1}
+.chip.money{background:#fdf6e8;color:var(--gold2);border-color:#ecdcb6}
+.chip.care{background:#fdeeee;color:var(--red);border-color:#f2cdcd}
+.chip.edu{background:#eef1fa;color:var(--navy2);border-color:#d4dcf0}
+/* levers */
+.lever{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.lever:last-child{border-bottom:none}
+.lever .lv-eff{font-weight:900;color:var(--teal-d);font-size:12.5px;white-space:nowrap}
+/* slider */
+.sl-row{display:flex;align-items:center;gap:14px;margin-top:8px}
+.sl-row input[type=range]{flex:1;accent-color:var(--teal)}
+.sl-val{font-size:16px;font-weight:900;color:var(--navy);min-width:110px;text-align:right}
+.sl-verdict{font-size:12.5px;font-weight:700;margin-top:6px}
+/* checkboxes qual */
+.qual{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.qual label{display:flex;gap:10px;align-items:flex-start;font-size:13px;cursor:pointer}
+.qual input{margin-top:4px;accent-color:var(--teal)}
+.qual .rf{display:none;font-size:12px;color:var(--teal-d);background:#eef7f5;border-radius:8px;padding:6px 10px;margin:4px 0 2px 26px;line-height:1.7}
+.qual li{list-style:none}
+.qual .on .rf{display:block}
+.axchips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.axchip{font-size:12.5px;font-weight:700;border:1.5px solid var(--line);border-radius:18px;padding:5px 14px;cursor:pointer;background:#fff;color:var(--text2);user-select:none}
+.axchip.on{background:var(--navy);color:var(--gold);border-color:var(--navy)}
+/* memo */
+#memoText{width:100%;font-family:inherit;font-size:12.5px;line-height:1.8;border:1.5px solid var(--line);border-radius:10px;padding:12px;min-height:220px;background:#fffdf8;color:var(--text)}
+/* footer */
+.foot{font-size:11px;color:var(--text3);line-height:1.9;margin-top:34px;border-top:1px solid var(--line);padding-top:16px}
+.copybtn{font-family:inherit;font-size:12.5px;font-weight:700;background:var(--teal);color:#fff;border:none;border-radius:9px;padding:9px 18px;cursor:pointer;margin-top:10px}
+.copybtn:hover{background:var(--teal-d)}
+@media print{
+  header{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .toolbar,.copybtn,.addbtn{display:none}
+  .sec{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="h-in">
+    <div class="h-kick">IJU SIMULATOR — β</div>
+    <h1>移住シミュレーター</h1>
+    <div class="h-lead">「下がるけど、これが上がる」を数字で確かめる。<br>年収・住まい・教育・親のこと——移住しても生活が成立するかを、90歳までのお金の流れで判定します。</div>
+    <span class="h-priv">🔒 入力データはこの端末の中だけ。サーバーには一切送信されません</span>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="toolbar">
+    <button class="tbtn demo" onclick="loadDemo()">▶ モデルケースを見る（大手企業→福岡・42歳）</button>
+    <button class="tbtn" onclick="exportJSON()">⬇ 保存（ファイル）</button>
+    <button class="tbtn" onclick="document.getElementById('impFile').click()">⬆ 読み込み</button>
+    <input type="file" id="impFile" accept=".json" style="display:none" onchange="importJSON(this)">
+    <button class="tbtn" onclick="resetAll()">↺ リセット</button>
+    <button class="tbtn" onclick="window.print()">🖨 印刷</button>
+  </div>
+
+  <!-- STEP 1 -->
+  <details class="sec" open>
+    <summary><span class="num">1</span><span class="st">あなたと移住先</span><span class="sd" id="sd1"></span></summary>
+    <div class="sec-body">
+      <div class="grid">
+        <div class="fld"><label>現在の年齢</label><input type="number" id="age" value="40" min="20" max="70"><span class="unit">歳</span></div>
+        <div class="fld"><label>いま住んでいる都市</label>
+          <select id="srcCity">
+            <option value="tokyo">東京23区</option><option value="osaka" selected>大阪市</option>
+            <option value="nagoya">名古屋市</option><option value="otherBig">その他の都市</option>
+          </select></div>
+        <div class="fld"><label>移住先</label>
+          <select id="destCity">
+            <option value="fukuoka" selected>福岡市</option><option value="kitakyushu">北九州市</option>
+            <option value="kurume">久留米市</option><option value="otherKyushu">その他の九州の街</option>
+          </select></div>
+        <div class="fld"><label>退職を想定する年齢</label>
+          <select id="retireAge"><option>60</option><option selected>65</option><option>70</option></select></div>
+        <div class="fld"><label>何歳まで見るか <span class="hint">（資産が尽きないかの判定期間）</span></label>
+          <select id="endAge"><option>85</option><option>90</option><option selected>95</option><option>100</option></select></div>
+        <div class="fld"><label>現在の貯蓄・金融資産</label><input type="number" id="asset0" value="800" step="50"><span class="unit">万円</span></div>
+      </div>
+    </div>
+  </details>
+
+  <!-- STEP 2 -->
+  <details class="sec" open>
+    <summary><span class="num">2</span><span class="st">収入</span><span class="sd" id="sd2"></span></summary>
+    <div class="sec-body">
+      <div class="grid">
+        <div class="fld"><label>現在の年収（税込）</label><input type="number" id="incCur" value="800" step="10"><span class="unit">万円</span></div>
+        <div class="fld"><label>移住後の想定年収（税込） <span class="hint">求人票の額でOK</span></label><input type="number" id="incMig" value="550" step="10"><span class="unit">万円</span></div>
+        <div class="fld"><label>配偶者</label>
+          <select id="spouse" onchange="onSpouse()">
+            <option value="none">いない（単身）</option>
+            <option value="dep" selected>いる（扶養内・パート等）</option>
+            <option value="work">いる（共働き）</option>
+          </select></div>
+        <div class="fld" id="spouseIncFld" style="display:none"><label>配偶者の年収（税込）</label><input type="number" id="incSpouse" value="350" step="10"><span class="unit">万円</span></div>
+        <div class="fld"><label>退職金（現職に残った場合）</label><input type="number" id="sevCur" value="1500" step="100"><span class="unit">万円</span></div>
+        <div class="fld"><label>退職金（転職先で見込める額）</label><input type="number" id="sevMig" value="300" step="100"><span class="unit">万円</span></div>
+        <div class="fld"><label>資産の運用利回り（年）</label>
+          <select id="yield"><option value="0">0%（現金のみ）</option><option value="1" selected>1%</option><option value="2">2%</option><option value="3">3%</option></select></div>
+      </div>
+      <div class="subnote">※手取りは年収から概算します（社会保険・税を控除）。配偶者「扶養内」は年100万円の手取りで計算。</div>
+    </div>
+  </details>
+
+  <!-- STEP 3 -->
+  <details class="sec" open>
+    <summary><span class="num">3</span><span class="st">支出と住まい</span><span class="sd" id="sd3"></span></summary>
+    <div class="sec-body">
+      <div class="grid">
+        <div class="fld"><label>毎月の生活費 <span class="hint">住居費を除く・食費/光熱/通信/車など</span></label><input type="number" id="living" value="25" step="1"><span class="unit">万円/月</span></div>
+        <div class="fld"><label>いまの住まい</label>
+          <select id="curHousing" onchange="onHousing()">
+            <option value="rent">賃貸</option><option value="own" selected>持ち家（ローンあり）</option>
+          </select></div>
+        <div class="fld" id="fRent"><label>いまの家賃</label><input type="number" id="curRent" value="12" step="0.5"><span class="unit">万円/月</span></div>
+        <div class="fld own"><label>ローン月額</label><input type="number" id="loanM" value="11" step="0.5"><span class="unit">万円/月</span></div>
+        <div class="fld own"><label>ローン残り年数</label><input type="number" id="loanY" value="20" min="0" max="40"><span class="unit">年</span></div>
+        <div class="fld own"><label>ローン残債</label><input type="number" id="loanBal" value="2800" step="100"><span class="unit">万円</span></div>
+        <div class="fld own"><label>移住するとき、持ち家は？</label>
+          <select id="ownPlan" onchange="onHousing()">
+            <option value="sell" selected>売却する</option><option value="lease">貸しに出す</option><option value="keep">持ち続ける（空き家）</option>
+          </select></div>
+        <div class="fld own" id="fSell"><label>売却できそうな額</label><input type="number" id="sellPrice" value="3200" step="100"><span class="unit">万円</span></div>
+        <div class="fld own" id="fLease" style="display:none"><label>貸した場合の家賃収入</label><input type="number" id="leaseRent" value="11" step="0.5"><span class="unit">万円/月</span></div>
+        <div class="fld"><label>移住後の家賃 <span class="hint" id="rentHint"></span></label><input type="number" id="migRent" value="9.5" step="0.5"><span class="unit">万円/月</span></div>
+        <div class="fld"><label>引越し・移住の初期費用</label><input type="number" id="moveCost" value="100" step="10"><span class="unit">万円</span></div>
+      </div>
+      <div class="subnote">※移住後の生活費は都市の物価差で自動補正します。売却は諸費用4%を差し引き、賃貸に出す場合は空室・管理コストとして15%を差し引いて計算。</div>
+    </div>
+  </details>
+
+  <!-- STEP 4 -->
+  <details class="sec" open>
+    <summary><span class="num">4</span><span class="st">子どもと親</span><span class="sd" id="sd4"></span></summary>
+    <div class="sec-body">
+      <div style="margin-top:12px;font-size:13px;font-weight:900;color:var(--text2)">子ども</div>
+      <div id="kids"></div>
+      <button class="addbtn" onclick="addKid()">＋ 子どもを追加</button>
+      <div class="grid" style="margin-top:18px">
+        <div class="fld"><label>親の年齢 <span class="hint">最も年上の方・いなければ0</span></label><input type="number" id="parentAge" value="72" min="0" max="100"><span class="unit">歳</span></div>
+        <div class="fld"><label>親はどこに住んでいる？</label>
+          <select id="parentNear">
+            <option value="dest" selected>移住先の近く（例：実家が九州）</option>
+            <option value="src">いまの家の近く</option>
+            <option value="far">どちらからも遠い</option>
+          </select></div>
+      </div>
+      <div class="subnote">※教育費は文部科学省の学習費調査等をもとにした年額の目安。親の手助けは80〜84歳で月5万円の負担を仮置きし、遠方の場合は帰省・移動費 月2万円を上乗せします（実際は親の資産・介護保険で大きく変わります）。</div>
+    </div>
+  </details>
+
+  <!-- STEP 5 -->
+  <details class="sec" open>
+    <summary><span class="num">5</span><span class="st">老後</span><span class="sd" id="sd5"></span></summary>
+    <div class="sec-body">
+      <div class="grid">
+        <div class="fld"><label>老後の毎月の生活費 <span class="hint">住居費除く・空欄なら現役の8割で自動計算</span></label><input type="number" id="retLiving" placeholder="自動" step="1"><span class="unit">万円/月</span></div>
+        <div class="fld"><label>年金（自動概算・上書き可）</label><input type="number" id="pensionOv" placeholder="自動" step="10"><span class="unit">万円/年</span></div>
+      </div>
+      <div class="subnote" id="pensionNote"></div>
+    </div>
+  </details>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="res-h">— 判定 —</div>
+    <div class="verdict" id="verdict"></div>
+
+    <div class="card">
+      <h3>成立に必要な最低年収（逆算）</h3>
+      <div id="revCalc"></div>
+      <div style="margin-top:14px;border-top:1px dashed var(--line);padding-top:12px">
+        <div style="font-size:12.5px;font-weight:900;color:var(--text2)">想定年収を動かして試す</div>
+        <div class="sl-row">
+          <input type="range" id="incSlider" min="0" max="0" step="10" oninput="onSlider(this.value)">
+          <div class="sl-val" id="slVal"></div>
+        </div>
+        <div class="sl-verdict" id="slVerdict"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>毎月の家計 before / after（現役時代）</h3>
+      <div id="monthly"></div>
+    </div>
+
+    <div class="card">
+      <h3>資産カーブ（<span id="chartEnd"></span>歳まで）</h3>
+      <div class="chart-box" id="chart"></div>
+      <div class="chart-legend">
+        <span><i style="background:#9aa2b5"></i>現状維持（いまの仕事のまま）</span>
+        <span><i style="background:var(--teal)"></i>移住シナリオ</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>改善レバー <span style="font-weight:400;font-size:11.5px;color:var(--text3)">— 効果の大きい順</span></h3>
+      <div id="levers"></div>
+    </div>
+
+    <div class="card">
+      <h3>ライフタイムライン</h3>
+      <div class="tl" id="timeline"></div>
+    </div>
+
+    <div class="card">
+      <h3>お金以外に、上がるもの</h3>
+      <div style="font-size:12.5px;color:var(--text2)">移住で「上がる」と感じる軸を選んでください（あなたの仕事の軸の5軸）。</div>
+      <div class="axchips" id="axchips"></div>
+      <div style="margin-top:18px;font-size:12.5px;font-weight:900;color:var(--text2)">ひっかかっている不安（正直に）</div>
+      <div style="font-size:11.5px;color:var(--text3)">チェックすると、別の見方が出ます。</div>
+      <ul class="qual" id="fears"></ul>
+    </div>
+
+    <div class="card">
+      <h3>意思決定メモ</h3>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px">ここまでの結果を1枚のメモにまとめました。家族への説明や、自分の整理にどうぞ。</div>
+      <textarea id="memoText" readonly></textarea>
+      <button class="copybtn" onclick="copyMemo()">📋 メモをコピー</button>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>前提と免責</b>：本シミュレーターの数値は公的統計等をもとにした概算の目安であり、将来を保証するものではありません。税・社会保険は簡易計算、物価上昇は考慮していません（収入・支出の両方に同様に効くため、判定への影響は限定的です）。年金は現行制度ベースの概算です。重要な意思決定の際は、あわせて専門家（FP・税理士）にもご相談ください。<br>
+    入力されたデータはお使いの端末（ブラウザ）にのみ保存され、サーバーには送信されません。<br>
+    © ソコナラ — 移住シミュレーター β
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ============ 定数（目安データ） ============ */
+const CITY={
+  tokyo:{label:'東京23区',rent:19,coef:1.04},
+  osaka:{label:'大阪市',rent:12.5,coef:1.00},
+  nagoya:{label:'名古屋市',rent:10.5,coef:0.99},
+  otherBig:{label:'その他の都市',rent:9,coef:0.98},
+  fukuoka:{label:'福岡市',rent:9.5,coef:0.97},
+  kitakyushu:{label:'北九州市',rent:7,coef:0.955},
+  kurume:{label:'久留米市',rent:6.5,coef:0.95},
+  otherKyushu:{label:'その他の九州の街',rent:7,coef:0.95}
+};
+// 手取り率の近似（年収万円→手取り率）
+const NET_PTS=[[100,0.85],[300,0.81],[400,0.79],[500,0.78],[600,0.77],[700,0.76],[800,0.745],[900,0.735],[1000,0.72],[1200,0.70],[1500,0.675],[2000,0.64],[3000,0.60]];
+function netOf(g){
+  if(g<=0)return 0;
+  if(g<=NET_PTS[0][0])return g*NET_PTS[0][1];
+  for(let i=1;i<NET_PTS.length;i++){
+    if(g<=NET_PTS[i][0]){
+      const [x0,y0]=NET_PTS[i-1],[x1,y1]=NET_PTS[i];
+      const r=y0+(y1-y0)*(g-x0)/(x1-x0);
+      return g*r;
+    }
+  }
+  return g*NET_PTS[NET_PTS.length-1][1];
+}
+// 教育費 年額（万円）
+const EDU={
+  pub:{yo:23,sho:35,chu:54,koko:51,dai:150},
+  mix:{yo:23,sho:35,chu:54,koko:105,dai:230},
+  pri:{yo:53,sho:167,chu:144,koko:105,dai:230}
+};
+const PLAN_LABEL={pub:'公立中心（大学は国公立）',mix:'公立→高校から私立',pri:'私立中心'};
+function eduCost(kidAge,plan){
+  const t=EDU[plan]||EDU.mix;
+  if(kidAge>=3&&kidAge<=5)return t.yo;
+  if(kidAge>=6&&kidAge<=11)return t.sho;
+  if(kidAge>=12&&kidAge<=14)return t.chu;
+  if(kidAge>=15&&kidAge<=17)return t.koko;
+  if(kidAge>=18&&kidAge<=21)return t.dai;
+  return 0;
+}
+const AX_ITEMS=[['meaning','意味・使命'],['agency','裁量・挑戦'],['people','人・近さ'],['local','地域・つながり'],['time','時間・ゆとり']];
+const FEARS=[
+  ['大企業の看板・肩書きを失うのが怖い','会社の名前ではなく、自分の名前で仕事をする側になる、ということ。規模の小さい組織では、大企業で得た「型」はそのまま希少能力です。'],
+  ['年収が下がることへの世間の目が気になる','生活の質は世間の目ではなく可処分所得と時間で決まります。それは上の判定で数字として確かめられます。'],
+  ['キャリアが途切れる・戻れなくなる不安','経験は消えません。都市部の大企業経験者は九州の企業では圧倒的に不足しており、「戻る」より「呼ばれる」側になる可能性の方が現実的です。'],
+  ['子どもの教育環境が心配','教育費の差は上の数字に織り込み済みです。学校の選択肢の数は変わりますが、通学時間・自然・家族の時間は逆に増える側です。'],
+  ['家族や親に説明できる自信がない','このページの結果がそのまま説明資料になります。感情ではなく、数字と年表で話せます。'],
+  ['友人・人間関係がリセットされる','関係は消えるのではなく置き換わります。地方は人との距離が近く、仕事とコミュニティの重なりも都市部より濃くなります。']
+];
+/* ============ 状態 ============ */
+const IDS=['age','srcCity','destCity','retireAge','endAge','asset0','incCur','incMig','spouse','incSpouse','sevCur','sevMig','yield','living','curHousing','curRent','loanM','loanY','loanBal','ownPlan','sellPrice','leaseRent','migRent','moveCost','parentAge','parentNear','retLiving','pensionOv'];
+let kids=[{age:10,plan:'mix'},{age:7,plan:'mix'}];
+let axSel=[]; let fearSel=[];
+let sliderDelta=null; // 感度スライダー（nullなら未操作）
+
+function $(id){return document.getElementById(id)}
+function val(id){const e=$(id);return e.type==='number'?(e.value===''?null:parseFloat(e.value)):e.value}
+function collect(){
+  const S={};
+  IDS.forEach(id=>S[id]=val(id));
+  S.kids=kids.map(k=>({age:k.age,plan:k.plan}));
+  return S;
+}
+/* ============ シミュレーション本体 ============ */
+// scenario: 'cur' | 'mig'
+function simulate(S,scenario,incOverride){
+  const src=CITY[S.srcCity],dest=CITY[S.destCity];
+  const mig=scenario==='mig';
+  const coef=mig?dest.coef/src.coef:1;
+  const inc=mig?(incOverride!=null?incOverride:S.incMig):S.incCur;
+  const retire=+S.retireAge,end=+S.endAge,yld=(+S.yield)/100;
+  const living=(S.living||0);
+  const retLiving=(S.retLiving!=null&&S.retLiving!==0)?S.retLiving:Math.round(living*0.8);
+  // 年金概算
+  const startWork=23,yearsPast=Math.max(0,S.age-startWork),yearsFuture=Math.max(0,retire-S.age);
+  const totalY=Math.min(45,yearsPast+yearsFuture);
+  const avgInc=totalY>0?Math.min(762,(S.incCur*yearsPast+inc*yearsFuture)/(yearsPast+yearsFuture||1)):0;
+  let pension=81+avgInc*0.005481*totalY;
+  if(S.spouse==='dep')pension+=81;
+  if(S.spouse==='work'){
+    const sAvg=Math.min(762,S.incSpouse||0);
+    pension+=81+sAvg*0.005481*totalY;
+  }
+  if(S.pensionOv!=null&&S.pensionOv>0)pension=S.pensionOv;
+  // 配偶者手取り（現役中）
+  let spouseNet=0;
+  if(S.spouse==='dep')spouseNet=100;
+  if(S.spouse==='work')spouseNet=netOf(S.incSpouse||0);
+  // 持ち家処理
+  const own=S.curHousing==='own';
+  let asset=S.asset0||0;
+  const rows=[];let firstNeg=null;
+  if(mig){
+    asset-=S.moveCost||0;
+    if(own&&S.ownPlan==='sell')asset+=(S.sellPrice||0)*0.96-(S.loanBal||0);
+  }
+  const myNet=netOf(inc);
+  for(let t=0;t<=end-S.age;t++){
+    const a=S.age+t;
+    let income=0,spend=0;
+    // --- 収入 ---
+    if(a<retire){income+=myNet+spouseNet;}
+    if(a>=65){income+=pension;}
+    if(a===retire){income+=mig?(S.sevMig||0):(S.sevCur||0);}
+    // 賃貸収入（移住×貸す）
+    if(mig&&own&&S.ownPlan==='lease'){income+=(S.leaseRent||0)*12*0.85;}
+    // --- 支出 ---
+    const liv=(a<retire?living:retLiving)*12*coef;
+    spend+=liv;
+    // 住居費
+    if(mig){
+      spend+=(S.migRent||0)*12;
+      if(own&&(S.ownPlan==='lease'||S.ownPlan==='keep')){
+        if(t<(S.loanY||0))spend+=(S.loanM||0)*12;
+        else if(S.ownPlan==='keep')spend+=24;
+      }
+    }else{
+      if(own){
+        if(t<(S.loanY||0))spend+=(S.loanM||0)*12;
+        else spend+=24;
+      }else{
+        spend+=(S.curRent||0)*12;
+      }
+    }
+    // 教育費
+    let edu=0;
+    S.kids.forEach(k=>{edu+=eduCost(k.age+t,k.plan)});
+    spend+=edu;
+    // 親の手助け（80〜84歳）
+    if(S.parentAge>0){
+      const pa=S.parentAge+t;
+      if(pa>=80&&pa<=84){
+        spend+=60;
+        const far=(S.parentNear==='far')||(mig?S.parentNear==='src':S.parentNear==='dest');
+        if(far)spend+=24;
+      }
+    }
+    asset=asset*(1+yld)+income-spend;
+    if(asset<0&&firstNeg===null)firstNeg=a;
+    rows.push({age:a,asset:Math.round(asset),income:Math.round(income),spend:Math.round(spend),edu:Math.round(edu)});
+  }
+  return {rows,firstNeg,pension:Math.round(pension),final:Math.round(asset),net:Math.round(myNet),spouseNet:Math.round(spouseNet),coef};
+}
+// 逆算：移住後年収いくらなら最後まで資産が尽きないか
+function reverseMinIncome(S){
+  const ok=inc=>simulate(S,'mig',inc).firstNeg===null;
+  if(ok(100))return 100;
+  let lo=100,hi=Math.max(S.incCur*2,2000);
+  if(!ok(hi))return null;
+  for(let i=0;i<28;i++){
+    const mid=(lo+hi)/2;
+    if(ok(mid))hi=mid;else lo=mid;
+  }
+  return Math.ceil(hi/10)*10;
+}
+/* ============ 描画 ============ */
+const fmt=n=>n==null?'—':(Math.round(n)).toLocaleString();
+const fmtMan=n=>fmt(n)+'万円';
+
+function render(){
+  const S=collect();
+  save(S);
+  const incMigUsed=sliderDelta!=null?sliderDelta:S.incMig;
+  const cur=simulate(S,'cur');
+  const mig=simulate(S,'mig',incMigUsed);
+  renderSummaries(S);
+  renderVerdict(S,cur,mig,incMigUsed);
+  renderReverse(S,incMigUsed);
+  renderMonthly(S,cur,mig,incMigUsed);
+  renderChart(S,cur,mig);
+  renderLevers(S,mig,incMigUsed);
+  renderTimeline(S,cur,mig);
+  renderMemo(S,cur,mig,incMigUsed);
+  $('pensionNote').textContent='年金の自動概算：現状維持なら年'+fmt(cur.pension)+'万円／移住シナリオなら年'+fmt(mig.pension)+'万円（65歳から・世帯・現行制度の簡易計算）';
+  $('chartEnd').textContent=S.endAge;
+}
+function renderSummaries(S){
+  $('sd1').textContent=S.age+'歳 / '+CITY[S.srcCity].label+' → '+CITY[S.destCity].label;
+  $('sd2').textContent=fmt(S.incCur)+'万 → '+fmt(S.incMig)+'万';
+  $('sd3').textContent='生活費 '+fmt(S.living)+'万/月';
+  $('sd4').textContent='子'+S.kids.length+'人'+(S.parentAge>0?' / 親'+S.parentAge+'歳':'');
+  $('sd5').textContent='';
+  $('rentHint').textContent='（'+CITY[S.destCity].label+'のファミリー向け相場 '+CITY[S.destCity].rent+'万円）';
+}
+function verdictOf(sim,S){
+  if(sim.firstNeg===null)return{cls:'ok',label:'成立',text:S.endAge+'歳まで資産は尽きません'};
+  if(sim.firstNeg>=+S.retireAge)return{cls:'warn',label:'要調整',text:sim.firstNeg+'歳で資産が尽きる計算です（退職後）'};
+  return{cls:'ng',label:'このままでは厳しい',text:sim.firstNeg+'歳で資産が尽きる計算です（現役中）'};
+}
+function renderVerdict(S,cur,mig,incMigUsed){
+  const vm=verdictOf(mig,S),vc=verdictOf(cur,S);
+  let html='<div class="v-main"><span class="badge '+vm.cls+'">'+vm.label+'</span>移住シナリオ（年収'+fmt(incMigUsed)+'万円）：'+vm.text+'</div>';
+  html+='<div class="v-sub">比較：現状維持は「'+vc.label+'」（'+vc.text+'）。'
+    +'移住後の手取りは月あたり約'+fmt(mig.net/12)+'万円'+(mig.spouseNet?'＋配偶者約'+fmt(mig.spouseNet/12)+'万円':'')+'。'
+    +'物価と家賃の差で、支出は現在の約'+Math.round((mig.coef)*100)+'%相当に補正しています。</div>';
+  $('verdict').innerHTML=html;
+}
+function renderReverse(S,incMigUsed){
+  const min=reverseMinIncome(S);
+  let html;
+  if(min===null){
+    html='<div style="font-size:13px;color:var(--red)">年収だけでは成立ラインに届きません。下の「改善レバー」を確認してください。</div>';
+  }else{
+    const diff=incMigUsed-min;
+    html='<div class="rev-num">'+fmt(min)+'<small> 万円</small></div>'
+      +'<div style="font-size:12.5px;color:var(--text2);margin-top:2px">この条件なら、移住後の年収がこの額以上あれば'+S.endAge+'歳まで資産が尽きません。'
+      +(diff>=0?'<b style="color:var(--teal-d)">いまの想定（'+fmt(incMigUsed)+'万円）はこれを'+fmt(diff)+'万円上回っています。</b>'
+               :'<b style="color:var(--red)">いまの想定（'+fmt(incMigUsed)+'万円）はあと'+fmt(-diff)+'万円足りません。</b>')
+      +'</div>';
+  }
+  $('revCalc').innerHTML=html;
+  // スライダー初期化
+  const sl=$('incSlider');
+  const base=S.incMig;
+  sl.min=Math.max(100,base-300);sl.max=base+300;
+  if(sliderDelta==null)sl.value=base;
+  $('slVal').textContent=fmt(sliderDelta!=null?sliderDelta:base)+' 万円';
+  const v=verdictOf(simulate(S,'mig',sliderDelta!=null?sliderDelta:base),S);
+  $('slVerdict').innerHTML='この年収だと → <span class="badge '+v.cls+'">'+v.label+'</span><span style="color:var(--text2)">'+v.text+'</span>';
+}
+function onSlider(v){sliderDelta=parseFloat(v);render();}
+function monthlyOf(S,sim,scenario,inc){
+  // 現役1年目の月次内訳
+  const r=sim.rows[0];
+  const incomeM=(sim.net+sim.spouseNet)/12 + (scenario==='mig'&&S.curHousing==='own'&&S.ownPlan==='lease'?(S.leaseRent||0)*0.85:0);
+  const liv=S.living*sim.coef;
+  let house=0;
+  if(scenario==='mig'){house=(S.migRent||0)+((S.curHousing==='own'&&(S.ownPlan==='lease'||S.ownPlan==='keep')&&(S.loanY||0)>0)?(S.loanM||0):0);}
+  else{house=S.curHousing==='own'?((S.loanY||0)>0?(S.loanM||0):2):(S.curRent||0);}
+  const edu=r.edu/12;
+  return{incomeM,liv,house,edu,bal:incomeM-liv-house-edu};
+}
+function bar(seg,total,colors){
+  let html='<div class="mbar">';
+  seg.forEach((s,i)=>{html+='<span style="width:'+Math.max(0,s/total*100)+'%;background:'+colors[i]+'"></span>'});
+  return html+'</div>';
+}
+function renderMonthly(S,cur,mig,incMigUsed){
+  const mc=monthlyOf(S,cur,'cur'),mm=monthlyOf(S,mig,'mig');
+  const maxT=Math.max(mc.incomeM,mm.incomeM,mc.liv+mc.house+mc.edu,mm.liv+mm.house+mm.edu)*1.05;
+  const C=['#4a5e8f','#e0b96a','#7ba8a0','#c98a8a'];
+  let html='';
+  [['現在（'+CITY[S.srcCity].label+'）',mc],['移住後（'+CITY[S.destCity].label+'）',mm]].forEach(([lb,m])=>{
+    html+='<div class="mrow"><div class="mlabel">'+lb+'</div>'
+      +'<div class="mnum">手取り収入 '+fmt(m.incomeM)+'万円/月</div>'
+      +bar([m.incomeM],maxT,['#3d7a6e'])
+      +'<div class="mnum">支出 '+fmt(m.liv+m.house+m.edu)+'万円/月（生活費'+fmt(m.liv)+' / 住居'+fmt(m.house)+' / 教育'+fmt(m.edu)+'）</div>'
+      +bar([m.liv,m.house,m.edu],maxT,[C[0],C[1],C[3]])
+      +'<div class="mnum">→ 月の収支 <b class="'+(m.bal>=0?'plus':'minus')+'">'+(m.bal>=0?'+':'')+fmt(m.bal)+'万円</b></div></div>';
+  });
+  html+='<div class="mlegend"><span><i style="background:#3d7a6e"></i>手取り収入</span><span><i style="background:'+C[0]+'"></i>生活費</span><span><i style="background:'+C[1]+'"></i>住居費</span><span><i style="background:'+C[3]+'"></i>教育費</span></div>';
+  html+='<div class="subnote">※現役1年目の平均月額。教育費は子の学齢で毎年変わります（資産カーブに反映済み）。</div>';
+  $('monthly').innerHTML=html;
+}
+function renderChart(S,cur,mig){
+  const W=720,H=300,PL=54,PR=14,PT=16,PB=30;
+  const all=cur.rows.map(r=>r.asset).concat(mig.rows.map(r=>r.asset));
+  let ymin=Math.min(0,...all),ymax=Math.max(100,...all);
+  const span=ymax-ymin;ymax+=span*0.06;ymin-=span*0.06;
+  const n=cur.rows.length;
+  const x=i=>PL+(W-PL-PR)*i/(n-1);
+  const y=v=>PT+(H-PT-PB)*(1-(v-ymin)/(ymax-ymin));
+  const pts=rows=>rows.map((r,i)=>x(i).toFixed(1)+','+y(r.asset).toFixed(1)).join(' ');
+  let g='<svg class="chart" viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">';
+  // grid + y labels
+  const steps=4;
+  for(let i=0;i<=steps;i++){
+    const v=ymin+(ymax-ymin)*i/steps,yy=y(v);
+    g+='<line x1="'+PL+'" y1="'+yy+'" x2="'+(W-PR)+'" y2="'+yy+'" stroke="#e8e4da" stroke-width="1"/>';
+    g+='<text x="'+(PL-6)+'" y="'+(yy+4)+'" font-size="10" fill="#8a90a2" text-anchor="end">'+fmt(v)+'</text>';
+  }
+  // zero line
+  if(ymin<0)g+='<line x1="'+PL+'" y1="'+y(0)+'" x2="'+(W-PR)+'" y2="'+y(0)+'" stroke="#c0392b" stroke-width="1.2" stroke-dasharray="4 3"/>';
+  // x labels (every 10y)
+  for(let i=0;i<n;i+=10){
+    g+='<text x="'+x(i)+'" y="'+(H-8)+'" font-size="10" fill="#8a90a2" text-anchor="middle">'+cur.rows[i].age+'歳</text>';
+  }
+  // event markers: retire / pension
+  const mk=(age,label)=>{
+    const i=age-S.age;if(i<0||i>=n)return'';
+    return '<line x1="'+x(i)+'" y1="'+PT+'" x2="'+x(i)+'" y2="'+(H-PB)+'" stroke="#c9a95c" stroke-width="1" stroke-dasharray="2 3"/>'
+      +'<text x="'+x(i)+'" y="'+(PT+10)+'" font-size="9.5" fill="#a6801f" text-anchor="middle">'+label+'</text>';
+  };
+  g+=mk(+S.retireAge,'退職')+((+S.retireAge)!==65?mk(65,'年金'):'');
+  // area under mig
+  g+='<polygon points="'+x(0)+','+y(0)+' '+pts(mig.rows)+' '+x(n-1)+','+y(0)+'" fill="rgba(18,165,140,.08)"/>';
+  g+='<polyline points="'+pts(cur.rows)+'" fill="none" stroke="#9aa2b5" stroke-width="2" stroke-dasharray="6 4"/>';
+  g+='<polyline points="'+pts(mig.rows)+'" fill="none" stroke="#12a58c" stroke-width="2.6"/>';
+  // firstNeg markers
+  [[mig,'#c0392b'],[cur,'#9aa2b5']].forEach(([s,c])=>{
+    if(s.firstNeg!==null){
+      const i=s.firstNeg-S.age;
+      g+='<circle cx="'+x(i)+'" cy="'+y(0)+'" r="5" fill="'+c+'"/>'
+        +'<text x="'+x(i)+'" y="'+(y(0)-9)+'" font-size="10" font-weight="bold" fill="'+c+'" text-anchor="middle">'+s.firstNeg+'歳</text>';
+    }
+  });
+  g+='</svg>';
+  $('chart').innerHTML=g;
+}
+function renderLevers(S,mig,incMigUsed){
+  const baseNeg=mig.firstNeg,baseFinal=mig.final;
+  const tryS=(mut,label)=>{
+    const S2=JSON.parse(JSON.stringify(S));mut(S2);
+    const r=simulate(S2,'mig',S2._inc!=null?S2._inc:incMigUsed);
+    return{label,final:r.final,neg:r.firstNeg,gain:r.final-baseFinal};
+  };
+  const cand=[];
+  if(S.spouse!=='work')cand.push(tryS(s=>{s.spouse='work';s.incSpouse=300;},'配偶者がフルタイム勤務（年収300万円）に'));
+  cand.push(tryS(s=>{s._inc=incMigUsed+100;},'移住後の年収を＋100万円で交渉'));
+  if(S.kids.some(k=>k.plan!=='pub'))cand.push(tryS(s=>{s.kids.forEach(k=>k.plan='pub');},'子の進路を公立中心に'));
+  cand.push(tryS(s=>{s.migRent=Math.max(4,(s.migRent||0)-2);},'移住後の家賃を2万円下げる'));
+  cand.push(tryS(s=>{s.retLiving=Math.max(10,Math.round((s.retLiving||s.living*0.8)*0.9));},'老後の生活費を1割しぼる'));
+  if(S.curHousing==='own'&&S.ownPlan!=='lease')cand.push(tryS(s=>{s.ownPlan='lease';s.leaseRent=s.leaseRent||s.loanM;},'持ち家を売らずに貸しに出す'));
+  if(S.curHousing==='own'&&S.ownPlan!=='sell')cand.push(tryS(s=>{s.ownPlan='sell';},'持ち家を売却する'));
+  cand.push(tryS(s=>{s.yield=Math.min(3,(+s.yield)+1)+'';},'運用利回りを＋1%（インデックス投資等）'));
+  cand.sort((a,b)=>b.gain-a.gain);
+  let html='';
+  cand.slice(0,6).forEach(c=>{
+    if(c.gain<=0)return;
+    const fixed=baseNeg!==null&&c.neg===null;
+    html+='<div class="lever"><div>'+c.label+(fixed?' <span class="badge ok" style="font-size:10.5px">これで成立</span>':'')+'</div>'
+      +'<div class="lv-eff">最終資産 +'+fmt(c.gain)+'万円</div></div>';
+  });
+  $('levers').innerHTML=html||'<div style="font-size:12.5px;color:var(--text3)">大きな改善レバーはありません（すでに成立しています）。</div>';
+}
+function renderTimeline(S,cur,mig){
+  const ev={}; // age -> [ [text, cls] ]
+  const push=(a,t,c)=>{if(a<S.age||a>S.endAge)return;(ev[a]=ev[a]||[]).push([t,c])};
+  push(S.age,'移住・転職（初期費用 '+fmt(S.moveCost)+'万円）','money');
+  S.kids.forEach((k,i)=>{
+    const nm='子'+(i+1);
+    const off=a=>S.age+(a-k.age);
+    if(k.age<6)push(off(6),nm+' 小学校入学','edu');
+    if(k.age<12)push(off(12),nm+' 中学入学','edu');
+    if(k.age<15)push(off(15),nm+' 高校入学'+(k.plan!=='pub'?'（私立）':''),'edu');
+    if(k.age<18)push(off(18),nm+' 大学入学','edu');
+    if(k.age<22)push(off(22),nm+' 卒業・独立','edu');
+  });
+  if(S.parentAge>0){
+    push(S.age+(80-S.parentAge),'親が80歳 — 手助けの想定開始','care');
+    push(S.age+(85-S.parentAge),'親が85歳 — 手助けの想定期間おわり','care');
+  }
+  if(S.curHousing==='own'&&(S.loanY||0)>0)push(S.age+S.loanY,'住宅ローン完済','money');
+  push(+S.retireAge,'退職（退職金：現状'+fmt(S.sevCur)+'万 / 移住'+fmt(S.sevMig)+'万）','money');
+  push(65,'年金の受給開始','money');
+  push(+S.endAge,'判定期間の終わり（最終資産：現状'+fmt(cur.final)+'万 / 移住'+fmt(mig.final)+'万）','money');
+  const ages=Object.keys(ev).map(Number).sort((a,b)=>a-b);
+  let html='';
+  ages.forEach(a=>{
+    html+='<div class="tl-row"><div class="tl-age">'+a+'歳<small>'+(a-S.age)+'年後</small></div><div class="tl-ev">'
+      +ev[a].map(([t,c])=>'<span class="chip '+c+'">'+t+'</span>').join('')+'</div></div>';
+  });
+  $('timeline').innerHTML=html;
+}
+function renderMemo(S,cur,mig,incMigUsed){
+  const vm=verdictOf(mig,S),vc=verdictOf(cur,S);
+  const min=reverseMinIncome(S);
+  const axTxt=axSel.length?axSel.map(k=>AX_ITEMS.find(x=>x[0]===k)[1]).join('、'):'（未選択）';
+  const lines=[
+    '■ 移住の意思決定メモ（'+new Date().toLocaleDateString('ja-JP')+'）',
+    '',
+    '【前提】'+S.age+'歳・'+CITY[S.srcCity].label+' → '+CITY[S.destCity].label+'・年収 '+fmt(S.incCur)+'万円 → '+fmt(incMigUsed)+'万円',
+    '',
+    '【お金の判定】',
+    '・移住シナリオ：'+vm.label+'（'+vm.text+'）',
+    '・現状維持　　：'+vc.label+'（'+vc.text+'）',
+    '・移住後の手取り：月あたり約'+fmt(mig.net/12)+'万円'+(mig.spouseNet?'＋配偶者約'+fmt(mig.spouseNet/12)+'万円':''),
+    min!==null?'・成立に必要な最低年収：'+fmt(min)+'万円（想定との差：'+(incMigUsed-min>=0?'+':'')+fmt(incMigUsed-min)+'万円）':'・年収のみでは成立ラインに届かない（改善レバー要）',
+    '・最終資産（'+S.endAge+'歳時点）：現状 '+fmt(cur.final)+'万円 / 移住 '+fmt(mig.final)+'万円',
+    '',
+    '【お金以外に上がるもの】',
+    '・'+axTxt,
+    '',
+    '【ひっかかっている不安】',
+    fearSel.length?fearSel.map(i=>'・'+FEARS[i][0]).join('\n'):'・（なし）',
+    '',
+    '【結論の下書き】',
+    vm.cls==='ok'
+      ?'数字の上では移住は成立する。あとは「上がるもの」を取りに行くかどうかの意思の問題。'
+      :'現状の想定では要調整。改善レバー（年収交渉・住まい・働き方）のどれを引くかを先に決める。',
+    '',
+    '※ソコナラ 移住シミュレーターβによる概算。税・社会保険は簡易計算。'
+  ];
+  $('memoText').value=lines.join('\n');
+}
+function copyMemo(){
+  navigator.clipboard.writeText($('memoText').value).then(()=>{
+    const b=event.target;b.textContent='✓ コピーしました';setTimeout(()=>b.textContent='📋 メモをコピー',1600);
+  });
+}
+/* ============ 子ども UI ============ */
+function renderKids(){
+  let html='';
+  kids.forEach((k,i)=>{
+    html+='<div class="kid-row"><div class="fld"><label>子'+(i+1)+'の年齢</label>'
+      +'<input type="number" value="'+k.age+'" min="0" max="25" onchange="kids['+i+'].age=parseInt(this.value)||0;render()"></div>'
+      +'<div class="fld"><label>進路プラン</label><select onchange="kids['+i+'].plan=this.value;render()">'
+      +Object.keys(PLAN_LABEL).map(p=>'<option value="'+p+'"'+(k.plan===p?' selected':'')+'>'+PLAN_LABEL[p]+'</option>').join('')
+      +'</select></div>'
+      +'<button class="del" onclick="kids.splice('+i+',1);renderKids();render()">削除</button></div>';
+  });
+  $('kids').innerHTML=html||'<div style="font-size:12px;color:var(--text3);margin-top:8px">子どもなし（「＋」で追加できます）</div>';
+}
+function addKid(){kids.push({age:5,plan:'mix'});renderKids();render();}
+/* ============ 定性 UI ============ */
+function renderQual(){
+  $('axchips').innerHTML=AX_ITEMS.map(([k,l])=>'<span class="axchip'+(axSel.includes(k)?' on':'')+'" onclick="toggleAx(\''+k+'\')">'+l+'</span>').join('');
+  $('fears').innerHTML=FEARS.map(([q,r],i)=>'<li class="'+(fearSel.includes(i)?'on':'')+'"><label><input type="checkbox"'+(fearSel.includes(i)?' checked':'')+' onchange="toggleFear('+i+')"><span>'+q+'</span></label><div class="rf">→ '+r+'</div></li>').join('');
+}
+function toggleAx(k){axSel=axSel.includes(k)?axSel.filter(x=>x!==k):axSel.concat(k);renderQual();render();}
+function toggleFear(i){fearSel=fearSel.includes(i)?fearSel.filter(x=>x!==i):fearSel.concat(i);renderQual();render();}
+/* ============ 表示切替 ============ */
+function onSpouse(){$('spouseIncFld').style.display=val('spouse')==='work'?'':'none';render();}
+function onHousing(){
+  const own=val('curHousing')==='own';
+  document.querySelectorAll('.fld.own').forEach(e=>e.style.display=own?'':'none');
+  $('fRent').style.display=own?'none':'';
+  if(own){
+    $('fSell').style.display=val('ownPlan')==='sell'?'':'none';
+    $('fLease').style.display=val('ownPlan')==='lease'?'':'none';
+  }
+  render();
+}
+/* ============ 保存・復元 ============ */
+const LS='sn_sim_v1';
+let saveTimer=null;
+function save(S){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    try{localStorage.setItem(LS,JSON.stringify({S,kids,axSel,fearSel}))}catch(e){}
+  },300);
+}
+function load(){
+  try{
+    const d=JSON.parse(localStorage.getItem(LS));
+    if(!d)return false;
+    applyState(d);return true;
+  }catch(e){return false}
+}
+function applyState(d){
+  if(d.S)IDS.forEach(id=>{if(d.S[id]!=null&&$(id))$(id).value=d.S[id]});
+  if(d.kids)kids=d.kids;
+  axSel=d.axSel||[];fearSel=d.fearSel||[];
+  sliderDelta=null;
+  renderKids();renderQual();
+  $('spouseIncFld').style.display=val('spouse')==='work'?'':'none';
+  onHousing();
+}
+function resetAll(){
+  if(!confirm('入力をすべてリセットしますか？'))return;
+  localStorage.removeItem(LS);location.reload();
+}
+function exportJSON(){
+  const data=JSON.stringify({S:collect(),kids,axSel,fearSel},null,1);
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+  a.download='iju_sim_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+}
+function importJSON(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{applyState(JSON.parse(r.result));render()}catch(e){alert('読み込めませんでした')}};
+  r.readAsText(f);
+  input.value='';
+}
+/* ============ デモ ============ */
+function loadDemo(){
+  applyState({
+    S:{age:42,srcCity:'osaka',destCity:'fukuoka',retireAge:'65',endAge:'95',asset0:1200,
+       incCur:900,incMig:550,spouse:'dep',incSpouse:350,sevCur:2000,sevMig:300,yield:'1',
+       living:26,curHousing:'own',curRent:12,loanM:11,loanY:20,loanBal:2800,ownPlan:'sell',
+       sellPrice:3200,leaseRent:11,migRent:11,moveCost:150,parentAge:73,parentNear:'dest',
+       retLiving:null,pensionOv:null},
+    kids:[{age:10,plan:'mix'},{age:7,plan:'mix'}],
+    axSel:['meaning','local','time'],fearSel:[0,1]
+  });
+  render();
+  $('results').scrollIntoView({behavior:'smooth'});
+}
+/* ============ 初期化 ============ */
+document.addEventListener('input',e=>{
+  if(e.target.closest('.sec')){
+    if(e.target.id==='incMig')sliderDelta=null;
+    render();
+  }
+});
+document.addEventListener('change',e=>{if(e.target.closest('.sec'))render()});
+renderKids();renderQual();
+if(!load()){onHousing();}
+render();
+</script>
+</body>
+</html>
