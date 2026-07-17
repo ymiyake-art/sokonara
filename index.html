@@ -2192,6 +2192,10 @@ function logDirectArticle(cid){
     if(window._directLogged) return; window._directLogged=true;
     const q=new URLSearchParams(location.search);
     const id='art_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+    // moya/list と同じく SN_CARDS に紐付ける。これが無いと patchCardLog が logId 無しで即returnし、
+    // 直リンク流入(広告/LINE/メール)の contact_cta・form_open が永久に記録されない（interest_formsだけ溜まる）。
+    SN_CARDS={ logId:id, cid:String(cid||''), variant:'direct' };
+    try{ localStorage.setItem('sn_card_ctx', JSON.stringify(Object.assign({},SN_CARDS,{_ts:Date.now()}))); }catch(e){}
     fetch('/api/card-log',{method:'POST', keepalive:true, headers:{'Content-Type':'application/json'},
       body:JSON.stringify({ id, set:Object.assign({ started:true, variant:'direct', started_at:new Date().toISOString(),
         recommended_company:String(cid||''), article_read:true, reached_result:true,
@@ -2514,8 +2518,10 @@ function openCompanyArticle(id){
       SN_CARDS={ logId:lid, cid:String(id||''), variant:'list' };
       try{ localStorage.setItem('sn_card_ctx', JSON.stringify(Object.assign({},SN_CARDS,{_ts:Date.now()}))); }catch(e){}
       fetch('/api/card-log',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify({id:lid,set:Object.assign({started:true,variant:'list',recommended_company:String(id||''),article_read:true},_snInt())})});
-    } else if(SN_CARDS.variant==='list'){
+    } else if(SN_CARDS.variant==='list'||SN_CARDS.variant==='direct'){
+      // 入口(variant)は保ったまま、対象経営層は実際に読んだ記事へ追従させる（CTAの帰属ズレ防止）
       SN_CARDS.cid=String(id||'');
+      try{ localStorage.setItem('sn_card_ctx', JSON.stringify(Object.assign({},SN_CARDS,{_ts:Date.now()}))); }catch(e){}
       patchCardLog({recommended_company:String(id||''),article_read:true});
     }
   }catch(e){}
@@ -4077,6 +4083,13 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(async ()=>{
     renderP1FromCompany();
     // 記事直リンク(?cid 直入＝LINE/メール配信等)を計測。マッチ経由(from=cards)は既存ログがあるので除外。
     if(!(SN_CARDS && SN_CARDS.logId)) logDirectArticle(matched.id);
+    // 別の配信リンクで違う経営層に来た時は、回遊中の文脈(list/direct)より必ずURLを優先して対象を張り替える。
+    // カード/モヤモヤ経由(person/moya)のrecommended_companyは推薦そのものなので触らない。
+    else if((SN_CARDS.variant==='direct'||SN_CARDS.variant==='list') && String(SN_CARDS.cid||'')!==String(matched.id)){
+      SN_CARDS.cid=String(matched.id||'');
+      try{ localStorage.setItem('sn_card_ctx', JSON.stringify(Object.assign({},SN_CARDS,{_ts:Date.now()}))); }catch(e){}
+      patchCardLog({recommended_company:String(matched.id||'')});
+    }
   }else{
     goScreen('p-list');
     // pfの「経営層一覧」リンク（/?view=leaders）から来たら一覧を開く
