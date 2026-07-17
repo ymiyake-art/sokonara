@@ -143,6 +143,7 @@ svg.chart{width:100%;min-width:560px;height:auto;display:block}
     <input type="file" id="impFile" accept=".json" style="display:none" onchange="importJSON(this)">
     <button class="tbtn" onclick="resetAll()">↺ リセット</button>
     <button class="tbtn" onclick="window.print()">🖨 印刷</button>
+    <button class="tbtn" onclick="shareLink(this)">🔗 共有リンク</button>
   </div>
 
   <!-- STEP 1 -->
@@ -287,6 +288,11 @@ svg.chart{width:100%;min-width:560px;height:auto;display:block}
     <div class="card">
       <h3>改善レバー <span style="font-weight:400;font-size:11.5px;color:var(--text3)">— 効果の大きい順</span></h3>
       <div id="levers"></div>
+    </div>
+
+    <div class="card">
+      <h3>移住先を比べる <span style="font-weight:400;font-size:11.5px;color:var(--text3)">— 同じ条件で街だけ変えると</span></h3>
+      <div id="destComp"></div>
     </div>
 
     <div class="card">
@@ -492,6 +498,7 @@ function render(){
   renderMonthly(S,cur,mig,incMigUsed);
   renderChart(S,cur,mig);
   renderLevers(S,mig,incMigUsed);
+  renderDestCompare(S,incMigUsed);
   renderTimeline(S,cur,mig);
   renderMemo(S,cur,mig,incMigUsed);
   $('pensionNote').textContent='年金の自動概算：現状維持なら年'+fmt(cur.pension)+'万円／移住シナリオなら年'+fmt(mig.pension)+'万円（65歳から・世帯・現行制度の簡易計算）';
@@ -646,6 +653,27 @@ function renderLevers(S,mig,incMigUsed){
   });
   $('levers').innerHTML=html||'<div style="font-size:12.5px;color:var(--text3)">大きな改善レバーはありません（すでに成立しています）。</div>';
 }
+function renderDestCompare(S,incMigUsed){
+  const dests=['fukuoka','kitakyushu','kurume','otherKyushu'];
+  let html='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px;min-width:480px">'
+    +'<tr style="color:var(--text3);font-size:11px"><th style="text-align:left;padding:6px 4px">移住先</th><th style="text-align:left;padding:6px 4px">判定</th><th style="text-align:right;padding:6px 4px">最終資産('+S.endAge+'歳)</th><th style="text-align:right;padding:6px 4px">家賃相場</th><th style="text-align:right;padding:6px 4px">成立最低年収</th></tr>';
+  dests.forEach(d=>{
+    const S2=Object.assign({},S,{destCity:d,migRent:d===S.destCity?S.migRent:CITY[d].rent});
+    S2.kids=S.kids;
+    const r=simulate(S2,'mig',incMigUsed);
+    const v=verdictOf(r,S2);
+    const min=reverseMinIncome(S2);
+    const cur=d===S.destCity;
+    html+='<tr style="border-top:1px dashed var(--line)'+(cur?';background:#f4faf8':'')+'">'
+      +'<td style="padding:8px 4px;font-weight:'+(cur?'900':'500')+'">'+CITY[d].label+(cur?' ←選択中':'')+'</td>'
+      +'<td style="padding:8px 4px"><span class="badge '+v.cls+'" style="font-size:10.5px">'+v.label+'</span></td>'
+      +'<td style="padding:8px 4px;text-align:right;font-weight:700;color:'+(r.final>=0?'var(--teal-d)':'var(--red)')+'">'+fmt(r.final)+'万</td>'
+      +'<td style="padding:8px 4px;text-align:right;color:var(--text2)">'+CITY[d].rent+'万/月</td>'
+      +'<td style="padding:8px 4px;text-align:right;font-weight:700">'+(min===null?'—':fmt(min)+'万')+'</td></tr>';
+  });
+  html+='</table></div><div class="subnote">※選択中以外の街は、その街のファミリー向け家賃相場で計算しています。</div>';
+  $('destComp').innerHTML=html;
+}
 function renderTimeline(S,cur,mig){
   const ev={}; // age -> [ [text, cls] ]
   const push=(a,t,c)=>{if(a<S.age||a>S.endAge)return;(ev[a]=ev[a]||[]).push([t,c])};
@@ -761,7 +789,7 @@ function load(){
   }catch(e){return false}
 }
 function applyState(d){
-  if(d.S)IDS.forEach(id=>{if(d.S[id]!=null&&$(id))$(id).value=d.S[id]});
+  if(d.S)IDS.forEach(id=>{if(!$(id))return;$(id).value=d.S[id]!=null?d.S[id]:''});
   if(d.kids)kids=d.kids;
   axSel=d.axSel||[];fearSel=d.fearSel||[];
   sliderDelta=null;
@@ -787,6 +815,22 @@ function importJSON(input){
   r.readAsText(f);
   input.value='';
 }
+/* ============ 共有リンク（URLハッシュにデータを埋める＝サーバー送信なし） ============ */
+function shareLink(btn){
+  const data=btoa(JSON.stringify({S:collect(),kids,axSel,fearSel}));
+  const url=location.origin+location.pathname+'#d='+data;
+  navigator.clipboard.writeText(url).then(()=>{
+    btn.textContent='✓ コピーしました';setTimeout(()=>btn.textContent='🔗 共有リンク',1600);
+  }).catch(()=>{prompt('このURLをコピーしてください',url)});
+}
+function loadFromHash(){
+  if(!location.hash.startsWith('#d='))return false;
+  try{
+    applyState(JSON.parse(atob(location.hash.slice(3))));
+    history.replaceState(null,'',location.pathname);
+    return true;
+  }catch(e){return false}
+}
 /* ============ デモ ============ */
 function loadDemo(){
   applyState({
@@ -810,7 +854,7 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',e=>{if(e.target.closest('.sec'))render()});
 renderKids();renderQual();
-if(!load()){onHousing();}
+if(!loadFromHash()){if(!load()){onHousing();}}
 render();
 </script>
 </body>
