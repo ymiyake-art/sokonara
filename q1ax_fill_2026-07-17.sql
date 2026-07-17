@@ -86,7 +86,7 @@ UPDATE companies SET q1ax = '["meaning", "meaning", "local", "local"]'::jsonb WH
 --   4.[裁量] 「成長」「チャレンジ」「楽しむ」「想い」を大事にしている（既存どおり）
 UPDATE companies SET q1ax = '["people", "meaning", "meaning", "agency"]'::jsonb WHERE id = 'co_micware_muraoka';
 
--- ◆ 株式会社イトキュー / 中原 正臣
+-- ◆ 株式会社イトキュー / 中原 理臣
 --   1.[地域] 100年先の糸島を創造し、糸島ならではの暮らしを守り続けたい（既存どおり）
 --   2.[裁量] 20歳で糸島を出て10年、30歳で覚悟を決めて家業を継いだ ←[変更] 旧=地域
 --   3.[地域] 「物を運ぶなら人も運べる」と、物流を起点に地域課題を解いている（既存どおり）
