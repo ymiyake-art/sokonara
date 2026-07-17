@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#16223f">
+<meta name="apple-mobile-web-app-title" content="移住シミュ">
 <title>移住シミュレーター β | ソコナラ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,7 +29,7 @@ h1{font-size:clamp(21px,5.4vw,29px);font-weight:900;letter-spacing:.02em;margin:
 .h-priv{display:inline-block;margin-top:12px;font-size:11.5px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:3px 12px;color:rgba(255,255,255,.9)}
 /* toolbar */
 .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 6px}
-.tbtn{font-family:inherit;font-size:12.5px;font-weight:700;padding:8px 14px;border-radius:9px;border:1.5px solid var(--line);background:#fff;color:var(--text2);cursor:pointer}
+.tbtn{font-family:inherit;font-size:13px;font-weight:700;padding:10px 15px;border-radius:9px;border:1.5px solid var(--line);background:#fff;color:var(--text2);cursor:pointer;min-height:42px}
 .tbtn:hover{border-color:var(--teal);color:var(--teal-d)}
 .tbtn.demo{border-color:var(--gold);color:var(--gold2);background:#fffdf6}
 /* sections */
@@ -44,13 +46,14 @@ h1{font-size:clamp(21px,5.4vw,29px);font-weight:900;letter-spacing:.02em;margin:
 @media(max-width:560px){.grid{grid-template-columns:1fr}}
 .fld label{display:block;font-size:12px;font-weight:700;color:var(--text2);margin-bottom:4px}
 .fld .hint{font-weight:400;color:var(--text3);font-size:11px}
-.fld input[type=number],.fld input[type=text],.fld select{width:100%;font-family:inherit;font-size:15px;padding:9px 11px;border:1.5px solid var(--line);border-radius:9px;background:#fff;color:var(--text)}
+.fld input[type=number],.fld input[type=text],.fld select{width:100%;font-family:inherit;font-size:16px;padding:10px 11px;border:1.5px solid var(--line);border-radius:9px;background:#fff;color:var(--text)}
 .fld input:focus,.fld select:focus{outline:none;border-color:var(--teal)}
 .unit{font-size:11.5px;color:var(--text3);margin-left:4px}
 .subnote{font-size:11.5px;color:var(--text3);margin-top:10px;line-height:1.7}
 .inline-note{font-size:11.5px;color:var(--amber);margin-top:6px}
 /* kids */
 .kid-row{display:grid;grid-template-columns:1fr 1.6fr auto;gap:8px;align-items:end;margin-top:8px}
+@media(max-width:480px){.kid-row{grid-template-columns:84px 1fr auto;gap:6px}}
 .kid-row .del{font-size:12px;border:none;background:none;color:var(--red);cursor:pointer;padding:9px 4px}
 .addbtn{margin-top:10px;font-family:inherit;font-size:12.5px;font-weight:700;color:var(--teal-d);background:none;border:1.5px dashed var(--teal);border-radius:9px;padding:7px 14px;cursor:pointer}
 /* results */
@@ -99,7 +102,7 @@ svg.chart{width:100%;min-width:560px;height:auto;display:block}
 .lever .lv-eff{font-weight:900;color:var(--teal-d);font-size:12.5px;white-space:nowrap}
 /* slider */
 .sl-row{display:flex;align-items:center;gap:14px;margin-top:8px}
-.sl-row input[type=range]{flex:1;accent-color:var(--teal)}
+.sl-row input[type=range]{flex:1;accent-color:var(--teal);height:34px;touch-action:pan-x}
 .sl-val{font-size:16px;font-weight:900;color:var(--navy);min-width:110px;text-align:right}
 .sl-verdict{font-size:12.5px;font-weight:700;margin-top:6px}
 /* checkboxes qual */
@@ -110,7 +113,7 @@ svg.chart{width:100%;min-width:560px;height:auto;display:block}
 .qual li{list-style:none}
 .qual .on .rf{display:block}
 .axchips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
-.axchip{font-size:12.5px;font-weight:700;border:1.5px solid var(--line);border-radius:18px;padding:5px 14px;cursor:pointer;background:#fff;color:var(--text2);user-select:none}
+.axchip{font-size:13px;font-weight:700;border:1.5px solid var(--line);border-radius:20px;padding:8px 16px;cursor:pointer;background:#fff;color:var(--text2);user-select:none;-webkit-tap-highlight-color:transparent}
 .axchip.on{background:var(--navy);color:var(--gold);border-color:var(--navy)}
 /* memo */
 #memoText{width:100%;font-family:inherit;font-size:12.5px;line-height:1.8;border:1.5px solid var(--line);border-radius:10px;padding:12px;min-height:220px;background:#fffdf8;color:var(--text)}
@@ -313,7 +316,7 @@ svg.chart{width:100%;min-width:560px;height:auto;display:block}
       <h3>意思決定メモ</h3>
       <div style="font-size:12px;color:var(--text2);margin-bottom:8px">ここまでの結果を1枚のメモにまとめました。家族への説明や、自分の整理にどうぞ。</div>
       <textarea id="memoText" readonly></textarea>
-      <button class="copybtn" onclick="copyMemo()">📋 メモをコピー</button>
+      <button class="copybtn" onclick="copyMemo(this)">📋 メモをコピー</button>
     </div>
   </div>
 
@@ -734,10 +737,17 @@ function renderMemo(S,cur,mig,incMigUsed){
   ];
   $('memoText').value=lines.join('\n');
 }
-function copyMemo(){
-  navigator.clipboard.writeText($('memoText').value).then(()=>{
-    const b=event.target;b.textContent='✓ コピーしました';setTimeout(()=>b.textContent='📋 メモをコピー',1600);
-  });
+function copyMemo(b){
+  const txt=$('memoText').value;
+  const done=()=>{b.textContent='✓ コピーしました';setTimeout(()=>b.textContent='📋 メモをコピー',1600)};
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done).catch(()=>{legacyCopy(txt);done()});
+  }else{legacyCopy(txt);done();}
+}
+function legacyCopy(txt){
+  const ta=$('memoText');ta.focus();ta.select();ta.setSelectionRange(0,txt.length);
+  try{document.execCommand('copy')}catch(e){}
+  ta.setSelectionRange(0,0);ta.blur();
 }
 /* ============ 子ども UI ============ */
 function renderKids(){
