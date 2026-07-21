@@ -593,6 +593,9 @@ async function renderResonance(){
     // 内部テスト端末（?test=1でタグ付け）の行は集計から除外（除外したフォーム到達数は明細で表示）
     window._resInternalForms=logs.filter(l=>l.is_internal && l.form_open).length;
     logs=logs.filter(l=> !l.is_internal);
+    // TOP到達行（variant='visit'・started:false・2026-07-21計測開始）＝チャネル別「到達」列専用。
+    // 広告/LPからTOPに来て記事を開かず帰った人もここに残る（従来は行が生まれず不可視だった）
+    var visitRows=logs.filter(l=> l.variant==='visit');
     // 直接導線(values)の復元専用行（started=false・カード操作なし）は、カード経由の共鳴データから除外
     logs=logs.filter(l=> l.started===true || (Array.isArray(l.picked_cards)&&l.picked_cards.length) || (Array.isArray(l.dropped_cards)&&l.dropped_cards.length));
   }catch(e){
@@ -612,7 +615,9 @@ async function renderResonance(){
   if(_resFrom || _resTo){
     const fromT=_resFrom?new Date(_resFrom+'T00:00:00').getTime():-Infinity;
     const toT=_resTo?new Date(_resTo+'T23:59:59').getTime():Infinity;
-    logs=logs.filter(l=>{ const ts=Date.parse(l.started_at||l.created_at||l.updated_at||''); return isNaN(ts)?false:(ts>=fromT && ts<=toT); });
+    const _inRange=l=>{ const ts=Date.parse(l.started_at||l.created_at||l.updated_at||''); return isNaN(ts)?false:(ts>=fromT && ts<=toT); };
+    logs=logs.filter(_inRange);
+    visitRows=visitRows.filter(_inRange);
   }
   // 全体ファネル（行はカード開始時に作成されるため N=カード開始数）
   const N=logs.length;
@@ -633,23 +638,28 @@ async function renderResonance(){
 
   // チャネル別（utm_source）— LINE配信 vs メール等の効果比較
   const chName=s=>s?String(s):'直接/不明';
-  const byCh={};
+  const byCh={}, byChV={};
   logs.forEach(l=>{ const k=chName(l.utm_source); (byCh[k]=byCh[k]||[]).push(l); });
-  const chRows=Object.entries(byCh).sort((a,b)=>b[1].length-a[1].length);
-  const chTable=chRows.map(([ch,arr])=>{
+  visitRows.forEach(l=>{ const k=chName(l.utm_source); byChV[k]=(byChV[k]||0)+1; });
+  const chKeys=[...new Set([...Object.keys(byCh),...Object.keys(byChV)])]
+    .sort((x,y)=>((byCh[y]||[]).length-(byCh[x]||[]).length)||((byChV[y]||0)-(byChV[x]||0)));
+  const chTable=chKeys.map(ch=>{
+    const arr=byCh[ch]||[];
     const n=arr.length;
+    const v=byChV[ch]||0;
     const a=arr.filter(l=>l.article_read).length;
-    const ai=arr.filter(l=>l.ai_viewed).length;
     const cta=arr.filter(l=>l.contact_cta).length;
+    const fo=arr.filter(l=>l.form_open).length;
     const camp=(arr.find(l=>l.utm_campaign)||{}).utm_campaign||'';
     const contents=[...new Set(arr.map(l=>l.utm_content).filter(Boolean))];
     const sub=[camp, contents.length?('content: '+contents.join(' / ')):''].filter(Boolean).join(' ／ ');
     return `<tr>
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);font-weight:700;color:var(--navy)">${escA(ch)}${sub?`<div style="font-weight:400;font-size:10px;color:var(--text3)">${escA(sub)}</div>`:''}</td>
-      <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right">${n}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2)">${v||'—'}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right">${n}${(v&&n<=v)?` <span style="color:var(--text3)">(${pct(n,v)}%)</span>`:''}</td>
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right">${a} <span style="color:var(--text3)">(${pct(a,n)}%)</span></td>
-      <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right">${ai} <span style="color:var(--text3)">(${pct(ai,n)}%)</span></td>
-      <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;font-weight:700;color:#2e8c7f">${cta} <span style="color:var(--text3);font-weight:400">(${pct(cta,n)}%)</span></td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right">${cta} <span style="color:var(--text3)">(${pct(cta,n)}%)</span></td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;font-weight:700;color:#2e8c7f">${fo} <span style="color:var(--text3);font-weight:400">(${pct(fo,n)}%)</span></td>
     </tr>`;
   }).join('');
 
@@ -662,15 +672,17 @@ async function renderResonance(){
     const sel=arr.filter(l=>l.reached_result||(l.top_tags&&l.top_tags.length)).length;
     const a=arr.filter(l=>l.article_read).length;
     const cta=arr.filter(l=>l.contact_cta).length;
+    const fo=arr.filter(l=>l.form_open).length;
     const ai=arr.filter(l=>l.ai_viewed).length;
     const cell=(v,p,bold)=>`<td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;${bold?'font-weight:700;color:#2e8c7f':''}">${v}${p!=null?` <span style="color:var(--text3);font-weight:400">(${p}%)</span>`:''}</td>`;
-    return `<tr><td style="padding:8px 10px;border-bottom:1px solid var(--border);font-weight:700;color:var(--navy)">${vLabel[k]}</td>${cell(n,null)}${cell(sel,pct(sel,n))}${cell(a,pct(a,n))}${cell(cta,pct(cta,n),true)}${cell(ai,pct(ai,n))}</tr>`;
+    return `<tr><td style="padding:8px 10px;border-bottom:1px solid var(--border);font-weight:700;color:var(--navy)">${vLabel[k]}</td>${cell(n,null)}${cell(sel,pct(sel,n))}${cell(a,pct(a,n))}${cell(cta,pct(cta,n))}${cell(fo,pct(fo,n),true)}${cell(ai,pct(ai,n))}</tr>`;
   }).join('');
 
   // カード文言アーム勝率（カード1枚ごとにアーム割当→対決の勝敗を集計＝CVより早く大量に貯まる）。
   const aLabel={what:'What（事業）',value:'Why+Who（価値観）',life:'Life（転機）'};
   const armShown={what:0,value:0,life:0}, armWon={what:0,value:0,life:0};
-  logs.forEach(l=>{ const ev=l.arm_events; if(Array.isArray(ev)) ev.forEach(e=>{ if(e&&armShown.hasOwnProperty(e.w)){armShown[e.w]++;armWon[e.w]++;} if(e&&armShown.hasOwnProperty(e.l)){armShown[e.l]++;} }); });
+  // 同アーム同士の対決（What vs What等）は構造上必ず50%になるため除外＝異アーム対決だけが情報を持つ
+  logs.forEach(l=>{ const ev=l.arm_events; if(Array.isArray(ev)) ev.forEach(e=>{ if(!e||e.w===e.l) return; if(armShown.hasOwnProperty(e.w)){armShown[e.w]++;armWon[e.w]++;} if(armShown.hasOwnProperty(e.l)){armShown[e.l]++;} }); });
   const armTable=['what','value','life'].filter(k=>armShown[k]>0).map(k=>{
     const sh=armShown[k], wn=armWon[k];
     const cell=(v,bold)=>`<td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;${bold?'font-weight:700;color:#2e8c7f':''}">${v}</td>`;
@@ -768,19 +780,19 @@ async function renderResonance(){
     </div>
 
     <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
-      <div style="font-weight:700;font-size:13px;margin-bottom:4px;">版別 A/B（人物 vs 課題）</div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">?v=person（人物・偶然性／既定）と ?v=challenge（課題）の比較。興味（共感）到達率が勝ち筋判定（フォーム開封はメインファネル参照）。</div>
+      <div style="font-weight:700;font-size:13px;margin-bottom:4px;">入口別ファネル（版別 A/B）</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">入口（カードタップ／モヤモヤ／一覧／直リンク）ごとの到達比較。%は各入口の開始基準。CV=フォームを開いた（メインCV・メインファネルと同じ定義）。</div>
       <table style="width:100%;border-collapse:collapse;font-size:12px;">
         <thead><tr>
-          ${['版','開始','選択','記事','興味','AI診断'].map((h,i)=>`<th style="text-align:${i?'right':'left'};padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">${h}</th>`).join('')}
+          ${['入口','開始','選択','記事','興味','CV(フォーム)','AI診断'].map((h,i)=>`<th style="text-align:${i?'right':'left'};padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">${h}</th>`).join('')}
         </tr></thead>
-        <tbody>${varTable||`<tr><td colspan="6" style="padding:14px;text-align:center;color:var(--text3)">データがありません</td></tr>`}</tbody>
+        <tbody>${varTable||`<tr><td colspan="7" style="padding:14px;text-align:center;color:var(--text3)">データがありません</td></tr>`}</tbody>
       </table>
     </div>
 
     <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
       <div style="font-weight:700;font-size:13px;margin-bottom:4px;">カード文言A/B 勝率（What / Why+Who / Life）</div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">カード1枚ごとにアームをランダム表示し、対決で「選ばれた回数／表示回数」で勝率を集計（CVより早く貯まる）。勝率が高い惹かれ方が有力。文言は各企業編集の「カードA/B文言」で変更可。</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">カード1枚ごとにアームをランダム表示し、<b>異なるアーム同士の対決だけ</b>で「選ばれた回数／表示回数」を集計（同アーム対決は構造上50%固定のため除外・2026-07-21改修）。勝率が高い惹かれ方が有力。文言は各企業編集の「カードA/B文言」で変更可。</div>
       <table style="width:100%;border-collapse:collapse;font-size:12px;">
         <thead><tr>
           ${['アーム','表示回数','選ばれた','勝率'].map((h,i)=>`<th style="text-align:${i?'right':'left'};padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">${h}</th>`).join('')}
@@ -791,16 +803,17 @@ async function renderResonance(){
 
     <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
       <div style="font-weight:700;font-size:13px;margin-bottom:4px;">チャネル別（流入元 utm_source）</div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">LINE配信／メール等の効果比較。%は各チャネルの「カード開始」を基準にした到達率。興味(右端＝共感)まで見るのが勝ち筋判定（フォーム開封はメインファネル参照）。</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">TOP到達＝アプリTOPに来た数（2026-07-21計測開始・記事を開かなくてもカウント。記事直リンクやpf経由は「—」）。開始の%＝到達→記事開封率（広告の直帰がここで見える）。記事/興味/CVの%は開始基準。CV=フォームを開いた（メインCV）。</div>
       <table style="width:100%;border-collapse:collapse;font-size:12px;">
         <thead><tr>
           <th style="text-align:left;padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">チャネル</th>
+          <th style="text-align:right;padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">TOP到達</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">開始</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">記事閲覧</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">AI診断</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">興味</th>
+          <th style="text-align:right;padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">CV(フォーム)</th>
         </tr></thead>
-        <tbody>${chTable||`<tr><td colspan="5" style="padding:14px;text-align:center;color:var(--text3)">データがありません</td></tr>`}</tbody>
+        <tbody>${chTable||`<tr><td colspan="6" style="padding:14px;text-align:center;color:var(--text3)">データがありません</td></tr>`}</tbody>
       </table>
     </div>
 

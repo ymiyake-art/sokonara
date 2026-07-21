@@ -2013,6 +2013,15 @@ const S = { q1:'', q2:[], about:[], q3:'', free:'', sal:'', busy:'', memoChips:[
 // 内部テスト端末フラグ：?test=1 でその端末を「内部」化→card_logsをis_internal=trueにしadminファネルで集計除外。?test=0で解除。
 window.SN_INTERNAL=(function(){ try{ var q=new URLSearchParams(location.search); if(q.get('test')==='1'||q.get('internal')==='1') localStorage.setItem('sn_internal','1'); if(q.get('test')==='0'||q.get('internal')==='0') localStorage.removeItem('sn_internal'); return localStorage.getItem('sn_internal')==='1'; }catch(e){ return false; } })();
 function _snInt(){ return window.SN_INTERNAL?{is_internal:true}:{}; }
+// 現URLのutmを計測行に付与（SPAなので一覧→記事の画面遷移でもURLのutmは生きている）。
+// これが無いと「広告→TOP→記事を開く」の行がutm無し＝チャネル別で「直接/不明」に化ける。
+function _snUtm(){
+  try{
+    const q=new URLSearchParams(location.search); const o={};
+    ['utm_source','utm_medium','utm_campaign','utm_content'].forEach(k=>{ const v=q.get(k); if(v) o[k]=v; });
+    return o;
+  }catch(e){ return {}; }
+}
 const MEMO_CHIPS=['業務改善','IT・DX','新規事業','営業・販路開拓','組織づくり','採用・育成','商品企画','広報・発信','海外展開','まだ分からない'];
 function buildMemoChips(){
   const box=document.getElementById('memoChips'); if(!box||box.dataset.built) return;
@@ -2176,7 +2185,7 @@ async function logMoyaStart(cid, moyaLabels){
     SN_CARDS={ logId:id, cid:String(cid||''), variant:'moya' };
     try{ localStorage.setItem('sn_card_ctx', JSON.stringify(Object.assign({},SN_CARDS,{_ts:Date.now()}))); }catch(e){}
     await fetch('/api/card-log',{ method:'POST', keepalive:true, headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ id, set:Object.assign({ started:true, variant:'moya', recommended_company:String(cid||''), reason:String(moyaLabels||'').slice(0,200), article_read:true }, _snInt()) }) });
+      body:JSON.stringify({ id, set:Object.assign({ started:true, variant:'moya', recommended_company:String(cid||''), reason:String(moyaLabels||'').slice(0,200), article_read:true }, _snUtm(), _snInt()) }) });
   }catch(e){}
 }
 // P5「フォームを開く」でform_open(CV)を送るためのlogId退避先。clearCardCtxでSN_CARDS=nullになる前に保持する。
@@ -2199,6 +2208,18 @@ function logDirectArticle(cid){
       body:JSON.stringify({ id, set:Object.assign({ started:true, variant:'direct', started_at:new Date().toISOString(),
         recommended_company:String(cid||''), article_read:true, reached_result:true,
         utm_source:q.get('utm_source')||null, utm_medium:q.get('utm_medium')||null, utm_campaign:q.get('utm_campaign')||null, utm_content:q.get('utm_content')||null }, _snInt())})});
+  }catch(e){}
+}
+// TOP到達の計測（variant='visit'・started:false）。広告/LPからTOPに来て記事を開かず帰る人を可視化する
+// （card_logsの行は従来「記事を開いた時」に生まれるため、TOP直帰はファネルに存在しなかった）。
+// started:false＝既存の全集計（カード開始・共鳴・レポート）から自動的に除外される。adminのチャネル別「到達」列だけが読む。
+// sessionStorageで1セッション1回（リロードで膨らまない）。
+function logTopVisit(){
+  try{
+    if(sessionStorage.getItem('sn_visit1')) return; sessionStorage.setItem('sn_visit1','1');
+    const id='visit_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+    fetch('/api/card-log',{method:'POST', keepalive:true, headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ id, set:Object.assign({ started:false, variant:'visit', started_at:new Date().toISOString() }, _snUtm(), _snInt()) })});
   }catch(e){}
 }
 async function patchCardLog(fields){
@@ -2516,7 +2537,7 @@ function openCompanyArticle(id){
       const lid='list_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
       SN_CARDS={ logId:lid, cid:String(id||''), variant:'list' };
       try{ localStorage.setItem('sn_card_ctx', JSON.stringify(Object.assign({},SN_CARDS,{_ts:Date.now()}))); }catch(e){}
-      fetch('/api/card-log',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify({id:lid,set:Object.assign({started:true,variant:'list',recommended_company:String(id||''),article_read:true},_snInt())})});
+      fetch('/api/card-log',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify({id:lid,set:Object.assign({started:true,variant:'list',recommended_company:String(id||''),article_read:true,started_at:new Date().toISOString()},_snUtm(),_snInt())})});
     } else if(SN_CARDS.variant==='list'||SN_CARDS.variant==='direct'){
       // 入口(variant)は保ったまま、対象経営層は実際に読んだ記事へ追従させる（CTAの帰属ズレ防止）
       SN_CARDS.cid=String(id||'');
@@ -4086,6 +4107,8 @@ Promise.all([loadCompaniesAsync(), loadProjectsAsync()]).finally(async ()=>{
     goScreen('p-list');
     // pfの「経営層一覧」リンク（/?view=leaders）から来たら一覧を開く
     if(params.get('view')==='leaders'){ try{ showLeaderList(); }catch(e){} }
+    // TOP到達を計測（記事直リンクは logDirectArticle が担うのでここだけ）＝広告/LP流入の直帰も見えるように
+    logTopVisit();
   }
   // フラッシュ防止クラスを解除（以降のSPA内ナビでホーム表示を妨げない）
   try{ document.documentElement.classList.remove('route-article'); }catch(e){}
