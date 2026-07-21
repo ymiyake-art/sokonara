@@ -1,9 +1,10 @@
 // ソコナラ「仕事の軸」共通モジュール（追記48）
 // 当日ページ(/meet/day.html)とアプリ(index.html)の両方がこれを読み込む＝計算式は常にこの1本。
-// データの系譜：
-//   companies.wb（admin設定＝企業の軸） … チェックした企業のwbを重ね合わせ（間接シグナル・弱め）
-//   reactions（経営層カードで本人がタップした共感ポイント＝軸キーと1:1） … 直接シグナル・主役
+// データの系譜（2026-07-21改訂＝「選んだだけ」は効かせない）：
+//   companies.wb（admin設定＝企業の軸） … 共感の実績がある企業（共鳴チップ・共鳴度3+・記事診断）のwbだけ重ね合わせ
+//   reactions（経営層カードで本人がタップした共鳴ポイント＝軸キーと1:1） … 直接シグナル・主役
 //   survey.rtags（アンケートの理由タグ＝同じ軸キー） … 直接シグナル
+//   ※MEETの☆チェック（気になる＝選択）は班分け・企業レポート専用。軸には加算しない
 window.SN_AXIS = (function(){
   var AX = [['meaning','意味・使命'],['agency','裁量・挑戦'],['people','人・近さ'],['local','地域・つながり'],['time','時間・ゆとり'],['econ','経済（年収）']];
   // タグ→軸の加点。新タグ＝軸キーそのもの（1:1）。旧タグ(leader/biz/exp/growth/cond)は過去データ互換用マッピング。
@@ -22,14 +23,19 @@ window.SN_AXIS = (function(){
     AX.forEach(function(a){ var s=0,n=0; ids.forEach(function(i){ var wb=wbById[i]; if(wb&&wb[a[0]]!=null){ s+=wb[a[0]]; n++; } }); avg[a[0]]=n?(s/n):60; });
     return avg;
   }
-  // m = {checks:[], reactions:{coId:[axisKey,..]}, survey:{deep:[],talk:[],rtags:[]}}
+  // m = {diagCos:[], reactions:{coId:[axisKey,..]}, survey:{deep:[],talk:[],rtags:[]}}
   // wbById = {coId: {meaning:60,...}}（companies.wb）
+  // ⚠️「選んだだけ」は軸に効かせない（2026-07-21 三宅さん判断）。MEETの☆チェックは加算対象外。
+  //    wb重ね合わせの対象＝共感の実績がある経営層のみ：
+  //    ①共鳴チップを押した相手 ②アンケートで共鳴度3点以上(deep/talk) ③記事を読んで診断を送信した相手(diagCos)
   function _core(m, wbById){
     var w = {meaning:52,agency:52,people:52,local:52,time:52,econ:50};
     m = m || {}; var sv = m.survey || {};
     var avg = _avg(wbById);
     var ids = {};
-    (m.checks||[]).concat(sv.deep||[], sv.talk||[]).forEach(function(id){ ids[String(id)] = 1; });
+    var re0 = m.reactions || {};
+    Object.keys(re0).forEach(function(id){ if((re0[id]||[]).length) ids[String(id)] = 1; });
+    (m.diagCos||[]).concat(sv.deep||[], sv.talk||[]).forEach(function(id){ ids[String(id)] = 1; });
     var events = 0;
     Object.keys(ids).forEach(function(id){
       events++;
@@ -88,18 +94,21 @@ window.SN_AXIS = (function(){
     if(coId) v.cos[String(coId)]=1;
     v.n++; v.updated=Date.now(); writeLog(v); return true;
   }
-  // 端末に軸の材料があるか（バナー・レコメンドの表示判定）
+  // 端末に軸の材料があるか（バナー・レコメンドの表示判定）。☆チェックだけの端末には出さない（共感の実績が必要）
   function hasData(){
     var v=readLog(); if(v.n>0) return true;
     var m=null; try{ m=JSON.parse(localStorage.getItem('sn_meet')||'null'); }catch(e){}
-    return !!(m&&((m.checks||[]).length||Object.keys(m.reactions||{}).length||((m.survey||{}).rtags||[]).length));
+    if(!m) return false;
+    var reN=Object.keys(m.reactions||{}).reduce(function(n,id){ return n+((m.reactions[id]||[]).length?1:0); },0);
+    var sv=m.survey||{};
+    return !!(reN||((sv.rtags||[]).length)||((sv.deep||[]).length)||((sv.talk||[]).length));
   }
   // 累積軸＝MEET(sn_meet)＋記事診断(sn_axis)を合算し、同じ計算式（形＝相対差分＋明示反応／大きさ＝関わった量）で
   function cumulative(wbById){
     var m=null; try{ m=JSON.parse(localStorage.getItem('sn_meet')||'null'); }catch(e){}
     m=m||{};
     var v=readLog();
-    var mm={ checks:(m.checks||[]).concat(Object.keys(v.cos)), reactions:m.reactions||{}, survey:m.survey||{} };
+    var mm={ diagCos:Object.keys(v.cos), reactions:m.reactions||{}, survey:m.survey||{} };
     var c=_core(mm, wbById);
     var w=c.w, events=c.events;
     // 記事診断の明示反応＝共鳴ポイントと同格(×0.7)。同じ軸は最大3回分まで効かせる（読むほど明確に、ただし飽和あり）

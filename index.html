@@ -1108,7 +1108,6 @@ body.sn-ribbon-on #project { padding-top: calc(48px + 40px + env(safe-area-inset
 }
 @media(max-width:480px){.leader-phrase{font-size:16px;}}
 /* ソコナラMEETでチェックした経営層のバッジ（/meet/day.htmlのlocalStorage引き継ぎ） */
-.meet-badge{position:absolute;top:10px;left:10px;z-index:4;background:var(--teal,#12a58c);color:#fff;font-size:10px;font-weight:700;letter-spacing:.03em;padding:4px 10px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.25);}
 
 /* ボトムエリア：ネイビー派生クールグレー交互 */
 .leader-card-bottom{padding:12px 14px 14px;display:flex;flex-direction:column;gap:7px;flex:1;}
@@ -2623,7 +2622,7 @@ function openMeetAxis(){
       <button onclick="closeMeetAxis()" style="border:none;background:none;font-size:20px;color:#9aa1ab;cursor:pointer;line-height:1;">×</button>
     </div>
     <div style="font-size:12.5px;font-weight:700;color:var(--teal-d,#2e8c7f);margin-bottom:4px;">年収や知名度だけが、キャリアの正解じゃない。</div>
-    <div style="font-size:11.5px;color:#9aa1ab;line-height:1.7;margin-bottom:6px;">記事での選択・MEETでの共鳴（これまで${nHits}件）が貯まるほど、軸ははっきりしていきます。</div>
+    <div style="font-size:11.5px;color:#9aa1ab;line-height:1.7;margin-bottom:6px;">記事やMEETでの共感（これまで${nHits}件）が貯まるほど、軸ははっきりしていきます。</div>
     ${SN_AXIS.radar(w)}
     <div style="font-size:10.5px;color:#9aa1ab;text-align:center;">※参考値です。この端末の記録から計算しています。</div>
     ${recoHtml?`<div style="font-size:12px;font-weight:900;color:var(--navy,#16223f);margin:16px 0 2px;">🧭 いまの軸に近い経営層</div><div style="font-size:10.5px;color:#9aa1ab;margin-bottom:2px;">読むほど、このおすすめも変わっていきます。</div>${recoHtml}`:''}
@@ -2641,14 +2640,9 @@ function renderCompanyList(){
     el.innerHTML = '<div style="background:var(--white);border:1px solid var(--border);padding:26px;border-radius:2px;color:var(--text2);font-size:13px;">経営層データを準備中です。しばらくお待ちください。</div>';
     return;
   }
-  // ソコナラMEET当日ページ(/meet/day.html)のチェック・共感ポイントを引き継ぐ（同一ドメイン＝localStorage共有）。
-  // チェック済み経営層を先頭に並べ、バッジ表示＋「仕事の軸」バナー＝イベント後の再訪・読み返し導線（KPI:アプリ活用率/再訪率）
-  let meetChecks=[], meetM=null;
-  try{ meetM=JSON.parse(localStorage.getItem('sn_meet')||'null'); if(meetM&&Array.isArray(meetM.checks)) meetChecks=meetM.checks.map(String); }catch(e){}
-  if(meetChecks.length){
-    list=[...list].sort((a,b)=>(meetChecks.indexOf(String(b.id))>=0?1:0)-(meetChecks.indexOf(String(a.id))>=0?1:0));
-  }
-  // 「あなたの仕事の軸」バナー＝累積軸（記事診断＋MEET）がある端末のみ。タップで軸レーダー＋軸に合う経営層のレコメンド
+  // 「MEETで気になる」バッジ＋チェック済み先頭ソートは廃止（2026-07-21 三宅さん判断＝意味が伝わらない）。
+  // MEETの☆チェックは班分け・企業レポート用に残るが、アプリ一覧の見た目には影響させない。
+  // 「あなたの仕事の軸」バナー＝共感の実績（記事診断・MEET共鳴）がある端末のみ。タップで軸レーダー＋軸に合う経営層のレコメンド
   const oldBn=document.getElementById('meetAxisBanner'); if(oldBn) oldBn.remove();
   if(window.SN_AXIS && SN_AXIS.hasData()){
     el.insertAdjacentHTML('beforebegin',
@@ -2656,14 +2650,13 @@ function renderCompanyList(){
         <div style="font-size:22px;">🎯</div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13.5px;font-weight:900;">あなたの「仕事の軸」と、軸に合う経営層</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:2px;">記事やMEETでの選択が貯まるほど、軸とおすすめが明確になります</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:2px;">記事やMEETで共感ボタンを押すほど、あなたに合う相手や価値観が見えてきます</div>
         </div>
         <div style="font-size:12px;font-weight:700;color:#7fd8cb;white-space:nowrap;">見る →</div>
       </div>`);
   }
   el.className = 'leaders-grid';
   el.innerHTML = list.map(c=>{
-    const meetOn = meetChecks.indexOf(String(c.id))>=0;
     const name=c.ceo||'経営層名未設定';
     const company=c.name||c.company||'会社名未設定';
     const rawPhrase=(c.catchphrase||c.quote||'').trim();
@@ -2684,7 +2677,6 @@ function renderCompanyList(){
     return `<div class="leader-card" data-company-id="${escapeHtml(String(c.id||''))}" onclick="openCompanyArticleFromCard(this)">
       <div class="leader-card-top">
         ${photoBg}
-        ${meetOn?'<div class="meet-badge">MEETで気になる ✓</div>':''}
         <div class="leader-phrase">${phraseHtml}</div>
       </div>
       <div class="leader-card-bottom">
