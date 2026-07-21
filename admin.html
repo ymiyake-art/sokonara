@@ -626,6 +626,7 @@ async function renderResonance(){
   // 到達：reached_result。旧データ(列なし)は top_tags 有無で後方互換判定
   const fResult=logs.filter(l=>l.reached_result || (l.top_tags&&l.top_tags.length)).length;
   const fRead=logs.filter(l=>l.article_read).length;
+  const fRead50=logs.filter(l=>(l.read_pct||0)>=50).length;
   const fAi=logs.filter(l=>l.ai_viewed).length;
   const fLine=logs.filter(l=>l.line_registered).length;
   const fCta=logs.filter(l=>l.contact_cta).length;
@@ -648,6 +649,7 @@ async function renderResonance(){
     const n=arr.length;
     const v=byChV[ch]||0;
     const a=arr.filter(l=>l.article_read).length;
+    const a50=arr.filter(l=>(l.read_pct||0)>=50).length;
     const cta=arr.filter(l=>l.contact_cta).length;
     const fo=arr.filter(l=>l.form_open).length;
     const camp=(arr.find(l=>l.utm_campaign)||{}).utm_campaign||'';
@@ -658,6 +660,7 @@ async function renderResonance(){
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2)">${v||'—'}</td>
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right">${n}${(v&&n<=v)?` <span style="color:var(--text3)">(${pct(n,v)}%)</span>`:''}</td>
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right">${a} <span style="color:var(--text3)">(${pct(a,n)}%)</span></td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right">${a50} <span style="color:var(--text3)">(${pct(a50,n)}%)</span></td>
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right">${cta} <span style="color:var(--text3)">(${pct(cta,n)}%)</span></td>
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;font-weight:700;color:#2e8c7f">${fo} <span style="color:var(--text3);font-weight:400">(${pct(fo,n)}%)</span></td>
     </tr>`;
@@ -731,7 +734,7 @@ async function renderResonance(){
 
     <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
       <div style="font-weight:700;font-size:13px;margin-bottom:14px;">新導線ファネル <span style="font-weight:400;color:var(--text3);font-size:11px">（開始を100%とした到達率／フォームを開く＝メインCV）</span></div>
-      ${[['カード開始',N],['経営者を選んだ',fResult],['記事を読んだ',fRead],['仕事の軸レポートを見た',fWb],['興味（共感→P5）',fCta],['フォームを開いた（CV）',fForm]].map(([lbl,n],i,arr)=>
+      ${[['カード開始',N],['経営者を選んだ',fResult],['記事を読んだ（開いた）',fRead],['記事を半分以上読んだ（50%+・7/21計測開始）',fRead50],['仕事の軸レポートを見た',fWb],['興味（いいな→P5）',fCta],['フォームを開いた（CV）',fForm]].map(([lbl,n],i,arr)=>
         `<div style="display:flex;align-items:center;gap:12px;margin-bottom:9px;font-size:12px;">
           <div style="width:160px;color:${i===arr.length-1?'#2e8c7f':'var(--text2)'};font-weight:${i===arr.length-1?'700':'400'}">${lbl}</div>
           ${funnelBar(n)}
@@ -803,17 +806,18 @@ async function renderResonance(){
 
     <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
       <div style="font-weight:700;font-size:13px;margin-bottom:4px;">チャネル別（流入元 utm_source）</div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">TOP到達＝アプリTOPに来た数（2026-07-21計測開始・記事を開かなくてもカウント。記事直リンクやpf経由は「—」）。開始の%＝到達→記事開封率（広告の直帰がここで見える）。記事/興味/CVの%は開始基準。CV=フォームを開いた（メインCV）。</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">TOP到達＝アプリTOPに来た数（記事を開かなくてもカウント。記事直リンクやpf経由は「—」）。開始の%＝到達→記事開封率（広告の直帰がここで見える）。読了50%+＝スクロールで記事の半分以上まで読んだ＝「タップして開いただけ」と区別（TOP到達・読了とも2026-07-21計測開始）。記事/読了/興味/CVの%は開始基準。CV=フォームを開いた（メインCV）。</div>
       <table style="width:100%;border-collapse:collapse;font-size:12px;">
         <thead><tr>
           <th style="text-align:left;padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">チャネル</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">TOP到達</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">開始</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">記事閲覧</th>
+          <th style="text-align:right;padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">記事(開いた)</th>
+          <th style="text-align:right;padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">読了50%+</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">興味</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;letter-spacing:1px;color:var(--text3);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)">CV(フォーム)</th>
         </tr></thead>
-        <tbody>${chTable||`<tr><td colspan="6" style="padding:14px;text-align:center;color:var(--text3)">データがありません</td></tr>`}</tbody>
+        <tbody>${chTable||`<tr><td colspan="7" style="padding:14px;text-align:center;color:var(--text3)">データがありません</td></tr>`}</tbody>
       </table>
     </div>
 

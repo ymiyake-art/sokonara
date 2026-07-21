@@ -1483,9 +1483,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="empathy-section" id="empathySection" style="display:none">
       <button class="empathy-btn" id="empathyBtnEl" onclick="handleEmpathy()">
         <span id="empathyIcon">♡</span>
-        <span id="empathyLabel">この経営層に共感した</span>
+        <span id="empathyLabel">「いいな」を届けて“仕事の軸”を診断</span>
       </button>
-      <div id="empathyNote" style="font-size:11px;color:var(--text3);margin-top:8px">共感は経営層に届きます（匿名）。続けて“仕事の軸”を診断できます。</div>
+      <div id="empathyNote" style="font-size:11px;color:var(--text3);margin-top:8px">「いいな」は匿名で経営層に届きます。届けるほど、あなたの“仕事の軸”が明確になります。</div>
       <!-- 共感したら handleEmpathy() が即P5（コピー→フォーム）へ遷移。中間の箱は廃止＝導線最小化。 -->
     </div>
 
@@ -2444,7 +2444,7 @@ function handleEmpathy() {
   if (!btn || btn.classList.contains('done')) return;
   btn.classList.add('pop');
   setTimeout(() => btn.classList.remove('pop'), 220);
-  setTimeout(() => { btn.classList.add('done'); icon.textContent = '♥'; label.textContent = '共感しました！'; }, 100);
+  setTimeout(() => { btn.classList.add('done'); icon.textContent = '♥'; label.textContent = '「いいな」を届けました！'; }, 100);
   // 共感（小さなYES）したら、その反応から「あなたの可能性」を読み解くレポート(p2→p3)へ。
   setTimeout(() => { goScreen('p2'); }, 450);
   // Supabase increment (best-effort)
@@ -2643,7 +2643,7 @@ function openMeetAxis(){
       <button onclick="closeMeetAxis()" style="border:none;background:none;font-size:20px;color:#9aa1ab;cursor:pointer;line-height:1;">×</button>
     </div>
     <div style="font-size:12.5px;font-weight:700;color:var(--teal-d,#2e8c7f);margin-bottom:4px;">年収や知名度だけが、キャリアの正解じゃない。</div>
-    <div style="font-size:11.5px;color:#9aa1ab;line-height:1.7;margin-bottom:6px;">記事やMEETでの共感（これまで${nHits}件）が貯まるほど、軸ははっきりしていきます。</div>
+    <div style="font-size:11.5px;color:#9aa1ab;line-height:1.7;margin-bottom:6px;">記事やMEETで届けた「いいな」（これまで${nHits}件）が貯まるほど、軸ははっきりしていきます。</div>
     ${SN_AXIS.radar(w)}
     <div style="font-size:10.5px;color:#9aa1ab;text-align:center;">※参考値です。この端末の記録から計算しています。</div>
     ${recoHtml?`<div style="font-size:12px;font-weight:900;color:var(--navy,#16223f);margin:16px 0 2px;">🧭 いまの軸に近い経営層</div><div style="font-size:10.5px;color:#9aa1ab;margin-bottom:2px;">読むほど、このおすすめも変わっていきます。</div>${recoHtml}`:''}
@@ -2671,7 +2671,7 @@ function renderCompanyList(){
         <div style="font-size:22px;">🎯</div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13.5px;font-weight:900;">あなたの「仕事の軸」と、軸に合う経営層</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:2px;">記事やMEETで共感ボタンを押すほど、あなたに合う相手や価値観が見えてきます</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:2px;">記事やMEETで「いいな」を届けるほど、あなたに合う相手や価値観が見えてきます</div>
         </div>
         <div style="font-size:12px;font-weight:700;color:#7fd8cb;white-space:nowrap;">見る →</div>
       </div>`);
@@ -2960,7 +2960,7 @@ function renderP1FromCompany(){
   if(empSec) empSec.style.display = '';
   if(empBtn){ empBtn.classList.remove('done','pop'); }
   if(empIcon) empIcon.textContent = '♡';
-  if(empLabel) empLabel.textContent = 'この経営層に共感した';
+  if(empLabel) empLabel.textContent = '「いいな」を届けて“仕事の軸”を診断';
   // 2段階エスカレーションは記事切替時に隠す（前記事の残留防止）
   const empEsc = document.getElementById('empathyEscalate'); if(empEsc) empEsc.style.display = 'none';
   // 関連経営層レンダリング
@@ -3097,6 +3097,17 @@ function updateRead() {
       empBtn.classList.add('pulsed');
     }
   }
+  // スクロール到達率をcard_logsへ（read_pct・記事画面のみ）。25/50/75/100の閾値を初めて越えた時だけ送信＝
+  // 「タップして着地しただけ（article_read）」と「実際に読み進めた」を分離する（LINE配信の読了率がこれで見える）。
+  // 1回のスクロールで複数閾値を跨いだ場合は最上位1件のみ送信（リクエスト節約・値は行の最新=最大）。
+  try{
+    if (S.screen === 'p1' && typeof patchCardLog === 'function') {
+      window._readSent = window._readSent || {};
+      let hi = 0;
+      [25,50,75,100].forEach(t => { if (clamped >= t && !window._readSent[t]) hi = t; });
+      if (hi) { [25,50,75,100].forEach(t => { if (t <= hi) window._readSent[t] = 1; }); patchCardLog({ read_pct: hi }); }
+    }
+  }catch(e){}
 }
 window.addEventListener('scroll', updateRead);
 
@@ -4690,7 +4701,7 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     document.getElementById('wbText').innerHTML=blocks;
     // メインCTA＝共感フォーム直行（form_open＝最重要KPIへの直行路。LINEより前に置く）
     document.getElementById('wbCta').innerHTML=
-      '<button class="btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:15px;" onclick="try{if(typeof SN_CARDS!==\'undefined\'&&SN_CARDS&&SN_CARDS.logId&&typeof patchCardLog===\'function\')patchCardLog({wb_cta:true});}catch(e){};openEmpathyForm()">💌 '+escapeHtml(name)+'に共感を伝える →</button>'
+      '<button class="btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:15px;" onclick="try{if(typeof SN_CARDS!==\'undefined\'&&SN_CARDS&&SN_CARDS.logId&&typeof patchCardLog===\'function\')patchCardLog({wb_cta:true});}catch(e){};openEmpathyForm()">💌 '+escapeHtml(name)+'に「いいな」を届ける →</button>'
       +'<div style="text-align:center;font-size:11px;color:var(--text3);margin-top:6px;">匿名OK・1分（応募ではありません）</div>';
     // AIの文章診断＝LINE特典（折りたたみに降格＝共感CTAを主役にする。撤去はしない）
     var _reg=(typeof isLineRegistered==='function')&&isLineRegistered();
