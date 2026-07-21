@@ -2445,6 +2445,8 @@ function handleEmpathy() {
   btn.classList.add('pop');
   setTimeout(() => btn.classList.remove('pop'), 220);
   setTimeout(() => { btn.classList.add('done'); icon.textContent = '♥'; label.textContent = '「いいな」を届けました！'; }, 100);
+  // 軽い「いいな」（記事内ボタン）をファネルに記録＝スティッキーの contact_cta（いいな→P5）と同じ表で比較できるように
+  try{ if(typeof patchCardLog==='function') patchCardLog({ soft_iina:true }); }catch(e){}
   // 共感（小さなYES）したら、その反応から「あなたの可能性」を読み解くレポート(p2→p3)へ。
   setTimeout(() => { goScreen('p2'); }, 450);
   // Supabase increment (best-effort)

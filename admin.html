@@ -627,6 +627,7 @@ async function renderResonance(){
   const fResult=logs.filter(l=>l.reached_result || (l.top_tags&&l.top_tags.length)).length;
   const fRead=logs.filter(l=>l.article_read).length;
   const fRead50=logs.filter(l=>(l.read_pct||0)>=50).length;
+  const fSoft=logs.filter(l=>l.soft_iina).length;
   const fAi=logs.filter(l=>l.ai_viewed).length;
   const fLine=logs.filter(l=>l.line_registered).length;
   const fCta=logs.filter(l=>l.contact_cta).length;
@@ -734,7 +735,7 @@ async function renderResonance(){
 
     <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
       <div style="font-weight:700;font-size:13px;margin-bottom:14px;">新導線ファネル <span style="font-weight:400;color:var(--text3);font-size:11px">（開始を100%とした到達率／フォームを開く＝メインCV）</span></div>
-      ${[['カード開始',N],['経営者を選んだ',fResult],['記事を読んだ（開いた）',fRead],['記事を半分以上読んだ（50%+・7/21計測開始）',fRead50],['仕事の軸レポートを見た',fWb],['興味（いいな→P5）',fCta],['フォームを開いた（CV）',fForm]].map(([lbl,n],i,arr)=>
+      ${[['カード開始',N],['経営者を選んだ',fResult],['記事を読んだ（開いた）',fRead],['記事を半分以上読んだ（50%+・7/21計測開始）',fRead50],['いいな・軽（記事内ボタン→診断・7/21計測開始）',fSoft],['仕事の軸レポートを見た',fWb],['いいな・フォームへ（P5到達）',fCta],['フォームを開いた（CV）',fForm]].map(([lbl,n],i,arr)=>
         `<div style="display:flex;align-items:center;gap:12px;margin-bottom:9px;font-size:12px;">
           <div style="width:160px;color:${i===arr.length-1?'#2e8c7f':'var(--text2)'};font-weight:${i===arr.length-1?'700':'400'}">${lbl}</div>
           ${funnelBar(n)}

@@ -17,7 +17,7 @@ const ALLOWED = new Set([
   'picked_cards', 'dropped_cards', 'top_tags', 'rtags_hit',
   'recommended_company', 'recommended_card',
   'q1_phrase', 'reason', 'memo_chips', 'memo_text',
-  'article_read', 'read_pct', 'ai_viewed', 'line_registered', 'contact_cta', 'form_open',
+  'article_read', 'read_pct', 'soft_iina', 'ai_viewed', 'line_registered', 'contact_cta', 'form_open',
   'wb_view', 'wb_compare', 'wb_cta',
   'ai_summary', 'ai_message', 'ai_bridge',
   'reached_result', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content',
