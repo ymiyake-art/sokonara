@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>顔写真の事前登録｜ソコナラMEET</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --navy:#16223f; --teal:#12a58c; --teal-d:#0e8a75; --bg:#f4f6f8; --text:#1f2430; --text2:#5a6170; --text3:#9aa1ab; --border:#e3e6ea; --hot:#c0341a; }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ font-family:'Zen Kaku Gothic New',sans-serif; background:var(--bg); color:var(--text); line-height:1.7; -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:480px; margin:0 auto; padding:0 18px 60px; }
+  header{ background:var(--navy); color:#fff; padding:26px 18px 22px; text-align:center; }
+  header .kicker{ font-size:11px; letter-spacing:2px; color:#7fd8cb; font-weight:700; }
+  header h1{ font-size:19px; font-weight:900; margin-top:6px; }
+  header .sub{ font-size:12px; color:rgba(255,255,255,0.75); margin-top:6px; }
+  .card{ background:#fff; border:1px solid var(--border); border-radius:12px; padding:18px 16px; margin-top:16px; }
+  .lead{ font-size:13px; color:var(--text2); }
+  .lead b{ color:var(--text); }
+  label.fl{ display:block; font-size:12px; font-weight:700; color:var(--navy); margin:14px 0 6px; }
+  input[type=text]{ width:100%; padding:13px 12px; font-size:16px; border:1px solid var(--border); border-radius:8px; font-family:inherit; background:#fff; }
+  .photo-box{ margin-top:6px; border:2px dashed var(--border); border-radius:12px; padding:14px; text-align:center; cursor:pointer; background:#fafbfc; }
+  .photo-box img{ width:160px; height:160px; object-fit:cover; border-radius:50%; display:block; margin:0 auto 8px; border:3px solid var(--teal); }
+  .photo-box .ph-hint{ font-size:12.5px; color:var(--text2); }
+  .photo-box .ph-btn{ display:inline-block; margin-top:8px; background:var(--navy); color:#fff; font-size:13px; font-weight:700; padding:10px 20px; border-radius:8px; }
+  .consent{ display:flex; gap:10px; align-items:flex-start; margin-top:12px; font-size:12.5px; color:var(--text2); cursor:pointer; }
+  .consent input{ width:19px; height:19px; margin-top:2px; flex:0 0 auto; }
+  .consent b{ color:var(--text); }
+  .send{ width:100%; margin-top:18px; background:var(--teal); color:#fff; border:none; border-radius:10px; padding:16px; font-size:15.5px; font-weight:900; font-family:inherit; cursor:pointer; box-shadow:0 4px 14px rgba(18,165,140,0.35); }
+  .send:disabled{ background:#c3cbd3; box-shadow:none; }
+  .note{ font-size:11px; color:var(--text3); margin-top:10px; line-height:1.8; }
+  #doneBox{ display:none; text-align:center; }
+  #doneBox .big{ font-size:40px; }
+  #doneBox h2{ font-size:17px; font-weight:900; color:var(--navy); margin:8px 0 6px; }
+  #doneBox p{ font-size:13px; color:var(--text2); }
+  .err{ display:none; margin-top:10px; font-size:12.5px; color:var(--hot); font-weight:700; }
+</style>
+</head>
+<body>
+<header>
+  <div class="kicker">SOKONARA MEET 2026.7.30</div>
+  <h1>顔写真の事前登録</h1>
+  <div class="sub">受付・ご案内をスムーズにするため、ご協力をお願いします</div>
+</header>
+<div class="wrap">
+  <div class="card" id="formBox">
+    <p class="lead">お顔のわかる写真を<b>1枚</b>ご登録ください。<br>スマホで撮った写真・お持ちの写真、どちらでも大丈夫です。</p>
+
+    <label class="fl">お名前（フルネーム）</label>
+    <input type="text" id="pName" placeholder="例）山田 太郎" maxlength="40" autocomplete="name">
+
+    <label class="fl">顔写真</label>
+    <div class="photo-box" onclick="document.getElementById('pFile').click()">
+      <img id="pPreview" style="display:none" alt="">
+      <div class="ph-hint" id="phHint">タップして写真を選択<br><span style="font-size:11px;color:var(--text3)">（その場での自撮りもOK）</span></div>
+      <div class="ph-btn" id="phBtn">写真を選ぶ</div>
+    </div>
+    <input type="file" id="pFile" accept="image/*" style="display:none" onchange="onPick(this)">
+
+    <label class="consent"><input type="checkbox" id="cOps">
+      <span><b>【必須】</b>当日の運営（受付・班分け・名簿）に写真を使用することに同意します</span></label>
+    <label class="consent"><input type="checkbox" id="cShare">
+      <span><b>【任意】</b>イベント後、私が「ぜひ話したい」と評価した企業へのご紹介（レポート掲載）に写真を含めてもよい</span></label>
+
+    <button class="send" id="sendBtn" onclick="send()">この内容で登録する</button>
+    <div class="err" id="errBox"></div>
+    <p class="note">・写真とお名前は、ソコナラが安全に保管し、上記の目的以外には使用しません。<br>・イベント終了後、必要な期間を過ぎたら削除します。<br>・登録し直したい場合は、もう一度このページから送信してください（新しい写真に置き換わります）。</p>
+  </div>
+
+  <div class="card" id="doneBox">
+    <div class="big">✅</div>
+    <h2>登録ありがとうございました！</h2>
+    <p>当日は受付でお名前をお伝えいただくだけでOKです。<br>お会いできるのを楽しみにしています。</p>
+    <p style="margin-top:12px;"><a href="javascript:location.reload()" style="color:var(--teal-d);font-size:12.5px;">写真を登録し直す</a></p>
+  </div>
+</div>
+<script>
+var EVENT_ID = 'meet_2026_07_30';
+var photoDataUrl = null;
+
+// 端末内で縮小・JPEG再エンコード（長辺1200px・q0.85）。スマホの巨大画像/MPO形式もここで標準JPEG化される
+function onPick(input){
+  var f = input.files && input.files[0];
+  if(!f) return;
+  var img = new Image();
+  var url = URL.createObjectURL(f);
+  img.onload = function(){
+    try{
+      var max = 1200;
+      var w = img.naturalWidth, h = img.naturalHeight;
+      var sc = Math.min(1, max / Math.max(w, h));
+      var cw = Math.round(w * sc), ch = Math.round(h * sc);
+      var cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+      cv.getContext('2d').drawImage(img, 0, 0, cw, ch);
+      photoDataUrl = cv.toDataURL('image/jpeg', 0.85);
+      var pv = document.getElementById('pPreview');
+      pv.src = photoDataUrl; pv.style.display = 'block';
+      document.getElementById('phHint').style.display = 'none';
+      document.getElementById('phBtn').textContent = '写真を変更する';
+    }catch(e){ showErr('画像の読み込みに失敗しました。別の写真でお試しください。'); }
+    URL.revokeObjectURL(url);
+  };
+  img.onerror = function(){ URL.revokeObjectURL(url); showErr('画像を開けませんでした。別の写真でお試しください。'); };
+  img.src = url;
+}
+function showErr(m){ var e = document.getElementById('errBox'); e.textContent = m; e.style.display = 'block'; }
+function send(){
+  var e = document.getElementById('errBox'); e.style.display = 'none';
+  var name = document.getElementById('pName').value.trim();
+  if(!name) return showErr('お名前を入力してください。');
+  if(!photoDataUrl) return showErr('写真を選択してください。');
+  if(!document.getElementById('cOps').checked) return showErr('必須の同意（当日の運営への使用）にチェックをお願いします。');
+  var btn = document.getElementById('sendBtn');
+  btn.disabled = true; btn.textContent = '送信中…';
+  // 再送時は同じidを使う＝サーバー側で同じ行・同じ写真パスを上書き（重複しない）
+  var pid = null;
+  try{ pid = localStorage.getItem('sn_meet_photo_id'); }catch(err){}
+  if(!pid){ pid = 'meet_ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); try{ localStorage.setItem('sn_meet_photo_id', pid); }catch(err){} }
+  fetch('/api/meet-photo', { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ action:'upload', id:pid, name:name, photo:photoDataUrl, consent_share:document.getElementById('cShare').checked, event_id:EVENT_ID }) })
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if(j && j.ok){ document.getElementById('formBox').style.display = 'none'; document.getElementById('doneBox').style.display = 'block'; window.scrollTo(0,0); }
+      else { btn.disabled = false; btn.textContent = 'この内容で登録する'; showErr('送信に失敗しました。時間をおいてもう一度お試しください。'); }
+    })
+    .catch(function(){ btn.disabled = false; btn.textContent = 'この内容で登録する'; showErr('通信エラーです。電波の良い場所でもう一度お試しください。'); });
+}
+</script>
+</body>
+</html>
