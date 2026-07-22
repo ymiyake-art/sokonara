@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>登壇企業アンケート｜ソコナラMEET</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --navy:#16223f; --teal:#12a58c; --teal-d:#0e8a75; --teal-bg:#e9f6f4; --bg:#f4f6f8; --text:#1f2430; --text2:#5a6170; --text3:#9aa1ab; --border:#e3e6ea; --hot:#c0341a; }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ font-family:'Zen Kaku Gothic New',sans-serif; background:var(--bg); color:var(--text); line-height:1.7; -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:560px; margin:0 auto; padding:0 18px 70px; }
+  header{ background:var(--navy); color:#fff; padding:26px 18px 22px; text-align:center; }
+  header .kicker{ font-size:11px; letter-spacing:2px; color:#7fd8cb; font-weight:700; }
+  header h1{ font-size:19px; font-weight:900; margin-top:6px; }
+  header .sub{ font-size:12px; color:rgba(255,255,255,0.75); margin-top:6px; }
+  .card{ background:#fff; border:1px solid var(--border); border-radius:12px; padding:18px 16px; margin-top:16px; }
+  .qh{ font-size:13.5px; font-weight:900; color:var(--navy); margin-bottom:4px; }
+  .qs{ font-size:11.5px; color:var(--text3); margin-bottom:10px; }
+  select, input[type=text], textarea{ width:100%; padding:12px; font-size:16px; border:1px solid var(--border); border-radius:8px; font-family:inherit; background:#fff; }
+  textarea{ min-height:74px; resize:vertical; }
+  .seg{ display:flex; gap:8px; }
+  .seg button{ flex:1; padding:13px 0; font-size:15px; font-weight:700; border:1px solid var(--border); background:#fff; border-radius:8px; cursor:pointer; font-family:inherit; color:var(--text2); }
+  .seg button.on{ background:var(--teal); border-color:var(--teal); color:#fff; }
+  .chk{ display:flex; gap:10px; align-items:flex-start; padding:9px 4px; font-size:13px; color:var(--text); cursor:pointer; border-bottom:1px solid rgba(227,230,234,0.6); }
+  .chk:last-child{ border-bottom:none; }
+  .chk input{ width:19px; height:19px; margin-top:3px; flex:0 0 auto; }
+  .pk{ border-bottom:1px solid rgba(227,230,234,0.6); padding:8px 4px; }
+  .pk .chk{ border-bottom:none; padding:0; }
+  .pk .rsn{ margin-top:7px; display:none; }
+  .pk.on .rsn{ display:block; }
+  .pk .rsn input{ font-size:13px; padding:9px 10px; }
+  .send{ width:100%; margin-top:20px; background:var(--teal); color:#fff; border:none; border-radius:10px; padding:16px; font-size:15.5px; font-weight:900; font-family:inherit; cursor:pointer; box-shadow:0 4px 14px rgba(18,165,140,0.35); }
+  .send:disabled{ background:#c3cbd3; box-shadow:none; }
+  .err{ display:none; margin-top:10px; font-size:12.5px; color:var(--hot); font-weight:700; }
+  .note{ font-size:11px; color:var(--text3); margin-top:10px; }
+  #doneBox, #lockBox{ display:none; text-align:center; }
+  #doneBox .big{ font-size:40px; }
+  #doneBox h2{ font-size:17px; font-weight:900; color:var(--navy); margin:8px 0 6px; }
+  #doneBox p, #lockBox p{ font-size:13px; color:var(--text2); }
+  label.fl{ display:block; font-size:12px; font-weight:700; color:var(--navy); margin:12px 0 6px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="kicker">SOKONARA MEET 2026.7.30</div>
+  <h1>登壇企業アンケート</h1>
+  <div class="sub">ご登壇ありがとうございました。今後の運営と、参加者との橋渡しに活用します（約3分）</div>
+</header>
+<div class="wrap">
+  <div id="lockBox" class="card"><p>このページはご案内のリンクからのみ開けます。<br>お手数ですが、メールに記載のURLからアクセスしてください。</p></div>
+
+  <div id="formBox" style="display:none">
+    <div class="card">
+      <div class="qh">① ご回答者</div>
+      <label class="fl">貴社（登壇企業）</label>
+      <select id="qCo"></select>
+      <label class="fl">ご氏名</label>
+      <input type="text" id="qName" placeholder="例）山田 太郎" maxlength="40">
+    </div>
+
+    <div class="card">
+      <div class="qh">② 本イベントの総合満足度</div>
+      <div class="qs">5＝大変満足 〜 1＝不満</div>
+      <div class="seg" id="qSat"></div>
+    </div>
+
+    <div class="card">
+      <div class="qh">③ 良かった点・得られた価値（複数選択可）</div>
+      <div id="qValues"></div>
+      <label class="fl">その他・具体的なエピソードがあれば</label>
+      <textarea id="qValuesFree" placeholder="（任意）"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="qh">④ 接点を深めたい参加者</div>
+      <div class="qs">採用・業務委託・協業などを問わず「もっと話したい」と感じた方をお選びください（複数可・任意）。選ぶと理由の欄が開きます。ソコナラが双方の意向を突き合わせ、優先的におつなぎします。</div>
+      <div id="qPicks"><div style="font-size:12px;color:var(--text3);padding:8px 0;">参加者名簿を読み込み中…</div></div>
+    </div>
+
+    <div class="card">
+      <div class="qh">⑤ 今後について</div>
+      <label class="fl">次回のMEETにも参加したいと思いますか？（5＝ぜひ参加したい）</label>
+      <div class="seg" id="qNext"></div>
+      <label class="fl">本イベントを他の経営層に薦めたいと思いますか？（5＝薦めたい）</label>
+      <div class="seg" id="qReco"></div>
+    </div>
+
+    <div class="card">
+      <div class="qh">⑥ ご紹介いただけそうな経営層</div>
+      <div class="qs">「この人も合いそう」という方がいらっしゃれば（氏名・会社名・役職など、分かる範囲で）</div>
+      <textarea id="qReferral" placeholder="（任意）"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="qh">⑦ 今後ソコナラと取り組みたいテーマ（複数選択可）</div>
+      <div id="qThemes"></div>
+    </div>
+
+    <div class="card">
+      <div class="qh">⑧ ご感想・ご要望</div>
+      <textarea id="qFree" placeholder="全体を通してのご感想・改善のご要望など（任意）"></textarea>
+    </div>
+
+    <button class="send" id="sendBtn" onclick="send()">この内容で送信する</button>
+    <div class="err" id="errBox"></div>
+    <p class="note">・ご回答は貴社ごとに1件です（再送信すると新しい内容に置き換わります）。<br>・④のご指名は参加者本人には直接開示されません（ソコナラが橋渡しの参考にします）。</p>
+  </div>
+
+  <div id="doneBox" class="card">
+    <div class="big">🙌</div>
+    <h2>ご回答ありがとうございました！</h2>
+    <p>いただいた内容をもとに、参加者との橋渡しと次回の改善を進めます。<br>個別のご連絡は追ってソコナラよりお送りします。</p>
+  </div>
+</div>
+<script>
+var SUPA_URL='https://ypwwuylcvjwcyazvpibd.supabase.co';
+var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwd3d1eWxjdmp3Y3lhenZwaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTY1MTMsImV4cCI6MjA5MjI3MjUxM30.7YseXt8libEzFsSAv4bI46l36kZ2lFz_jnh1JphVpvA';
+var EVENT_ID='meet_2026_07_30';
+var K=new URLSearchParams(location.search).get('k')||'';
+
+var VALUES=[
+  ['v_layer','従来の採用活動では出会えない層に出会えた'],
+  ['v_pr','通常と異なる切り口で自社のPRができた'],
+  ['v_dialog','価値観の開示によって、距離の近い対話ができた'],
+  ['v_insight','参加者が自社の何に共感するかを掴めた'],
+  ['v_person','参加者の人柄・グループでの立ち振る舞いを確認できた'],
+  ['v_biz','事業・採用戦略への新たな気づきが得られた'],
+  ['v_option','採用・業務委託・協業など新しい選択肢が生まれた'],
+  ['v_net','他の経営層との横のつながりができた']
+];
+var THEMES=[
+  ['t_pool','イベント継続参加による母集団形成'],
+  ['t_remote','遠方（東京・大阪など）人材との接点・配信'],
+  ['t_project','共創プロジェクト・短期インターンの設計'],
+  ['t_brand','採用ブランディング・発信の強化'],
+  ['t_web','Web記事・共鳴データの活用'],
+  ['t_match','個別マッチング支援'],
+  ['t_none','特に未定']
+];
+var S={sat:0,next_ev:0,reco:0};
+var ROSTER=[];
+
+function seg(elId,key){ var el=document.getElementById(elId); el.innerHTML=''; [5,4,3,2,1].forEach(function(v){ var b=document.createElement('button'); b.type='button'; b.textContent=v; b.onclick=function(){ S[key]=(S[key]===v)?0:v; [].forEach.call(el.children,function(c){ c.classList.toggle('on', Number(c.textContent)===S[key]); }); }; el.appendChild(b); }); }
+function checks(elId,list){ var el=document.getElementById(elId); el.innerHTML=list.map(function(o){ return '<label class="chk"><input type="checkbox" value="'+o[0]+'"><span>'+o[1]+'</span></label>'; }).join(''); }
+
+function boot(){
+  if(!K){ document.getElementById('lockBox').style.display='block'; return; }
+  seg('qSat','sat'); seg('qNext','next_ev'); seg('qReco','reco');
+  checks('qValues',VALUES); checks('qThemes',THEMES);
+  // 登壇企業（卓の正本=site_settings.meet_speakers）→ companies名で表示
+  fetch(SUPA_URL+'/rest/v1/site_settings?key=eq.meet_speakers&select=value',{headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY}})
+    .then(function(r){return r.json();})
+    .then(function(rows){
+      var ids=(rows&&rows[0]&&rows[0].value&&rows[0].value.ids)||[];
+      return fetch(SUPA_URL+'/rest/v1/companies?select=id,name,ceo&order=sort.asc.nullslast',{headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY}})
+        .then(function(r){return r.json();})
+        .then(function(cos){
+          var list=ids.length?ids.map(function(id){ return (cos||[]).find(function(c){return String(c.id)===String(id);}); }).filter(Boolean):(cos||[]);
+          document.getElementById('qCo').innerHTML='<option value="">選択してください</option>'+list.map(function(c){ return '<option value="'+c.id+'">'+(c.name||'')+'（'+(c.ceo||'')+'）</option>'; }).join('');
+        });
+    }).catch(function(){});
+  // 参加者名簿（キー認証・氏名のみ）
+  fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:'meet_roster',action:'roster',k:K,event_id:EVENT_ID})})
+    .then(function(r){ if(r.status===403){ document.getElementById('formBox').style.display='none'; document.getElementById('lockBox').style.display='block'; throw new Error('forbidden'); } return r.json(); })
+    .then(function(j){
+      ROSTER=(j&&j.roster)||[];
+      var el=document.getElementById('qPicks');
+      if(!ROSTER.length){ el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px 0;">参加者の登録がまだありません。</div>'; return; }
+      el.innerHTML=ROSTER.map(function(p,i){ return '<div class="pk" id="pk'+i+'">'
+        +'<label class="chk"><input type="checkbox" onchange="togglePk('+i+',this.checked)"><span><b>'+escapeH(p.name)+'</b> さん</span></label>'
+        +'<div class="rsn"><input type="text" id="pkr'+i+'" placeholder="理由・気になった点（任意）" maxlength="120"></div></div>'; }).join('');
+    }).catch(function(){});
+  document.getElementById('formBox').style.display='block';
+}
+function togglePk(i,on){ var el=document.getElementById('pk'+i); if(el) el.classList.toggle('on',on); }
+function escapeH(s){ return String(s||'').replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function showErr(m){ var e=document.getElementById('errBox'); e.textContent=m; e.style.display='block'; e.scrollIntoView({block:'center'}); }
+function picked(elId){ return [].map.call(document.querySelectorAll('#'+elId+' input:checked'),function(i){return i.value;}); }
+
+function send(){
+  document.getElementById('errBox').style.display='none';
+  var coId=document.getElementById('qCo').value;
+  var name=document.getElementById('qName').value.trim();
+  if(!coId) return showErr('①で貴社を選択してください。');
+  if(!name) return showErr('①でご氏名を入力してください。');
+  if(!S.sat) return showErr('②の総合満足度を選択してください。');
+  var picks=[]; ROSTER.forEach(function(p,i){ var box=document.querySelector('#pk'+i+' input[type=checkbox]'); if(box&&box.checked){ picks.push({id:p.id,name:p.name,reason:(document.getElementById('pkr'+i)||{value:''}).value.trim()}); } });
+  var co_fb={ company_id:coId, sat:S.sat, values:picked('qValues'), values_free:document.getElementById('qValuesFree').value.trim(),
+    picks:picks, next_ev:S.next_ev||null, reco:S.reco||null,
+    referral:document.getElementById('qReferral').value.trim(), themes:picked('qThemes'), free:document.getElementById('qFree').value.trim() };
+  var btn=document.getElementById('sendBtn'); btn.disabled=true; btn.textContent='送信中…';
+  // 企業ごとに1行（再送は上書き）
+  fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ id:'meet_co_'+coId, set:{ event_id:EVENT_ID, name:name, co_fb:co_fb } })})
+    .then(function(r){return r.json();})
+    .then(function(j){
+      if(j&&j.ok!==false){ document.getElementById('formBox').style.display='none'; document.getElementById('doneBox').style.display='block'; window.scrollTo(0,0); }
+      else{ btn.disabled=false; btn.textContent='この内容で送信する'; showErr('送信に失敗しました。時間をおいてもう一度お試しください。'); }
+    })
+    .catch(function(){ btn.disabled=false; btn.textContent='この内容で送信する'; showErr('通信エラーです。もう一度お試しください。'); });
+}
+boot();
+</script>
+</body>
+</html>

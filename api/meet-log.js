@@ -12,7 +12,7 @@ const cors = {
 
 // 書き込みを許可する列（任意の列を書かれないようホワイトリスト化）
 const ALLOWED = new Set([
-  'event_id', 'name', 'checks', 'deep', 'talk', 'consent', 'rtags', 'comment', 'survey_done', 'groups', 'reactions', 'observer', 'scores', 'nps', 'after',
+  'event_id', 'name', 'checks', 'deep', 'talk', 'consent', 'rtags', 'comment', 'survey_done', 'groups', 'reactions', 'observer', 'scores', 'nps', 'after', 'co_fb',
 ]);
 
 export default async function handler(req) {
@@ -25,6 +25,24 @@ export default async function handler(req) {
 
   const id = (body && body.id != null) ? String(body.id) : '';
   if (!id || id.length > 80 || !/^meet_/.test(id)) return json({ error: 'invalid id' }, 400);
+
+  // 企業アンケート(/meet/co-after.html)用：参加者名簿（id+氏名のみ・傍聴と写真専用行は除外）。
+  // 配布URLに埋めたキー(MEET_CO_KEY)で保護＝リンクを受け取った登壇企業だけが読める。env未設定なら常に403（安全側）。
+  if (body && body.action === 'roster') {
+    const ck = process.env.MEET_CO_KEY;
+    if (!ck || String(body.k || '') !== ck) return json({ error: 'forbidden' }, 403);
+    const U = process.env.SUPABASE_URL, K = process.env.SUPABASE_SERVICE_KEY;
+    if (!U || !K) return json({ error: 'Supabase not configured' }, 500);
+    const ev = /^[a-z0-9_]{1,40}$/.test(String(body.event_id || '')) ? String(body.event_id) : 'meet_2026_07_30';
+    try {
+      const r = await fetch(`${U}/rest/v1/meet_entries?event_id=eq.${encodeURIComponent(ev)}&select=id,name,observer&order=created_at.asc`, { headers: { apikey: K, Authorization: `Bearer ${K}` } });
+      const rows = await r.json();
+      const roster = (Array.isArray(rows) ? rows : [])
+        .filter(x => x && x.name && !x.observer && !/^meet_(ph|co)_/.test(String(x.id || '')))
+        .map(x => ({ id: x.id, name: x.name }));
+      return json({ ok: true, roster });
+    } catch (e) { return json({ ok: false, error: String(e && e.message || e) }, 200); }
+  }
 
   // 本人の班分けスケジュールのみ返す（PIIは返さない。id＝端末秘匿値なので本人限定の読取）
   if (body && body.action === 'get') {

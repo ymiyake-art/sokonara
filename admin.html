@@ -3390,8 +3390,10 @@ async function renderMeetAdmin(){
   try{ const {data}=await supabaseClient.from('site_settings').select('value').eq('key','meet_speakers'); const v=(data&&data[0]&&data[0].value)||{}; window._meetSpeakerIds=Array.isArray(v.ids)?v.ids.map(String):[]; }catch(e){ window._meetSpeakerIds=window._meetSpeakerIds||[]; }
   window._mspOrder=(window._meetSpeakerIds||[]).slice(); // 発表順の編集用ワーキングコピー
   // イベント別に絞り込み（最新イベントを既定）
-  // 事前写真の行(meet_ph_*)は写真専用＝参加者統計・名簿・班分けから除外（📷カードと企業レポートの氏名突合だけが読む）
-  rows=rows.filter(r=>!/^meet_ph_/.test(String(r.id||'')));
+  // 企業アンケート行(meet_co_*)を先に取り分ける（🏢カード専用）
+  const coFbRows=rows.filter(r=>/^meet_co_/.test(String(r.id||''))&&r.co_fb&&typeof r.co_fb==='object');
+  // 事前写真(meet_ph_*)・企業アンケ(meet_co_*)の行は参加者統計・名簿・班分けから除外（それぞれ専用カードだけが読む）
+  rows=rows.filter(r=>!/^meet_(ph|co)_/.test(String(r.id||'')));
   const evs=[...new Set(rows.map(r=>r.event_id).filter(Boolean))];
   const curEv=window._meetEv||evs[0]||'';
   if(curEv) rows=rows.filter(r=>r.event_id===curEv);
@@ -3505,6 +3507,30 @@ async function renderMeetAdmin(){
       <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
         <div style="font-weight:700;font-size:13px;margin-bottom:10px;">理由タグの傾向（匿名集計＝企業レポート用）</div>
         <div style="display:flex;gap:7px;flex-wrap:wrap;">${tagChips}</div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px;">🏢 登壇企業アンケート（/meet/co-after.html）</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.7;">配布URL＝<code style="background:var(--teal-bg);padding:1px 6px;border-radius:4px;">https://app.sokonara.co.jp/meet/co-after.html?k=（キー）</code>（キー=Vercel環境変数<b>MEET_CO_KEY</b>。イベント後に各社へメールで送付）。企業ごとに1回答（再送は上書き）。<b>参加者側の共鳴度4点以上と企業の指名が重なると「相互マッチ」</b>＝最優先でつなぐ相手です。</div>
+        ${(()=>{ if(!coFbRows.length) return '<div style="font-size:12px;color:var(--text3);">まだ回答がありません。</div>';
+          const coName2=id=>{ const c=cos.find(x=>String(x.id)===String(id)); return c?(c.ceo||c.name||id):id; };
+          const VW={v_layer:'異なる層',v_pr:'新しい切り口のPR',v_dialog:'距離の近い対話',v_insight:'共感ポイント把握',v_person:'人柄確認',v_biz:'戦略への気づき',v_option:'新しい選択肢',v_net:'横のつながり'};
+          const TW={t_pool:'母集団形成',t_remote:'遠方人材・配信',t_project:'共創PJ・インターン',t_brand:'採用ブランディング',t_web:'Web共鳴データ',t_match:'個別マッチング',t_none:'未定'};
+          const avg=k=>{ const v=coFbRows.map(r=>r.co_fb[k]).filter(x=>typeof x==='number'); return v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):'—'; };
+          const cards=coFbRows.map(r=>{ const f=r.co_fb; const cid2=String(f.company_id||'');
+            const matches=(f.picks||[]).map(p=>{ const pr=rows.find(x=>String(x.id)===String(p.id)); const mutual=!!(pr&&pr.scores&&typeof pr.scores[cid2]==='number'&&pr.scores[cid2]>=4);
+              return `<div style="padding:5px 0;border-bottom:1px solid rgba(227,230,234,0.5);font-size:12px;">${mutual?'<span style="background:#fff3cd;color:#8a6d00;font-weight:900;font-size:10px;padding:1px 7px;border-radius:8px;margin-right:6px;">⭐ 相互マッチ</span>':''}<b>${escA(p.name||'')}</b>${p.reason?` <span style="color:var(--text2)">— ${escA(p.reason)}</span>`:''}</div>`; }).join('');
+            return `<div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;">
+              <div style="font-size:13px;font-weight:700;color:var(--navy);">${escA(coName2(cid2))} <span style="font-size:11px;color:var(--text3);font-weight:400;">回答者: ${escA(r.name||'')} ／ 満足度 <b>${f.sat||'—'}</b>/5 ・次回 ${f.next_ev||'—'} ・推奨 ${f.reco||'—'}</span></div>
+              ${(f.values||[]).length?`<div style="margin-top:5px;">${(f.values||[]).map(v=>`<span style="display:inline-block;font-size:10px;background:var(--teal-bg);color:var(--teal-d);border-radius:10px;padding:2px 8px;margin:0 3px 3px 0;">${VW[v]||v}</span>`).join('')}</div>`:''}
+              ${matches?`<div style="margin-top:7px;"><div style="font-size:10.5px;font-weight:700;color:var(--text2);">接点を深めたい参加者（${(f.picks||[]).length}名）</div>${matches}</div>`:''}
+              ${(f.themes||[]).length?`<div style="margin-top:7px;font-size:11px;color:var(--text2);">今後のテーマ: ${(f.themes||[]).map(t=>TW[t]||t).join('・')}</div>`:''}
+              ${(f.referral||'').trim()?`<div style="margin-top:5px;font-size:11.5px;color:var(--text2);">紹介: ${escA(f.referral)}</div>`:''}
+              ${(f.values_free||'').trim()?`<div style="margin-top:5px;font-size:11.5px;color:var(--text2);">「${escA(f.values_free)}」</div>`:''}
+              ${(f.free||'').trim()?`<div style="margin-top:5px;font-size:11.5px;color:var(--text2);">感想: ${escA(f.free)}</div>`:''}
+            </div>`; }).join('');
+          return `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+            ${[['回答数',coFbRows.length],['満足度',avg('sat')],['次回参加',avg('next_ev')],['推奨度',avg('reco')]].map(([l,v])=>`<div style="flex:1;min-width:100px;border:1px solid var(--border);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--text2)">${l}</div><div style="font-size:19px;font-weight:700;color:var(--navy)">${v}</div></div>`).join('')}
+          </div>${cards}`; })()}
       </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
         <div style="font-weight:700;font-size:13px;margin-bottom:4px;">📮 後日アンケート（/meet/after.html）</div>
