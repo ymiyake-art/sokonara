@@ -3390,6 +3390,8 @@ async function renderMeetAdmin(){
   try{ const {data}=await supabaseClient.from('site_settings').select('value').eq('key','meet_speakers'); const v=(data&&data[0]&&data[0].value)||{}; window._meetSpeakerIds=Array.isArray(v.ids)?v.ids.map(String):[]; }catch(e){ window._meetSpeakerIds=window._meetSpeakerIds||[]; }
   window._mspOrder=(window._meetSpeakerIds||[]).slice(); // 発表順の編集用ワーキングコピー
   // イベント別に絞り込み（最新イベントを既定）
+  // 事前写真の行(meet_ph_*)は写真専用＝参加者統計・名簿・班分けから除外（📷カードと企業レポートの氏名突合だけが読む）
+  rows=rows.filter(r=>!/^meet_ph_/.test(String(r.id||'')));
   const evs=[...new Set(rows.map(r=>r.event_id).filter(Boolean))];
   const curEv=window._meetEv||evs[0]||'';
   if(curEv) rows=rows.filter(r=>r.event_id===curEv);
