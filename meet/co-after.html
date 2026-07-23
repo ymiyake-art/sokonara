@@ -57,8 +57,8 @@
       <div class="qh">① ご回答者</div>
       <label class="fl">貴社（登壇企業）</label>
       <select id="qCo"></select>
-      <label class="fl">ご氏名</label>
-      <input type="text" id="qName" placeholder="例）山田 太郎" maxlength="40">
+      <label class="fl">ご回答者のお名前（登壇された方と異なる場合のみ・任意）</label>
+      <input type="text" id="qName" placeholder="例）山田 太郎（空欄可）" maxlength="40">
     </div>
 
     <div class="card">
@@ -77,10 +77,11 @@
     <div class="card">
       <div class="qh">④ 接点を深めたい参加者</div>
       <div class="qs">採用・業務委託・協業などを問わず「もっと話したい」と感じた方をお選びください（複数可・任意）。選ぶと理由の欄が開きます。ソコナラが双方の意向を突き合わせ、優先的におつなぎします。</div>
-      <input type="text" id="qPickFilter" placeholder="🔍 お名前で絞り込み" oninput="filterPicks(this.value)" style="margin-bottom:8px;display:none;">
-      <div id="qPicks"><div style="font-size:12px;color:var(--text3);padding:8px 0;">参加者名簿を読み込み中…</div></div>
       <label class="fl">名簿で見つからない方・まとめて書きたい場合はこちらへ</label>
       <textarea id="qPicksFree" placeholder="例）山田太郎さん（物流の話が刺さった）、佐藤花子さん…（任意）"></textarea>
+      <label class="fl">名簿から選ぶ</label>
+      <input type="text" id="qPickFilter" placeholder="🔍 お名前で絞り込み" oninput="filterPicks(this.value)" style="margin-bottom:8px;display:none;">
+      <div id="qPicks"><div style="font-size:12px;color:var(--text3);padding:8px 0;">参加者名簿を読み込み中…</div></div>
     </div>
 
     <div class="card">
@@ -100,7 +101,7 @@
 
     <div class="card">
       <div class="qh">⑦ ご紹介いただけそうな経営層</div>
-      <div class="qs">「この人も合いそう」という方がいらっしゃれば（氏名・会社名・役職など、分かる範囲で）</div>
+      <div class="qs">「この人も合いそう」という方がいらっしゃれば（氏名・会社名・役職など、分かる範囲で）。<b style="color:var(--teal-d)">ご紹介先が次回イベントにお申し込みされた場合、謝礼としてAmazonギフト券1万円分をお渡しします。</b></div>
       <textarea id="qReferral" placeholder="（任意）"></textarea>
     </div>
 
@@ -229,7 +230,6 @@ function send(){
   var coId=document.getElementById('qCo').value;
   var name=document.getElementById('qName').value.trim();
   if(!coId) return showErr('①で貴社を選択してください。');
-  if(!name) return showErr('①でご氏名を入力してください。');
   if(!S.sat) return showErr('②の総合満足度を選択してください。');
   var picks=[]; ROSTER.forEach(function(p,i){ var box=document.querySelector('#pk'+i+' input[type=checkbox]'); if(box&&box.checked){ picks.push({id:p.id,name:p.name,reason:(document.getElementById('pkr'+i)||{value:''}).value.trim()}); } });
   var co_fb={ company_id:coId, sat:S.sat, values:picked('qValues'), values_free:document.getElementById('qValuesFree').value.trim(),
