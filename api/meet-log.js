@@ -35,12 +35,28 @@ export default async function handler(req) {
     if (!U || !K) return json({ error: 'Supabase not configured' }, 500);
     const ev = /^[a-z0-9_]{1,40}$/.test(String(body.event_id || '')) ? String(body.event_id) : 'meet_2026_07_30';
     try {
-      const r = await fetch(`${U}/rest/v1/meet_entries?event_id=eq.${encodeURIComponent(ev)}&select=id,name,observer&order=created_at.asc`, { headers: { apikey: K, Authorization: `Bearer ${K}` } });
+      const r = await fetch(`${U}/rest/v1/meet_entries?event_id=eq.${encodeURIComponent(ev)}&select=id,name,observer,photo_path,photo_consent&order=created_at.asc`, { headers: { apikey: K, Authorization: `Bearer ${K}` } });
       const rows = await r.json();
-      const roster = (Array.isArray(rows) ? rows : [])
+      const all = Array.isArray(rows) ? rows : [];
+      // 氏名の突合キー＝空白（半角/全角）を除去。事前写真(meet_ph_)と当日登録(meet_)は別行のため氏名でリンクする
+      const nk = s => String(s || '').replace(/[\s　]+/g, '');
+      const phByKey = {};
+      all.filter(x => /^meet_ph_/.test(String(x.id || '')) && x.photo_path && x.photo_consent !== false && x.name)
+         .forEach(x => { const k = nk(x.name); if (k && !phByKey[k]) phByKey[k] = x.photo_path; });
+      const roster = all
         .filter(x => x && x.name && !x.observer && !/^meet_(ph|co)_/.test(String(x.id || '')))
-        .map(x => ({ id: x.id, name: x.name }));
-      return json({ ok: true, roster });
+        .map(x => ({ id: x.id, name: x.name, _pp: phByKey[nk(x.name)] || null }));
+      // 写真パス→署名URL（1時間）に変換して返す
+      const paths = [...new Set(roster.map(x => x._pp).filter(Boolean))];
+      const signed = {};
+      if (paths.length) {
+        const s = await fetch(`${U}/storage/v1/object/sign/meet-photos`, {
+          method: 'POST', headers: { apikey: K, Authorization: `Bearer ${K}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ expiresIn: 3600, paths }),
+        });
+        if (s.ok) { const arr = await s.json(); (arr || []).forEach(x => { if (x && x.signedURL) signed[x.path] = `${U}/storage/v1${x.signedURL}`; }); }
+      }
+      return json({ ok: true, roster: roster.map(x => ({ id: x.id, name: x.name, url: (x._pp && signed[x._pp]) || null })) });
     } catch (e) { return json({ ok: false, error: String(e && e.message || e) }, 200); }
   }
 

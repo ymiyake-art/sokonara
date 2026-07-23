@@ -184,7 +184,9 @@ function boot(){
       if(!ROSTER.length){ el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px 0;">参加者の登録がまだありません。下の自由記述欄にご記入ください。</div>'; return; }
       if(ROSTER.length>=10){ document.getElementById('qPickFilter').style.display='block'; }
       el.innerHTML=ROSTER.map(function(p,i){ return '<div class="pk" id="pk'+i+'">'
-        +'<label class="chk"><input type="checkbox" onchange="togglePk('+i+',this.checked)"><span><b>'+escapeH(p.name)+'</b> さん</span></label>'
+        +'<label class="chk" style="align-items:center;"><input type="checkbox" onchange="togglePk('+i+',this.checked)">'
+        +(p.url?'<img src="'+escapeH(p.url)+'" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:50%;flex:0 0 auto;border:1.5px solid var(--border);">':'<span style="width:40px;height:40px;border-radius:50%;background:var(--bg);flex:0 0 auto;display:inline-block;"></span>')
+        +'<span><b>'+escapeH(p.name)+'</b> さん</span></label>'
         +'<div class="rsn"><input type="text" id="pkr'+i+'" placeholder="理由・気になった点（任意）" maxlength="120"></div></div>'; }).join('');
     }).catch(function(){});
   addSlot(); // 候補日の初期1行
