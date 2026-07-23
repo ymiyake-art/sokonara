@@ -3521,7 +3521,10 @@ async function renderMeetAdmin(){
             const matches=(f.picks||[]).map(p=>{ const pr=rows.find(x=>String(x.id)===String(p.id)); const mutual=!!(pr&&pr.scores&&typeof pr.scores[cid2]==='number'&&pr.scores[cid2]>=4);
               return `<div style="padding:5px 0;border-bottom:1px solid rgba(227,230,234,0.5);font-size:12px;">${mutual?'<span style="background:#fff3cd;color:#8a6d00;font-weight:900;font-size:10px;padding:1px 7px;border-radius:8px;margin-right:6px;">⭐ 相互マッチ</span>':''}<b>${escA(p.name||'')}</b>${p.reason?` <span style="color:var(--text2)">— ${escA(p.reason)}</span>`:''}</div>`; }).join('');
             return `<div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;">
-              <div style="font-size:13px;font-weight:700;color:var(--navy);">${escA(coName2(cid2))} <span style="font-size:11px;color:var(--text3);font-weight:400;">回答者: ${escA(r.name||'')} ／ 満足度 <b>${f.sat||'—'}</b>/5 ・次回 ${f.next_ev||'—'} ・推奨 ${f.reco||'—'}</span></div>
+              <div style="font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:baseline;gap:8px;">
+                <label style="flex:0 0 auto;cursor:pointer;"><input type="checkbox" class="cofb-del" value="${escA(String(r.id||''))}" style="width:15px;height:15px;cursor:pointer;vertical-align:middle;"></label>
+                <span style="flex:1;">${escA(coName2(cid2))} <span style="font-size:11px;color:var(--text3);font-weight:400;">回答者: ${escA(r.name||'')} ／ 満足度 <b>${f.sat||'—'}</b>/5 ・次回 ${f.next_ev||'—'} ・推奨 ${f.reco||'—'}</span></span>
+              </div>
               ${(f.values||[]).length?`<div style="margin-top:5px;">${(f.values||[]).map(v=>`<span style="display:inline-block;font-size:10px;background:var(--teal-bg);color:var(--teal-d);border-radius:10px;padding:2px 8px;margin:0 3px 3px 0;">${VW[v]||v}</span>`).join('')}</div>`:''}
               ${matches?`<div style="margin-top:7px;"><div style="font-size:10.5px;font-weight:700;color:var(--text2);">接点を深めたい参加者（${(f.picks||[]).length}名）</div>${matches}</div>`:''}
               ${(f.picks_free||'').trim()?`<div style="margin-top:5px;font-size:11.5px;color:var(--text2);"><b style="font-size:10px;">指名(自由記述):</b> ${escA(f.picks_free)}</div>`:''}
@@ -3533,7 +3536,12 @@ async function renderMeetAdmin(){
             </div>`; }).join('');
           return `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
             ${[['回答数',coFbRows.length],['満足度',avg('sat')],['次回参加',avg('next_ev')],['推奨度',avg('reco')]].map(([l,v])=>`<div style="flex:1;min-width:100px;border:1px solid var(--border);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--text2)">${l}</div><div style="font-size:19px;font-weight:700;color:var(--navy)">${v}</div></div>`).join('')}
-          </div>${cards}`; })()}
+          </div>${cards}
+          <div style="display:flex;gap:10px;align-items:center;margin-top:6px;">
+            <label style="font-size:11px;color:var(--text2);cursor:pointer;"><input type="checkbox" onclick="document.querySelectorAll('.cofb-del').forEach(c=>c.checked=this.checked)" style="width:14px;height:14px;vertical-align:middle;"> 全選択</label>
+            <button onclick="deleteSelectedCoFb(this)" style="padding:7px 14px;background:#fff;color:#c0392b;border:1px solid var(--border);border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🗑 選択した回答を削除</button>
+            <span style="font-size:10px;color:var(--text3);">テスト入力の整理に。1回答＝1社ぶんを削除します。</span>
+          </div>`; })()}
       </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
         <div style="font-weight:700;font-size:13px;margin-bottom:4px;">📮 後日アンケート（/meet/after.html）</div>
@@ -3796,6 +3804,18 @@ async function deleteSelectedParticipants(btn){
   for(const id of ids){ const r=await adminWrite('meet_entries','delete',{id}); if(r.ok) ok++; else ng++; }
   btn.disabled=false; btn.textContent=ot;
   toast('参加者を削除：成功'+ok+'件'+(ng?(' / 失敗'+ng+'件'):''));
+  renderMeetAdmin();
+}
+// 企業アンケート回答（meet_co_*）を入力者ごとに選択削除（テスト入力の整理用）
+async function deleteSelectedCoFb(btn){
+  const ids=[...document.querySelectorAll('.cofb-del:checked')].map(el=>el.value).filter(Boolean);
+  if(!ids.length){ toast('削除する回答にチェックを入れてください'); return; }
+  if(!confirm('選択した企業アンケート回答 '+ids.length+'件を完全に削除します。よろしいですか？')) return;
+  btn.disabled=true; const ot=btn.textContent; btn.textContent='削除中…';
+  let ok=0, ng=0;
+  for(const id of ids){ const r=await adminWrite('meet_entries','delete',{id}); if(r.ok) ok++; else ng++; }
+  btn.disabled=false; btn.textContent=ot;
+  toast('回答を削除：成功'+ok+'件'+(ng?(' / 失敗'+ng+'件'):''));
   renderMeetAdmin();
 }
 async function deleteTestParticipants(btn){
