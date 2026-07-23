@@ -206,12 +206,13 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-seri
       </div>
       <div class="admin-nav" style="border-top:1px solid rgba(255,255,255,0.07);padding-top:12px;">
         <div class="admin-nav-label">🎪 MEET（7/30）</div>
-        <div class="nav-item" id="ni-meetops" onclick="switchTab('meetops')"><div class="nav-dot" style="background:#e67e22"></div>🎛 MEET運営（班分け・写真・アンケート集計）</div>
+        <div class="nav-item" id="ni-meetops" onclick="switchTab('meetops')"><div class="nav-dot" style="background:#e67e22"></div>🎛 MEET運営（写真・アンケート集計）</div>
+        <div class="nav-item" id="ni-meetgroups" onclick="switchTab('meetgroups')"><div class="nav-dot" style="background:#d35400"></div>🧩 班分け（当日用・軽量）</div>
         <a class="nav-item" href="/meet/" target="_blank" rel="noopener" style="text-decoration:none;"><div class="nav-dot" style="background:#e67e22"></div>📣 MEET LP ↗</a>
         <a class="nav-item" href="/meet/day.html" target="_blank" rel="noopener" style="text-decoration:none;"><div class="nav-dot" style="background:#f39c12"></div>🎫 当日ページ（受付QR） ↗</a>
         <a class="nav-item" href="/meet/photo.html" target="_blank" rel="noopener" style="text-decoration:none;"><div class="nav-dot" style="background:#16a085"></div>📷 顔写真の事前登録 ↗</a>
         <a class="nav-item" href="/meet/after.html" target="_blank" rel="noopener" style="text-decoration:none;"><div class="nav-dot" style="background:#2980b9"></div>📮 後日アンケート（参加者） ↗</a>
-        <a class="nav-item" href="/meet/co-after.html" target="_blank" rel="noopener" style="text-decoration:none;" title="企業向け。開くには末尾に ?k=（キー）が必要。配布URLはMEET運営の🏢カード参照"><div class="nav-dot" style="background:#8e44ad"></div>🏢 登壇企業アンケート ↗</a>
+        <a class="nav-item" href="/meet/co-after.html?k=snmeet-co-x7k2p9" target="_blank" rel="noopener" style="text-decoration:none;"><div class="nav-dot" style="background:#8e44ad"></div>🏢 登壇企業アンケート ↗</a>
       </div>
       <div class="admin-nav" style="border-top:1px solid rgba(255,255,255,0.07);padding-top:12px;">
         <div class="admin-nav-label">登録・管理</div>
@@ -358,7 +359,7 @@ function switchTab(tab){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const ni=document.getElementById('ni-'+tab);
   if(ni) ni.classList.add('active');
-  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',biz:'🏢 法人問い合わせ',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',meetops:'🎪 MEET運営（班分け・興味データ）',article:'📝 記事管理',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧',wbmatrix:'📈 Well-beingマトリクス',cards:'🗂️ 課題カード(v2)',resonance:'📊 共鳴データ(v2)',utmlinks:'🔗 配信リンク・UTM',cases:'✨ 出会いの実例(LP)',plptext:'👤 個人LP文言（/personal/）',philosophy:'🧭 設計思想'};
+  const titles={dash:'ダッシュボード',reactions:'反応一覧',interests:'興味通知フォーム',biz:'🏢 法人問い合わせ',contacts:'接点候補リスト',report:'AIレポート生成',broadcast:'LINE配信',meetops:'🎪 MEET運営（写真・アンケート・レポート）',meetgroups:'🧩 班分け（当日用・軽量）',article:'📝 記事管理',addco:'企業登録',addpj:'共創テーマ登録',colist:'掲載企業一覧',wbmatrix:'📈 Well-beingマトリクス',cards:'🗂️ 課題カード(v2)',resonance:'📊 共鳴データ(v2)',utmlinks:'🔗 配信リンク・UTM',cases:'✨ 出会いの実例(LP)',plptext:'👤 個人LP文言（/personal/）',philosophy:'🧭 設計思想'};
   document.getElementById('tabTitle').textContent=titles[tab]||tab;
   if(tab === 'interests'){
     // 既読としてマーク
@@ -369,7 +370,7 @@ function switchTab(tab){
     localStorage.setItem('snLastSeenBiz', new Date().toISOString());
     setBizBadge(0);
   }
-  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,biz:renderBiz,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,meetops:renderMeetAdmin,article:renderArticleEditor,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList,wbmatrix:renderWBMatrix,cards:renderCardsAdmin,resonance:renderResonance,utmlinks:renderUtmLinks,cases:renderCases,plptext:renderPlpText,philosophy:renderPhilosophy};
+  const fns={dash:renderDash,reactions:renderReactions,interests:renderInterests,biz:renderBiz,contacts:renderContacts,report:renderReport,broadcast:renderBroadcast,meetops:renderMeetAdmin,meetgroups:renderMeetGroups,article:renderArticleEditor,addco:renderAddCo,addpj:renderAddPj,colist:renderCoList,wbmatrix:renderWBMatrix,cards:renderCardsAdmin,resonance:renderResonance,utmlinks:renderUtmLinks,cases:renderCases,plptext:renderPlpText,philosophy:renderPhilosophy};
   fns[tab]?.();
 }
 
@@ -3374,6 +3375,7 @@ async function wbSaveAll(){
 // 新タグ＝仕事の軸6軸と1:1（追記48）。旧タグ(leader等)は過去データ表示用に残す
 const MEET_RTAGS={meaning:'意義・ビジョン',agency:'挑戦・変革',people:'人柄・雰囲気',local:'地域との関わり',time:'働き方',econ:'条件・待遇',undecided:'判断中',leader:'経営者に惹かれた(旧)',biz:'事業が面白い(旧)',exp:'経験活かせそう(旧)',growth:'成長機会(旧)',cond:'条件面(旧)'};
 async function renderMeetAdmin(){
+  window._meetRerender=renderMeetAdmin; // 班分け系関数の再描画先（班分けページと共用のため間接化）
   const box=document.getElementById('adminContent');
   box.innerHTML=`<div style="padding:24px"><div style="color:var(--text3);font-size:13px">参加者データを読み込み中…</div></div>`;
   let rows=[];
@@ -3459,10 +3461,10 @@ async function renderMeetAdmin(){
       </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
         <div style="font-weight:700;font-size:13px;margin-bottom:4px;">社別の興味（班分け用）</div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">チェック＝気になる／詳しく＝詳しく知りたい／話したい＝個別接点希望（（共有不可）＝本人が氏名共有に不同意）。</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">今回の登壇企業のみ表示（🎤カードの選択順）。チェック＝気になる／詳しく＝詳しく知りたい／話したい＝個別接点希望（（共有不可）＝本人が氏名共有に不同意）。</div>
         <table style="width:100%;border-collapse:collapse;font-size:12px;">
           <thead><tr>${th('経営層')}${th('チェック',1)}${th('共鳴度Ø',1)}${th('話したい(4点+)',1)}${th('共鳴ポイント')}${th('チェックした人')}</tr></thead>
-          <tbody>${cos.map(c=>{ const a=agg[String(c.id)]||{ck:0,deep:0,talk:0,names:[],talks:[],rx:{},scSum:0,scN:0};
+          <tbody>${(((window._meetSpeakerIds||[]).length?window._meetSpeakerIds.map(id=>cos.find(x=>String(x.id)===String(id))).filter(Boolean):cos)).map(c=>{ const a=agg[String(c.id)]||{ck:0,deep:0,talk:0,names:[],talks:[],rx:{},scSum:0,scN:0};
             const rxHtml=Object.entries(a.rx||{}).sort((x,y)=>y[1]-x[1]).map(([t,n])=>`<span style="display:inline-block;font-size:10px;background:var(--teal-bg);color:var(--teal-d);border-radius:10px;padding:2px 8px;margin:0 3px 3px 0;">${escA(MEET_RTAGS[t]||t)} <b>${n}</b></span>`).join('')||'<span style="font-size:10px;color:var(--text3)">—</span>';
             const scAvg=a.scN?(a.scSum/a.scN).toFixed(1)+'<span style="font-size:9px;color:var(--text3)"> ('+a.scN+')</span>':'—';
             return `<tr>${td('<b style="color:var(--navy)">'+escA(c.ceo||c.name||'')+'</b><div style="font-size:10px;color:var(--text3)">'+escA(c.name||'')+'</div>')}${td(a.ck,1)}${td(scAvg,1)}${td(a.talk,1,a.talk>0)}${td(rxHtml)}${td('<span style="font-size:11px;color:var(--text2)">'+escA(a.names.join('、'))+(a.talks.length?'<br><span style="color:#2e8c7f">話したい: '+escA(a.talks.join('、'))+'</span>':'')+'</span>')}</tr>`; }).join('')}</tbody>
@@ -3488,23 +3490,10 @@ async function renderMeetAdmin(){
         </div>
         <div id="meetPhotoList" style="font-size:12px;color:var(--text3);">「写真を読み込む」を押すと一覧が表示されます。</div>
       </div>
-      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
-        <div style="font-weight:700;font-size:13px;margin-bottom:4px;">🧩 班分け（自動割り当て）</div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.7;">卓＝上で選択した登壇企業。各参加者は巡目ごとに別の卓へ移動します。<b>卓あたりの人数は参加人数で均等割り（各卓の人数差は最大1名）を最優先</b>し、チェックした登壇企業へは<b>なるべく</b>行けるよう配分（定員が埋まっていれば行けない場合もあります）。<b>🎧傍聴のみの登録者は自動で除外</b>されます。①巡数→②自動計算→③保存で各参加者の当日ページに番号が出ます。</div>
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
-          <span style="font-size:12px;color:var(--text2)">巡数（1人が回る卓数）</span>
-          <select id="grpRotations" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;"><option value="3">3巡</option><option value="4">4巡</option></select>
-          <button onclick="computeGroupsUI()" style="padding:8px 16px;background:var(--navy);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🧮 自動計算</button>
-          <button id="grpSaveBtn" onclick="saveGroupsUI(this)" style="padding:8px 16px;background:var(--teal);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:none;">💾 保存して各参加者に反映</button>
-        </div>
-        <div style="border-top:1px dashed var(--border);padding-top:10px;margin-bottom:10px;">
-          <span style="font-size:11px;color:var(--text3)">🧪 テスト参加者（本番前の動作確認）：</span>
-          <select id="grpTestN" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:11px;"><option>12</option><option selected>24</option><option>40</option></select>
-          <button onclick="createTestParticipants(this)" style="padding:6px 12px;background:#fff;color:var(--text2);border:1px solid var(--border);border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit;">🧪 テスト参加者を作成</button>
-          <button onclick="deleteTestParticipants(this)" style="padding:6px 12px;background:#fff;color:#c0392b;border:1px solid var(--border);border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit;">🗑 テスト参加者を削除</button>
-          <div style="font-size:10px;color:var(--text3);margin-top:6px;line-height:1.6;">テスト1〜N を実データとして作成（登壇企業からランダムにチェック）。作成後、上の「自動計算→保存」で割当→当日ページ／下の「参加者一覧」で結果を確認できます。<b>本番前に必ず削除</b>してください。</div>
-        </div>
-        <div id="grpPreview"></div>
+      <div style="background:#fff;border:1px solid var(--teal);border-radius:10px;padding:14px 18px;margin-bottom:20px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px;">🧩 班分けは専用ページに移動しました</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">当日の会場Wi-Fi対策＝このタブ全体を読み込まずに班分けだけを操作できる軽量ページです。</div>
+        <button onclick="switchTab('meetgroups')" style="padding:8px 16px;background:var(--navy);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🧩 班分けページを開く</button>
       </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
         <div style="font-weight:700;font-size:13px;margin-bottom:10px;">理由タグの傾向（匿名集計＝企業レポート用）</div>
@@ -3689,6 +3678,53 @@ function computeGroups(rows, tables, R){
   return {out, counts, tables, R, cap, N};
 }
 const MEET_EVENT_ID='meet_2026_07_30';
+// 🧩 班分け専用の軽量ページ（当日の会場Wi-Fi対策）。meet_entriesと登壇企業だけを読み込み、
+// MEET運営タブの重い描画（写真・アンケ集計・LP編集等）を一切走らせない。関数群（computeGroupsUI等）は共用。
+async function renderMeetGroups(){
+  window._meetRerender=renderMeetGroups;
+  const box=document.getElementById('adminContent');
+  box.innerHTML='<div style="padding:24px"><div style="color:var(--text3);font-size:13px">読み込み中…</div></div>';
+  let rows=[];
+  try{
+    const res=await fetch('/api/admin-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw,table:'meet_entries',action:'list'})});
+    const d=await res.json(); rows=(d&&d.rows)||[];
+  }catch(e){ box.innerHTML='<div style="padding:24px;color:var(--hot)">読み込み失敗: '+escA(e.message||String(e))+'</div>'; return; }
+  rows=rows.filter(r=>!/^meet_(ph|co)_/.test(String(r.id||'')));
+  const curEv=window._meetEv||MEET_EVENT_ID;
+  rows=rows.filter(r=>r.event_id===curEv);
+  try{ const {data}=await supabaseClient.from('site_settings').select('value').eq('key','meet_speakers'); const v=(data&&data[0]&&data[0].value)||{}; window._meetSpeakerIds=Array.isArray(v.ids)?v.ids.map(String):[]; }catch(e){ window._meetSpeakerIds=window._meetSpeakerIds||[]; }
+  const cos=loadCompanies();
+  window._meetRows=rows; window._meetCos=cos; window._meetEvId=curEv;
+  const spk=(window._meetSpeakerIds||[]).map(id=>cos.find(c=>String(c.id)===String(id))).filter(Boolean);
+  box.innerHTML=`<div style="padding:24px;max-width:920px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <div style="font-size:15px;font-weight:900;color:var(--navy)">🧩 班分け（当日用・軽量ページ）</div>
+      <button onclick="renderMeetGroups()" style="margin-left:auto;padding:6px 14px;border:1px solid var(--border);background:#fff;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;">🔄 更新</button>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+      ${[['参加登録',rows.length],['卓（登壇企業）',spk.length]].map(([l,n])=>`<div style="flex:1;min-width:120px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 14px;"><div style="font-size:11px;color:var(--text2)">${l}</div><div style="font-size:22px;font-weight:700;color:var(--navy)">${n}</div></div>`).join('')}
+    </div>
+    <div style="font-size:11.5px;color:var(--text2);margin-bottom:14px;line-height:1.9;">卓の順番：${spk.map((c,i)=>`<span style="white-space:nowrap;"><b style="color:var(--navy)">${String.fromCharCode(65+i)}</b> ${escA(c.ceo||c.name||'')}</span>`).join('　')||'<span style="color:var(--hot)">⚠️ 登壇企業が未選択です（MEET運営タブの🎤カードで保存してください）</span>'}</div>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:4px;">🧩 班分け（自動割り当て）</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.7;">卓＝登壇企業。各参加者は巡目ごとに別の卓へ移動します。<b>卓あたりの人数は参加人数で均等割り（各卓の人数差は最大1名）を最優先</b>し、チェックした登壇企業へは<b>なるべく</b>行けるよう配分。①巡数→②自動計算→③保存で各参加者の当日ページに班が出ます（参加者は当日ページの「🔄 更新」で確認）。</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+        <span style="font-size:12px;color:var(--text2)">巡数（1人が回る卓数）</span>
+        <select id="grpRotations" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;"><option value="3">3巡</option><option value="4">4巡</option></select>
+        <button onclick="computeGroupsUI()" style="padding:8px 16px;background:var(--navy);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🧮 自動計算</button>
+        <button id="grpSaveBtn" onclick="saveGroupsUI(this)" style="padding:8px 16px;background:var(--teal);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:none;">💾 保存して各参加者に反映</button>
+      </div>
+      <div style="border-top:1px dashed var(--border);padding-top:10px;margin-bottom:10px;">
+        <span style="font-size:11px;color:var(--text3)">🧪 テスト参加者（本番前の動作確認）：</span>
+        <select id="grpTestN" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:11px;"><option>12</option><option selected>24</option><option>40</option></select>
+        <button onclick="createTestParticipants(this)" style="padding:6px 12px;background:#fff;color:var(--text2);border:1px solid var(--border);border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit;">🧪 テスト参加者を作成</button>
+        <button onclick="deleteTestParticipants(this)" style="padding:6px 12px;background:#fff;color:#c0392b;border:1px solid var(--border);border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit;">🗑 テスト参加者を削除</button>
+        <div style="font-size:10px;color:var(--text3);margin-top:6px;line-height:1.6;">テスト1〜N を実データとして作成（登壇企業からランダムにチェック）。<b>本番前に必ず削除</b>してください。</div>
+      </div>
+      <div id="grpPreview"></div>
+    </div>
+  </div>`;
+}
 function computeGroupsUI(){
   const rows=window._meetRows||[]; const tables=meetRoster();
   const R=parseInt(document.getElementById('grpRotations').value)||3;
@@ -3794,7 +3830,7 @@ async function createTestParticipants(btn){
   }
   btn.disabled=false; btn.textContent=ot;
   toast('テスト参加者を作成：成功'+ok+'件'+(ng?(' / 失敗'+ng+'件'):''));
-  renderMeetAdmin();
+  (window._meetRerender||renderMeetAdmin)();
 }
 // 参加者一覧で選択した行を削除（テスト・重複・誤登録の整理用）
 async function deleteSelectedParticipants(btn){
@@ -3829,7 +3865,7 @@ async function deleteTestParticipants(btn){
   for(const r of rows){ const res=await adminWrite('meet_entries','delete',{id:r.id}); if(res.ok) ok++; else ng++; }
   btn.disabled=false; btn.textContent=ot;
   toast('テスト参加者を削除：成功'+ok+'件'+(ng?(' / 失敗'+ng+'件'):''));
-  renderMeetAdmin();
+  (window._meetRerender||renderMeetAdmin)();
 }
 function renderGroupPreview(){
   const g=_groupResult; if(!g) return;
@@ -3860,8 +3896,8 @@ async function saveGroupsUI(btn){
     }catch(e){ ng++; }
   }
   btn.disabled=false; btn.textContent=ot;
-  toast(`班分けを保存：成功${ok}件${ng?` / 失敗${ng}件`:''}。当日ページ＆下の「参加者一覧」で確認できます`);
-  renderMeetAdmin();
+  toast(`班分けを保存：成功${ok}件${ng?` / 失敗${ng}件`:''}。各参加者の当日ページに反映されます`);
+  (window._meetRerender||renderMeetAdmin)();
 }
 
 // ===== 📄 企業向けレポート（登壇企業ごと・印刷→PDF配布用。追記53／追記56デザイン刷新） =====

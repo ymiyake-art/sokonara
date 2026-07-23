@@ -59,14 +59,16 @@
     </div>
     <input type="file" id="pFile" accept="image/*" style="display:none" onchange="onPick(this)">
 
-    <label class="consent"><input type="checkbox" id="cOps">
-      <span><b>【必須】</b>当日の運営（受付・班分け・名簿）に写真を使用することに同意します</span></label>
-    <label class="consent"><input type="checkbox" id="cShare">
-      <span><b>【任意】</b>イベント後、私が「ぜひ話したい」と評価した企業へのご紹介（レポート掲載）に写真を含めてもよい</span></label>
+    <div id="adjBox" style="display:none;margin-top:12px;background:#fafbfc;border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
+      <div style="font-size:11.5px;font-weight:700;color:var(--navy);margin-bottom:8px;">写真の位置を調整</div>
+      <label style="display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--text2);margin-bottom:8px;">拡大<input type="range" id="adjZoom" min="100" max="250" value="100" oninput="drawCrop()" style="flex:1;"></label>
+      <label style="display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--text2);margin-bottom:8px;">左右<input type="range" id="adjX" min="0" max="100" value="50" oninput="drawCrop()" style="flex:1;"></label>
+      <label style="display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--text2);">上下<input type="range" id="adjY" min="0" max="100" value="50" oninput="drawCrop()" style="flex:1;"></label>
+    </div>
 
     <button class="send" id="sendBtn" onclick="send()">この内容で登録する</button>
     <div class="err" id="errBox"></div>
-    <p class="note">・写真とお名前は、ソコナラが安全に保管し、上記の目的以外には使用しません。<br>・イベント終了後、必要な期間を過ぎたら削除します。<br>・登録し直したい場合は、もう一度このページから送信してください（新しい写真に置き換わります）。</p>
+    <p class="note">・登録し直したい場合は、もう一度このページから送信してください（新しい写真に置き換わります）。</p>
   </div>
 
   <div class="card" id="doneBox">
@@ -79,27 +81,45 @@
 <script>
 var EVENT_ID = 'meet_2026_07_30';
 var photoDataUrl = null;
+var srcImg = null; // 選択した元画像（位置調整のたびにここから正方形を切り出す）
 
-// 端末内で縮小・JPEG再エンコード（長辺1200px・q0.85）。スマホの巨大画像/MPO形式もここで標準JPEG化される
+// 正方形800pxに切り出し（cover×拡大スライダー・左右/上下スライダーで位置決め）。
+// プレビュー＝アップロードされる画像そのもの。スマホの巨大画像/MPO形式もここで標準JPEG化される
+function drawCrop(){
+  if(!srcImg) return;
+  try{
+    var S = 800;
+    var _v = function(id,def){ var n = parseInt(document.getElementById(id).value,10); return isNaN(n)?def:n; }; // ⚠️0が有効値なので||は使わない
+    var z = _v('adjZoom',100)/100;
+    var ox = _v('adjX',50)/100;
+    var oy = _v('adjY',50)/100;
+    var iw = srcImg.naturalWidth, ih = srcImg.naturalHeight;
+    var base = Math.max(S/iw, S/ih) * z;
+    var dw = iw*base, dh = ih*base;
+    var dx = -(dw - S) * ox, dy = -(dh - S) * oy;
+    var cv = document.createElement('canvas'); cv.width = S; cv.height = S;
+    var ctx = cv.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0,0,S,S);
+    ctx.drawImage(srcImg, dx, dy, dw, dh);
+    photoDataUrl = cv.toDataURL('image/jpeg', 0.85);
+    var pv = document.getElementById('pPreview');
+    pv.src = photoDataUrl; pv.style.display = 'block';
+  }catch(e){ showErr('画像の処理に失敗しました。別の写真でお試しください。'); }
+}
 function onPick(input){
   var f = input.files && input.files[0];
   if(!f) return;
   var img = new Image();
   var url = URL.createObjectURL(f);
   img.onload = function(){
-    try{
-      var max = 1200;
-      var w = img.naturalWidth, h = img.naturalHeight;
-      var sc = Math.min(1, max / Math.max(w, h));
-      var cw = Math.round(w * sc), ch = Math.round(h * sc);
-      var cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
-      cv.getContext('2d').drawImage(img, 0, 0, cw, ch);
-      photoDataUrl = cv.toDataURL('image/jpeg', 0.85);
-      var pv = document.getElementById('pPreview');
-      pv.src = photoDataUrl; pv.style.display = 'block';
-      document.getElementById('phHint').style.display = 'none';
-      document.getElementById('phBtn').textContent = '写真を変更する';
-    }catch(e){ showErr('画像の読み込みに失敗しました。別の写真でお試しください。'); }
+    srcImg = img;
+    document.getElementById('adjZoom').value = 100;
+    document.getElementById('adjX').value = 50;
+    document.getElementById('adjY').value = 50;
+    document.getElementById('adjBox').style.display = 'block';
+    document.getElementById('phHint').style.display = 'none';
+    document.getElementById('phBtn').textContent = '写真を変更する';
+    drawCrop();
     URL.revokeObjectURL(url);
   };
   img.onerror = function(){ URL.revokeObjectURL(url); showErr('画像を開けませんでした。別の写真でお試しください。'); };
@@ -111,7 +131,6 @@ function send(){
   var name = document.getElementById('pName').value.trim();
   if(!name) return showErr('お名前を入力してください。');
   if(!photoDataUrl) return showErr('写真を選択してください。');
-  if(!document.getElementById('cOps').checked) return showErr('必須の同意（当日の運営への使用）にチェックをお願いします。');
   var btn = document.getElementById('sendBtn');
   btn.disabled = true; btn.textContent = '送信中…';
   // 再送時は同じidを使う＝サーバー側で同じ行・同じ写真パスを上書き（重複しない）
@@ -119,7 +138,7 @@ function send(){
   try{ pid = localStorage.getItem('sn_meet_photo_id'); }catch(err){}
   if(!pid){ pid = 'meet_ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); try{ localStorage.setItem('sn_meet_photo_id', pid); }catch(err){} }
   fetch('/api/meet-photo', { method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ action:'upload', id:pid, name:name, photo:photoDataUrl, consent_share:document.getElementById('cShare').checked, event_id:EVENT_ID }) })
+    body: JSON.stringify({ action:'upload', id:pid, name:name, photo:photoDataUrl, consent_share:true, event_id:EVENT_ID }) })
     .then(function(r){ return r.json(); })
     .then(function(j){
       if(j && j.ok){ document.getElementById('formBox').style.display = 'none'; document.getElementById('doneBox').style.display = 'block'; window.scrollTo(0,0); }

@@ -89,7 +89,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 var EV = {
   eventId: 'meet_2026_07_30',
   title: 'ソコナラMEET',
-  dateLabel: '2026.7.30（木）18:30〜',
+  dateLabel: '2026.7.30（木）19:00〜',
   maxChecks: 3,
   companyIds: [],                       // 空=掲載中の全経営層。絞る場合は company id を列挙
   // 記事がまだ無い登壇者もここに書けば選べる（DB未登録でOK）。id は班分けでも使う安定値にする。
@@ -121,16 +121,11 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
     <div class="note" style="margin-bottom:12px;">気になる経営層へのチェック情報は、イベント運営および班分けのためにソコナラが利用します。企業向けレポートには匿名・集計情報として活用します。</div>
     <div id="regForm">
       <input type="text" id="nameIn" placeholder="氏名（フルネーム）" autocomplete="name" style="margin-bottom:10px;">
-      <label style="display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--text2);margin-bottom:12px;cursor:pointer;line-height:1.6;">
-        <input type="checkbox" id="obsIn" style="width:17px;height:17px;margin-top:2px;flex-shrink:0;cursor:pointer;">
-        <span>🎧 <b>傍聴のみ</b>で参加する（後半のテーブル交流・班分けには入りません。チェックや共鳴は自由にどうぞ）</span>
-      </label>
       <button class="btn" onclick="register()">同意して登録する</button>
     </div>
     <div id="regDone" style="display:none;">
-      <div style="font-size:14px;color:var(--navy);"><b id="regName"></b> さんで登録済み ✓ <span id="regObs" style="display:none;font-size:11px;color:#b35c12;font-weight:700;">🎧 傍聴のみ</span></div>
-      <button class="btn btn-o" style="margin-top:8px;font-size:12px;padding:9px;" id="obsToggleBtn" onclick="toggleObserver()"></button>
-      <button class="btn btn-o" style="margin-top:6px;font-size:12px;padding:9px;" onclick="editName()">名前を変更する</button>
+      <div style="font-size:14px;color:var(--navy);"><b id="regName"></b> さんで登録済み ✓</div>
+      <button class="btn btn-o" style="margin-top:8px;font-size:12px;padding:9px;" onclick="editName()">名前を変更する</button>
       <button class="btn btn-o" style="margin-top:6px;font-size:11px;padding:8px;color:var(--hot);border-color:rgba(192,52,26,0.3);" onclick="deleteMyData()">登録データを削除する（チェック・回答もすべて消えます）</button>
     </div>
     <!-- 班分けスケジュール（登録後は常時表示。運営の割り当て前は「まだ発表されていません」） -->
@@ -271,11 +266,6 @@ function paintGroups(groups){
   if(!box||!list) return;
   if(!M||!M.name){ box.style.display='none'; return; }
   box.style.display='block';
-  if(M.observer){
-    if(note) note.textContent='🎧 傍聴のみで参加中のため、テーブル交流の班分けには入りません。（交流会に参加する場合は上の切り替えボタンから）';
-    list.innerHTML='';
-    return;
-  }
   if(!groups||!groups.length){
     if(note) note.textContent='班分けはまだ発表されていません。運営の案内があったら「🔄 更新」を押してください。';
     list.innerHTML='';
@@ -295,29 +285,20 @@ function register(){
   var v=(document.getElementById('nameIn').value||'').trim();
   if(v.length<2){ toast('氏名を入力してください'); return; }
   M.name=v;
-  var ob=document.getElementById('obsIn'); if(ob) M.observer=!!ob.checked;
+  M.observer=false; // 傍聴機能は廃止（2026-07-22 三宅さん判断）。過去のtrueも登録し直しでリセットされる
   saveM();
   push({name:M.name,checks:M.checks,observer:M.observer});
   paintReg(); loadMyGroups();
-  toast(M.observer?'傍聴として登録しました。チェックや共鳴は自由にどうぞ':'登録しました。気になる経営層にチェックを！');
+  toast('登録しました。気になる経営層にチェックを！');
 }
-// 傍聴⇄参加（班分けあり）の切り替え。運営側の班分け計算は observer=true を除外する
-function toggleObserver(){
-  M.observer=!M.observer; saveM();
-  push({observer:M.observer});
-  paintReg(); paintGroups(window._myGroups||null);
-  toast(M.observer?'傍聴に切り替えました（班分けには入りません）':'参加（班分けあり）に切り替えました');
-}
-function editName(){ document.getElementById('regForm').style.display='block'; document.getElementById('regDone').style.display='none'; document.getElementById('nameIn').value=M.name; var ob=document.getElementById('obsIn'); if(ob) ob.checked=!!M.observer; }
+function editName(){ document.getElementById('regForm').style.display='block'; document.getElementById('regDone').style.display='none'; document.getElementById('nameIn').value=M.name; }
 function paintReg(){
   var ok=!!M.name;
   document.getElementById('regForm').style.display=ok?'none':'block';
   document.getElementById('regDone').style.display=ok?'block':'none';
   if(ok) document.getElementById('regName').textContent=M.name;
-  var ro=document.getElementById('regObs'); if(ro) ro.style.display=M.observer?'inline':'none';
-  var ob=document.getElementById('obsToggleBtn'); if(ob) ob.textContent=M.observer?'参加（班分けあり）に切り替える':'🎧 傍聴のみに切り替える（班分けに入らない）';
   document.getElementById('ckbar').style.display='flex';
-  document.getElementById('ckName').textContent=ok?(M.name+' さん'+(M.observer?'（傍聴）':'')):'未登録';
+  document.getElementById('ckName').textContent=ok?(M.name+' さん'):'未登録';
   document.getElementById('ckCount').textContent=M.checks.length;
 }
 
