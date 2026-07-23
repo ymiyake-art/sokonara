@@ -106,13 +106,14 @@
     </div>
 
     <div class="card">
-      <div class="qh">⑧ 今後ソコナラと取り組みたいテーマ（複数選択可）</div>
+      <div class="qh">⑧ 今後、ソコナラを通じて強化したい取り組みを教えてください（複数選択可）</div>
       <div id="qThemes"></div>
+      <textarea id="qThemesOther" placeholder="「その他」の内容（任意）" style="margin-top:8px;"></textarea>
     </div>
 
     <div class="card">
-      <div class="qh">⑨ ご感想・ご要望</div>
-      <textarea id="qFree" placeholder="全体を通してのご感想・改善のご要望など（任意）"></textarea>
+      <div class="qh">⑨ 具体的なご相談やソコナラがお力になれそうなこと</div>
+      <textarea id="qFree" placeholder="ご相談・ご要望・全体のご感想など、あれば記述してください（任意）"></textarea>
     </div>
 
     <button class="send" id="sendBtn" onclick="send()">この内容で送信する</button>
@@ -143,13 +144,15 @@ var VALUES=[
   ['v_net','他の経営層との横のつながりができた']
 ];
 var THEMES=[
-  ['t_pool','イベント継続参加による母集団形成'],
-  ['t_remote','遠方（東京・大阪など）人材との接点・配信'],
-  ['t_project','共創プロジェクト・短期インターンの設計'],
-  ['t_brand','採用ブランディング・発信の強化'],
-  ['t_web','Web記事・共鳴データの活用'],
-  ['t_match','個別マッチング支援'],
-  ['t_none','特に未定']
+  ['t_pool','継続的なイベント参加による、候補人材との接点づくり'],
+  ['t_remote','東京・大阪など、遠方人材への情報発信・接点づくり'],
+  ['t_brand','Web記事や動画を活用した、採用ブランディングの強化'],
+  ['t_web','アプリ上の閲覧・共感データを活用した、潜在候補者の把握'],
+  ['t_match','自社に関心を持つ人材との個別マッチング'],
+  ['t_project','共創プロジェクト・副業・短期インターンなど、新しい関わり方の設計'],
+  ['t_train','社員向けキャリア研修・組織活性化'],
+  ['t_none','まだ具体的には決まっていない'],
+  ['t_other','その他（自由記述）']
 ];
 var S={sat:0,next_ev:0,reco:0};
 var ROSTER=[];
@@ -237,7 +240,7 @@ function send(){
   var co_fb={ company_id:coId, sat:S.sat, values:picked('qValues'), values_free:document.getElementById('qValuesFree').value.trim(),
     picks:picks, picks_free:document.getElementById('qPicksFree').value.trim(), slots:collectSlots(),
     next_ev:S.next_ev||null, reco:S.reco||null,
-    referral:document.getElementById('qReferral').value.trim(), themes:picked('qThemes'), free:document.getElementById('qFree').value.trim() };
+    referral:document.getElementById('qReferral').value.trim(), themes:picked('qThemes'), themes_other:document.getElementById('qThemesOther').value.trim(), free:document.getElementById('qFree').value.trim() };
   var btn=document.getElementById('sendBtn'); btn.disabled=true; btn.textContent='送信中…';
   // 企業ごとに1行（再送は上書き）
   fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},

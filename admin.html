@@ -3522,7 +3522,7 @@ async function renderMeetAdmin(){
         ${(()=>{ if(!coFbRows.length) return '<div style="font-size:12px;color:var(--text3);">まだ回答がありません。</div>';
           const coName2=id=>{ const c=cos.find(x=>String(x.id)===String(id)); return c?(c.ceo||c.name||id):id; };
           const VW={v_layer:'異なる層',v_pr:'新しい切り口のPR',v_dialog:'距離の近い対話',v_insight:'共感ポイント把握',v_person:'人柄確認',v_biz:'戦略への気づき',v_option:'新しい選択肢',v_net:'横のつながり'};
-          const TW={t_pool:'母集団形成',t_remote:'遠方人材・配信',t_project:'共創PJ・インターン',t_brand:'採用ブランディング',t_web:'Web共鳴データ',t_match:'個別マッチング',t_none:'未定'};
+          const TW={t_pool:'候補人材との接点づくり',t_remote:'遠方人材への発信',t_brand:'採用ブランディング',t_web:'閲覧・共感データで潜在候補把握',t_match:'個別マッチング',t_project:'共創/副業/インターン設計',t_train:'キャリア研修・組織活性化',t_none:'未定',t_other:'その他'};
           const avg=k=>{ const v=coFbRows.map(r=>r.co_fb[k]).filter(x=>typeof x==='number'); return v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):'—'; };
           const fmtSlot=s=>{ try{ const d=new Date(s.d+'T00:00:00'); const w=['日','月','火','水','木','金','土'][d.getDay()]; const tb={all:'終日',am:'午前',pm:'午後',eve:'夕方以降'}[s.t]||''; return (d.getMonth()+1)+'/'+d.getDate()+'('+w+') '+tb; }catch(e){ return (s&&s.d)||''; } };
           const cards=coFbRows.map(r=>{ const f=r.co_fb; const cid2=String(f.company_id||'');
@@ -3537,7 +3537,7 @@ async function renderMeetAdmin(){
               ${matches?`<div style="margin-top:7px;"><div style="font-size:10.5px;font-weight:700;color:var(--text2);">接点を深めたい参加者（${(f.picks||[]).length}名）</div>${matches}</div>`:''}
               ${(f.picks_free||'').trim()?`<div style="margin-top:5px;font-size:11.5px;color:var(--text2);"><b style="font-size:10px;">指名(自由記述):</b> ${escA(f.picks_free)}</div>`:''}
               ${(f.slots||[]).length?`<div style="margin-top:7px;"><b style="font-size:10.5px;color:var(--text2);">📅 打合せ候補日(ソコナラ):</b> ${(f.slots||[]).map(s=>`<span style="display:inline-block;font-size:11px;background:#fff8e6;color:#8a6d00;border:1px solid #f0e2b6;border-radius:8px;padding:2px 9px;margin:2px 3px 0 0;font-weight:700;">${escA(fmtSlot(s))}</span>`).join('')}</div>`:''}
-              ${(f.themes||[]).length?`<div style="margin-top:7px;font-size:11px;color:var(--text2);">今後のテーマ: ${(f.themes||[]).map(t=>TW[t]||t).join('・')}</div>`:''}
+              ${(f.themes||[]).length?`<div style="margin-top:7px;font-size:11px;color:var(--text2);">今後のテーマ: ${(f.themes||[]).map(t=>TW[t]||t).join('・')}${(f.themes_other||'').trim()?`（その他：${escA(f.themes_other)}）`:''}</div>`:((f.themes_other||'').trim()?`<div style="margin-top:7px;font-size:11px;color:var(--text2);">今後のテーマ（その他）：${escA(f.themes_other)}</div>`:'')}
               ${(f.referral||'').trim()?`<div style="margin-top:5px;font-size:11.5px;color:var(--text2);">紹介: ${escA(f.referral)}</div>`:''}
               ${(f.values_free||'').trim()?`<div style="margin-top:5px;font-size:11.5px;color:var(--text2);">「${escA(f.values_free)}」</div>`:''}
               ${(f.free||'').trim()?`<div style="margin-top:5px;font-size:11.5px;color:var(--text2);">感想: ${escA(f.free)}</div>`:''}
