@@ -3375,7 +3375,7 @@ async function wbSaveAll(){
 
 // ===== 🎪 MEET運営（meet_entries＝PIIテーブル。閲覧はadmin-data listアクション＝認証必須のみ） =====
 // 新タグ＝仕事の軸6軸と1:1（追記48）。旧タグ(leader等)は過去データ表示用に残す
-const MEET_RTAGS={meaning:'意義・ビジョン',agency:'挑戦・変革',people:'人柄・雰囲気',local:'地域との関わり',time:'働き方',econ:'条件・待遇',undecided:'判断中',leader:'経営者に惹かれた(旧)',biz:'事業が面白い(旧)',exp:'経験活かせそう(旧)',growth:'成長機会(旧)',cond:'条件面(旧)'};
+const MEET_RTAGS={meaning:'意義・ビジョン',agency:'挑戦・変革',people:'人柄・雰囲気',local:'地域貢献',time:'働き方',econ:'条件・待遇',undecided:'判断中',leader:'経営者に惹かれた(旧)',biz:'事業が面白い(旧)',exp:'経験活かせそう(旧)',growth:'成長機会(旧)',cond:'条件面(旧)'};
 async function renderMeetAdmin(){
   window._meetRerender=renderMeetAdmin; // 班分け系関数の再描画先（班分けページと共用のため間接化）
   const box=document.getElementById('adminContent');
