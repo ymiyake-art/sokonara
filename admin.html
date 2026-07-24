@@ -903,7 +903,24 @@ async function renderResonance(){
         </div>`;
       }).join('')}
     </div>`:''}
+    <div style="margin-top:18px;padding:14px 16px;background:#fff;border:1px dashed var(--border);border-radius:10px;">
+      <div style="font-weight:700;font-size:12.5px;color:var(--navy);">🧹 テストデータの削除</div>
+      <div style="font-size:11px;color:var(--text3);margin:4px 0 10px;line-height:1.7;">削除対象＝<b>?test=1でタグ済みの内部端末の行</b>・検証用の行（probe_/apicheck_）・MEETのテスト参加者とプローブ行（meet_test_/meet_probe_/meet_co_probe_/meet_ph_probe_）。<b>実ユーザーのデータは消えません</b>（削除条件はサーバー側で固定）。</div>
+      <button onclick="cleanupTestData(this)" style="padding:8px 16px;background:#fff;color:#c0392b;border:1px solid var(--border);border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🧹 テストデータを削除</button>
+    </div>
   </div>`;
+}
+// テストデータの一括削除（配布前クリーンアップ）。パターンはapi/report.js側で固定＝実ユーザー行に触れない
+async function cleanupTestData(btn){
+  if(!confirm('テストデータ（内部端末の行・検証用行・MEETテスト参加者）を削除します。実ユーザーのデータは消えません。よろしいですか？')) return;
+  btn.disabled=true; const ot=btn.textContent; btn.textContent='削除中…';
+  try{
+    const r=await fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:_adminPw,action:'cleanup'})});
+    const j=await r.json();
+    if(j&&j.ok){ toast('削除しました：card_logs '+j.deleted.card_logs+'件 ／ meet_entries '+j.deleted.meet_entries+'件'); renderResonance(); }
+    else toast('削除失敗: '+((j&&j.error)||('HTTP '+r.status)));
+  }catch(e){ toast('削除失敗: '+(e.message||e)); }
+  btn.disabled=false; btn.textContent=ot;
 }
 
 async function cardLogDelete(id){
