@@ -4588,12 +4588,12 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var html='';
     html+='<div style="font-size:12.5px;color:var(--text);line-height:1.9;margin-bottom:8px;">'
       +(gaps.length
-        ? '特に <b>「'+gaps.slice(0,2).map(function(a){return escapeHtml(a.label);}).join('」「')+'」</b> は、<br>いまの仕事では満たされていない軸です。'
+        ? '特に <b>「'+gaps.slice(0,2).map(function(a){return escapeHtml(a.label);}).join('」「')+'」</b> は、<br>いまの仕事では満たしきれていない軸です。'
         : 'いまの仕事は、あなたの求める軸と<br>大きなズレはなさそうです。')
       +'</div>';
     if(chips) html+='<div style="display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-start;margin-bottom:8px;">'+chips+'</div>';
-    if(econOver) html+='<div style="font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:8px;">※ 経済（年収）はいまの仕事が上回っています。<br>それでも上の軸が動くなら——その価値をどう見るかは、あなた次第です。</div>';
-    html+='<div style="font-size:11px;color:var(--text3);line-height:1.8;">前提：年収帯 '+(SAL_LABEL[salCode]||'未設定')+'・忙しさ '+(BUSY_LABEL[(typeof S!=='undefined'&&S.busy)||'']||'ふつう')+'（下で変更できます）<br>※ あなたの反応から推定した参考値です。確かめる方法は、会って話すことだけ。</div>';
+    if(econOver) html+='<div style="font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:8px;">※ 経済（年収）は、いまの仕事のほうが高い見込みです。<br>年収以外の軸をどれだけ重くみるか——そこが選択の分かれ目です。</div>';
+    html+='<div style="font-size:11px;color:var(--text3);line-height:1.8;">前提：年収帯 '+(SAL_LABEL[salCode]||'未設定')+'・忙しさ '+(BUSY_LABEL[(typeof S!=='undefined'&&S.busy)||'']||'ふつう')+'（下で変更できます）<br>※ あなたの回答からの推定値です。実際のところは、会って話すのがいちばん確かです。</div>';
     var dEl=document.getElementById('wbDelta'); if(dEl) dEl.innerHTML=html;
   }
   // フロー予報：仕事の軸（意味×裁量）から「没頭が生まれやすいか」を一言で。チクセントミハイの注釈付き。
@@ -4679,7 +4679,7 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var name=(co&&co.ceo)?co.ceo+'さん':'この経営層';
     document.getElementById('wbManifesto').innerHTML='年収以外にも、<br>仕事から得られるものはたくさんある。<br>裁量、自由度、人との近さ、地域、ゆとり——<br>年収や知名度だけが、キャリアの正解じゃない。';
     document.getElementById('wbTitle').textContent='あなたの“仕事の軸”は、どこにあるか。';
-    document.getElementById('wbSub').innerHTML='<b>'+escapeHtml(name)+'</b>への共鳴から、<br>あなたが仕事に<b>求める軸</b>を導きました。<br>この軸は、共鳴した環境で働くことで<br>実現に近づく可能性があります。';
+    document.getElementById('wbSub').innerHTML='<b>'+escapeHtml(name)+'</b>への共鳴をもとに、<br>あなたが仕事に<b>求める軸</b>を描きました。<br>共鳴が生まれた環境は、<br>その軸が満たされやすい場所です。';
     var _type=axisType(weight), _char=axisChar(weight);
     document.getElementById('wbType').innerHTML=_type?('あなたは <span style="font-weight:900;color:var(--navy);font-size:16px;">'+(_char?escapeHtml(_char)+' ':'')+'『'+escapeHtml(_type)+'』</span> タイプ'):'';
     document.getElementById('wbFlow').innerHTML=flowHTML(weight);
@@ -4695,7 +4695,7 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var hasFacts=(typeof S!=='undefined')&&S.sal&&S.busy;
     if(typeof S!=='undefined'&&(S.q2||[]).length) basis.push('求めるもの<b>「'+(S.q2||[]).map(escapeHtml).join('・')+'」</b>');
     document.getElementById('wbBasis').innerHTML = basis.length
-      ? '<span style="color:var(--teal-d);font-weight:700;font-size:10px;font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">この軸の導き方</span><br>'+basis.join('、')+' から導いています。<br>共鳴した言葉や選んだものは、そのまま軸に加算されます。<br>時間・収入の軸は「求めるもの」で選んだときだけ高くなります。'+(hasFacts?'':'<br>「いまの仕事と比べる」を押すと、現状とのギャップが見えます。')
+      ? '<span style="color:var(--teal-d);font-weight:700;font-size:10px;font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">この軸の導き方</span><br>'+basis.join('、')+' をもとにしています。<br>あなたが選んだ言葉や答えが、それぞれ対応する軸に反映されます。<br>時間と収入は、ご自身で「求めるもの」に選んだときだけ動きます（推測では動かしません）。'+(hasFacts?'':'<br>「いまの仕事と比べる」を押すと、現状とのギャップが見えます。')
       : '';
     document.getElementById('wbBasis').style.display = basis.length?'':'none';
     var blocks='';
@@ -4707,7 +4707,7 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
       +'<div style="text-align:center;font-size:11px;color:var(--text3);margin-top:6px;">匿名OK・1分（応募ではありません）</div>';
     // AIの文章診断＝LINE特典（折りたたみに降格＝共感CTAを主役にする。撤去はしない）
     var _reg=(typeof isLineRegistered==='function')&&isLineRegistered();
-    var _freeBox='<div style="font-size:11px;color:rgba(255,255,255,0.72);margin:0 0 6px;">AIに読み解いてほしいこと・記事を読んで感じたことを、自由にどうぞ（任意・書くほどあなた仕様に）</div>'
+    var _freeBox='<div style="font-size:11px;color:rgba(255,255,255,0.72);margin:0 0 6px;">記事を読んで感じたこと・AIに読み解いてほしいことを、自由にどうぞ（任意。書いた内容が多いほど、あなたに合わせた読み解きになります）</div>'
       +'<textarea id="wbFree" rows="3" oninput="wbFreeInput(this)" placeholder="例：安定はあるけど、もっと人と近い距離で働きたい。この方になら悩みを話せそうだと思った。" style="width:100%;box-sizing:border-box;padding:10px 12px;border:none;border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:4px;resize:vertical;color:var(--text);">'+escapeHtml((typeof S!=='undefined'&&S.free)||'')+'</textarea>'
       +'<div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:10px;">📱 スマホなら音声入力🎤が楽です</div>';
     document.getElementById('wbDetailCta').innerHTML=
@@ -4717,7 +4717,7 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
         +'<span id="wbLineChevron" style="font-size:10px;color:var(--text3);">▼</span>'
       +'</div>'
       +'<div id="wbLineBody" style="display:none;background:var(--navy);border-radius:0 0 12px 12px;padding:16px 18px;color:#fff;margin-top:-2px;">'
-      +'<div style="font-size:12px;color:rgba(255,255,255,0.75);line-height:1.8;margin-bottom:10px;">あなたの反応をAIがことばで読み解く文章診断＋<br>この軸マトリクス入りのレポート'+(_reg?'。':'を、その場でお渡しします。<br>無料・ワンタップ／いつでも解除可。')+'</div>'
+      +'<div style="font-size:12px;color:rgba(255,255,255,0.75);line-height:1.8;margin-bottom:10px;">あなたの反応を、AIが文章で読み解きます。<br>軸レーダー入りの詳細レポート'+(_reg?'です。':'を、その場でお渡しします。<br>無料・ワンタップ／いつでも解除できます。')+'</div>'
       +_freeBox
       +(_reg
         ? '<button style="width:100%;padding:13px;background:#fff;color:var(--navy);border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="openDetailReport()">読み解いてもらう →</button>'
