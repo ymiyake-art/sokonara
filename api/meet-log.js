@@ -12,7 +12,7 @@ const cors = {
 
 // 書き込みを許可する列（任意の列を書かれないようホワイトリスト化）
 const ALLOWED = new Set([
-  'event_id', 'name', 'checks', 'deep', 'talk', 'consent', 'rtags', 'comment', 'survey_done', 'groups', 'reactions', 'observer', 'scores', 'nps', 'after', 'co_fb',
+  'event_id', 'name', 'checks', 'deep', 'talk', 'consent', 'rtags', 'comment', 'survey_done', 'groups', 'reactions', 'observer', 'scores', 'nps', 'after', 'co_fb', 'notes',
 ]);
 
 export default async function handler(req) {

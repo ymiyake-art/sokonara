@@ -56,6 +56,7 @@ textarea{min-height:72px;resize:vertical;}
 .rx-chips{display:flex;flex-wrap:wrap;gap:6px;}
 .rxchip{font-size:12.5px;padding:7px 12px;border-radius:16px;border:1px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;user-select:none;line-height:1.4;}
 .rxchip.on{background:var(--navy);border-color:var(--navy);color:#fff;}
+.co-note{width:100%;min-height:54px;padding:9px 10px;font-size:16px;border:1px solid var(--border);border-radius:8px;font-family:inherit;resize:vertical;background:#fff;box-sizing:border-box;}
 /* アンケートの共鳴度バー（1〜5のタップセグメント）とNPS */
 .sc-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
 .sc-who{flex:1;min-width:0;}
@@ -214,19 +215,19 @@ function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,
 function tno(n){ n=parseInt(n,10); return (n>=1&&n<=26)?String.fromCharCode(64+n):String(n); }
 function toast(m){ var t=document.getElementById('toastEl'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(function(){t.classList.remove('show');},2200); }
 function clamp(v){ return Math.max(0,Math.min(100,Math.round(v))); }
-function loadM(){ try{ M=JSON.parse(localStorage.getItem('sn_meet')||'null'); }catch(e){ M=null; } if(!M||!M.id) M={id:'meet_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),name:'',checks:[],reactions:{},observer:false,survey:{deep:[],talk:[],consent:null,rtags:[],comment:''},done:false}; if(!M.survey) M.survey={deep:[],talk:[],consent:null,rtags:[],comment:''}; if(!M.reactions||typeof M.reactions!=='object') M.reactions={}; if(typeof M.observer!=='boolean') M.observer=false; if(!M.survey.scores||typeof M.survey.scores!=='object') M.survey.scores={}; if(typeof M.survey.nps!=='number') M.survey.nps=null; }
+function loadM(){ try{ M=JSON.parse(localStorage.getItem('sn_meet')||'null'); }catch(e){ M=null; } if(!M||!M.id) M={id:'meet_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),name:'',checks:[],reactions:{},observer:false,survey:{deep:[],talk:[],consent:null,rtags:[],comment:''},done:false}; if(!M.survey) M.survey={deep:[],talk:[],consent:null,rtags:[],comment:''}; if(!M.reactions||typeof M.reactions!=='object') M.reactions={}; if(typeof M.observer!=='boolean') M.observer=false; if(!M.survey.scores||typeof M.survey.scores!=='object') M.survey.scores={}; if(typeof M.survey.nps!=='number') M.survey.nps=null; if(!M.notes||typeof M.notes!=='object') M.notes={}; }
 function saveM(){ localStorage.setItem('sn_meet',JSON.stringify(M)); }
 // サーバ保存（service_role API経由・PIIはmeet_entriesのみに保持）
 function push(set){ if(!M.name) return; try{ fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:M.id,set:Object.assign({event_id:EV.eventId},set)})}).catch(function(){}); }catch(e){} }
 // タップ連打の書込をまとめる（負荷対策：会場で数十人が同時にタップしてもリクエスト数を1/数十に圧縮）
 var _pushT=null;
-function pushSoon(){ clearTimeout(_pushT); _pushT=setTimeout(function(){ push({checks:M.checks, reactions:M.reactions}); },800); }
+function pushSoon(){ clearTimeout(_pushT); _pushT=setTimeout(function(){ push({checks:M.checks, reactions:M.reactions, notes:M.notes}); },800); }
 // 確定・送信＝全量を送って応答を確認（途中の自動保存が万一落ちていてもここで全量上書き＝自己修復）
 function commitAll(btn){
   if(!M.name){ toast('先にSTEP1でお名前を登録してください'); return; }
   clearTimeout(_pushT);
   btn.disabled=true; var ot=btn.textContent; btn.textContent='送信中…';
-  var body={id:M.id, set:{event_id:EV.eventId, name:M.name, checks:M.checks, reactions:M.reactions, observer:M.observer}};
+  var body={id:M.id, set:{event_id:EV.eventId, name:M.name, checks:M.checks, reactions:M.reactions, notes:M.notes, observer:M.observer}};
   fetch('/api/meet-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){ return r.json(); })
     .then(function(d){
@@ -273,10 +274,16 @@ function paintGroups(groups){
   }
   if(note) note.textContent='チェックした経営層になるべく行けるよう配分しています。各巡目でこの班（テーブル）へどうぞ。';
   list.innerHTML=groups.map(function(g,i){
-    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.06);">'
+    // 自分がその経営層カードに書いたメモを添える（グループセッション前の振り返り用。groupsに企業IDが無いためceo名で突合）
+    var co=(COS||[]).filter(function(c){ return (c.ceo||'')===(g.ceo||''); })[0];
+    var note=co?(M.notes&&M.notes[String(co.id)]||''):'';
+    return '<div style="padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.06);">'
+      +'<div style="display:flex;align-items:center;gap:10px;">'
       +'<span style="flex-shrink:0;font-size:11px;color:var(--text2);width:44px;">'+(i+1)+'巡目</span>'
       +'<span style="flex-shrink:0;width:34px;height:34px;border-radius:8px;background:var(--navy);color:#fff;font-weight:900;font-size:15px;display:flex;align-items:center;justify-content:center;">'+esc(tno(g.no))+'</span>'
       +'<span style="font-size:13px;color:var(--navy);font-weight:700;">'+esc(g.ceo||g.name||'')+'<span style="font-size:11px;color:var(--text2);font-weight:400;"> '+esc(g.name||'')+'</span></span>'
+      +'</div>'
+      +(note?'<div style="margin:5px 0 0 54px;font-size:12px;color:var(--text2);background:#f5f7f6;border-radius:8px;padding:7px 10px;line-height:1.6;">📝 '+esc(note)+'</div>':'')
       +'</div>';
   }).join('');
 }
@@ -314,6 +321,14 @@ function toggleCheck(id){
 }
 function coById(id){ return COS.filter(function(c){return String(c.id)===String(id);})[0]; }
 // 経営層カードの共鳴ポイント（どの社にも・いつでも・複数可。チェックとは独立＝プレゼンを聞きながら全社に付けられる）
+// 経営層ごとの自由メモ（グループセッションで聞きたいこと等）。端末保存＋自動送信（debounce）。班スケジュールと企業レポートで再利用
+function noteInput(coId,el){
+  coId=String(coId);
+  var v=String(el.value||'').slice(0,300);
+  if(v.trim()) M.notes[coId]=v; else delete M.notes[coId];
+  saveM();
+  if(M.name) pushSoon();
+}
 function toggleReact(coId,axis,el){
   coId=String(coId);
   var a=M.reactions[coId]||(M.reactions[coId]=[]);
@@ -337,11 +352,16 @@ function paintCos(){
     var rx='<div class="rx"><div class="rx-t">共鳴ポイント（任意・タップで選択）</div><div class="rx-chips">'
       +REACTS.map(function(t){ var ron=myRx.indexOf(t[0])>=0; return '<span class="rxchip'+(ron?' on':'')+'" onclick="toggleReact(\''+esc(c.id)+'\',\''+t[0]+'\',this)">'+t[1]+'</span>'; }).join('')
       +'</div></div>';
+    var myNote=(M.notes&&M.notes[String(c.id)])||'';
+    var noteBox='<div style="margin-top:9px;"><div class="rx-t">📝 メモ（任意）</div>'
+      +'<textarea class="co-note" oninput="noteInput(\''+esc(c.id)+'\',this)" placeholder="グループセッションで聞きたいこと／自分ならこんな活躍ができそう、と思ったこと">'+esc(myNote)+'</textarea>'
+      +'<div style="font-size:10px;color:var(--text3);margin-top:3px;">メモは下の班スケジュールにも表示され、登壇企業へのレポートにも活用されます</div></div>';
     return '<div class="lcard">'
       +'<div class="lcard-top" style="'+topBg+'"><div class="lcard-phrase">'+phrase+'</div></div>'
       +'<div class="lcard-bottom"><div style="display:flex;gap:10px;align-items:center;">'+av
       +'<div style="flex:1;min-width:0;"><div class="co-name">'+esc(c.ceo||'')+'</div><div class="co-corp">'+esc(c.name||'')+'</div></div></div>'
       +rx
+      +noteBox
       +'<div class="co-links"><button class="ck'+(on?' on':'')+'" onclick="toggleCheck(\''+esc(c.id)+'\')">'+(on?'✓ 気になる':'☆ 気になる')+'</button>'
       +((c.body&&String(c.body).length>50)?'<a class="co-art" href="'+esc(EV.appUrl)+'/?cid='+encodeURIComponent(c.id)+'" target="_blank" rel="noopener">想いを読む →</a>':'<span style="font-size:11px;color:var(--text3)">記事は近日公開</span>')+'</div>'
       +'</div></div>';

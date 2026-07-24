@@ -3983,9 +3983,13 @@ async function openMeetReport(){
   const rxBars=Object.keys(AXL).map(k=>{ const n=rx[k]||0; return `<div class="bar-row"><div class="bar-l">${AXL[k]}</div><div class="bar-t"><div class="bar-f" style="width:${Math.round(n/rxMax*100)}%"></div></div><div class="bar-n">${n}</div></div>`; }).join('');
   const talkList=talkRows.length?talkRows.map(r=>{
     const ph=(withNames&&photoByName[_nmKey(r.name)])||''; // 写真は氏名表示ONのときのみ（写真自体が個人特定情報のため）。氏名突合は空白ゆらぎ吸収
-    return `<div class="person">${ph?`<img src="${ph}" style="width:46px;height:46px;object-fit:cover;border-radius:50%;float:left;margin:2px 10px 2px 0;">`:''}<b>${withNames?esc(r.name||'（無名）'):'参加者'}</b>${(r.scores&&r.scores[cid])?` <span class="sc">共鳴度 ${r.scores[cid]}/5</span>`:''}${(r.comment||'').trim()?`<div class="pc">「${esc(r.comment.trim())}」</div>`:''}<div style="clear:both"></div></div>`;
+    const pnote=(r.notes&&String(r.notes[cid]||'').trim())||'';
+    return `<div class="person">${ph?`<img src="${ph}" style="width:46px;height:46px;object-fit:cover;border-radius:50%;float:left;margin:2px 10px 2px 0;">`:''}<b>${withNames?esc(r.name||'（無名）'):'参加者'}</b>${(r.scores&&r.scores[cid])?` <span class="sc">共鳴度 ${r.scores[cid]}/5</span>`:''}${(r.comment||'').trim()?`<div class="pc">「${esc(r.comment.trim())}」</div>`:''}${pnote?`<div class="pc">📝 当日メモ:「${esc(pnote)}」</div>`:''}<div style="clear:both"></div></div>`;
   }).join(''):'<div class="muted">今回のイベントでは該当者はいませんでした。</div>';
   const cmList=cmRows.length?cmRows.map(r=>`<div class="quote">「${esc(r.comment.trim())}」</div>`).join(''):'';
+  // 当日カードの自由メモ（聞きたいこと・活躍イメージ）＝貴社をチェックした参加者のぶんを匿名で抜粋
+  const noteRows=rows.filter(r=>r.notes&&typeof r.notes==='object'&&String(r.notes[cid]||'').trim()&&(r.checks||[]).map(String).includes(cid));
+  const noteList=noteRows.length?noteRows.map(r=>`<div class="quote">「${esc(String(r.notes[cid]).trim())}」</div>`).join(''):'';
   const talkWarn=(!withNames && talkRows.length)?'<div class="warn">⚠️ このプレビューは氏名を伏せています。貴社から直接ご連絡いただくには、出力欄の「個別希望者の氏名を含める」にチェックして再出力してください。</div>':'';
   const html=`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>ソコナラMEET レポート — ${esc(co.name||'')}</title>
   <style>
@@ -4053,6 +4057,7 @@ async function openMeetReport(){
       ${talkWarn}
       ${talkList}
       ${cmList?`<h2>貴社に共鳴した参加者の声（共鳴度3点以上・抜粋）</h2>${cmList}`:''}
+      ${noteList?`<h2>参加者の当日メモ（聞きたいこと・活躍イメージ／匿名・抜粋）</h2><div class="sub" style="margin-bottom:6px;">プレゼンを聞きながら、貴社のカードに書き込まれたメモです。関心の所在や、参加者が思い描いた関わり方が表れています。</div>${noteList}`:''}
       ${afMsgs.length?`<h2>参加者から貴社へのメッセージ（後日アンケート）</h2><div class="sub" style="margin-bottom:6px;">後日アンケートで、貴社に向けて書かれたメッセージです（実名）。</div>${afMsgs.map(m=>`<div class="person"><b>${esc(m.name)}</b> さんより<div class="pc">「${esc(m.msg)}」</div></div>`).join('')}`:''}
       <h2>イベント全体サマリー</h2>
       <div class="stats">
