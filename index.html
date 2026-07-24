@@ -4592,8 +4592,8 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
         : 'いまの仕事は、あなたの求める軸と<br>大きなズレはなさそうです。')
       +'</div>';
     if(chips) html+='<div style="display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-start;margin-bottom:8px;">'+chips+'</div>';
-    if(econOver) html+='<div style="font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:8px;">※ 経済（年収）は、いまの仕事のほうが高い見込みです。<br>年収以外の軸をどれだけ重くみるか——そこが選択の分かれ目です。</div>';
-    html+='<div style="font-size:11px;color:var(--text3);line-height:1.8;">前提：年収帯 '+(SAL_LABEL[salCode]||'未設定')+'・忙しさ '+(BUSY_LABEL[(typeof S!=='undefined'&&S.busy)||'']||'ふつう')+'（下で変更できます）<br>※ あなたの回答からの推定値です。実際のところは、会って話すのがいちばん確かです。</div>';
+    if(econOver) html+='<div style="font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:8px;">※ 経済（年収）は、いまの仕事のほうが高い見込みです。<br>年収以外の軸をどれだけ重視するかが、地域で活躍する上でのポイントです。</div>';
+    html+='<div style="font-size:11px;color:var(--text3);line-height:1.8;">前提：年収帯 '+(SAL_LABEL[salCode]||'未設定')+'・忙しさ '+(BUSY_LABEL[(typeof S!=='undefined'&&S.busy)||'']||'ふつう')+'（下で変更できます）<br>※ あなたの回答からの推定値です。実際に経営層と会った際の感覚を重視しましょう。</div>';
     var dEl=document.getElementById('wbDelta'); if(dEl) dEl.innerHTML=html;
   }
   // フロー予報：仕事の軸（意味×裁量）から「没頭が生まれやすいか」を一言で。チクセントミハイの注釈付き。
@@ -4695,7 +4695,7 @@ window.addEventListener('appinstalled', () => { dismissPwaBanner(); });
     var hasFacts=(typeof S!=='undefined')&&S.sal&&S.busy;
     if(typeof S!=='undefined'&&(S.q2||[]).length) basis.push('求めるもの<b>「'+(S.q2||[]).map(escapeHtml).join('・')+'」</b>');
     document.getElementById('wbBasis').innerHTML = basis.length
-      ? '<span style="color:var(--teal-d);font-weight:700;font-size:10px;font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">この軸の導き方</span><br>'+basis.join('、')+' をもとにしています。<br>あなたが選んだ言葉や答えが、それぞれ対応する軸に反映されます。<br>時間と収入は、ご自身で「求めるもの」に選んだときだけ動きます（推測では動かしません）。'+(hasFacts?'':'<br>「いまの仕事と比べる」を押すと、現状とのギャップが見えます。')
+      ? '<span style="color:var(--teal-d);font-weight:700;font-size:10px;font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;">この軸の導き方</span><br>'+basis.join('、')+' をもとにしています。<br>あなたが選んだ言葉や答えが、それぞれ対応する軸に反映されます。'+(hasFacts?'':'<br>「いまの仕事と比べる」を押すと、現状とのギャップが見えます。')
       : '';
     document.getElementById('wbBasis').style.display = basis.length?'':'none';
     var blocks='';
